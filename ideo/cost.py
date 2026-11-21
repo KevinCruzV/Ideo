@@ -1,4 +1,3 @@
-import math
 from pathlib import Path
 
 from ideo import common, plan_check
@@ -6,15 +5,22 @@ from ideo import common, plan_check
 REPO = Path(__file__).resolve().parent.parent
 SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md")
 SKILL_LANG = "fr"
-CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0}
+CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0, "ja": 1.0, "zh": 1.0, "ko": 1.5}
 OTHER_CHARS_PER_TOKEN = 3.5
 OUTPUT_SHARE = 0.15
+LONG_CONTENT_FACTOR = 2.0
+READ_TOKENS = 15000
+READ_MAX_LINES = 2000
 WRITE_TOKENS_PER_SECOND = 17
 WRITE_SPREAD = 1.6
 
 
+def ratio(lang: str) -> float:
+    return CHARS_PER_TOKEN.get(lang, OTHER_CHARS_PER_TOKEN)
+
+
 def tokens(chars: int, lang: str) -> int:
-    return round(chars / CHARS_PER_TOKEN.get(lang, OTHER_CHARS_PER_TOKEN))
+    return round(chars / ratio(lang))
 
 
 def round_hundred(value: float) -> int:
@@ -60,9 +66,8 @@ def estimate(job: Path) -> dict:
     transcript = round_hundred(tokens(_chars(job / "transcript_compact.md"), lang))
     skill = round_hundred(tokens(sum(_chars(p) for p in SKILL_FILES), SKILL_LANG))
     spoken = speech_words(job) / plan_check.RATES.get(lang, 2.6)
-    seconds = max(plan_check.MIN_SECONDS, spoken * OUTPUT_SHARE)
-    videos = min(plan_check.MAX_PARTS, max(1, math.ceil(seconds / plan_check.MAX_SECONDS)))
-    seconds = min(seconds, plan_check.MAX_SECONDS * videos)
+    content = max(plan_check.MIN_SECONDS, spoken * OUTPUT_SHARE)
+    seconds = min(content, plan_check.MAX_SECONDS)
     info = plan_check.read_json(job, "info.json", {})
     duration = info.get("duration") if isinstance(info, dict) else None
     return {
@@ -70,7 +75,7 @@ def estimate(job: Path) -> dict:
         "skill": skill,
         "reading": transcript + skill,
         "seconds": seconds,
-        "videos": videos,
+        "long": content > plan_check.MAX_SECONDS * LONG_CONTENT_FACTOR,
         "write_low": round_hundred(seconds * WRITE_TOKENS_PER_SECOND),
         "write_high": round_hundred(seconds * WRITE_TOKENS_PER_SECOND * WRITE_SPREAD),
         "minutes": round(duration / 60) if isinstance(duration, (int, float)) else 0,
@@ -79,6 +84,31 @@ def estimate(job: Path) -> dict:
 
 def line(job: Path) -> str:
     e = estimate(job)
-    videos = "1 vidéo attendue" if e["videos"] == 1 else f"{e['videos']} vidéos attendues"
-    return (f"lecture ~{fmt(e['reading'])} tokens (transcription {fmt(e['transcript'])} + skill et guide {fmt(e['skill'])}), "
-            f"écriture ~{fmt(e['write_low'])} à {fmt(e['write_high'])} tokens, source {e['minutes']} min, {videos}")
+    text = (f"lecture au moins ~{fmt(e['reading'])} tokens (transcription {fmt(e['transcript'])} + skill et guide {fmt(e['skill'])}), "
+            f"écriture ~{fmt(e['write_low'])} à {fmt(e['write_high'])} tokens, source {e['minutes']} min")
+    if e["long"]:
+        text += ", contenu long : une vidéo de 5 min ou plusieurs parties"
+    return text
+
+
+def reading(job: Path) -> dict:
+    job = Path(job)
+    try:
+        lines = (job / "transcript_compact.md").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    budget = int(READ_TOKENS * ratio(_lang(job)))
+    if sum(len(x) + 1 for x in lines) <= budget and len(lines) <= READ_MAX_LINES:
+        return {"lines": len(lines), "chunk": None, "offsets": []}
+    longest = max(len(x) + 1 for x in lines)
+    chunk = max(1, min(READ_MAX_LINES, budget // longest))
+    return {"lines": len(lines), "chunk": chunk, "offsets": list(range(1, len(lines) + 1, chunk))}
+
+
+def reading_note(job: Path) -> str:
+    plan = reading(job)
+    if plan["chunk"] is None:
+        return f"{plan['lines']} lignes, à lire en un seul Read"
+    offsets = ", ".join(str(o) for o in plan["offsets"])
+    return (f"{plan['lines']} lignes, trop longue pour un seul Read : lis-la en {len(plan['offsets'])} Read consécutifs, "
+            f"offset {offsets}, chacun avec limit {plan['chunk']}")
