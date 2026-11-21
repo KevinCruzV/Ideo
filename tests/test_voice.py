@@ -21,7 +21,7 @@ def test_voice_part_creates_one_wav_per_segment(job_with_plan, fake_backend, fak
     assert all(p.with_suffix(".words.json").exists() for p in paths)
     hook = common.load_json(paths[0].with_suffix(".words.json"))
     plan = common.load_json(job_with_plan / "plan.json")
-    assert [w["w"] for w in hook] == plan["parts"][0]["hook"].replace(" ?", "?").split()
+    assert [w["w"] for w in hook] == voice.align.script_words(plan["parts"][0]["hook"])
     assert common.read_status(job_with_plan)["steps"]["voice-01"]["ok"] is True
 
 
@@ -38,7 +38,7 @@ def test_voice_part_texts_and_lang(job_with_plan, fake_backend, fake_whisper):
 def test_voice_part_outro_next(job_with_plan, fake_backend, fake_whisper):
     set_next_part(job_with_plan)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie deux: Le sommeil!"
+    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie deux : Le sommeil !"
 
 
 def test_voice_part_outro_last_of_several_parts(job_with_plan, fake_backend, fake_whisper):

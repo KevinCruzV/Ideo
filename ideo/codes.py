@@ -46,7 +46,7 @@ LESSONS = {
     "debuts-identiques": "Varie le premier mot de trois say qui se suivent.",
     "items-groupes-debut": "Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.",
     "premier-element-tardif": "Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.",
-    "duree-hors-cible": "Ajuste le nombre de scènes à l'histoire : 45 s au moins, 300 s au plus, plus court si l'histoire tient.",
+    "duree-hors-cible": "Reste sous 300 s par vidéo : coupe des scènes ou découpe en plusieurs parties.",
     "citation-introuvable": "Recopie une citation mot pour mot depuis la transcription, à moins de 90 s de son src.",
     "citation-trop-longue": "Choisis une citation de 8 secondes au plus.",
     "ancre-absente": "Recopie chaque on tel qu'il apparaît dans le say, mot pour mot.",

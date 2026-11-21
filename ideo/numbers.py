@@ -29,7 +29,7 @@ UNITS = {
 }
 FR_ORDINAL = re.compile(r"^(er|re|ère|e|ème|nd|nde|d)$")
 EN_ORDINAL = re.compile(r"^(st|nd|rd|th)$")
-TOKEN = re.compile(r"^(?P<pre>[«\"“(\[‘']*)(?P<num>\d[\d.,]*\d|\d)(?P<suf>[%€$]?)(?P<ord>[a-zèé]{1,3})?(?P<post>[^\w%€$]*)$")
+TOKEN = re.compile(r"^(?P<pre>[«\u00a0\"“(\[‘']*)(?P<num>\d[\d.,]*\d|\d)(?P<suf>[%€$]?)(?P<ord>[a-zèé]{1,3})?(?P<post>[^\w%€$]*)$")
 GROUP = re.compile(r"^(?P<num>\d{3})(?P<post>[^\w%€$]*)$")
 HEAD = re.compile(r"^\d{1,3}$")
 
@@ -182,7 +182,7 @@ def normalize(text: str, lang: str) -> Normalized:
             i += 1
     if not changed:
         return Normalized(text, None)
-    return Normalized(" ".join(spoken), units)
+    return Normalized(" ".join(spoken).replace(align.NBSP, " "), units)
 
 
 def plain_words(spoken: str, units: list | None) -> str:

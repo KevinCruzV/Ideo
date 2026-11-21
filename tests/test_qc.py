@@ -133,10 +133,37 @@ def test_long_silence_outside_source_clips(made):
     assert any("silence de" in a for a in qc.run(job))
 
 
-def test_duration_outside_advised_range(made):
+def duration_alerts(job):
+    return [t for c, t in qc.run_coded(job) if c == "duree-hors-cible"]
+
+
+def test_under_the_hard_minimum_is_an_alert(made):
     job, _ = made
-    common.save_json(job / "info.json", {"duration": 1200})
-    assert any("hors de la durée conseillée" in a for a in qc.run(job))
+    found = duration_alerts(job)
+    assert len(found) == 1 and "hors des bornes d'une vidéo (45 à 300 s)" in found[0] and "minimum de 45 s" in found[0]
+
+
+def test_between_45_and_300_seconds_is_never_an_alert_even_under_the_advised_minimum(made):
+    job, _ = made
+    common.save_json(job / "info.json", {"duration": 1800})
+    edit_timeline(job, lambda tl: tl.update(durationInFrames=60 * 30))
+    assert duration_alerts(job) == []
+    edit_timeline(job, lambda tl: tl.update(durationInFrames=45 * 30))
+    assert duration_alerts(job) == []
+
+
+def test_over_300_seconds_is_an_alert(made):
+    job, _ = made
+    edit_timeline(job, lambda tl: tl.update(durationInFrames=301 * 30))
+    found = duration_alerts(job)
+    assert len(found) == 1 and "Coupe des scènes" in found[0]
+
+
+def test_the_lesson_never_asks_to_lengthen():
+    from ideo import codes
+
+    lesson = codes.LESSONS["duree-hors-cible"].lower()
+    assert "300 s" in lesson and "allonge" not in lesson and "ajoute" not in lesson and "45" not in lesson
 
 
 def test_missing_artifacts_are_an_alert_not_a_crash(job_with_fixtures):

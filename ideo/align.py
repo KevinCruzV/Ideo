@@ -4,6 +4,8 @@ import re
 from ideo import textmatch
 
 OPENERS = frozenset("«“‘([{¿¡")
+NBSP = "\u00a0"
+HIGH = frozenset("?!:;")
 ALNUM = re.compile(r"\w", re.UNICODE)
 
 
@@ -13,9 +15,10 @@ def script_words(text: str) -> list[str]:
     for token in text.split():
         if not ALNUM.search(token):
             if token[0] in OPENERS:
-                pending += token
+                pending += token + (NBSP if token == "«" else "")
             elif words:
-                words[-1] += token
+                spaced = set(token) <= HIGH or token == "»"
+                words[-1] += (NBSP if spaced else "") + token
             else:
                 pending += token
             continue

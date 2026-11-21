@@ -333,7 +333,7 @@ def test_lexicon_respells_only_the_text_sent_to_the_engine(kyutai, job_with_plan
     sent = {r["id"]: r["turns"][0] for r in kyutai.calls[0]["requests"]}["seg_00_hook"]
     assert sent == "Fasse à fasse, tu oublies ?!"
     words = common.load_json(job_with_plan / "parts" / "01" / "seg_00_hook.words.json")
-    assert [w["w"] for w in words] == ["Face", "à", "face,", "tu", "oublies?"]
+    assert [w["w"] for w in words] == ["Face", "à", "face,", "tu", "oublies\u00a0?"]
     assert words[0]["e"] > words[0]["s"] and words[2]["s"] > words[1]["s"]
     quality = common.load_json(job_with_plan / "parts" / "01" / "voice-quality.json")
     assert quality["seg_00_hook"] == 1.0

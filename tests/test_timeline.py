@@ -295,3 +295,22 @@ def test_beats_follow_the_second_sentence_of_a_scene(job_with_offsets):
     offsets = c.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
     seg = tl["segments"][4]
     assert seg["beats"][0] == round((offsets[4]["start"] + 6 * (1.0 / 9)) * 30)
+
+
+def test_captions_show_the_space_before_high_punctuation_and_anchors_still_work(job_with_offsets):
+    from ideo import common as c
+
+    plan = c.load_json(job_with_offsets / "plan.json")
+    plan["parts"][0]["scenes"][3]["say"] = "Heureusement il existe des gestes simples ! Voici le premier ?"
+    plan["parts"][0]["scenes"][3]["items"] = [{"el": "items.1", "on": "simples"}]
+    c.save_json(job_with_offsets / "plan.json", plan)
+    from tests.conftest import _timed_words
+
+    shown = align.script_words(plan["parts"][0]["scenes"][3]["say"])
+    c.save_json(job_with_offsets / "parts" / "01" / "seg_04.words.json", _timed_words(shown, 1.0))
+    tl = build(job_with_offsets)
+    texts = [w["w"] for g in tl["captions"] for w in g["words"]]
+    assert "simples !" in texts and "premier ?" in texts
+    offsets = c.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
+    seg = tl["segments"][4]
+    assert seg["items"][0]["at"] == round((offsets[4]["start"] + 5 * (1.0 / 8)) * 30)

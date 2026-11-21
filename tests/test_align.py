@@ -12,12 +12,12 @@ def test_script_words_split_on_spaces_and_keep_punctuation():
 
 
 def test_script_words_glue_lone_punctuation_to_previous_word():
-    assert align.script_words("Dis-moi pourquoi ?") == ["Dis-moi", "pourquoi?"]
-    assert align.script_words("partie 2 : Le sommeil") == ["partie", "2:", "Le", "sommeil"]
+    assert align.script_words("Dis-moi pourquoi ?") == ["Dis-moi", "pourquoi\u00a0?"]
+    assert align.script_words("partie 2 : Le sommeil") == ["partie", "2\u00a0:", "Le", "sommeil"]
 
 
 def test_script_words_glue_opening_marks_to_next_word():
-    assert align.script_words("Il dit « non » hier") == ["Il", "dit", "«non»", "hier"]
+    assert align.script_words("Il dit « non » hier") == ["Il", "dit", "«\u00a0non\u00a0»", "hier"]
 
 
 def test_script_words_empty():
@@ -81,3 +81,26 @@ def test_extra_recognised_words_are_ignored():
 def test_numbers_and_accents_are_normalised():
     words = align.align_words(["Été", "1991"], heard(("ete", 0.0, 0.3), ("1991", 0.4, 0.9)), 1.0)
     assert [(w["s"], w["e"]) for w in words] == [(0.0, 0.3), (0.4, 0.9)]
+
+
+def test_french_high_punctuation_keeps_a_non_breaking_space():
+    assert align.script_words("Tu vois tout ? Attention ! Ainsi : voilà ; fin") == [
+        "Tu", "vois", "tout ?", "Attention !", "Ainsi :", "voilà ;", "fin"]
+    assert align.script_words("Quoi ?! Non") == ["Quoi ?!", "Non"]
+
+
+def test_glued_punctuation_is_left_alone():
+    assert align.script_words("Tout? Attention! Ainsi: fin.") == ["Tout?", "Attention!", "Ainsi:", "fin."]
+    assert align.script_words("Un - deux … trois") == ["Un-", "deux…", "trois"]
+
+
+def test_spaced_punctuation_does_not_break_alignment_or_matching():
+    words = align.script_words("Tu vois tout ? Oui")
+    recognised = [{"w": "Tu", "s": 0.0, "e": 0.2}, {"w": "vois", "s": 0.3, "e": 0.6}, {"w": "tout", "s": 0.7, "e": 1.0},
+                  {"w": "Oui", "s": 1.2, "e": 1.5}]
+    aligned = align.align_words(words, recognised, 2.0)
+    assert [w["w"] for w in aligned] == words and (aligned[2]["s"], aligned[2]["e"]) == (0.7, 1.0)
+    from ideo import textmatch
+
+    assert textmatch.find_span(words, "tout oui") == (2, 3)
+    assert textmatch.find_span(words, "tout") == (2, 2)

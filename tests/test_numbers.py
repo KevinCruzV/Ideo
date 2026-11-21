@@ -104,7 +104,7 @@ def test_units_map_original_words_to_spoken_words():
 
 
 def test_punctuation_stays_on_the_edge_words():
-    assert said("(1998) puis « 8 % » ici") == "(mille neuf cent quatre-vingt-dix-huit) puis «huit pour cent» ici"
+    assert said("(1998) puis « 8 % » ici") == "(mille neuf cent quatre-vingt-dix-huit) puis « huit pour cent » ici"
 
 
 def test_plain_words_drop_the_numeric_ones():
