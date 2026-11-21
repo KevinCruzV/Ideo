@@ -1,0 +1,8 @@
+jobs/
+voice/
+.venv/
+__pycache__/
+node_modules/
+render/out/
+.superpowers/
+.DS_Store
