@@ -19,10 +19,12 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
+SPEECH_FACTOR = 1.4
+SEGMENT_GAP = 0.34
 
 
 def estimate_seconds(text: str, lang: str) -> float:
-    return len(text.split()) / RATES.get(lang, 2.6)
+    return len(text.split()) / (RATES.get(lang, 2.6) * SPEECH_FACTOR)
 
 
 def read_json(job: Path, name: str, default):
@@ -174,7 +176,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     if say is None:
         part_state["usable"] = False
     else:
-        part_state["seconds"] += estimate_seconds(say, ctx["lang"])
+        part_state["seconds"] += estimate_seconds(say, ctx["lang"]) + SEGMENT_GAP
         _check_dash([say], where, errors)
     props = scene.get("props", {})
     if not isinstance(props, dict):
@@ -306,7 +308,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         errors.append(f"{where} : l'accroche « hook » est manquante ou vide. Écris une phrase d'accroche qui donne envie de regarder.")
         state["usable"] = False
     else:
-        state["seconds"] += estimate_seconds(hook, ctx["lang"])
+        state["seconds"] += estimate_seconds(hook, ctx["lang"]) + SEGMENT_GAP
         _check_dash([hook], where, errors)
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
