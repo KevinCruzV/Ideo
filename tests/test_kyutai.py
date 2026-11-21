@@ -191,3 +191,12 @@ def test_missing_local_voice_is_recorded_for_the_online_voice(job_with_plan, mon
     info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
     assert info == {"engine": "edge", "fallback": None, "local_missing": True}
     assert len(fake_backend.calls) == 7
+
+
+def test_all_segments_to_redo_share_one_call_per_pass(kyutai, job_with_plan, monkeypatch):
+    texts, seen = faithful(monkeypatch, {"seg_01": [0.4, 0.95], "seg_03": [0.4, 0.5, 0.95], "seg_04": [0.4, 0.95]})
+    texts.update(script_words(job_with_plan))
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    ids = [[r["id"] for r in call["requests"]] for call in kyutai.calls]
+    assert len(ids) == 3 and len(ids[0]) == 7
+    assert ids[1] == ["seg_01", "seg_03", "seg_04"] and ids[2] == ["seg_03"]
