@@ -269,6 +269,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `n'est pas un JSON valide` | corrige la syntaxe (virgule, guillemet, accolade) à l'endroit indiqué |
 | `version` | mets `"version": 1` |
 | `langue` | mets dans `lang` la langue indiquée et écris les textes dans cette langue |
+| `n'a pas de voix de synthèse` | ne corrige rien : montre l'erreur à l'utilisateur et arrête-toi |
 | `parties au maximum` ou `au moins 1 partie` | entre 1 et 8 objets dans `parts` |
 | `numéro « n »` | numérote les parties 1, 2, 3 dans l'ordre |
 | `« title » est manquant ou vide` ou `« say » est manquant ou vide` | remplis ce champ |

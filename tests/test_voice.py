@@ -93,14 +93,17 @@ def test_voice_part_failure_marks_status(job_with_plan, fake_whisper):
 
 
 def test_edge_backend_rejects_unknown_language():
-    with pytest.raises(common.IdeoError, match="pas de voix"):
+    with pytest.raises(common.IdeoError, match="n'a pas de voix"):
         voice.EdgeTTSBackend().synthesize("x", "xx", Path("/tmp/x.wav"))
 
 
 def test_edge_backend_voices():
     assert voice.EDGE_VOICES == {
         "fr": "fr-FR-HenriNeural", "en": "en-US-GuyNeural", "es": "es-ES-AlvaroNeural",
-        "de": "de-DE-ConradNeural", "it": "it-IT-DiegoNeural", "pt": "pt-BR-AntonioNeural",
+        "de": "de-DE-ChristophNeural", "it": "it-IT-DiegoNeural", "pt": "pt-BR-AntonioNeural",
+        "nl": "nl-NL-MaartenNeural", "pl": "pl-PL-MarekNeural", "tr": "tr-TR-AhmetNeural",
+        "ar": "ar-SA-HamedNeural", "ru": "ru-RU-DmitryNeural", "ja": "ja-JP-KeitaNeural",
+        "ko": "ko-KR-InJoonNeural", "zh": "zh-CN-YunxiNeural", "hi": "hi-IN-MadhurNeural",
     }
 
 
@@ -130,3 +133,28 @@ def test_edge_backend_real_synthesis(tmp_path):
     with wave.open(str(out), "rb") as w:
         assert w.getframerate() == 48000 and w.getnchannels() == 1
         assert w.getnframes() / 48000 > 0.5
+
+
+LANGS = ("fr", "en", "es", "de", "it", "pt", "nl", "pl", "tr", "ar", "ru", "ja", "ko", "zh", "hi")
+
+
+def test_voice_table_covers_the_supported_languages():
+    assert set(LANGS) <= set(voice.EDGE_VOICES)
+    for lang, name in voice.EDGE_VOICES.items():
+        assert name.startswith(f"{lang}-") and name.endswith("Neural")
+
+
+def test_unsupported_language_message_lists_supported_ones():
+    assert voice.unsupported("fr") is None
+    message = voice.unsupported("sw")
+    assert "« sw »" in message and "fr" in message and "ja" in message
+
+
+@pytest.mark.network
+def test_every_voice_exists_on_edge_tts():
+    import asyncio
+
+    import edge_tts
+
+    names = {v["ShortName"] for v in asyncio.run(edge_tts.list_voices())}
+    assert set(voice.EDGE_VOICES.values()) <= names

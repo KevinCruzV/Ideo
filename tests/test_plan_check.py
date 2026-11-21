@@ -422,3 +422,35 @@ def test_quote_longer_than_eight_seconds_is_an_error(job_with_fixtures):
     assert len(errors) == 1
     assert errors[0].startswith("Partie 1, scène 5 : la citation dure ")
     assert errors[0].endswith(" s, 8 s au plus. Choisis une suite de mots plus courte dans le même passage.")
+
+
+def test_language_without_voice_is_refused_by_check(job_with_fixtures):
+    (job_with_fixtures / "lang.txt").write_text("sw", encoding="utf-8")
+    plan = json.loads((job_with_fixtures / "plan.json").read_text(encoding="utf-8"))
+    plan["lang"] = "sw"
+    (job_with_fixtures / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("« sw »" in e and "Langues possibles" in e for e in errors)
+
+
+def test_japanese_plan_without_spaces_is_measured_and_anchored(job_with_fixtures):
+    (job_with_fixtures / "lang.txt").write_text("ja", encoding="utf-8")
+    say = "空が青く見えるのは、太陽の光が空気の粒にぶつかって散らばるからです。青い光ほど強く散らばります。"
+    scenes = [
+        {"type": t, "say": say, "props": p, "items": [{"el": el, "on": "青く"}], "src": "0:10"}
+        for t, p, el in [
+            ("key-title", {"text": "空はなぜ青い"}, "text"),
+            ("stamp", {"text": "光の散乱"}, "text"),
+            ("key-title", {"text": "青い光"}, "text"),
+            ("stamp", {"text": "空気の粒"}, "text"),
+            ("mascot", {"bubble": "どうして？"}, "bubble"),
+            ("stamp", {"text": "太陽の光"}, "text"),
+            ("key-title", {"text": "散らばる光"}, "text"),
+        ]
+    ]
+    plan = {"version": 1, "lang": "ja", "series_title": "空", "parts": [
+        {"n": 1, "title": "空はなぜ青い", "hook": "空はなぜ青いのか知ってる？", "scenes": scenes}]}
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    assert plan_check.estimate_seconds(say, "ja") == pytest.approx(
+        sum(1 for c in say if c.isalnum()) / plan_check.CHAR_RATES["ja"])

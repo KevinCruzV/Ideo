@@ -5,6 +5,8 @@ from ideo.common import fmt_ts
 
 APOSTROPHES = "’‘ʼ`´"
 LIGATURES = {"œ": "oe", "æ": "ae", "ß": "ss"}
+CJK = "\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff"
+CJK_PIECES = re.compile(f"[{CJK}]|[^{CJK}]+")
 SPLIT = re.compile("[\\s\\-'" + APOSTROPHES + "".join(chr(c) for c in range(0x2010, 0x2016)) + "]+")
 
 
@@ -24,8 +26,7 @@ def _tokens(words: list[str]) -> list[tuple[int, str]]:
     for i, w in enumerate(words):
         for part in SPLIT.split(w):
             n = normalize(part)
-            if n:
-                out.append((i, n))
+            out += [(i, piece) for piece in CJK_PIECES.findall(n)]
     return out
 
 

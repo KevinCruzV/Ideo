@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ideo import scene_schema
+from ideo import scene_schema, voice
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, closest_passage, find_span, normalize
 
@@ -18,9 +18,12 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
+CHAR_RATES = {"ja": 6.0, "zh": 4.5}
 
 
 def estimate_seconds(text: str, lang: str) -> float:
+    if lang in CHAR_RATES:
+        return sum(1 for c in text if c.isalnum()) / CHAR_RATES[lang]
     return len(text.split()) / RATES.get(lang, 2.6)
 
 
@@ -342,6 +345,8 @@ def check_plan(job: Path) -> list[str]:
     lang = plan.get("lang")
     if not isinstance(lang, str) or (job_lang is not None and lang != job_lang):
         errors.append(f"Plan : langue « {lang} » différente de celle de la vidéo (« {job_lang} »). Mets « lang »: « {job_lang} » et écris tous les textes dans cette langue.")
+    elif voice.unsupported(lang):
+        errors.append(f"Plan : {voice.unsupported(lang)}")
     if "series_title" in plan:
         _check_dash([plan["series_title"]] if isinstance(plan["series_title"], str) else [], "Plan", errors)
 

@@ -52,3 +52,14 @@ def test_whisper_split_elisions_match_written_ones():
     assert textmatch.find_span(words, "c'est ce que l'on appelle") == (0, 6)
     assert textmatch.find_span(["Pourquoi", "le", "ciel", "est", "-il", "bleu"], "le ciel est-il bleu") == (1, 5)
     assert textmatch.find_span(["c'est", "clair"], "c 'est clair") == (0, 1)
+
+
+def test_find_span_matches_inside_unspaced_japanese_and_chinese():
+    assert textmatch.find_span(["今日は空がとても青いです。"], "青い") == (0, 0)
+    assert textmatch.find_span(["光", "在空气中散射。"], "空气") == (1, 1)
+    assert textmatch.find_span(["今日は空がとても青いです。"], "赤い") is None
+
+
+def test_find_span_keeps_latin_words_whole_next_to_cjk():
+    assert textmatch.find_span(["NASAの写真"], "NASA") == (0, 0)
+    assert textmatch.find_span(["NASAの写真"], "NAS") is None

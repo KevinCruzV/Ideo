@@ -5,6 +5,22 @@ import pytest
 from ideo import common, fetch
 
 URL = "https://youtu.be/abcdefghijk"
+CANONICAL = "https://www.youtube.com/watch?v=abcdefghijk"
+REAL_PROBE = fetch.probe
+
+
+@pytest.fixture(autouse=True)
+def fake_probe(request, monkeypatch):
+    if request.node.get_closest_marker("network"):
+        return None
+    probes = []
+
+    def fake(url, log):
+        probes.append(url)
+        return {"id": "abcdefghijk", "duration": 42, "live_status": "not_live", "is_live": False}
+
+    monkeypatch.setattr(fetch, "probe", fake)
+    return probes
 
 
 @pytest.mark.parametrize("stderr,expected", [
@@ -53,6 +69,11 @@ def test_fetch_success_writes_outputs_and_is_idempotent(tmp_path, monkeypatch):
         "duration": 42, "chapters": [], "language": "fr", "skip": [],
     }
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
+    ytdlp = calls[0]
+    assert ytdlp[-2:] == ["--", CANONICAL]
+    assert ytdlp[:5] == [fetch.sys.executable, "-m", "yt_dlp", "--no-playlist", "--no-progress"]
+    assert ["-f", "bestaudio[ext=m4a]/bestaudio", "-x", "--audio-format", "m4a", "--write-info-json"] == ytdlp[5:11]
+    assert ytdlp[ytdlp.index("-o") + 1] == str(job / ".fetch-tmp" / "audio.%(ext)s")
     ffmpeg_cmd = calls[1]
     assert ffmpeg_cmd[0] == "/usr/bin/ffmpeg"
     assert ["-ac", "1", "-ar", "16000"] == ffmpeg_cmd[ffmpeg_cmd.index("-ac"):ffmpeg_cmd.index("-ac") + 4]
@@ -232,3 +253,92 @@ def test_real_sponsorblock_segments(tmp_path, monkeypatch):
     assert all("start_time" in c for c in info["chapters"])
     none = common.load_json(fetch.fetch("https://www.youtube.com/watch?v=fwiEcPCXLcI") / "info.json")
     assert none["skip"] == []
+
+
+def test_option_looking_input_never_reaches_ytdlp(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_ok(calls))
+    with pytest.raises(common.IdeoError, match="URL YouTube non reconnue"):
+        fetch.fetch("--exec=touch /tmp/pwn ?v=abcdefghijk")
+    with pytest.raises(common.IdeoError, match="URL YouTube non reconnue"):
+        fetch.fetch("https://evil.example/x?v=abcdefghijk")
+    assert calls == []
+    assert not (tmp_path / "jobs").exists()
+
+
+def test_probe_gets_the_canonical_url(tmp_path, monkeypatch, fake_probe):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(common, "run", fake_run_ok([]))
+    fetch.fetch("https://m.youtube.com/watch?v=abcdefghijk&t=30")
+    assert fake_probe == [CANONICAL]
+
+
+@pytest.mark.parametrize("meta", [
+    {"is_live": True, "live_status": "is_live", "duration": None},
+    {"is_live": False, "live_status": "is_upcoming"},
+    {"live_status": "post_live", "duration": 7200},
+])
+def test_live_and_upcoming_are_refused_before_download(tmp_path, monkeypatch, meta):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(fetch, "probe", lambda url, log: meta)
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_ok(calls))
+    with pytest.raises(common.IdeoError, match="en direct ou pas encore diffusée"):
+        fetch.fetch(URL)
+    assert calls == []
+    assert common.read_status(tmp_path / "jobs" / "abcdefghijk")["steps"]["fetch"]["ok"] is False
+
+
+def test_source_over_four_hours_is_refused(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(fetch, "probe", lambda url, log: {"live_status": "not_live", "duration": 4 * 3600 + 1})
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_ok(calls))
+    with pytest.raises(common.IdeoError) as exc:
+        fetch.fetch(URL)
+    assert "4:00:01" in str(exc.value) and "4 h au plus" in str(exc.value)
+    assert calls == []
+
+
+def test_source_of_exactly_four_hours_is_accepted():
+    fetch.refuse_unsupported({"live_status": "was_live", "duration": 4 * 3600})
+
+
+class FakeCompleted:
+    def __init__(self, returncode, stdout="", stderr=""):
+        self.returncode, self.stdout, self.stderr = returncode, stdout, stderr
+
+
+def test_real_probe_parses_json_and_passes_the_separator(tmp_path, monkeypatch):
+    seen = []
+
+    def fake_run(cmd, **kw):
+        seen.append(cmd)
+        return FakeCompleted(0, json.dumps({"id": "abcdefghijk", "live_status": "not_live"}), "warn\n")
+
+    monkeypatch.setattr(fetch.subprocess, "run", fake_run)
+    log = tmp_path / "logs" / "fetch.log"
+    assert REAL_PROBE(CANONICAL, log)["id"] == "abcdefghijk"
+    assert seen[0][-2:] == ["--", CANONICAL] and "-J" in seen[0] and "--no-playlist" in seen[0]
+    assert "warn" in log.read_text(encoding="utf-8")
+
+
+def test_real_probe_failure_is_explained(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch.subprocess, "run",
+                        lambda cmd, **kw: FakeCompleted(1, "", "ERROR: [youtube] x: Premieres in 3 hours\n"))
+    with pytest.raises(common.IdeoError, match="en direct ou pas encore diffusée"):
+        REAL_PROBE(CANONICAL, tmp_path / "fetch.log")
+
+
+def test_real_probe_unreadable_json(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch.subprocess, "run", lambda cmd, **kw: FakeCompleted(0, "not json", ""))
+    with pytest.raises(common.IdeoError, match="illisibles"):
+        REAL_PROBE(CANONICAL, tmp_path / "fetch.log")
+
+
+def test_is_live_text_alone_is_not_a_live_error():
+    assert "en direct" not in fetch.explain_ytdlp_error("ERROR: this channel is live streaming elsewhere")

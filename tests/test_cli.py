@@ -300,3 +300,27 @@ def test_deepen_creates_sibling_job_sharing_prepared_files(job_with_fixtures, mo
 def test_deepen_needs_prepared_job(job_with_fixtures, capsys):
     assert cli.main(["deepen", str(job_with_fixtures)]) == 1
     assert "prepare" in lines(capsys)[0]
+
+
+def test_prepare_refuses_a_language_without_voice(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    url = "https://www.youtube.com/watch?v=abcdefghijk"
+    monkeypatch.setattr(fetch, "fetch", lambda u: common.job_dir(u))
+    monkeypatch.setattr(transcribe, "transcribe", lambda job: [{"w": "a", "s": 0, "e": 1}] * 300)
+
+    def fake_transcript(job):
+        common.mark(job, "transcript", True)
+        (job / "transcript_compact.md").write_text("x", encoding="utf-8")
+        return {"words": 300, "paragraphs": 7, "sfx": 1, "lang": "sw"}
+
+    monkeypatch.setattr(compact, "prepare_transcript", fake_transcript)
+    for step in ("fetch", "transcribe"):
+        common.mark(common.job_dir(url), step, True)
+    assert cli.main(["prepare", url]) == 1
+    out = lines(capsys)
+    assert len(out) == 1 and out[0].startswith("ERREUR prepare : ") and "« sw »" in out[0]
+    assert "Langues possibles : fr, en" in out[0]
+    job = tmp_path / "jobs" / "abcdefghijk"
+    assert not pipeline.prepared(job)
+    assert cli.main(["status", str(job)]) == 0
+    assert "« sw »" in lines(capsys)[0]

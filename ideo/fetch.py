@@ -1,4 +1,6 @@
+import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -7,13 +9,17 @@ from ideo import common
 INFO_FIELDS = ("id", "title", "channel", "webpage_url", "duration", "chapters", "language")
 SPONSOR_CATEGORIES = ("sponsor", "selfpromo", "interaction")
 
+MAX_SOURCE_SECONDS = 4 * 3600
+PROBE_TIMEOUT = 180
+LIVE_STATUSES = ("is_live", "is_upcoming", "post_live")
+LIVE_MESSAGE = "Cette vidéo est en direct ou pas encore diffusée : réessayez une fois le direct terminé."
+
 SPONSORBLOCK_FAILURES = ("sponsorblock api", "unable to communicate with sponsorblock")
 ERROR_PATTERNS = [
     (("private video",), "Impossible de récupérer cette vidéo privée."),
     (("confirm your age", "age-restricted", "age restricted"),
      "Cette vidéo a une restriction d'âge : impossible de la récupérer sans connexion."),
-    (("live event", "is live", "premieres in", "will begin"),
-     "Cette vidéo est en direct ou pas encore diffusée : réessayez une fois le direct terminé."),
+    (("live event", "premieres in", "will begin"), LIVE_MESSAGE),
     (("video unavailable", "this video is not available", "has been removed", "been terminated"),
      "Cette vidéo est indisponible (supprimée, bloquée dans votre pays ou retirée)."),
 ]
@@ -50,7 +56,39 @@ def _ytdlp(url: str, tmp: Path, sponsorblock: bool) -> list[str]:
     ]
     if sponsorblock:
         cmd += ["--sponsorblock-mark", ",".join(SPONSOR_CATEGORIES)]
-    return cmd + [url]
+    return cmd + ["--", url]
+
+
+def probe(url: str, log: Path) -> dict:
+    cmd = [sys.executable, "-m", "yt_dlp", "-J", "--no-playlist", "--no-warnings", "--", url]
+    log.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=PROBE_TIMEOUT)
+    except FileNotFoundError:
+        raise common.IdeoError(f"Commande introuvable : {cmd[0]}") from None
+    except subprocess.TimeoutExpired:
+        raise common.IdeoError("YouTube ne répond pas : les informations de la vidéo n'arrivent pas. Réessaie plus tard.") from None
+    with log.open("a", encoding="utf-8") as f:
+        f.write(result.stderr or "")
+    if result.returncode != 0:
+        raise common.IdeoError(explain_ytdlp_error(result.stderr or ""))
+    try:
+        meta = json.loads(result.stdout)
+    except ValueError:
+        meta = None
+    if not isinstance(meta, dict):
+        raise common.IdeoError(f"Les informations de la vidéo sont illisibles. Voir {log}")
+    return meta
+
+
+def refuse_unsupported(meta: dict) -> None:
+    if meta.get("is_live") or meta.get("is_upcoming") or meta.get("live_status") in LIVE_STATUSES:
+        raise common.IdeoError(LIVE_MESSAGE)
+    duration = meta.get("duration")
+    if isinstance(duration, (int, float)) and duration > MAX_SOURCE_SECONDS:
+        raise common.IdeoError(
+            f"Cette vidéo dure {common.fmt_ts(duration)} : ideo accepte une source de 4 h au plus. Choisis une vidéo plus courte."
+        )
 
 
 def skip_segments(raw: dict) -> list[dict]:
@@ -70,6 +108,7 @@ def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise common.IdeoError("ffmpeg est introuvable : installez-le (par exemple avec brew install ffmpeg).")
+    refuse_unsupported(probe(url, log))
     for sponsorblock in (True, False):
         _cleanup(tmp)
         tmp.mkdir(parents=True)
@@ -102,6 +141,7 @@ def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
 
 def fetch(url: str) -> Path:
     job = common.job_dir(url)
+    url = common.canonical_url(url)
     status = common.read_status(job)["steps"].get("fetch", {})
     if (job / "source.wav").exists() and status.get("ok"):
         return job

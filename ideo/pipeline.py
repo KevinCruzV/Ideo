@@ -40,6 +40,10 @@ def prepare(url: str) -> tuple[Path, dict]:
     words = transcribe.transcribe(job)
     progress(job, f"OK transcribe : {len(words)} mots")
     info = compact.prepare_transcript(job)
+    refusal = voice.unsupported(info["lang"])
+    if refusal:
+        common.mark(job, "transcript", False, refusal)
+        raise common.IdeoError(refusal)
     progress(job, f"OK transcript : {info['paragraphs']} paragraphes, {info['sfx']} sons")
     return job, info
 

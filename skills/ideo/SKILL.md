@@ -15,8 +15,8 @@ Règles pour toute la tâche :
 
 ## Étapes
 
-1. Lance avec l'outil Bash, en arrière-plan (`run_in_background`) :
-   `cd ~/Desktop/ideo && .venv/bin/python -m ideo prepare "<URL>"`
+1. Si l'URL contient une apostrophe ou un guillemet (`'`, `"`), ne lance rien : dis à l'utilisateur que l'URL est invalide et demande un lien YouTube propre. Sinon, lance avec l'outil Bash, en arrière-plan (`run_in_background`), avec l'URL entre apostrophes simples :
+   `cd ~/Desktop/ideo && .venv/bin/python -m ideo prepare '<URL>'`
    Pendant que ça tourne, lis le guide avec l'outil Read : `<dossier de base affiché au chargement de ce skill>/references/plan-guide.md` (normalement `/Users/<toi>/Desktop/ideo/skills/ideo/references/plan-guide.md`).
 2. Attends la notification de fin. La ligne `OK prepare : <JOB> (...)` donne le dossier du job, appelé JOB ci-dessous. Elle finit par `Coût estimé : ...` : recopie cette estimation à l'utilisateur en une phrase, par exemple "Coût estimé : lecture ~7 400 tokens, écriture ~2 000 à 3 500 tokens." Puis, sans attendre de réponse, lis `JOB/transcript_compact.md` avec l'outil Read.
 3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide.

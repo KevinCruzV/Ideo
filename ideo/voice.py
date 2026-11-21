@@ -10,10 +10,26 @@ EDGE_VOICES = {
     "fr": "fr-FR-HenriNeural",
     "en": "en-US-GuyNeural",
     "es": "es-ES-AlvaroNeural",
-    "de": "de-DE-ConradNeural",
+    "de": "de-DE-ChristophNeural",
     "it": "it-IT-DiegoNeural",
     "pt": "pt-BR-AntonioNeural",
+    "nl": "nl-NL-MaartenNeural",
+    "pl": "pl-PL-MarekNeural",
+    "tr": "tr-TR-AhmetNeural",
+    "ar": "ar-SA-HamedNeural",
+    "ru": "ru-RU-DmitryNeural",
+    "ja": "ja-JP-KeitaNeural",
+    "ko": "ko-KR-InJoonNeural",
+    "zh": "zh-CN-YunxiNeural",
+    "hi": "hi-IN-MadhurNeural",
 }
+
+
+def unsupported(lang: str) -> str | None:
+    if lang in EDGE_VOICES:
+        return None
+    return (f"la langue de la vidéo (« {lang} ») n'a pas de voix de synthèse. "
+            f"Langues possibles : {', '.join(EDGE_VOICES)}. Choisis une vidéo dans l'une de ces langues.")
 
 
 class VoiceBackend(Protocol):
@@ -31,7 +47,7 @@ class EdgeTTSBackend:
     def synthesize(self, text: str, lang: str, out_wav: Path) -> None:
         voice = EDGE_VOICES.get(lang)
         if not voice:
-            raise common.IdeoError(f"pas de voix pour {lang}")
+            raise common.IdeoError(unsupported(lang))
         import edge_tts
 
         out_wav = Path(out_wav)
