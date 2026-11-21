@@ -5,9 +5,17 @@ import { cutEdge } from "../paper/motion";
 import { shade } from "../theme";
 import { FlagCode } from "./flags";
 
-const files = require.context("flag-icons/flags/4x3", false, /^\.\/[a-z]{2}\.svg$/);
+const loadFiles = () => {
+  try {
+    return require.context("flag-icons/flags/4x3", false, /^\.\/[a-z]{2}\.svg$/);
+  } catch {
+    return null;
+  }
+};
 
-export const flagUrl = (code: FlagCode): string | null => (code === "su" ? null : files(`./${code}.svg`));
+const files = loadFiles();
+
+export const flagUrl = (code: FlagCode): string | null => (code === "su" || !files ? null : files(`./${code}.svg`));
 
 const SOVIET_RED = "#cc0000";
 const SOVIET_GOLD = "#ffd700";
@@ -41,7 +49,7 @@ export const FlagArt: React.FC<{ code: FlagCode; size: number }> = ({ code, size
       <div style={{ position: "relative", width, height }}>
         <div style={{ position: "absolute", inset: 0, transform: `translate(${off}px, ${off * 1.35}px)`, background: shade, clipPath: edge }} />
         <div style={{ position: "absolute", inset: 0, clipPath: edge, overflow: "hidden", background: "#fff" }}>
-          {url ? <Img src={url} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <SovietFlag />}
+          {code === "su" ? <SovietFlag /> : url ? <Img src={url} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}
           <div
             style={{
               position: "absolute",

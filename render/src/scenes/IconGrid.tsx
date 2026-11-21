@@ -68,13 +68,13 @@ export const IconGrid: React.FC<SceneProps> = ({ props, items, from, to }) => {
   return (
     <Stage>
       <FitBox area={areaFor(top + 10, BOX_L, BOX_W)} maxScale={1.25}>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cellW}px)`, rowGap }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", width: cols * cellW, rowGap }}>
           {shown.map((cell, i) => {
             const at = i === 0 ? Math.min(SUPPORT_AT, enterFor("cells.0", items, from, to)) : enterFor(`cells.${i}`, items, from, to);
             const fit = fits[i];
             const disc = art * 0.84;
             return (
-              <div key={`cell-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
+              <div key={`cell-${i}`} style={{ width: cellW, display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
                 <div style={{ position: "relative", width: art, height: art }}>
                   {cell.picto ? (
                     <Picto name={cell.picto} size={art} enterAt={at} rotate={i % 2 ? 4 : -4} seed={`cell-picto-${i}`} />
