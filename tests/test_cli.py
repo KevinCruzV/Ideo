@@ -359,3 +359,13 @@ def test_prepare_refuses_a_language_without_voice(tmp_path, monkeypatch, capsys)
     assert not pipeline.prepared(job)
     assert cli.main(["status", str(job)]) == 0
     assert "« sw »" in lines(capsys)[0]
+
+
+def test_produce_resets_the_review_counter(produce_job, capsys):
+    job = produce_job[0]
+    cli.main(["check", str(job)])
+    cli.main(["check", str(job)])
+    assert (job / "review.json").exists()
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert not (job / "review.json").exists()

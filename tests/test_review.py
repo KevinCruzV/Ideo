@@ -194,3 +194,12 @@ def test_clean_plan_has_no_findings_and_records_nothing(job):
                   for i in range(4)])
     assert review.relire(job, ok, 120) == []
     assert review.passes(job) == 0
+
+
+def test_reset_clears_the_pass_counter(job):
+    plan = plan_of(scene(say="court"), kicker=False)
+    review.relire(job, plan, 120)
+    review.relire(job, plan, 120)
+    assert review.relire(job, plan, 120) == []
+    review.reset(job)
+    assert review.passes(job) == 0 and review.relire(job, plan, 120)

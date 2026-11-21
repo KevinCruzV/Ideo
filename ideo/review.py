@@ -209,6 +209,10 @@ def record_pass(job: Path) -> None:
     save_json(Path(job) / "review.json", {"count": passes(job) + 1})
 
 
+def reset(job: Path) -> None:
+    (Path(job) / "review.json").unlink(missing_ok=True)
+
+
 def relire(job: Path, plan: dict, seconds: int) -> list[str]:
     if passes(job) >= MAX_PASSES:
         return []

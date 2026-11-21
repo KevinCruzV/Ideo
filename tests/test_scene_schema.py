@@ -13,8 +13,10 @@ GUIDE = REPO / "skills" / "ideo" / "references" / "plan-guide.md"
 COMPONENTS = {
     "key-title": "KeyTitle", "person-card": "PersonCard", "fact-chips": "FactChips", "stack-list": "StackList",
     "counter": "Counter", "timeline": "Timeline", "icon-grid": "IconGrid", "stamp": "Stamp", "quote": "Quote",
-    "object-state": "ObjectState", "shape-diagram": "ShapeDiagram", "mascot": "Mascot",
+    "object-state": "ObjectState", "shape-diagram": "ShapeDiagram", "mascot": "Mascot", "versus": "Versus",
 }
+SHARED = {"kicker": REPO / "render" / "src" / "scenes" / "SceneFrame.tsx"}
+SHORT = REPO / "render" / "src" / "Short.tsx"
 
 
 def test_schema_covers_exactly_the_plan_types():
@@ -43,6 +45,10 @@ def test_mascot_pose_fixture_validates_against_schema():
 def test_schema_props_are_the_ones_the_component_reads(kind):
     source = (SCENES_DIR / f"{COMPONENTS[kind]}.tsx").read_text(encoding="utf-8")
     read = set(re.findall(r"props\.(\w+)", source))
+    assert "<SceneFrame" in SHORT.read_text(encoding="utf-8")
+    for shared, path in SHARED.items():
+        if re.search(rf"props\.{shared}\b", path.read_text(encoding="utf-8")):
+            read.add(shared)
     schema = scene_schema.SCHEMA[kind]
     assert read == set(schema["required"]) | set(schema["optional"])
 
@@ -136,6 +142,12 @@ def ts_caps() -> dict:
     text = CAPS_TEST.read_text(encoding="utf-8")
     caps = {key: int(cap) for key, cap in re.findall(r'^\s+"?([\w.-]+)"?: \{\s*cap: (\d+)', text, re.M)}
     caps["title"] = int(re.search(r"TITLE_CAP = (\d+)", text).group(1))
+    side = caps.pop("versus.side")
+    caps["versus.left"] = caps["versus.right"] = side
+    kicker = caps.pop("kicker")
+    caps.update({f"{kind}.kicker": kicker for kind in scene_schema.SCHEMA})
+    diagram = (SCENES_DIR / "ShapeDiagram.tsx").read_text(encoding="utf-8")
+    caps["shape-diagram.unit"] = int(re.search(r"props\.unit\)\.slice\(0, (\d+)\)", diagram).group(1))
     return caps
 
 
@@ -183,3 +195,9 @@ def test_guide_type_table_lists_every_cap():
     text = GUIDE.read_text(encoding="utf-8")
     for key, cap in scene_schema.flat_caps().items():
         assert f"{cap} caractères" in text, key
+
+
+def test_pictos_are_the_ones_the_render_library_draws():
+    source = (REPO / "render" / "src" / "pictos" / "library.ts").read_text(encoding="utf-8")
+    block = re.search(r"export const PICTOS = \[(.*?)\]", source, re.S).group(1)
+    assert tuple(re.findall(r'"([\w-]+)"', block)) == scene_schema.PICTOS

@@ -101,6 +101,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return [head] + lines, 0
     if cmd == "produce":
         outputs = pipeline.produce(job, part)
+        review.reset(job)
         return [f"OK produce : {_paths(outputs)} ; {_control(job, part)}"], 0
     if cmd == "qc":
         alerts = qc.run(job)
