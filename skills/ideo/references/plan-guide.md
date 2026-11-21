@@ -55,7 +55,7 @@ Mauvaises accroches :
 
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Un `say` = 2 ou 3 phrases courtes, 16 à 28 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
-- Nombres : écris en chiffres les années et les nombres entiers simples ("en 2001", "3 000 personnes", "110 milliards"). Écris les mêmes nombres de la même façon à l'écran ("3 000", avec l'espace). Écris en lettres les fractions, les nombres à virgule et les rangs ("un tiers", "un virgule trois milliard", "le cinquante et unième").
+- Nombres : écris-les en chiffres dans `say` comme à l'écran ("en 2001", "3 000 personnes", "8 %", "1,3 milliard", "le 51e") : le code les fait dire en toutes lettres à la voix. Seules les fractions s'écrivent en lettres ("un tiers", "la moitié").
 - Santé, argent, droit : garde les nuances de la source ("souvent", "peut", "chez certains"). N'écris jamais un conseil comme une certitude ni une promesse de guérison, et laisse de côté une affirmation forte que la source ne justifie pas. Explique le mécanisme, laisse le spectateur choisir.
 - Sujets graves (morts, attentat, guerre, maladie) : ton sobre. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.
 - Dans `say` seulement : pas de parenthèses, pas d'abréviations d'unités ("nanomètres", pas "nm") ; les sigles connus se gardent ("OTAN", "BRICS", "ONU"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
