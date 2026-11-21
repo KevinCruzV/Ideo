@@ -67,7 +67,7 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 ### Écrire sans tics d'IA (filtre anti-slop)
 
 Le spectateur repère vite un texte écrit par une IA. Dans `hook`, `say` et les textes à l'écran :
-- Aucun tiret long (`—`, `–`) ni double trait (`--`), aucun trait d'union isolé entre deux espaces. Remplace par un point, une virgule ou deux-points. Les traits d'union des mots composés restent (« États-Unis », « quatre-vingt-dix »).
+- Aucun tiret long (cadratin ou demi-cadratin) ni double trait (`--`), aucun trait d'union isolé entre deux espaces. Remplace par un point, une virgule ou deux-points. Les traits d'union des mots composés restent (« États-Unis », « quatre-vingt-dix »).
 - Pas de mots creux qui veulent impressionner : « révolutionnaire », « incroyable », « fascinant », « véritable », « crucial », « essentiel », « au cœur de », « un monde où », « une nouvelle ère », « changer la donne ». Dis le fait précis.
 - Pas d'annonce de ce que tu vas dire : « Plongeons », « Voyons ensemble », « Dans cette vidéo », « Tu vas voir que ». Dis-le directement.
 - Pas de fausse confidence : « Honnêtement », « Soyons clairs », « Spoiler », « Le truc, c'est que ».
