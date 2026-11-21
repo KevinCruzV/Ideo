@@ -3,7 +3,8 @@ from pathlib import Path
 from ideo import common, plan_check, target
 
 REPO = Path(__file__).resolve().parent.parent
-SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md")
+SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md",
+               REPO / "skills" / "ideo" / "references" / "lecons.md")
 SKILL_LANG = "fr"
 CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0}
 OTHER_CHARS_PER_TOKEN = 3.5

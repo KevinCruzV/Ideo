@@ -152,3 +152,8 @@ def test_cost_line_carries_the_advised_duration(tmp_path, capsys):
     assert cost.advice(job).startswith(" Durée conseillée : ")
     assert "jusqu'à 300 s si elle en a besoin" in cost.advice(job)
     assert "Durée conseillée" in capsys.readouterr().out if cli.main(["cost", str(job)]) == 0 else False
+
+
+def test_lessons_file_counts_in_the_reading_estimate():
+    names = [p.name for p in cost.SKILL_FILES]
+    assert "lecons.md" in names and all(p.exists() for p in cost.SKILL_FILES)

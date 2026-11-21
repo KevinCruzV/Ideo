@@ -338,8 +338,14 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     return state["clips"], state["seconds"]
 
 
-def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
-    lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", ""]
+def pace_line(seconds: int, scenes: int) -> str:
+    rhythm = str(round(scenes / (seconds / 60), 1) if seconds else 0.0).replace(".", ",")
+    return f"Durée estimée : environ {seconds} s, {scenes} scènes, {rhythm} scènes par minute."
+
+
+def _write_md(job: Path, plan: dict, clips_by_part: list, stats: dict) -> None:
+    lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", "",
+             pace_line(stats["seconds"], stats["scenes"]), ""]
     for part, clips in zip(plan["parts"], clips_by_part):
         lines += [f"## Partie {part['n']} : {part['title']}", "", f"Accroche : {part['hook']}", ""]
         lines += [f"- [{s['type']}] {s['say']}" for s in part["scenes"]]
@@ -350,20 +356,20 @@ def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def check_plan(job: Path) -> list[str]:
+def _analyze(job: Path) -> tuple[list[str], dict | None]:
     job = Path(job)
     path = job / "plan.json"
     (job / "plan.md").unlink(missing_ok=True)
     if not path.exists():
-        return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."]
+        return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."], None
     try:
         plan = load_json(path)
     except ValueError as exc:
-        return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."]
+        return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."], None
     except OSError as exc:
-        return [f"Plan : plan.json est illisible ({exc}). Vérifie le fichier puis relance."]
+        return [f"Plan : plan.json est illisible ({exc}). Vérifie le fichier puis relance."], None
     if not isinstance(plan, dict):
-        return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."]
+        return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."], None
 
     errors: list[str] = []
     lang_file = job / "lang.txt"
@@ -381,7 +387,7 @@ def check_plan(job: Path) -> list[str]:
     parts = plan.get("parts")
     if not isinstance(parts, list):
         errors.append("Plan : « parts » doit être une liste de parties.")
-        return errors
+        return errors, None
     if not parts:
         errors.append("Plan : il faut au moins 1 partie dans « parts ».")
     if len(parts) > MAX_PARTS:
@@ -413,6 +419,19 @@ def check_plan(job: Path) -> list[str]:
     seconds = [sec for _, sec in results]
     if len(parts) > 1 and all(sec is not None for sec in seconds) and sum(seconds) <= MAX_SECONDS:
         errors.append(f"Plan : le contenu tient en une seule vidéo (durée estimée totale {round(sum(seconds))} s). Fusionne les parties en une seule.")
+    stats = None
     if not errors:
-        _write_md(job, plan, clips_by_part)
-    return errors
+        total = round(sum(seconds))
+        count = sum(len(part["scenes"]) for part in parts)
+        stats = {"seconds": total, "scenes": count, "plan": plan}
+        _write_md(job, plan, clips_by_part, stats)
+    return errors, stats
+
+
+def check_plan(job: Path) -> list[str]:
+    return analyze(job)["errors"]
+
+
+def analyze(job: Path) -> dict:
+    errors, stats = _analyze(job)
+    return {"errors": errors, "stats": stats}

@@ -63,10 +63,44 @@ def test_cli_check_lists_errors_and_exits_1(job_with_fixtures, capsys):
 
 
 def test_cli_check_ok_gives_plan_md_path(job_with_fixtures, capsys):
+    assert cli.main(["check", str(job_with_fixtures), "--sans-relecture"]) == 0
+    out = lines(capsys)
+    assert len(out) == 1 and out[0].startswith("OK check : 1 vidéo, 5 scènes, environ ")
+    assert " s. Relecture : " in out[0] and "à relire" not in out[0]
+    assert str((job_with_fixtures / "plan.md").resolve()) in out[0]
+
+
+def test_cli_check_adds_relire_lines_and_counts_them(job_with_fixtures, capsys):
     assert cli.main(["check", str(job_with_fixtures)]) == 0
     out = lines(capsys)
-    assert len(out) == 1 and out[0].startswith("OK check : 1 vidéo")
-    assert str((job_with_fixtures / "plan.md").resolve()) in out[0]
+    relire = [line for line in out if line.startswith("RELIRE : ")]
+    assert relire and len(relire) <= 8 and out[0].startswith("OK check : 1 vidéo, 5 scènes, environ ")
+    assert f", {len(relire)} point" in out[0] and "à relire. Relecture : " in out[0]
+    assert out[1:] == relire
+
+
+def test_cli_check_stops_emitting_after_two_passes(job_with_fixtures, capsys):
+    for _ in range(2):
+        cli.main(["check", str(job_with_fixtures)])
+        assert any(line.startswith("RELIRE") for line in lines(capsys))
+    cli.main(["check", str(job_with_fixtures)])
+    out = lines(capsys)
+    assert len(out) == 1 and "à relire" not in out[0]
+
+
+def test_cli_check_without_review_does_not_count_a_pass(job_with_fixtures, capsys):
+    cli.main(["check", str(job_with_fixtures), "--sans-relecture"])
+    capsys.readouterr()
+    cli.main(["check", str(job_with_fixtures)])
+    assert any(line.startswith("RELIRE") for line in lines(capsys))
+
+
+def test_plan_md_starts_with_duration_scenes_and_rhythm(job_with_fixtures):
+    from ideo import plan_check
+
+    assert plan_check.check_plan(job_with_fixtures) == []
+    head = (job_with_fixtures / "plan.md").read_text(encoding="utf-8").splitlines()[:3]
+    assert head[2].startswith("Durée estimée : environ ") and "5 scènes" in head[2] and "scènes par minute." in head[2]
 
 
 @pytest.mark.parametrize("cmd", ["check", "produce", "status", "deepen"])
