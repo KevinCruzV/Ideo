@@ -13,7 +13,8 @@
           "say": "Aujourd'hui nous allons comprendre pourquoi notre mémoire laisse filer presque tout ce que nous venons de lire ou d'apprendre en quelques jours seulement.",
           "props": {
             "title": "Pourquoi on oublie"
-          }
+          },
+          "src": "0:02"
         },
         {
           "type": "shape-diagram",
@@ -53,7 +54,8 @@
               "courbe"
             ]
           },
-          "sfx": "1:10"
+          "sfx": "1:10",
+          "src": "1:09"
         },
         {
           "type": "stack-list",

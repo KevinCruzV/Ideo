@@ -92,32 +92,120 @@ def test_quote_far_from_src_is_not_found(job_with_fixtures):
     assert any("citation" in e and "[0:26]" in e for e in errors), errors
 
 
-def test_quote_without_src_is_an_error(job_with_fixtures):
+@pytest.mark.parametrize("index", [0, 1, 2, 4])
+def test_src_is_required_on_every_scene(job_with_fixtures, index):
     plan = load(job_with_fixtures)
-    del plan["parts"][0]["scenes"][4]["src"]
+    del plan["parts"][0]["scenes"][index]["src"]
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
-    assert any("src" in e and "citation" in e for e in errors), errors
+    assert any(e.startswith(f"Partie 1, sc\u00e8ne {index + 1} : ") and "src" in e and "mm:ss" in e for e in errors), errors
+
+
+def expected_estimate(job, says):
+    plan = load(job)
+    words = json.loads((job / "words.json").read_text(encoding="utf-8"))
+    quote = plan["parts"][0]["scenes"][4]["props"]["text"].split()
+    first = next(i for i, w in enumerate(words) if w["w"] == "Nous" and words[i + 1]["w"] == "oublions")
+    clip = words[first + len(quote) - 1]["e"] - words[first]["s"]
+    hook = len(plan["parts"][0]["hook"].split())
+    return round((hook + sum(len(s.split()) for s in says)) / 2.6 + clip + 2.5 + 3.0)
 
 
 def test_part_too_short_reports_estimate(job_with_fixtures):
     plan = load(job_with_fixtures)
+    says = ["Court lundi jeudi."] * 5
+    for scene, say in zip(plan["parts"][0]["scenes"], says):
+        scene["say"] = say
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    short = [e for e in errors if "trop courte" in e]
+    n = expected_estimate(job_with_fixtures, says)
+    assert short and short[0].startswith("Partie 1 : ")
+    assert f"dur\u00e9e estim\u00e9e {n} s" in short[0]
+    assert f"Ajoute environ {55 - n} s" in short[0]
+
+
+def test_part_too_long_reports_estimate(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    scenes = plan["parts"][0]["scenes"]
+    says = [s["say"] for s in scenes]
+    says[0] = "mot " * 120
+    scenes[0]["say"] = says[0]
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    long = [e for e in errors if "trop longue" in e]
+    n = expected_estimate(job_with_fixtures, says)
+    assert long and f"dur\u00e9e estim\u00e9e {n} s" in long[0]
+    assert f"Coupe environ {n - 95} s" in long[0]
+
+
+def test_duration_is_reported_in_the_same_pass_as_other_errors(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][0]["type"] = "carousel"
+    for scene in plan["parts"][0]["scenes"]:
+        scene["say"] = "Court lundi jeudi."
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("type inconnu" in e for e in errors)
+    assert any("trop courte" in e for e in errors)
+
+
+def test_duration_notes_unresolved_clips(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][4]["props"]["text"] = "phrase inventee sans rapport"
     for scene in plan["parts"][0]["scenes"]:
         scene["say"] = "Court lundi jeudi."
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
     short = [e for e in errors if "trop courte" in e]
-    assert short and short[0].startswith("Partie 1 : ")
-    assert "Ajoute" in short[0] and " s" in short[0]
+    assert short and "sans la dur\u00e9e de 1 extrait(s) source" in short[0]
+    assert any("citation introuvable" in e for e in errors)
 
 
-def test_part_too_long_reports_estimate(job_with_fixtures):
+def test_em_dash_in_say_is_rejected(job_with_fixtures):
     plan = load(job_with_fixtures)
-    plan["parts"][0]["scenes"][0]["say"] = "mot " * 120
+    plan["parts"][0]["scenes"][0]["say"] += " Et alors " + EM + " voil\u00e0."
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
-    long = [e for e in errors if "trop longue" in e]
-    assert long and "coupe" in long[0]
+    assert any(e.startswith("Partie 1, sc\u00e8ne 1 : ") and "tiret cadratin" in e for e in errors), errors
+
+
+def test_hyphenated_item_matches_say(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    scene = plan["parts"][0]["scenes"][1]
+    scene["say"] += " Dis-moi si tu vois."
+    scene["items"].append({"el": "x", "on": "moi"})
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_plan_md_shows_real_clip_start_not_src(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][4]["src"] = "0:40"
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    md = (job_with_fixtures / "plan.md").read_text(encoding="utf-8")
+    assert "citation \u00e0 0:26" in md and "0:40" not in md
+
+
+def test_stale_plan_md_is_removed_when_check_fails(job_with_fixtures):
+    assert plan_check.check_plan(job_with_fixtures) == []
+    assert (job_with_fixtures / "plan.md").exists()
+    plan = load(job_with_fixtures)
+    plan["lang"] = "de"
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures)
+    assert not (job_with_fixtures / "plan.md").exists()
+
+
+def test_unreadable_plan_json_is_an_error(job_with_fixtures):
+    (job_with_fixtures / "plan.json").write_bytes(b"\xff\xfe\x00")
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors and errors[0].startswith("Plan : ")
+    (job_with_fixtures / "plan.json").unlink()
+    (job_with_fixtures / "plan.json").mkdir()
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors and errors[0].startswith("Plan : ") and "illisible" in errors[0]
 
 
 def test_estimate_seconds():

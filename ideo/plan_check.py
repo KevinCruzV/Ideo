@@ -85,12 +85,15 @@ def _sfx_by_ts(sfx: list) -> dict:
 def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: dict) -> None:
     if not isinstance(scene, dict):
         errors.append(f"{where} : la scène doit être un objet JSON avec « type », « say » et « props ».")
+        part_state["usable"] = False
         return
     kind = scene.get("type")
     if not isinstance(kind, str) or kind not in SCENE_TYPES:
         errors.append(f"{where} : type inconnu « {kind} ». Types possibles : {', '.join(sorted(SCENE_TYPES))}.")
     say = _text_field(scene, "say", where, errors)
-    if say is not None:
+    if say is None:
+        part_state["usable"] = False
+    else:
         part_state["seconds"] += estimate_seconds(say, ctx["lang"])
         _check_dash([say], where, errors)
     props = scene.get("props", {})
@@ -111,16 +114,21 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
             errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
 
     src_seconds = None
-    if "src" in scene:
+    if "src" not in scene:
+        errors.append(f"{where} : « src » est manquant. Recopie le « mm:ss » du paragraphe de la transcription compacte qui justifie cette scène.")
+    else:
         src_seconds = _ts(scene["src"], where, "src", errors)
         if src_seconds is not None and ctx["duration"] is not None and src_seconds > ctx["duration"]:
             errors.append(f"{where} : « src » {scene['src']} dépasse la durée de la vidéo ({fmt_ts(ctx['duration'])}). Utilise le minutage d'un paragraphe de la transcription compacte.")
 
     if "sfx" in scene:
         at = _ts(scene["sfx"], where, "sfx", errors)
-        if at is not None:
+        if at is None:
+            part_state["unresolved"] += 1
+        else:
             entry = ctx["sfx"].get(round(at, 2))
             if entry is None:
+                part_state["unresolved"] += 1
                 known = ", ".join(e["at"] for e in ctx["sfx"].values()) or "aucun"
                 errors.append(f"{where} : le son {scene['sfx']} n'est pas dans sfx.json. Repères disponibles : {known}. Prends l'un d'eux ou retire « sfx ».")
             else:
@@ -138,10 +146,10 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
     text = props.get("text")
     if not isinstance(text, str) or not text.strip():
         errors.append(f"{where} : une scène « quote » demande « props.text », la citation exacte dite dans la vidéo.")
+        part_state["unresolved"] += 1
         return
     if src_seconds is None:
-        if "src" not in scene:
-            errors.append(f"{where} : une citation demande « src », le minutage « mm:ss » où elle est dite dans la vidéo.")
+        part_state["unresolved"] += 1
         return
     words = ctx["words"]
     window = [w for w in words if abs(w["s"] - src_seconds) <= QUOTE_WINDOW]
@@ -149,26 +157,26 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
     if span is None:
         hint = closest_passage(words, text) if words else "transcription vide"
         errors.append(f"{where} : citation introuvable à ± 90 s de {scene['src']}. Passage le plus proche : {hint}. Recopie la citation exacte de ce passage dans « props.text », ou corrige « src ».")
-        part_state["failed"] = True
+        part_state["unresolved"] += 1
         return
     clip = window[span[1]]["e"] - window[span[0]]["s"]
     part_state["seconds"] += clip
-    part_state["clips"].append(("citation", scene["src"], text))
+    part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text))
 
 
-def _check_part(part, index: int, ctx: dict, errors: list[str]) -> None:
+def _check_part(part, index: int, ctx: dict, errors: list[str]) -> list:
     where = f"Partie {index}"
     if not isinstance(part, dict):
         errors.append(f"{where} : la partie doit être un objet JSON avec « n », « title », « hook » et « scenes ».")
-        return
-    before = len(errors)
+        return []
     if part.get("n") != index:
         errors.append(f"{where} : numéro « n » = {part.get('n')!r}, attendu {index}. Numérote les parties 1, 2, 3, dans l'ordre.")
     _text_field(part, "title", where, errors)
     hook = part.get("hook")
-    state = {"seconds": OUTRO_SECONDS, "clips": [], "failed": False}
+    state = {"seconds": OUTRO_SECONDS, "clips": [], "usable": True, "unresolved": 0}
     if not isinstance(hook, str) or not hook.strip():
         errors.append(f"{where} : l'accroche « hook » est manquante ou vide. Écris une phrase d'accroche qui donne envie de regarder.")
+        state["usable"] = False
     else:
         state["seconds"] += estimate_seconds(hook, ctx["lang"])
         _check_dash([hook], where, errors)
@@ -177,27 +185,28 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> None:
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
-        return
+        return []
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
-    if len(errors) > before or state["failed"]:
-        return
+    if not state["usable"]:
+        return state["clips"]
     total = round(state["seconds"])
+    note = ""
+    if state["unresolved"]:
+        note = f" (sans la durée de {state['unresolved']} extrait(s) source non résolu(s), corrige-les d'abord)"
     if total < MIN_SECONDS:
-        errors.append(f"{where} : durée estimée {total} s, trop courte (minimum {MIN_SECONDS} s). Ajoute environ {MIN_SECONDS - total} s de texte « say » ou une scène.")
+        errors.append(f"{where} : durée estimée {total} s{note}, trop courte (minimum {MIN_SECONDS} s). Ajoute environ {MIN_SECONDS - total} s de texte « say » ou une scène.")
     elif total > MAX_SECONDS:
-        errors.append(f"{where} : durée estimée {total} s, trop longue (maximum {MAX_SECONDS} s). Coupe environ {total - MAX_SECONDS} s de texte « say » ou une scène, ou découpe en deux parties.")
-    else:
-        part["_clips"] = state["clips"]
+        errors.append(f"{where} : durée estimée {total} s{note}, trop longue (maximum {MAX_SECONDS} s). Coupe environ {total - MAX_SECONDS} s de texte « say » ou une scène, ou découpe en deux parties.")
+    return state["clips"]
 
 
-def _write_md(job: Path, plan: dict) -> None:
+def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
     lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", ""]
-    for part in plan["parts"]:
+    for part, clips in zip(plan["parts"], clips_by_part):
         lines += [f"## Partie {part['n']} : {part['title']}", "", f"Accroche : {part['hook']}", ""]
         lines += [f"- [{s['type']}] {s['say']}" for s in part["scenes"]]
         lines += ["", "Extraits audio source conservés :"]
-        clips = part.pop("_clips", [])
         lines += [f"- {kind} à {ts}" + (f" : {text}" if text else "") for kind, ts, text in clips] or ["- aucun"]
         lines.append("")
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
@@ -206,12 +215,15 @@ def _write_md(job: Path, plan: dict) -> None:
 def check_plan(job: Path) -> list[str]:
     job = Path(job)
     path = job / "plan.json"
+    (job / "plan.md").unlink(missing_ok=True)
     if not path.exists():
         return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."]
     try:
         plan = load_json(path)
     except ValueError as exc:
         return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."]
+    except OSError as exc:
+        return [f"Plan : plan.json est illisible ({exc}). Vérifie le fichier puis relance."]
     if not isinstance(plan, dict):
         return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."]
 
@@ -248,8 +260,7 @@ def check_plan(job: Path) -> list[str]:
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
     }
-    for i, part in enumerate(parts, 1):
-        _check_part(part, i, ctx, errors)
+    clips_by_part = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
     if not errors:
-        _write_md(job, plan)
+        _write_md(job, plan, clips_by_part)
     return errors
