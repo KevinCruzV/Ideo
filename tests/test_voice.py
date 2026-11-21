@@ -38,7 +38,7 @@ def test_voice_part_texts_and_lang(job_with_plan, fake_backend, fake_whisper):
 def test_voice_part_outro_next(job_with_plan, fake_backend, fake_whisper):
     set_next_part(job_with_plan)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie 2 : Le sommeil !"
+    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie deux: Le sommeil!"
 
 
 def test_voice_part_outro_last_of_several_parts(job_with_plan, fake_backend, fake_whisper):
@@ -249,3 +249,65 @@ def test_finish_segment_trims_silence_and_shifts_words(tmp_path):
     assert duration == pytest.approx(1.06, abs=0.02)
     assert words[0]["s"] == pytest.approx(0.03, abs=0.02)
     assert words[-1]["e"] <= duration
+
+
+def plan_with_numbers(job, say="En 1998, il y avait 3 000 personnes et 8 % de pluie."):
+    plan = common.load_json(job / "plan.json")
+    plan["parts"][0]["scenes"][0]["say"] = say
+    common.save_json(job / "plan.json", plan)
+    return say
+
+
+def test_online_voice_receives_numbers_in_words_and_subtitles_keep_digits(job_with_plan, fake_backend, fake_whisper):
+    say = plan_with_numbers(job_with_plan)
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    sent = fake_backend.calls[1][0]
+    assert sent == "En mille neuf cent quatre-vingt-dix-huit, il y avait trois mille personnes et huit pour cent de pluie."
+    words = common.load_json(job_with_plan / "parts" / "01" / "seg_01.words.json")
+    assert [w["w"] for w in words] == voice.align.script_words(say) and "1998," in [w["w"] for w in words] and "3" in [w["w"] for w in words]
+    assert all(a["s"] <= b["s"] for a, b in zip(words, words[1:]))
+    assert (job_with_plan / "parts" / "01" / "seg_01.spoken.txt").read_text(encoding="utf-8") == sent
+
+
+def test_one_original_word_spans_the_time_of_all_its_spoken_words(tmp_path):
+    from tests.conftest import write_sine_wav
+
+    wav = tmp_path / "s.wav"
+    write_sine_wav(wav, seconds=3.0)
+    text = "En 1998 oui"
+    normalized = voice.numbers.normalize(text, "fr")
+    heard = [{"w": w, "s": 0.2 + i * 0.3, "e": 0.2 + i * 0.3 + 0.25} for i, w in enumerate(normalized.text.split())]
+    words = voice.finish_segment(wav, text, heard, normalized.text, normalized.units)
+    assert [w["w"] for w in words] == ["En", "1998", "oui"]
+    assert words[1]["s"] == pytest.approx(heard[1]["s"], abs=0.01) and words[1]["e"] == pytest.approx(heard[4]["e"], abs=0.01)
+    assert words[2]["s"] >= words[1]["e"] - 0.01
+
+
+def test_thousands_with_a_space_are_two_subtitle_words_sharing_one_span(tmp_path):
+    from tests.conftest import write_sine_wav
+
+    wav = tmp_path / "s.wav"
+    write_sine_wav(wav, seconds=3.0)
+    text = "Il y a 3 000 morts"
+    normalized = voice.numbers.normalize(text, "fr")
+    heard = [{"w": w, "s": 0.1 + i * 0.3, "e": 0.1 + i * 0.3 + 0.25} for i, w in enumerate(normalized.text.split())]
+    words = voice.finish_segment(wav, text, heard, normalized.text, normalized.units)
+    assert [w["w"] for w in words] == ["Il", "y", "a", "3", "000", "morts"]
+    assert words[3]["s"] < words[3]["e"] <= words[4]["s"] + 1e-6 and words[4]["e"] == pytest.approx(heard[4]["e"], abs=0.01)
+
+
+def test_only_segments_whose_sent_text_changes_are_redone(job_with_plan, fake_backend, fake_whisper):
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    first = len(fake_backend.calls)
+    plan_with_numbers(job_with_plan)
+    assert voice.stale(job_with_plan, 1) == ["seg_01"]
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    assert len(fake_backend.calls) == first + 1 and fake_backend.calls[-1][2] == "seg_01.wav"
+    assert voice.stale(job_with_plan, 1) == []
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    assert len(fake_backend.calls) == first + 1
+
+
+def test_segments_without_numbers_have_nothing_stale(job_with_plan, fake_backend, fake_whisper):
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    assert voice.stale(job_with_plan, 1) == []

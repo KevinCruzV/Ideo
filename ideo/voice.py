@@ -8,7 +8,7 @@ from typing import Protocol
 
 import numpy as np
 
-from ideo import align, common, config, fidelity, i18n, lexicon, pacing, prosody, transcribe
+from ideo import align, common, config, fidelity, i18n, lexicon, numbers, pacing, prosody, transcribe
 
 TICKS = 1e7
 KYUTAI_LANGS = config.KYUTAI_LANGS
@@ -155,7 +155,13 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
     return words
 
 
-def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None) -> list[dict]:
+def spoken_for(text: str, lang: str, local: bool) -> tuple[str, list | None]:
+    normalized = numbers.normalize(text, lang)
+    spoken = lexicon.apply(normalized.text, lang) if local else normalized.text
+    return spoken, normalized.units
+
+
+def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None, units: list | None = None) -> list[dict]:
     wav = Path(wav)
     with wave.open(str(wav), "rb") as w:
         if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (pacing.RATE, 1, 2):
@@ -172,9 +178,24 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
     shown = align.script_words(text)
     said = align.script_words(spoken) if spoken and spoken != text else shown
     words = align.align_words(said, pacing.remap(heard, mapping), duration)
+    if units and sum(u["orig"] for u in units) == len(shown) and sum(u["said"] for u in units) == len(said):
+        return _regroup(words, shown, units)
     if len(said) == len(shown):
         return [{**w, "w": label} for w, label in zip(words, shown)]
     return align.align_words(shown, pacing.remap(heard, mapping), duration)
+
+
+def _regroup(words: list[dict], shown: list[str], units: list) -> list[dict]:
+    out, k, o = [], 0, 0
+    for unit in units:
+        chunk = words[k:k + unit["said"]]
+        k += unit["said"]
+        start, end, count = chunk[0]["s"], chunk[-1]["e"], unit["orig"]
+        for j in range(count):
+            out.append({"w": shown[o + j], "s": round(start + (end - start) * j / count, 3),
+                        "e": round(start + (end - start) * (j + 1) / count, 3)})
+        o += count
+    return out
 
 
 def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
@@ -192,6 +213,25 @@ def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
     segments += [(f"seg_{i:02d}", scene["say"]) for i, scene in enumerate(part["scenes"], start=1)]
     segments.append(("seg_99_outro", outro))
     return segments
+
+
+def _stored(out_dir: Path, name: str, text: str) -> str:
+    sidecar = out_dir / f"{name}.spoken.txt"
+    return sidecar.read_text(encoding="utf-8") if sidecar.exists() else text
+
+
+def stale(job: Path, n: int) -> list[str]:
+    job = Path(job)
+    plan = common.load_json(job / "plan.json")
+    part = next((p for p in plan["parts"] if p["n"] == n), None)
+    if part is None:
+        return []
+    lang = plan["lang"]
+    local = lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed()
+    out_dir = job / "parts" / f"{n:02d}"
+    return [name for name, text in segments(plan, part)
+            if (out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()
+            and _stored(out_dir, name, text) != spoken_for(text, lang, local)[0]]
 
 
 def _short(err: Exception) -> str:
@@ -236,7 +276,8 @@ def needs_redo(name: str, take: dict) -> bool:
 
 
 def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, log: Path) -> tuple[dict, dict, dict, int]:
-    spoken = {name: lexicon.apply(text, lang) for name, text in items}
+    prepared = {name: spoken_for(text, lang, True) for name, text in items}
+    spoken = {name: p[0] for name, p in prepared.items()}
     takes: dict = {name: [] for name, _ in items}
     redone = 0
     todo = items
@@ -246,7 +287,7 @@ def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Pat
         for name, _ in todo:
             wav = out_dir / f"{name}.wav"
             heard = retranscribe(wav, lang, log)
-            takes[name].append({"fidelity": fidelity.similarity(spoken[name], heard), "prosody": prosody.score(wav),
+            takes[name].append({"fidelity": fidelity.similarity(numbers.plain_words(*prepared[name]), heard), "prosody": prosody.score(wav),
                                 "heard": heard, "bytes": wav.read_bytes()})
         todo = [(n, t) for n, t in items if needs_redo(n, best_take(takes[n]))]
         if not todo or attempt == MAX_REDOS:
@@ -289,9 +330,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     def done(name: str, text: str) -> bool:
         if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
             return False
-        sidecar = out_dir / f"{name}.spoken.txt"
-        stored = sidecar.read_text(encoding="utf-8") if sidecar.exists() else text
-        return stored == (lexicon.apply(text, lang) if local else text)
+        return _stored(out_dir, name, text) == spoken_for(text, lang, local)[0]
 
     pending = [(name, text) for name, text in items if not done(name, text)]
     try:
@@ -310,12 +349,16 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             if fallback or not getattr(backend, "local", False):
                 for name, text in pending:
                     wav = out_dir / f"{name}.wav"
-                    heard = backend.synthesize(text, lang, wav)
+                    spoken, _ = spoken_for(text, lang, False)
+                    heard = backend.synthesize(spoken, lang, wav)
                     heard_by_name[name] = heard if heard else retranscribe(wav, lang, log)
+                    (out_dir / f"{name}.spoken.txt").write_text(spoken, encoding="utf-8")
+            engine_is_local = getattr(backend, "local", False)
             for name, text in pending:
                 wav = out_dir / f"{name}.wav"
-                spoken = (out_dir / f"{name}.spoken.txt").read_text(encoding="utf-8") if scores else None
-                common.save_json(out_dir / f"{name}.words.json", finish_segment(wav, text, heard_by_name[name], spoken))
+                spoken, units = spoken_for(text, lang, engine_is_local)
+                common.save_json(out_dir / f"{name}.words.json",
+                                 finish_segment(wav, text, heard_by_name[name], spoken, units))
             engine = "kyutai" if getattr(backend, "local", False) else "edge"
             common.save_json(out_dir / "voice-info.json", {"engine": engine, "fallback": fallback,
                                                            "local_missing": config.local_voice_missing(lang)})

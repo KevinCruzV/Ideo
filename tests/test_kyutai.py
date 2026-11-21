@@ -345,3 +345,29 @@ def test_existing_segments_without_a_score_get_one_without_resynthesis(kyutai, j
     kyutai.calls.clear()
     voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
     assert kyutai.calls == [] and common.load_json(prosody_path)["seg_03"] == 3.0
+
+
+def test_engine_receives_numbers_in_words_and_fidelity_ignores_them(kyutai, job_with_plan, monkeypatch):
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["parts"][0]["scenes"][0]["say"] = "En 1998, il y avait 3 000 personnes ici."
+    common.save_json(job_with_plan / "plan.json", plan)
+    texts, seen = faithful(monkeypatch)
+    texts.update(script_words(job_with_plan))
+    monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [
+        {"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08}
+        for i, w in enumerate("En 1998, il y avait 3000 personnes ici.".split() if Path(wav).stem == "seg_01" else texts[Path(wav).stem].split())])
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    sent = {r["id"]: r["turns"][0] for r in kyutai.calls[0]["requests"]}["seg_01"]
+    assert sent == "En mille neuf cent quatre-vingt-dix-huit, il y avait trois mille personnes ici."
+    assert len(kyutai.calls) == 1
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-quality.json")["seg_01"] >= 0.9
+    words = common.load_json(job_with_plan / "parts" / "01" / "seg_01.words.json")
+    assert [w["w"] for w in words][:3] == ["En", "1998,", "il"]
+
+
+def test_lexicon_comes_after_numbers(kyutai, job_with_plan, monkeypatch):
+    path = common._root() / "skills" / "ideo" / "references" / "prononciation.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('{"fr": {"cent": "sent"}}', encoding="utf-8")
+    assert voice.spoken_for("Il a 150 amis.", "fr", True)[0] == "Il a sent cinquante amis."
+    assert voice.spoken_for("Il a 150 amis.", "fr", False)[0] == "Il a cent cinquante amis."

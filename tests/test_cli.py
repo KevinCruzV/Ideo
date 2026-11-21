@@ -369,3 +369,16 @@ def test_produce_resets_the_review_counter(produce_job, capsys):
     capsys.readouterr()
     assert cli.main(["produce", str(job)]) == 0
     assert not (job / "review.json").exists()
+
+
+def test_produce_redoes_only_the_stale_segments_without_wiping_the_part(produce_job, capsys):
+    job, backend, renders = produce_job
+    assert cli.main(["produce", str(job)]) == 0
+    calls, rendered = len(backend.calls), len(renders)
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls and len(renders) == rendered
+    (job / "parts" / "01" / "seg_02.spoken.txt").write_text("ancien texte envoyé", encoding="utf-8")
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls + 1 and backend.calls[-1][2] == "seg_02.wav" and len(renders) == rendered + 1
