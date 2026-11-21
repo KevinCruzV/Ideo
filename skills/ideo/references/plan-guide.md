@@ -63,7 +63,7 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
 - Le `say` d'une scène `quote` présente la citation sans la répéter : la vraie voix de la source est jouée juste après.
 
-## 5. Les 13 types de scène
+## 5. Les 15 types de scène
 
 Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
 
@@ -82,6 +82,8 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 | `shape-diagram` | une comparaison de tailles ou de quantités | `values`* : nombres (8 max) ; `shape` = `circle`, `square`, `triangle` ou `bar` ; `labels` : textes [14 caractères chacun], exactement autant que `values` ; `unit` [8 caractères] : l'unité écrite après chaque valeur ("Md$", "%", "km") ; `kicker` (voir sous le tableau) | `values.0` à `values.7`, `labels.0` à `labels.7` |
 | `mascot` | le personnage Ideo qui réagit : la question naïve du spectateur, un fait surprenant, l'élément suivant, la leçon à retenir | `bubble`* [80 caractères] : sa bulle ; `pose` = `question` (par défaut), `surprise`, `montre` ou `content` ; `kicker` (voir sous le tableau) | `bubble` |
 | `versus` | deux camps, deux options ou deux époques face à face | `left`*, `right`* [24 caractères chacun] ; `left_picto`, `right_picto` : un dessin par camp ; `kicker` (voir sous le tableau) | `left`, `right` |
+| `map` | où ça se passe : un pays, une région, une route entre des pays | `focus`* = `world`, `europe`, `africa`, `asia`, `north-america`, `south-america`, `middle-east`, `oceania` ou `arctic` ; `places`* : liste de `{code, label}` (6 max), `code` = code du pays à deux lettres comme pour les drapeaux, `label` [24 caractères] ; `route` : liste de 2 à 6 codes reliés dans l'ordre par un trait ; `kicker` | `places.0` à `places.5`, `route` |
+| `body` | le corps humain : une posture, un geste, ce qui se passe dans un organe | `pose`* = `standing`, `sitting`, `walking`, `running`, `lying-back`, `lying-starfish`, `lying-side-left`, `lying-side-right`, `lying-fetal` ou `lying-stomach` ; `setting` = `none`, `bed`, `chair`, `desk` ou `outdoor` ; `marks` : liste de `{part, label}` (4 max), `part` = `head`, `brain`, `neck`, `throat`, `shoulders`, `chest`, `heart`, `lungs`, `stomach`, `back`, `spine`, `hips`, `arms`, `hands`, `knees`, `legs` ou `feet`, `label` [28 caractères] ; `tone` = `good` (bleu), `bad` (rouge) ou `neutral` ; `kicker` | `marks.0` à `marks.3` |
 
 Deux props facultatives s'ajoutent aux types :
 - `kicker` [28 caractères], sur TOUS les types : une petite étiquette visible dès la première image de la scène. Mets-y la date, le lieu ou le nom de l'acte ("1991", "11 septembre 2001", "Irak, 2003", "Acte 2 : les BRICS"). Ce n'est pas un `el` : ne le mets pas dans `items`.
@@ -98,7 +100,7 @@ Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du
 
 Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `picto` approximatif. Note ce qui t'a manqué dans un champ `"wishes"` au premier niveau du plan, à côté de `"parts"` : une liste de 0 à 5 textes courts [40 caractères], par exemple `"wishes": ["drapeau américain", "carte du monde"]`. Ces dessins seront ajoutés plus tard.
 
-Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`.
+Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`, `lungs`, `stomach`, `spine`, `bone`, `muscle`, `tooth`, `blood`, `pill`, `syringe`, `virus`, `bed`, `pillow`, `moon`, `thermometer`, `scale-weight`, `apple`, `dumbbell`, `running-shoe`, `stethoscope`, `hospital`.
 
 Détails :
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres et écrit la valeur au-dessus de chacune, suivie de `unit` : donne toujours `unit` quand la valeur en a une.
@@ -123,6 +125,8 @@ Un exemple par type :
 {"type": "object-state", "say": "À chaque révision, le souvenir tient plus longtemps, et le bocal se remplit.", "props": {"object": "jar", "states": ["1re révision", "2e révision", "3e révision"]}, "items": [{"el": "states.1", "on": "souvenir"}, {"el": "states.2", "on": "remplit"}], "src": "6:40"}
 {"type": "shape-diagram", "say": "Juste après la leçon, tu retiens tout. Un jour plus tard, il reste à peine un tiers.", "props": {"shape": "circle", "values": [1, 0.34], "labels": ["Juste après", "Le lendemain"]}, "items": [{"el": "values.0", "on": "leçon"}, {"el": "labels.0", "on": "retiens"}, {"el": "values.1", "on": "jour"}, {"el": "labels.1", "on": "tiers"}], "src": "2:30"}
 {"type": "mascot", "say": "Alors, réviser la veille de l'examen, ça ne sert à rien ?", "props": {"bubble": "Et réviser la veille ?", "pose": "question"}, "items": [{"el": "bubble", "on": "réviser"}], "src": "5:40"}
+{"type": "map", "say": "Ebbinghaus travaille à Berlin, en Allemagne, et ses résultats traversent vite l'Atlantique jusqu'aux États-Unis.", "props": {"kicker": "1885", "focus": "world", "places": [{"code": "de", "label": "Berlin"}, {"code": "us", "label": "États-Unis"}], "route": ["de", "us"]}, "items": [{"el": "places.0", "on": "Berlin"}, {"el": "route", "on": "traversent"}, {"el": "places.1", "on": "États-Unis"}], "src": "1:20"}
+{"type": "body", "say": "Quand tu dors, ton cerveau trie ce que tu as appris. Allongé sur le dos, ta respiration ralentit et ton cœur aussi.", "props": {"kicker": "Pendant la nuit", "pose": "lying-back", "setting": "bed", "tone": "good", "marks": [{"part": "brain", "label": "Il trie les souvenirs"}, {"part": "heart", "label": "Il ralentit"}]}, "items": [{"el": "marks.0", "on": "cerveau"}, {"el": "marks.1", "on": "cœur"}], "src": "5:20"}
 {"type": "versus", "say": "D'un côté, relire dix fois la même page. De l'autre, fermer le livre et se poser des questions.", "props": {"kicker": "Deux méthodes", "left": "Relire", "left_picto": "book", "right": "Se tester", "right_picto": "brain"}, "items": [{"el": "left", "on": "relire"}, {"el": "right", "on": "questions"}], "src": "5:58"}
 ```
 
@@ -158,7 +162,8 @@ La citation devient `"text": "Le ciel n'est pas peint en bleu, c'est de la lumi�
 Pour que la vidéo n'ait pas l'air générée :
 - Jamais deux fois de suite le même type de scène.
 - `key-title` : 1 fois par acte au plus. `mascot` : 4 fois au plus par vidéo, jamais deux de suite.
-- Au moins une scène sur deux montre un dessin : un `picto`, un `object-state`, un `versus`, un `shape-diagram`, un `timeline` ou la `mascot`. Choisis le `picto` qui montre la chose dont parle la scène, pas un symbole vague.
+- Au moins une scène sur deux montre un dessin : un `picto`, un `object-state`, un `versus`, un `shape-diagram`, un `timeline`, une `map`, un `body` ou la `mascot`. Choisis le `picto` qui montre la chose dont parle la scène, pas un symbole vague.
+- Dès que le sujet touche au corps (santé, sommeil, sport, posture, organe) : des scènes `body`, avec la posture dont on parle et les zones concernées en `marks`. Dès qu'un lieu compte (un pays, un trajet, une frontière) : une `map`.
 - Dès qu'il y a deux camps, deux époques ou un avant et un après : `versus` ou `object-state`. Dès qu'il y a trois dates ou plus : `timeline`. Dès qu'il y a deux nombres à comparer : `shape-diagram` avec `unit`.
 - Une `quote` toutes les 8 à 10 scènes si la source contient des extraits nets (journal, discours, interview). Si elle n'en a qu'un, un seul suffit ; si elle n'en a pas, aucun.
 - Varie les débuts de `say` : pas trois scènes de suite qui commencent par le même mot.
@@ -319,7 +324,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `« title » est manquant ou vide` ou `« say » est manquant ou vide` | remplis ce champ |
 | `l'accroche « hook »` | écris une accroche (section 3) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
-| `type inconnu` | prends un des 13 types de la section 5 |
+| `type inconnu` | prends un des 15 types de la section 5 |
 | `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |
 | `« props.X » doit être` | donne à cette prop le format indiqué (nombre, liste, valeur permise) |
 | `« props.labels » a` | donne autant de `labels` que de `values` |
