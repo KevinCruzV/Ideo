@@ -65,7 +65,8 @@ class EdgeTTSBackend:
                         f.write(chunk["data"])
                     elif chunk["type"] == "WordBoundary":
                         start = chunk["offset"] / TICKS
-                        words.append({"w": chunk["text"], "s": start, "e": start + chunk["duration"] / TICKS})
+                        words.append({"w": chunk["text"], "s": round(start, 4),
+                                  "e": round(start + chunk["duration"] / TICKS, 4)})
 
         with tempfile.TemporaryDirectory() as tmp:
             mp3 = Path(tmp) / "voice.mp3"
