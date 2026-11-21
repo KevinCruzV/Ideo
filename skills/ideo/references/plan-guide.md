@@ -86,6 +86,8 @@ Deux props facultatives s'ajoutent aux types :
 - `kicker` [28 caractères], sur TOUS les types : une petite étiquette visible dès la première image de la scène. Mets-y la date, le lieu ou le nom de l'acte ("1991", "11 septembre 2001", "Irak, 2003", "Acte 2 : les BRICS"). Ce n'est pas un `el` : ne le mets pas dans `items`.
 - `picto`, sur `key-title`, `fact-chips`, `stack-list`, `counter`, `timeline`, `stamp` et `quote` : un dessin en papier découpé qui illustre la scène, visible dès la première image. Dans `icon-grid`, chaque cellule peut avoir son `picto` à la place de `shape`. Ce n'est pas un `el`.
 
+Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `picto` approximatif. Note ce qui t'a manqué dans un champ `"wishes"` au premier niveau du plan, à côté de `"parts"` : une liste de 0 à 5 textes courts [40 caractères], par exemple `"wishes": ["drapeau américain", "carte du monde"]`. Ces dessins seront ajoutés plus tard.
+
 Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`.
 
 Détails :

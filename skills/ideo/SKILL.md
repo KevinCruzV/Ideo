@@ -33,6 +33,11 @@ Règles pour toute la tâche :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo produce JOB`
    Attends la notification de fin. Si l'utilisateur demande où en est le rendu, lance `tail -n 3 JOB/logs/progress.log` et donne la réponse en une phrase.
 7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
+8. Entretien automatique. Si la ligne `OK produce` contient `Entretien à lancer :`, lance l'entretien toi-même, après avoir donné la vidéo à l'utilisateur, sans attendre qu'il le demande :
+   - Dis-lui en une phrase : "Je lance l'entretien du skill en arrière-plan (<raison affichée>). Tu peux continuer."
+   - Lance un sous-agent en arrière-plan avec l'outil Agent (ou Task), modèle `sonnet`, avec exactement cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/SKILL.md et fais l'entretien qu'il décrit, de l'étape 1 à l'étape 9. Tu es le modèle capable : fais le travail toi-même." (remplace le chemin par le vrai, celui du dossier de ce skill avec `entretien` à la place de `ideo`).
+   - Quand il a fini, recopie ses trois lignes de résumé à l'utilisateur. S'il échoue ou si tu ne peux pas lancer de sous-agent, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo entretien --echec 'entretien non lancé'` et dis à l'utilisateur de lancer "entretien ideo" avec le modèle Sonnet.
+   Si la ligne contient seulement `Entretien conseillé :`, dis-le à l'utilisateur en une phrase et ne lance rien.
 
 ## Retours de l'utilisateur
 
