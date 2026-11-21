@@ -16,6 +16,7 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
+- N'écris nulle part dans le plan le nom de la chaîne ni celui de la personne qui a fait la vidéo. La ligne `Chaîne :` sert seulement à savoir qui ne pas créditer.
 
 ## 3. L'accroche (`hook`)
 
@@ -101,7 +102,7 @@ Un exemple par type :
 - `src` de la citation = le `[mm:ss]` du paragraphe qui la contient.
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
 - Si la transcription ne dit pas qui parle, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. Jamais la chaîne YouTube, jamais le titre de la vidéo, jamais un nom inventé.
-- Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription.
+- Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa") : quand on entend le présentateur ou l'auteur de la vidéo, mets `"speaker": ""`.
 - Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment.
 
 Exemple : la transcription contient
