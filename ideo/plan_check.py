@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from ideo.common import fmt_ts, load_json, parse_ts
-from ideo.textmatch import closest_passage, find_span
+from ideo.textmatch import SPLIT, closest_passage, find_span, normalize
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
@@ -136,13 +136,23 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
                     part_state["seconds"] += max(0.0, float(entry["e"]) - float(entry["s"]))
                 except (KeyError, TypeError, ValueError):
                     pass
-                part_state["clips"].append(("sfx", scene["sfx"], ""))
+                part_state["clips"].append(("sfx", scene["sfx"], "", ""))
 
     if kind == "quote":
         _check_quote(scene, props, src_seconds, where, ctx, errors, part_state)
 
 
+def _plain(value) -> str:
+    if not isinstance(value, str):
+        return ""
+    return " ".join(n for n in (normalize(t) for t in SPLIT.split(value)) if n)
+
+
 def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> None:
+    speaker = props.get("speaker")
+    speaker = speaker.strip() if isinstance(speaker, str) else ""
+    if speaker and _plain(speaker) in ctx["publisher"]:
+        errors.append(f"{where} : « speaker » doit nommer la personne ou le média qu'on entend, pas la chaîne YouTube. Laisse-le vide si la transcription ne le dit pas.")
     text = props.get("text")
     if not isinstance(text, str) or not text.strip():
         errors.append(f"{where} : une scène « quote » demande « props.text », la citation exacte dite dans la vidéo.")
@@ -161,7 +171,7 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
         return
     clip = window[span[1]]["e"] - window[span[0]]["s"]
     part_state["seconds"] += clip
-    part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text))
+    part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text, speaker or "voix non identifiée"))
 
 
 def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, float | None]:
@@ -207,7 +217,8 @@ def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
         lines += [f"## Partie {part['n']} : {part['title']}", "", f"Accroche : {part['hook']}", ""]
         lines += [f"- [{s['type']}] {s['say']}" for s in part["scenes"]]
         lines += ["", "Extraits audio source conservés :"]
-        lines += [f"- {kind} à {ts}" + (f" : {text}" if text else "") for kind, ts, text in clips] or ["- aucun"]
+        lines += [f"- {kind} à {ts}" + (f" ({who})" if who else "") + (f" : {text}" if text else "")
+                  for kind, ts, text, who in clips] or ["- aucun"]
         lines.append("")
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
 
@@ -254,7 +265,9 @@ def check_plan(job: Path) -> list[str]:
         words = []
     words = [w for w in words if isinstance(w, dict) and isinstance(w.get("w"), str) and "s" in w and "e" in w]
     sfx = _read(job, "sfx.json", [])
+    publisher = {_plain(info.get(k)) for k in ("channel", "title")} if isinstance(info, dict) else set()
     ctx = {
+        "publisher": publisher - {""},
         "lang": lang if isinstance(lang, str) else (job_lang or "fr"),
         "duration": float(duration) if isinstance(duration, (int, float)) else None,
         "words": words,

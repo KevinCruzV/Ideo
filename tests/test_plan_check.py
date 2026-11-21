@@ -256,3 +256,30 @@ def test_several_long_parts_are_valid(job_with_fixtures):
 
 def test_single_part_is_never_a_merge_error(job_with_fixtures):
     assert not any("tient en une seule" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+@pytest.mark.parametrize("speaker", ["Chaîne Test", "chaine  test", "Pourquoi on oublie !"])
+def test_quote_speaker_cannot_be_the_channel_or_title(job_with_fixtures, speaker):
+    (job_with_fixtures / "info.json").write_text(json.dumps(
+        {"duration": 120, "channel": "Chaîne Test", "title": "Pourquoi on oublie"}), encoding="utf-8")
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][4]["props"]["speaker"] = speaker
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors == ["Partie 1, scène 5 : « speaker » doit nommer la personne ou le média qu'on entend, pas la "
+                      "chaîne YouTube. Laisse-le vide si la transcription ne le dit pas."]
+
+
+def test_empty_speaker_is_valid_and_flagged_in_plan_md(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][4]["props"]["speaker"] = ""
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    md = (job_with_fixtures / "plan.md").read_text(encoding="utf-8")
+    assert "voix non identifiée" in md
+
+
+def test_plan_md_shows_quote_speaker(job_with_fixtures):
+    assert plan_check.check_plan(job_with_fixtures) == []
+    md = (job_with_fixtures / "plan.md").read_text(encoding="utf-8")
+    assert "citation à 0:26 (Ebbinghaus) :" in md

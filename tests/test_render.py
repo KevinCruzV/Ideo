@@ -52,12 +52,34 @@ def test_sources_one_section_per_part(job_sources):
     assert text.count("## Partie") == 2
 
 
-def test_description_credits_source(job_sources):
+def test_description_credits_quoted_voices_not_channel(job_sources):
     text = render.write_description(job_sources, 1)
-    assert "Source : Pourquoi on oublie (Chaîne Test) https://www.youtube.com/watch?v=abcdefghijk" in text
-    assert text.startswith("L'oubli\n\nSource : ")
+    assert text == "L'oubli\n\nVoix citées : Ebbinghaus\n"
+    assert "Chaîne Test" not in text and "youtube" not in text
     assert "#" not in text
     assert (job_sources / "out" / "description.txt").read_text() == text
+
+
+def test_description_lists_unique_speakers_in_order(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    scenes = plan["parts"][0]["scenes"]
+    quote = scenes[4]
+    scenes.append(dict(quote, props={"text": quote["props"]["text"], "speaker": "France Inter"}))
+    scenes.append(dict(quote))
+    scenes.append(dict(quote, props={"text": quote["props"]["text"], "speaker": ""}))
+    common.save_json(job_sources / "plan.json", plan)
+    assert render.write_description(job_sources, 1) == "L'oubli\n\nVoix citées : Ebbinghaus, France Inter\n"
+
+
+def test_description_without_named_voice_is_title_only(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"][4]["props"]["speaker"] = ""
+    common.save_json(job_sources / "plan.json", plan)
+    assert render.write_description(job_sources, 1) == "L'oubli\n"
+
+
+def test_sources_never_print_channel(job_sources):
+    assert "Chaîne Test" not in render.write_sources(job_sources).read_text()
 
 
 def test_description_naming_with_several_parts(job_sources):

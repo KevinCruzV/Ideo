@@ -177,8 +177,16 @@ def write_description(job: Path, n: int) -> str:
     part = next((p for p in plan["parts"] if p["n"] == n), None)
     if part is None:
         raise common.IdeoError(f"partie {n} introuvable dans plan.json")
-    info = common.load_json(job / "info.json")
-    text = f"{part['title']}\n\nSource : {info['title']} ({info['channel']}) {info['webpage_url']}\n"
+    speakers = []
+    for scene in part["scenes"]:
+        props = scene.get("props") if isinstance(scene.get("props"), dict) else {}
+        who = props.get("speaker")
+        who = who.strip() if scene.get("type") == "quote" and isinstance(who, str) else ""
+        if who and who not in speakers:
+            speakers.append(who)
+    text = f"{part['title']}\n"
+    if speakers:
+        text += f"\nVoix citées : {', '.join(speakers)}\n"
     path = _description_path(job, plan, n)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
