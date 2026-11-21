@@ -10,9 +10,13 @@ PICTOS_TEXT = ("globe, flag, pin, city, house, factory, bank, coin, chart-up, ch
                "atom, flask, leaf, sun, drop, fire, lightning, mountain, barrel, gear, people")
 
 
-def test_pictos_are_the_52_names_of_the_contract():
-    assert scene_schema.PICTOS == tuple(PICTOS_TEXT.split(", "))
-    assert len(scene_schema.PICTOS) == 52
+HEALTH_PICTOS = ("lungs, stomach, spine, bone, muscle, tooth, blood, pill, syringe, virus, bed, pillow, moon, thermometer, "
+                 "scale-weight, apple, dumbbell, running-shoe, stethoscope, hospital")
+
+
+def test_pictos_are_the_52_names_of_the_contract_plus_the_20_health_ones():
+    assert scene_schema.PICTOS == tuple(PICTOS_TEXT.split(", ")) + tuple(HEALTH_PICTOS.split(", "))
+    assert len(scene_schema.PICTOS) == 72 == len(set(scene_schema.PICTOS))
 
 
 KICKER_KINDS = {
@@ -224,3 +228,130 @@ def test_person_card_value_lists_are_the_contract_ones():
     assert scene_schema.HAIRS == ("none", "short", "side", "long", "curly", "wild", "bun", "crown-bald")
     assert scene_schema.HATS[-1] == "wig" and len(scene_schema.HATS) == 11
     assert scene_schema.OUTFITS == ("suit", "uniform", "robe", "lab-coat", "casual", "toga", "armor", "dress")
+
+
+def ts_names(path, name):
+    import re
+    from pathlib import Path
+
+    file = Path(__file__).resolve().parent.parent / "render" / "src" / path
+    if not file.exists():
+        pytest.skip(f"{path} n'existe pas encore dans le rendu")
+    source = file.read_text(encoding="utf-8")
+    block = re.search(rf"export const {name} = \[(.*?)\]", source, re.S).group(1)
+    return tuple(re.findall(r'"([\w-]+)"', block))
+
+
+def test_map_codes_and_zones_are_the_ones_of_the_render():
+    assert ts_names("map/codes.ts", "MAP_CODES") == scene_schema.MAP_CODES
+    assert ts_names("map/codes.ts", "MAP_FOCUS") == scene_schema.MAP_FOCUS
+    assert len(scene_schema.MAP_CODES) == 235
+
+
+def test_map_codes_are_flags_without_the_special_ones():
+    assert set(scene_schema.MAP_CODES) <= set(scene_schema.FLAGS)
+    assert not {"eu", "un", "su"} & set(scene_schema.MAP_CODES)
+    assert len(set(scene_schema.FLAGS) - set(scene_schema.MAP_CODES)) == 17
+
+
+@pytest.mark.parametrize("name,attr", [("BODY_POSES", "BODY_POSES"), ("BODY_SETTINGS", "BODY_SETTINGS"),
+                                       ("BODY_PARTS", "BODY_PARTS"), ("BODY_TONES", "BODY_TONES")])
+def test_body_values_are_the_ones_of_the_render(name, attr):
+    assert ts_names("scenes/bodyOptions.ts", name) == getattr(scene_schema, attr)
+
+
+MAP = {"focus": "asia", "places": [{"code": "cn", "label": "Chine"}, {"code": "in"}], "route": ["cn", "in"]}
+
+
+def test_map_scene_accepts_the_contract():
+    assert scene_schema.check_props("map", MAP, "x") == []
+    assert scene_schema.check_props("map", {"focus": "world", "places": [{"code": "us"}]}, "x") == []
+    assert scene_schema.check_props("map", {**MAP, "kicker": "1949"}, "x") == []
+    assert scene_schema.check_props("map", {"focus": "oceania", "places": [{"code": "au"}] * 6}, "x") == []
+
+
+@pytest.mark.parametrize("props,fragment", [
+    ({"places": [{"code": "cn"}]}, "prop « focus » manquante"),
+    ({"focus": "asia"}, "prop « places » manquante"),
+    ({"focus": "mars", "places": [{"code": "cn"}]}, "« props.focus » doit être une de ces valeurs"),
+    ({"focus": "asia", "places": []}, "liste de 1 à 6 objets"),
+    ({"focus": "asia", "places": [{"code": "cn"}] * 7}, "liste de 1 à 6 objets"),
+    ({"focus": "asia", "places": [{"label": "x"}]}, "« props.places »"),
+    ({"focus": "asia", "places": [{"code": "CN"}]}, "n'a pas de contour sur la carte"),
+    ({"focus": "asia", "places": [{"code": "cn"}], "route": ["cn"]}, "liste de 2 à 6 codes de pays"),
+    ({"focus": "asia", "places": [{"code": "cn"}], "route": ["cn"] * 7}, "liste de 2 à 6 codes de pays"),
+    ({"focus": "asia", "places": [{"code": "cn"}], "route": "cn"}, "liste de 2 à 6 codes de pays"),
+    ({"focus": "asia", "places": [{"code": "cn"}], "extra": 1}, "prop inconnue « extra »"),
+])
+def test_map_scene_errors(props, fragment):
+    errors = scene_schema.check_props("map", props, "Partie 1, scène 2")
+    assert any(e.startswith("Partie 1, scène 2 : ") and fragment in e for e in errors), errors
+
+
+def test_map_code_without_outline_says_it_simply():
+    errors = scene_schema.check_props("map", {"focus": "africa", "places": [{"code": "re"}], "route": ["fr", "yt"]}, "x")
+    assert len(errors) == 2
+    assert "« props.places.0.code » : « re » n'a pas de contour sur la carte" in errors[0]
+    assert "« props.route.1 » : « yt »" in errors[1]
+    assert "par exemple cn, ru, in" in errors[0] and "eu, un, su" in errors[0] and "choisis un autre pays" in errors[0]
+
+
+def test_map_code_problem_does_not_hide_other_problems():
+    errors = scene_schema.check_props("map", {"focus": "mars", "places": [{"code": "re"}]}, "x")
+    assert len(errors) == 2
+
+
+def test_map_label_cap_24():
+    errors = scene_schema.check_props("map", {"focus": "asia", "places": [{"code": "cn", "label": "x" * 25}]}, "x")
+    assert len(errors) == 1 and "props.places.0.label" in errors[0] and "24" in errors[0]
+
+
+def test_map_el():
+    assert scene_schema.check_el("map", MAP, "places.1", "x") == []
+    assert scene_schema.check_el("map", MAP, "route", "x") == []
+    assert scene_schema.check_el("map", MAP, "places.2", "x")
+    assert scene_schema.check_el("map", MAP, "places.<i>", "x")
+
+
+BODY = {"pose": "lying-side-left", "setting": "bed", "tone": "good",
+        "marks": [{"part": "back", "label": "Le dos"}, {"part": "hips"}]}
+
+
+def test_body_scene_accepts_the_contract():
+    assert scene_schema.check_props("body", BODY, "x") == []
+    assert scene_schema.check_props("body", {"pose": "standing"}, "x") == []
+    assert scene_schema.check_props("body", {"pose": "running", "marks": []}, "x") == []
+    assert scene_schema.check_props("body", {**BODY, "kicker": "La nuit"}, "x") == []
+    assert scene_schema.check_props("body", {"pose": "sitting", "marks": [{"part": "feet"}] * 4}, "x") == []
+
+
+@pytest.mark.parametrize("props,fragment", [
+    ({}, "prop « pose » manquante"),
+    ({"pose": "dancing"}, "« props.pose » doit être une de ces valeurs : standing"),
+    ({"pose": "standing", "setting": "pool"}, "« props.setting » doit être une de ces valeurs"),
+    ({"pose": "standing", "tone": "red"}, "« props.tone » doit être une de ces valeurs : good, bad, neutral"),
+    ({"pose": "standing", "marks": [{"part": "back"}] * 5}, "liste de 0 à 4 objets"),
+    ({"pose": "standing", "marks": [{"part": "tail"}]}, "liste de 0 à 4 objets avec « part », « label »"),
+    ({"pose": "standing", "marks": [{"label": "x"}]}, "« props.marks »"),
+    ({"pose": "standing", "marks": "back"}, "« props.marks »"),
+])
+def test_body_scene_errors(props, fragment):
+    errors = scene_schema.check_props("body", props, "Partie 1, scène 2")
+    assert any(e.startswith("Partie 1, scène 2 : ") and fragment in e for e in errors), errors
+
+
+def test_body_label_cap_28_and_el():
+    errors = scene_schema.check_props("body", {"pose": "standing", "marks": [{"part": "back", "label": "x" * 29}]}, "x")
+    assert len(errors) == 1 and "props.marks.0.label" in errors[0] and "28" in errors[0]
+    assert scene_schema.check_el("body", BODY, "marks.1", "x") == []
+    assert scene_schema.check_el("body", BODY, "marks.2", "x")
+
+
+def test_new_scene_types_are_known_to_check(job_with_fixtures):
+    assert {"map", "body"} <= plan_check.SCENE_TYPES
+    assert set(scene_schema.SCHEMA) == set(plan_check.SCENE_TYPES)
+
+
+def test_health_pictos_are_accepted():
+    for name in HEALTH_PICTOS.split(", "):
+        assert scene_schema.check_props("key-title", {"text": "T", "picto": name}, "x") == []

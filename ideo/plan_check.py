@@ -6,7 +6,7 @@ from ideo.textmatch import SPLIT, anchor_text, closest_passage, find_span, norma
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
-    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body",
 })
 MAX_PARTS = 8
 MAX_SCENES = 45
