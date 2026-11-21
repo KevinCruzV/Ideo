@@ -12,7 +12,7 @@ ERROR_PATTERNS = [
      "Cette vidéo a une restriction d'âge : impossible de la récupérer sans connexion."),
     (("live event", "is live", "premieres in", "will begin"),
      "Cette vidéo est en direct ou pas encore diffusée : réessayez une fois le direct terminé."),
-    (("video unavailable", "not available", "removed", "been terminated"),
+    (("video unavailable", "this video is not available", "has been removed", "been terminated"),
      "Cette vidéo est indisponible (supprimée, bloquée dans votre pays ou retirée)."),
 ]
 
@@ -23,7 +23,8 @@ def explain_ytdlp_error(stderr: str) -> str:
         if any(n in low for n in needles):
             return message
     lines = [line.strip() for line in stderr.splitlines() if line.strip()]
-    last = lines[-1] if lines else "erreur inconnue"
+    errors = [line for line in lines if "ERROR" in line]
+    last = errors[-1] if errors else (lines[-1] if lines else "erreur inconnue")
     return f"Le téléchargement a échoué : {last}"
 
 
@@ -57,7 +58,8 @@ def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
             log,
         )
     except common.IdeoError as e:
-        raise common.IdeoError(explain_ytdlp_error(_read_new(log, offset) + "\n" + str(e))) from e
+        tail = _read_new(log, offset)
+        raise common.IdeoError(explain_ytdlp_error(tail if tail.strip() else str(e))) from e
     audio, info_file = tmp / "audio.m4a", tmp / "audio.info.json"
     if not audio.exists() or not info_file.exists():
         raise common.IdeoError(f"Le téléchargement n'a produit ni audio ni métadonnées. Voir {log}")
@@ -68,7 +70,9 @@ def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
     common.run([ffmpeg, "-y", "-i", str(audio), "-vn", "-ac", "1", "-ar", "16000", str(wav)], log)
     if not wav.exists():
         raise common.IdeoError(f"La conversion audio a échoué. Voir {log}")
-    common.save_json(job / "info.json", info)
+    info_tmp = tmp / "info.json"
+    common.save_json(info_tmp, info)
+    info_tmp.replace(job / "info.json")
     audio.replace(job / "source.m4a")
     wav.replace(job / "source.wav")
 
@@ -78,6 +82,7 @@ def fetch(url: str) -> Path:
     status = common.read_status(job)["steps"].get("fetch", {})
     if (job / "source.wav").exists() and status.get("ok"):
         return job
+    (job / "source.wav").unlink(missing_ok=True)
     log = job / "logs" / "fetch.log"
     tmp = job / ".fetch-tmp"
     try:
@@ -85,6 +90,10 @@ def fetch(url: str) -> Path:
     except common.IdeoError as e:
         common.mark(job, "fetch", False, str(e))
         raise
+    except (OSError, ValueError) as e:
+        message = f"Erreur inattendue pendant la récupération : {e}"
+        common.mark(job, "fetch", False, message)
+        raise common.IdeoError(message) from e
     finally:
         _cleanup(tmp)
     common.mark(job, "fetch", True, "audio et métadonnées récupérés")

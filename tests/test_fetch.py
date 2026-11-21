@@ -89,6 +89,64 @@ def test_fetch_without_ffmpeg_fails_readably(tmp_path, monkeypatch):
     assert common.read_status(job)["steps"]["fetch"]["ok"] is False
 
 
+def test_fetch_surfaces_real_ytdlp_error_line(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+
+    def fake(cmd, log):
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with open(log, "ab") as f:
+            f.write(b"[youtube] x: Downloading\nERROR: [youtube] x: Something odd happened\n")
+        raise common.IdeoError("La commande a échoué (code 1) : yt-dlp. Voir log")
+
+    monkeypatch.setattr(common, "run", fake)
+    with pytest.raises(common.IdeoError) as exc:
+        fetch.fetch(URL)
+    assert "Something odd happened" in str(exc.value)
+    assert "code 1" not in str(exc.value)
+
+
+def test_format_not_available_is_not_unavailable_video():
+    message = fetch.explain_ytdlp_error("ERROR: [youtube] x: Requested format is not available")
+    assert "indisponible" not in message
+    assert "Requested format is not available" in message
+
+
+def test_non_ideo_error_marks_status_and_wraps(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+
+    def fake(cmd, log):
+        if "yt_dlp" in " ".join(cmd):
+            base = cmd[cmd.index("-o") + 1].replace(".%(ext)s", "")
+            open(base + ".m4a", "wb").write(b"m4a")
+            open(base + ".info.json", "w").write("{not json")
+
+    monkeypatch.setattr(common, "run", fake)
+    job = common.job_dir(URL)
+    with pytest.raises(common.IdeoError) as exc:
+        fetch.fetch(URL)
+    assert "Erreur inattendue" in str(exc.value)
+    assert common.read_status(job)["steps"]["fetch"]["ok"] is False
+    assert not list(job.glob(".fetch-*"))
+
+
+def test_retry_removes_stale_wav(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    job = common.job_dir(URL)
+    (job / "source.wav").write_bytes(b"stale")
+    common.mark(job, "fetch", False, "x")
+
+    def fake(cmd, log):
+        raise common.IdeoError("ERROR: Private video")
+
+    monkeypatch.setattr(common, "run", fake)
+    with pytest.raises(common.IdeoError):
+        fetch.fetch(URL)
+    assert not (job / "source.wav").exists()
+
+
 @pytest.mark.network
 def test_fetch_real_short_video(tmp_path, monkeypatch):
     monkeypatch.setenv("IDEO_HOME", str(tmp_path))
