@@ -80,7 +80,7 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
           width: 190,
           height: 190,
           opacity: vsOpacity,
-          transform: `scale(${0.6 + 0.4 * vs}) rotate(${-8 + (1 - vs) * 30}deg)`,
+          transform: `scale(${0.9 + 0.1 * vs}) rotate(${-8 + (1 - vs) * 30}deg)`,
         }}
       >
         <PaperShape kind="circle" color="ink" size={190} seed="vs-badge" float={2}>
