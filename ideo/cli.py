@@ -4,10 +4,10 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, entretien, history, learn, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, entretien, history, learn, lexicon, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
-         "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] "
+         "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
          "| setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
 COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "setup-voix")
 
@@ -50,6 +50,18 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
                 raise UsageError(USAGE)
             opts = {"bug": True, "job": rest[2] if len(rest) == 3 else None}
             return cmd, rest[1], None, opts
+        if rest[:1] == ["--prononciation"]:
+            lang = "fr"
+            tail = rest[1:]
+            if "--lang" in tail:
+                i = tail.index("--lang")
+                if i + 1 >= len(tail) or len(tail) != i + 2 or i != 1:
+                    raise UsageError(USAGE)
+                lang = tail[i + 1]
+                tail = tail[:i]
+            if len(tail) != 1:
+                raise UsageError(USAGE)
+            return cmd, tail[0], None, {"prononciation": True, "lang": lang}
         if len(rest) != 1:
             raise UsageError(USAGE)
         return cmd, rest[0], None, opts
@@ -218,6 +230,12 @@ def _entretien(arg: str, opts: dict) -> list[str]:
 
 
 def _learn(arg: str, opts: dict) -> list[str]:
+    if opts.get("prononciation"):
+        word, sep, spoken = arg.partition("=")
+        if not sep:
+            raise common.IdeoError("une prononciation s'écrit « mot=graphie », par exemple « face=fasse ».")
+        lexicon.add(word, spoken, opts["lang"])
+        return [f"OK learn : prononciation enregistrée ({word.strip()} se dira « {spoken.strip()} »)"]
     if opts.get("bug"):
         job = None
         if opts.get("job"):
