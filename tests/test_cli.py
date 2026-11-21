@@ -122,6 +122,7 @@ def test_prepare_writes_progress_log_and_one_line(tmp_path, monkeypatch, capsys)
     job = tmp_path / "jobs" / "abcdefghijk"
     assert len(out) == 1 and out[0].startswith("OK prepare : ")
     assert str(job.resolve()) in out[0] and "300 mots" in out[0]
+    assert out[0].split(" Coût estimé : ")[1].startswith("lecture ~")
     assert "bruit" not in captured.out and "bruit" not in captured.err
     progress = (job / "logs" / "progress.log").read_text(encoding="utf-8").splitlines()
     assert [line.split(" ")[2:4] for line in progress] == [["OK", "fetch"], ["OK", "transcribe"], ["OK", "transcript"]]

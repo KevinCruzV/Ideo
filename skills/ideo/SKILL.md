@@ -18,7 +18,7 @@ Règles pour toute la tâche :
 1. Lance avec l'outil Bash, en arrière-plan (`run_in_background`) :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo prepare "<URL>"`
    Pendant que ça tourne, lis le guide avec l'outil Read : `<dossier de base affiché au chargement de ce skill>/references/plan-guide.md` (normalement `/Users/<toi>/Desktop/ideo/skills/ideo/references/plan-guide.md`).
-2. Attends la notification de fin. La ligne `OK prepare : <JOB> (...)` donne le dossier du job, appelé JOB ci-dessous. Lis `JOB/transcript_compact.md` avec l'outil Read.
+2. Attends la notification de fin. La ligne `OK prepare : <JOB> (...)` donne le dossier du job, appelé JOB ci-dessous. Elle finit par `Coût estimé : ...` : recopie cette estimation à l'utilisateur en une phrase, par exemple "Coût estimé : lecture ~7 400 tokens, écriture ~2 000 à 3 500 tokens." Puis, sans attendre de réponse, lis `JOB/transcript_compact.md` avec l'outil Read.
 3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide.
 4. Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` (pas en arrière-plan).
    - Lignes `ERREUR check : ...` : corrige seulement ce qu'elles nomment, avec l'outil Edit sur `JOB/plan.json`, puis relance check. Si Edit refuse parce que le fichier a changé, lis `JOB/plan.json` une fois avec Read, puis refais l'Edit.

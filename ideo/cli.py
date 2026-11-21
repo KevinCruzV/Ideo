@@ -4,11 +4,11 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import common, pipeline, plan_check
+from ideo import common, cost, pipeline, plan_check
 
-USAGE = ("usage : python -m ideo prepare <url> | check <job> | produce <job> [--part N] | status <job> "
-         "| deepen <job>")
-COMMANDS = ("prepare", "check", "produce", "status", "deepen")
+USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> | produce <job> [--part N] "
+         "| status <job> | deepen <job>")
+COMMANDS = ("prepare", "cost", "check", "produce", "status", "deepen")
 
 
 class UsageError(Exception):
@@ -61,8 +61,13 @@ def run(cmd: str, arg: str, part: int | None) -> tuple[list[str], int]:
     if cmd == "prepare":
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
-                f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'}"], 0
+                f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'}. "
+                f"Coût estimé : {cost.line(job)}"], 0
     job = pipeline.resolve_job(arg)
+    if cmd == "cost":
+        if not pipeline.prepared(job):
+            raise common.IdeoError(f"{job.name} n'est pas préparé : lance d'abord prepare <url>.")
+        return [f"OK cost : {cost.line(job)}"], 0
     if cmd == "check":
         errors = plan_check.check_plan(job)
         if errors:

@@ -24,7 +24,7 @@ def estimate_seconds(text: str, lang: str) -> float:
     return len(text.split()) / RATES.get(lang, 2.6)
 
 
-def _read(job: Path, name: str, default):
+def read_json(job: Path, name: str, default):
     path = job / name
     if not path.exists():
         return default
@@ -117,8 +117,8 @@ def _ranges(value) -> list[tuple[float, float]]:
     return out
 
 
-def _sponsor_ranges(job: Path, info) -> tuple[list, list]:
-    skip = _read(job, "skip.json", {})
+def sponsor_ranges(job: Path, info) -> tuple[list, list]:
+    skip = read_json(job, "skip.json", {})
     skip = skip if isinstance(skip, dict) else {}
     segments = skip.get("segments") if "segments" in skip else (info.get("skip") if isinstance(info, dict) else [])
     hidden = _ranges(skip.get("hidden"))
@@ -354,14 +354,14 @@ def check_plan(job: Path) -> list[str]:
     if len(parts) > MAX_PARTS:
         errors.append(f"Plan : {len(parts)} parties, {MAX_PARTS} parties au maximum. Regroupe ou retire des parties.")
 
-    info = _read(job, "info.json", {})
+    info = read_json(job, "info.json", {})
     duration = info.get("duration") if isinstance(info, dict) else None
-    words = _read(job, "words.json", [])
+    words = read_json(job, "words.json", [])
     if not isinstance(words, list):
         words = []
     words = [w for w in words if isinstance(w, dict) and isinstance(w.get("w"), str) and "s" in w and "e" in w]
-    sfx = _read(job, "sfx.json", [])
-    hidden, sponsor = _sponsor_ranges(job, info)
+    sfx = read_json(job, "sfx.json", [])
+    hidden, sponsor = sponsor_ranges(job, info)
     publisher = {_plain(info.get(k)) for k in ("channel", "title")} if isinstance(info, dict) else set()
     ctx = {
         "publisher": publisher - {""},
