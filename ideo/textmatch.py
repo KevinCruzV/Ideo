@@ -5,7 +5,7 @@ from ideo.common import fmt_ts
 
 APOSTROPHES = "’‘ʼ`´"
 LIGATURES = {"œ": "oe", "æ": "ae", "ß": "ss"}
-SPLIT = re.compile("[\\s\\-" + "".join(chr(c) for c in range(0x2010, 0x2016)) + "]+")
+SPLIT = re.compile("[\\s\\-'" + APOSTROPHES + "".join(chr(c) for c in range(0x2010, 0x2016)) + "]+")
 
 
 def normalize(word: str) -> str:

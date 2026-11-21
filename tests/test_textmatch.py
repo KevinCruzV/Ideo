@@ -45,3 +45,10 @@ def test_hyphenated_words_split_consistently():
     assert textmatch.find_span(["Dis-moi", "pourquoi"], "moi") == (0, 0)
     assert textmatch.find_span(["Lui-m\u00eame", "le", "r\u00e9sume"], "lui m\u00eame le") == (0, 1)
     assert textmatch.find_span(["lui", "m\u00eame"], "Lui-m\u00eame") == (0, 1)
+
+
+def test_whisper_split_elisions_match_written_ones():
+    words = ["c", "'est", "ce", "que", "l", "'on", "appelle", "le", "spectre"]
+    assert textmatch.find_span(words, "c'est ce que l'on appelle") == (0, 6)
+    assert textmatch.find_span(["Pourquoi", "le", "ciel", "est", "-il", "bleu"], "le ciel est-il bleu") == (1, 5)
+    assert textmatch.find_span(["c'est", "clair"], "c 'est clair") == (0, 1)

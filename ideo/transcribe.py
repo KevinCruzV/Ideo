@@ -6,6 +6,7 @@ import numpy as np
 from ideo import common
 
 MIN_WORDS = 150
+_MODELS: dict = {}
 
 
 def read_pcm(wav_path) -> np.ndarray:
@@ -13,10 +14,17 @@ def read_pcm(wav_path) -> np.ndarray:
         return np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32) / 32768.0
 
 
-def whisper_words(pcm: np.ndarray, model: str = "small", language: str | None = None) -> tuple[list[dict], str]:
+def load_model(model: str = "small"):
     from faster_whisper import WhisperModel
 
-    whisper = WhisperModel(model, device="cpu", compute_type="int8")
+    key = (WhisperModel, model)
+    if key not in _MODELS:
+        _MODELS[key] = WhisperModel(model, device="cpu", compute_type="int8")
+    return _MODELS[key]
+
+
+def whisper_words(pcm: np.ndarray, model: str = "small", language: str | None = None) -> tuple[list[dict], str]:
+    whisper = load_model(model)
     options = {"language": language} if language else {}
     segments, info = whisper.transcribe(pcm, word_timestamps=True, vad_filter=True, **options)
     words = [

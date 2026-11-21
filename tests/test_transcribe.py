@@ -124,3 +124,21 @@ def test_whisper_words_forces_language(monkeypatch):
     words, language = transcribe.whisper_words(np.zeros(16000, dtype=np.float32), language="es")
     assert len(words) == 3 and language == "fr"
     assert calls[1][2]["language"] == "es"
+
+
+def test_whisper_model_is_loaded_once_per_process(tmp_path, monkeypatch):
+    import shutil
+
+    from conftest import write_sine_wav
+    from ideo import voice
+
+    if not shutil.which("ffmpeg"):
+        pytest.skip("ffmpeg indisponible")
+    calls = []
+    install_fake_model(monkeypatch, 3, calls)
+    wav = tmp_path / "seg.wav"
+    write_sine_wav(wav)
+    voice.retranscribe(wav, "fr")
+    voice.retranscribe(wav, "fr")
+    assert [c[0] for c in calls].count("init") == 1
+    assert [c[0] for c in calls].count("transcribe") == 2
