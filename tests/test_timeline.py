@@ -177,7 +177,7 @@ def test_numeric_anchor_is_accepted():
 def test_captions_show_the_written_words(job_with_offsets):
     tl = build(job_with_offsets)
     shown = [w["w"] for g in tl["captions"] for w in g["words"]]
-    assert "Dis-moi" in shown and "d'apprendre" in " ".join(shown)
+    assert "Dis-moi" in shown and "Aujourd'hui" in shown
     assert not any(w.startswith("'") or w == "-" for w in shown)
 
 
