@@ -313,4 +313,5 @@ def test_captions_show_the_space_before_high_punctuation_and_anchors_still_work(
     assert "simples !" in texts and "premier ?" in texts
     offsets = c.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
     seg = tl["segments"][4]
-    assert seg["items"][0]["at"] == round((offsets[4]["start"] + 5 * (1.0 / 8)) * 30)
+    assert seg["items"][0]["at"] == min(round((offsets[4]["start"] + 5 * (1.0 / 9)) * 30), seg["from"] + 9)
+    assert seg["items"][0]["at"] > seg["from"] + 5
