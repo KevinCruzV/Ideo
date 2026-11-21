@@ -10,7 +10,7 @@ PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json"
 AUDIO_FILES = ("source.wav", "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")
-PART_FILES = ("part.wav", "offsets.json", "timeline.json", "voice-info.json", "voice-quality.json", "voice-prosody.json")
+PART_FILES = ("part.wav", "offsets.json", "timeline.json", "voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json")
 
 
 def resolve_job(arg: str) -> Path:

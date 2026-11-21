@@ -40,10 +40,10 @@ import math
 import wave
 
 
-def write_sine_wav(path, seconds=0.6, rate=48000):
+def write_sine_wav(path, seconds=0.6, rate=48000, frequency=440):
     n = int(rate * seconds)
     frames = b"".join(
-        int(8000 * math.sin(2 * math.pi * 440 * i / rate)).to_bytes(2, "little", signed=True) for i in range(n)
+        int(8000 * math.sin(2 * math.pi * frequency * i / rate)).to_bytes(2, "little", signed=True) for i in range(n)
     )
     with wave.open(str(path), "wb") as w:
         w.setnchannels(1)

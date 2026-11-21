@@ -93,6 +93,19 @@ def _caption_alerts(where: str, timeline: dict) -> list[tuple[str, str]]:
     return alerts
 
 
+def _hook_alerts(where: str, out_dir: Path) -> list[tuple[str, str]]:
+    path = out_dir / "voice-hook.json"
+    try:
+        info = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return []
+    if not isinstance(info, dict) or info.get("passed") is not False:
+        return []
+    why = ", ".join(info.get("failed") or ["critères non atteints"])
+    return [("accroche-imparfaite", f"{where} : l'accroche reste imparfaite après {info.get('takes', 12)} prises ({why}). "
+                                    "Relance la voix de cette partie ou reformule l'accroche.")]
+
+
 def _pitch_scores(out_dir: Path) -> dict:
     path = out_dir / "voice-prosody.json"
     try:
@@ -148,6 +161,7 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
         if isinstance(score, (int, float)) and score < FAITHFUL:
             alerts.append(("voix-infidele", f"{where}, segment {name} : la voix s'écarte du texte (ressemblance "
                            f"{f'{score:.2f}'.replace('.', ',')}). Relance la voix de cette partie ou reformule le texte."))
+    alerts += _hook_alerts(where, out_dir)
     alerts += _pitch_alerts(where, out_dir)
     alerts += _scene_alerts(where, timeline, offsets)
     alerts += _caption_alerts(where, timeline)

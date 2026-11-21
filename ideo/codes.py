@@ -79,7 +79,7 @@ LESSONS = {
 }
 CODE_ONLY = frozenset({
     "silence-long", "scene-figee", "volume", "video-duree-differente", "video-absente", "timeline-absente",
-    "sous-titre-mal-decoupe", "voix-infidele", "voix-plate",
+    "sous-titre-mal-decoupe", "voix-infidele", "voix-plate", "accroche-imparfaite",
 })
 
 

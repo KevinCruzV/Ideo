@@ -22,32 +22,43 @@ def kyutai(monkeypatch, tmp_path):
     def fake_run(cmd, log):
         if str(cmd[0]) != str(py):
             return real_run(cmd, log)
-        jsonl = Path(cmd[cmd.index("run_tts") + 1]) if "run_tts" in cmd else Path(cmd[3])
+        jsonl = Path(cmd[3])
         out = Path(cmd[cmd.index("--out-folder") + 1])
-        requests = [json.loads(line) for line in jsonl.read_text(encoding="utf-8").splitlines()]
-        entry = {"cmd": [str(c) for c in cmd], "requests": requests}
+        raw = [json.loads(line) for line in jsonl.read_text(encoding="utf-8").splitlines()]
+        requests, seen_ids = [], set()
+        for request in raw:
+            base = voice.TAKE.sub("", request["id"])
+            if base not in seen_ids:
+                seen_ids.add(base)
+                requests.append({**request, "id": base})
+        entry = {"cmd": [str(c) for c in cmd], "requests": requests, "seed": int(cmd[2]),
+                 "hook_takes": sum(1 for r in raw if voice.TAKE.search(r["id"]))}
         edge_only = all(r["id"] in voice.BOUNDARY_SEGMENTS for r in requests)
         last = calls[-1] if calls else None
         if edge_only and last and not last.get("edge_cmd") and any(r["id"] not in voice.BOUNDARY_SEGMENTS for r in last["requests"]):
             last["requests"] = last["requests"] + requests
             last["edge_cmd"] = entry["cmd"]
+            last["hook_takes"] = entry["hook_takes"]
+            last["edge_seed"] = entry["seed"]
         else:
             calls.append(entry)
         if getattr(fake_run, "fail", None):
             raise common.IdeoError(fake_run.fail)
         out.mkdir(parents=True, exist_ok=True)
-        for request in requests:
-            if request["id"] in getattr(fake_run, "skip", ()):
+        for request in raw:
+            if voice.TAKE.sub("", request["id"]) in getattr(fake_run, "skip", ()):
                 continue
-            write_sine_wav(out / f"{request['id']}.wav", seconds=0.8, rate=24000)
+            write_sine_wav(out / f"{request['id']}.wav", seconds=0.8, rate=24000, frequency=300 + int(cmd[2]) % 400)
+            fake_run.written.append((request["id"], int(cmd[2])))
 
     monkeypatch.setattr(common, "run", fake_run)
     fake_run.calls = calls
     fake_run.pitch = {}
+    fake_run.written = []
     taken = {}
 
     def fake_score(wav):
-        name = Path(wav).stem
+        name = voice.TAKE.sub("", Path(wav).stem)
         taken[name] = taken.get(name, 0) + 1
         values = fake_run.pitch.get(name, [3.0])
         return values[min(taken[name] - 1, len(values) - 1)]
@@ -66,7 +77,7 @@ def faithful(monkeypatch, scores=None):
     seen = {"count": {}}
 
     def fake(wav, lang, log=None):
-        name = Path(wav).stem
+        name = voice.TAKE.sub("", Path(wav).stem)
         seen["count"][name] = seen["count"].get(name, 0) + 1
         text = texts[name]
         words = text.split()
@@ -93,7 +104,8 @@ def test_the_part_is_synthesised_in_two_subprocesses_normal_then_hook_and_outro(
     assert "--only-wav" in call["cmd"] and call["cmd"][call["cmd"].index("--padding-bonus") + 1] == "0.5"
     assert "--temp" not in call["cmd"]
     edge = call["edge_cmd"]
-    assert edge[edge.index("--padding-bonus") + 1] == "0" and edge[edge.index("--temp") + 1] == "0.9"
+    assert edge[edge.index("--padding-bonus") + 1] == "-0.4" and edge[edge.index("--temp") + 1] == "0.95"
+    assert call["hook_takes"] == 12
 
 
 def test_hook_and_outro_settings_come_from_the_config(kyutai, job_with_plan, monkeypatch):
@@ -254,9 +266,9 @@ def test_temperature_rises_pass_after_pass(kyutai, job_with_plan, monkeypatch):
     assert temps == ["0.75", "0.9", "1"]
 
 
-def test_hook_and_outro_need_2_4(kyutai, job_with_plan, monkeypatch):
+def test_outro_needs_2_4_and_the_hook_is_chosen_among_takes(kyutai, job_with_plan, monkeypatch):
     ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_00_hook": [2.2, 2.5], "seg_99_outro": [2.3, 2.45], "seg_01": [2.2]})
-    assert len(ids) == 2 and sorted(ids[1]) == ["seg_00_hook", "seg_99_outro"]
+    assert len(ids) == 2 and ids[1] == ["seg_99_outro"]
 
 
 def test_lively_enough_segment_is_not_redone(kyutai, job_with_plan, monkeypatch):
@@ -311,7 +323,7 @@ def test_lexicon_respells_only_the_text_sent_to_the_engine(kyutai, job_with_plan
     spoken_texts = {}
 
     def fake_heard(wav, lang, log=None):
-        name = Path(wav).stem
+        name = voice.TAKE.sub("", Path(wav).stem)
         return [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(spoken_texts[name].split())]
 
     monkeypatch.setattr(voice, "retranscribe", fake_heard)
@@ -336,7 +348,7 @@ def test_changing_the_lexicon_redoes_only_the_affected_segments(kyutai, job_with
     texts["seg_00_hook"] = "Face à face, tu oublies ?!"
 
     def heard(wav, lang, log=None):
-        name = Path(wav).stem
+        name = voice.TAKE.sub("", Path(wav).stem)
         return [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(
             (lexicon_text(name)).split())]
 
@@ -375,7 +387,7 @@ def test_engine_receives_numbers_in_words_and_fidelity_ignores_them(kyutai, job_
     texts.update(script_words(job_with_plan))
     monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [
         {"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08}
-        for i, w in enumerate("En 1998, il y avait 3000 personnes ici.".split() if Path(wav).stem == "seg_01" else texts[Path(wav).stem].split())])
+        for i, w in enumerate("En 1998, il y avait 3000 personnes ici.".split() if Path(wav).stem == "seg_01" else texts[voice.TAKE.sub("", Path(wav).stem)].split())])
     voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
     sent = {r["id"]: r["turns"][0] for r in kyutai.calls[0]["requests"]}["seg_01"]
     assert sent == "En mille neuf cent quatre-vingt-dix-huit, il y avait trois mille personnes ici."
@@ -391,3 +403,101 @@ def test_lexicon_comes_after_numbers(kyutai, job_with_plan, monkeypatch):
     path.write_text('{"fr": {"cent": "sent"}}', encoding="utf-8")
     assert voice.spoken_for("Il a 150 amis.", "fr", True)[0] == "Il a sent cinquante amis."
     assert voice.spoken_for("Il a 150 amis.", "fr", False)[0] == "Il a cent cinquante amis."
+
+
+def test_launcher_replaces_the_fixed_seed_of_the_engine():
+    source = voice.LAUNCHER.read_text(encoding="utf-8")
+    assert voice.LAUNCHER.name == "kyutai_launcher.py"
+    assert "int(sys.argv.pop(1))" in source and "mx.random.seed = lambda" in source and "run_tts.main()" in source
+    assert 'sys.argv[0] = "run_tts"' in source
+
+
+def test_calls_go_through_the_launcher_with_a_seed(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch)
+    cmd = kyutai.calls[0]["cmd"]
+    assert cmd[1] == str(voice.LAUNCHER) and cmd[2].isdigit() and "moshi_mlx.run_tts" not in cmd
+    assert cmd[3].endswith("script.jsonl")
+
+
+def test_derived_seeds_are_reproducible_and_differ_by_job_part_pass_and_group():
+    base = voice.derive_seed("job:1", 0, "pass")
+    assert base == voice.derive_seed("job:1", 0, "pass")
+    others = {voice.derive_seed("job:1", 1, "pass"), voice.derive_seed("job:1", 0, "hook"), voice.derive_seed("job:2", 0, "pass"),
+              voice.derive_seed("autre:1", 0, "pass")}
+    assert base not in others and len(others) == 4
+    assert all(1 <= voice.derive_seed("k", i, "pass") < 2 ** 31 for i in range(50))
+
+
+def test_redo_passes_use_different_seeds_and_so_give_different_takes(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [1.0, 1.1, 1.2, 1.3]})
+    seeds = [c["seed"] for c in kyutai.calls]
+    assert len(seeds) == 4 and len(set(seeds)) == 4
+    takes = [(i, seed) for i, seed in kyutai.written if i == "seg_02"]
+    assert len({seed for _, seed in takes}) == 4
+
+
+def test_seeds_are_the_same_from_one_run_to_the_next(kyutai, job_with_plan, monkeypatch, tmp_path):
+    run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [1.0, 1.1]})
+    first = [(c["seed"], c.get("edge_seed")) for c in kyutai.calls]
+    import shutil
+
+    shutil.rmtree(job_with_plan / "parts")
+    kyutai.calls.clear()
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    kyutai.pitch.clear()
+    assert [(c["seed"], c.get("edge_seed")) for c in kyutai.calls][0] == first[0]
+
+
+def test_hook_gets_a_dedicated_seed_in_its_own_call(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch)
+    call = kyutai.calls[0]
+    assert call["seed"] != call["edge_seed"]
+
+
+def test_hook_is_generated_in_twelve_takes_in_one_call_with_the_new_defaults(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch)
+    call = kyutai.calls[0]
+    edge = call["edge_cmd"]
+    assert call["hook_takes"] == 12
+    assert edge[edge.index("--temp") + 1] == "0.95" and edge[edge.index("--padding-bonus") + 1] == "-0.4"
+    assert not list((job_with_plan / "parts" / "01").glob("seg_00_hook_t*.wav"))
+
+
+def scripted_scores(monkeypatch, scores):
+    from ideo import hookvoice
+
+    calls = iter(scores)
+    real = hookvoice.evaluate
+    monkeypatch.setattr(hookvoice, "evaluate", lambda wav, spoken, heard, lang, expected=None: {**next(calls)})
+    return real
+
+
+def good(**over):
+    return {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 8.0, "level": 3.0, **over}
+
+
+def test_hook_choice_ranks_by_the_three_criteria_then_by_the_targets(kyutai, job_with_plan, monkeypatch):
+    takes = [good(rise=2.0, level=0.0) for _ in range(12)]
+    takes[3] = good(fidelity=0.8, rise=8.0, level=3.0)
+    takes[5] = good(formula=0.7, rise=8.0, level=3.0)
+    takes[7] = good(rise=6.5, level=1.5)
+    takes[9] = good(rise=8.5, level=3.5)
+    takes[11] = good(rise=11.4, level=6.3)
+    scripted_scores(monkeypatch, takes)
+    run_part(kyutai, job_with_plan, monkeypatch)
+    info = common.load_json(job_with_plan / "parts" / "01" / "voice-hook.json")
+    assert info["chosen"] == 9 and info["passed"] is True and info["failed"] == [] and info["takes"] == 12
+
+
+def test_no_take_passing_keeps_the_best_ranked_and_flags_it(kyutai, job_with_plan, monkeypatch):
+    takes = [good(formula=0.7, speed_ratio=0.5, rise=1.0, level=0.0) for _ in range(12)]
+    takes[4] = good(formula=0.7, rise=8.0, level=3.0)
+    scripted_scores(monkeypatch, takes)
+    run_part(kyutai, job_with_plan, monkeypatch)
+    info = common.load_json(job_with_plan / "parts" / "01" / "voice-hook.json")
+    assert info["chosen"] == 4 and info["passed"] is False and info["failed"] == ["formule trop longue"]
+
+
+def test_the_hook_is_never_redone_by_the_flatness_rule(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_00_hook": [1.0, 1.0, 1.0, 1.0]})
+    assert len(ids) == 1

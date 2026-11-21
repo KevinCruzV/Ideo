@@ -12,8 +12,8 @@ ENGINES = ("kyutai", "edge")
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
 DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
 DEFAULT_PADDING_BONUS = 0.5
-DEFAULT_HOOK_TEMP = 0.9
-DEFAULT_HOOK_PADDING = 0.0
+DEFAULT_HOOK_TEMP = 0.95
+DEFAULT_HOOK_PADDING = -0.4
 RATE = re.compile(r"^[+-]\d{1,3}%$")
 
 

@@ -186,7 +186,7 @@ def test_local_voice_missing(monkeypatch, home):
 
 
 def test_hook_settings_defaults_and_keys(home):
-    assert config.kyutai_hook_temp() == 0.9 and config.kyutai_hook_padding_bonus() == 0
+    assert config.kyutai_hook_temp() == 0.95 and config.kyutai_hook_padding_bonus() == -0.4
     write(home, {"kyutai_hook_temp": 1.0, "kyutai_hook_padding_bonus": 0.5})
     assert config.kyutai_hook_temp() == 1.0 and config.kyutai_hook_padding_bonus() == 0.5
 

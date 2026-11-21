@@ -1,5 +1,7 @@
 import asyncio
+import hashlib
 import json
+import re
 import shutil
 import tempfile
 import wave
@@ -11,6 +13,9 @@ import numpy as np
 from ideo import align, common, config, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
 
 TICKS = 1e7
+LAUNCHER = Path(__file__).with_name("kyutai_launcher.py")
+DEFAULT_SEED = 299792458
+TAKE = re.compile(r"_t\d{2}$")
 KYUTAI_LANGS = config.KYUTAI_LANGS
 KEEP_THRESHOLD = 0.90
 ALERT_THRESHOLD = 0.80
@@ -101,7 +106,7 @@ class KyutaiBackend:
         self.log = log
 
     def synthesize_batch(self, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None,
-                         padding: float | None = None) -> dict:
+                         padding: float | None = None, seed: int | None = None) -> dict:
         python = config.KYUTAI_PYTHON
         if not Path(python).exists():
             raise common.IdeoError("le moteur de voix local est introuvable : lance « python -m ideo setup-voix » "
@@ -115,7 +120,7 @@ class KyutaiBackend:
             jsonl.write_text("\n".join(json.dumps({"id": name, "turns": [text], "voices": [voice]}, ensure_ascii=False)
                                        for name, text in items) + "\n", encoding="utf-8")
             common.run(
-                [str(python), "-m", "moshi_mlx.run_tts", str(jsonl), "--out-folder", str(work / "out"), "--only-wav",
+                [str(python), str(LAUNCHER), str(DEFAULT_SEED if seed is None else seed), str(jsonl), "--out-folder", str(work / "out"), "--only-wav",
                  "--padding-bonus", f"{config.kyutai_padding_bonus() if padding is None else padding:g}"] + ([] if temp is None else ["--temp", f"{temp:g}"]),
                 log,
             )
@@ -134,6 +139,11 @@ class KyutaiBackend:
         out_wav = Path(out_wav)
         self.synthesize_batch([(out_wav.stem, text)], lang, out_wav.parent)
         return None
+
+
+def derive_seed(key: str, attempt: int, group: str) -> int:
+    digest = hashlib.sha256(f"{key}:{attempt}:{group}".encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % (2 ** 31 - 2) + 1
 
 
 def get_backend(log: Path | None = None) -> VoiceBackend:
@@ -249,15 +259,16 @@ def _log_line(log: Path, line: str) -> None:
         f.write(line + "\n")
 
 
-def _generate(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None) -> None:
+def _generate(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None,
+              key: str = "", attempt: int = 0) -> None:
     if hasattr(backend, "synthesize_batch"):
-        edges = [(n, t) for n, t in items if n in BOUNDARY_SEGMENTS]
-        rest = [(n, t) for n, t in items if n not in BOUNDARY_SEGMENTS]
+        edges = [(n, t) for n, t in items if TAKE.sub("", n) in BOUNDARY_SEGMENTS]
+        rest = [(n, t) for n, t in items if TAKE.sub("", n) not in BOUNDARY_SEGMENTS]
         if rest:
-            backend.synthesize_batch(rest, lang, out_dir, temp=temp)
+            backend.synthesize_batch(rest, lang, out_dir, temp=temp, seed=derive_seed(key, attempt, "pass"))
         if edges:
             backend.synthesize_batch(edges, lang, out_dir, temp=max(temp or 0.0, config.kyutai_hook_temp()),
-                                     padding=config.kyutai_hook_padding_bonus())
+                                     padding=config.kyutai_hook_padding_bonus(), seed=derive_seed(key, attempt, "hook"))
         return
     for name, text in items:
         backend.synthesize(text, lang, out_dir / f"{name}.wav")
@@ -285,21 +296,54 @@ def needs_redo(name: str, take: dict) -> bool:
     return take["prosody"] is not None and take["prosody"] < target_for(name)
 
 
-def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, log: Path) -> tuple[dict, dict, dict, int]:
+def _expand(todo: list[tuple[str, str]], spoken: dict) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for name, _ in todo:
+        if name == HOOK:
+            out += [(f"{HOOK}_t{i:02d}", spoken[HOOK]) for i in range(hookvoice.TAKES)]
+        else:
+            out.append((name, spoken[name]))
+    return out
+
+
+def _pick_hook(out_dir: Path, spoken: str, expected: str, lang: str, log: Path) -> tuple[dict, dict]:
+    candidates = []
+    for i in range(hookvoice.TAKES):
+        wav = out_dir / f"{HOOK}_t{i:02d}.wav"
+        heard = retranscribe(wav, lang, log)
+        candidates.append({"scores": hookvoice.evaluate(wav, spoken, heard, lang, expected), "heard": heard,
+                           "prosody": prosody.score(wav), "bytes": wav.read_bytes()})
+        wav.unlink()
+    index = hookvoice.best(candidates)
+    chosen = candidates[index]
+    problems = hookvoice.failed(chosen["scores"])
+    info = {**chosen["scores"], "passed": not problems, "failed": problems, "takes": hookvoice.TAKES, "chosen": index}
+    take = {"fidelity": chosen["scores"]["fidelity"], "prosody": chosen["prosody"], "heard": chosen["heard"],
+            "bytes": chosen["bytes"]}
+    return take, info
+
+
+def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, log: Path, key: str = "") -> tuple:
     prepared = {name: spoken_for(text, lang, True, name) for name, text in items}
     spoken = {name: p[0] for name, p in prepared.items()}
     takes: dict = {name: [] for name, _ in items}
+    hook_info = None
     redone = 0
     todo = items
     for attempt in range(MAX_REDOS + 1):
         temp = None if attempt == 0 else REDO_TEMPS[min(attempt - 1, len(REDO_TEMPS) - 1)]
-        _generate(backend, [(name, spoken[name]) for name, _ in todo], lang, out_dir, temp)
+        _generate(backend, _expand(todo, spoken), lang, out_dir, temp, key, attempt)
         for name, _ in todo:
+            expected = numbers.plain_words(*prepared[name])
+            if name == HOOK:
+                take, hook_info = _pick_hook(out_dir, spoken[name], expected, lang, log)
+                takes[name].append(take)
+                continue
             wav = out_dir / f"{name}.wav"
             heard = retranscribe(wav, lang, log)
-            takes[name].append({"fidelity": fidelity.similarity(numbers.plain_words(*prepared[name]), heard), "prosody": prosody.score(wav),
+            takes[name].append({"fidelity": fidelity.similarity(expected, heard), "prosody": prosody.score(wav),
                                 "heard": heard, "bytes": wav.read_bytes()})
-        todo = [(n, t) for n, t in items if needs_redo(n, best_take(takes[n]))]
+        todo = [(n, t) for n, t in items if n != HOOK and needs_redo(n, best_take(takes[n]))]
         if not todo or attempt == MAX_REDOS:
             break
         redone += len(todo)
@@ -312,7 +356,7 @@ def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Pat
                    f"{min(c['fidelity'] for c in chosen.values()):.2f}, intonation médiane : "
                    f"{prosody.median(scores) if scores else 'inconnue'}")
     return ({n: c["heard"] for n, c in chosen.items()}, {n: c["fidelity"] for n, c in chosen.items()},
-            {n: c["prosody"] for n, c in chosen.items() if c["prosody"] is not None}, redone)
+            {n: c["prosody"] for n, c in chosen.items() if c["prosody"] is not None}, redone, hook_info)
 
 
 def _write_json_merged(path: Path, update: dict) -> None:
@@ -349,9 +393,10 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             heard_by_name: dict = {}
             scores: dict = {}
             pitch: dict = {}
+            hook_info = None
             if local:
                 try:
-                    heard_by_name, scores, pitch, _ = _settle_local(backend, pending, lang, out_dir, log)
+                    heard_by_name, scores, pitch, _, hook_info = _settle_local(backend, pending, lang, out_dir, log, f"{job.name}:{n}")
                 except common.IdeoError as err:
                     fallback = _short(err)
                     _log_line(log, f"voix : repli sur la voix en ligne ({err})")
@@ -372,6 +417,8 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             engine = "kyutai" if getattr(backend, "local", False) else "edge"
             common.save_json(out_dir / "voice-info.json", {"engine": engine, "fallback": fallback,
                                                            "local_missing": config.local_voice_missing(lang)})
+            if hook_info:
+                common.save_json(out_dir / "voice-hook.json", hook_info)
             if scores:
                 _write_json_merged(out_dir / "voice-quality.json", scores)
                 _write_json_merged(out_dir / "voice-prosody.json", pitch)

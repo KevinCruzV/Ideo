@@ -314,3 +314,20 @@ def test_beats_that_leave_six_seconds_still_alert(made):
     edit_timeline(job, sparse)
     found = [a for a in qc.run(job) if "rien n'apparaît pendant" in a]
     assert found and "10,0 s" in found[0] or "10" in found[0]
+
+
+def test_imperfect_hook_alert(made):
+    job, _ = made
+    common.save_json(job / "parts" / "01" / "voice-hook.json", {"passed": False, "failed": ["formule trop longue"], "takes": 12})
+    found = [t for c, t in qc.run_coded(job) if c == "accroche-imparfaite"]
+    assert len(found) == 1 and "formule trop longue" in found[0] and found[0].startswith("Partie 1 : l'accroche reste imparfaite")
+    common.save_json(job / "parts" / "01" / "voice-hook.json", {"passed": True, "failed": [], "takes": 12})
+    assert not [c for c, _ in qc.run_coded(job) if c == "accroche-imparfaite"]
+    (job / "parts" / "01" / "voice-hook.json").unlink()
+    assert not [c for c, _ in qc.run_coded(job) if c == "accroche-imparfaite"]
+
+
+def test_imperfect_hook_is_a_code_originated_defect():
+    from ideo import codes
+
+    assert "accroche-imparfaite" in codes.CODE_ONLY
