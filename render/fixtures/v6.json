@@ -1,0 +1,124 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 600,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": {
+    "part": 1,
+    "total": 1,
+    "title": "Comment bien dormir ?",
+    "label": "Partie"
+  },
+  "segments": [
+    {
+      "kind": "scene",
+      "type": "body",
+      "from": 0,
+      "to": 120,
+      "props": {
+        "pose": "lying-stomach",
+        "setting": "bed",
+        "tone": "bad",
+        "kicker": "Sur le ventre",
+        "marks": [
+          {
+            "part": "neck",
+            "label": "Cou tordu"
+          },
+          {
+            "part": "lungs",
+            "label": "Poumons écrasés"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 6
+        },
+        {
+          "el": "marks.1",
+          "at": 24
+        }
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "body",
+      "from": 120,
+      "to": 240,
+      "props": {
+        "pose": "lying-side-left",
+        "setting": "bed",
+        "tone": "good",
+        "kicker": "Côté gauche",
+        "marks": [
+          {
+            "part": "heart",
+            "label": "Cœur protégé"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 126
+        }
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "body",
+      "from": 240,
+      "to": 360,
+      "props": {
+        "pose": "lying-side-right",
+        "setting": "bed",
+        "kicker": "Côté droit",
+        "marks": []
+      },
+      "items": []
+    },
+    {
+      "kind": "scene",
+      "type": "counter",
+      "from": 360,
+      "to": 480,
+      "props": {
+        "label": "pour cent de sommeil profond",
+        "from": 10,
+        "to": 40,
+        "unit": "%"
+      },
+      "items": [
+        {
+          "el": "to",
+          "at": 420
+        },
+        {
+          "el": "label",
+          "at": 364
+        }
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "stamp",
+      "from": 480,
+      "to": 600,
+      "props": {
+        "text": "Dormir sur le ventre"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 512
+        }
+      ]
+    }
+  ],
+  "captions": []
+}

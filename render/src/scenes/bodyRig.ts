@@ -35,8 +35,8 @@ const mirror = (rig: Rig): Rig => {
   };
 };
 
-const SIDE_LEFT: Rig = {
-  head: [206, 66],
+const SIDE_FACING: Rig = {
+  head: [208, 64],
   headView: "right",
   asleep: true,
   shoulders: [
@@ -45,23 +45,23 @@ const SIDE_LEFT: Rig = {
   ],
   hips: [
     [192, 182],
-    [202, 180],
+    [204, 180],
   ],
   elbows: [
-    [230, 124],
-    [222, 136],
+    [226, 98],
+    [234, 142],
   ],
   hands: [
-    [238, 104],
-    [238, 158],
+    [236, 72],
+    [218, 178],
   ],
   knees: [
-    [236, 218],
-    [228, 228],
+    [250, 204],
+    [244, 214],
   ],
   feet: [
-    [212, 262],
-    [206, 272],
+    [228, 252],
+    [220, 262],
   ],
   torso: [30, 30],
   topView: true,
@@ -261,8 +261,8 @@ export const RIGS: Record<BodyPose, Rig> = {
     topView: true,
     feetUp: true,
   },
-  "lying-side-left": SIDE_LEFT,
-  "lying-side-right": mirror(SIDE_LEFT),
+  "lying-side-left": mirror(SIDE_FACING),
+  "lying-side-right": SIDE_FACING,
   "lying-fetal": {
     head: [222, 96],
     headView: "right",
@@ -296,7 +296,7 @@ export const RIGS: Record<BodyPose, Rig> = {
     feetUp: false,
   },
   "lying-stomach": {
-    head: [200, 70],
+    head: [204, 66],
     headView: "back",
     asleep: true,
     shoulders: [
@@ -308,12 +308,12 @@ export const RIGS: Record<BodyPose, Rig> = {
       [218, 184],
     ],
     elbows: [
-      [140, 112],
-      [260, 112],
+      [144, 98],
+      [238, 148],
     ],
     hands: [
-      [146, 68],
-      [254, 68],
+      [164, 60],
+      [236, 186],
     ],
     knees: [
       [186, 232],

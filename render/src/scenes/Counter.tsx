@@ -47,7 +47,7 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const label = fitText(str(props.label), { maxWidth: BOX_W, maxLines: 3, max: 82, min: 56, prefer: true });
   const disc = 660;
   const numberFit = fitText(widest, { maxWidth: disc - 70, maxLines: 1, max: 250, min: 60 });
-  const numberIn = interpolate(frame - runAt, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const numberIn = start !== 0 ? interpolate(frame, [-3, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : interpolate(frame - runAt, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const settle = interpolate(frame - runAt - runFor, [0, 4, 10], [1, 1.06, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   return (

@@ -3,7 +3,7 @@ import { interpolate, spring, useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
 import { PaperBacking } from "../paper/PaperStrip";
 import { Picto } from "../pictos/Picto";
-import { fonts, onPaper } from "../theme";
+import { colors, fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
 import { fitText } from "../text/fit";
@@ -49,6 +49,32 @@ export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
         <Picto name={props.picto} size={190} x={BOX_CX - SHEET_W / 2 - 20} y={sheetY - 50} rotate={-8} enterAt={4} />
       </div>
       <div style={{ position: "absolute", left: 0, right: 0, top: sheetY, height: sheetH, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {local < 6 ? (
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: `translate(calc(-50% + ${BOX_CX - 540}px), -50%) rotate(-7deg)`, opacity: 0.16 * (1 - Math.max(0, local) / 6) }}>
+            <div style={{ padding: 24 }}>
+              <div
+                style={{
+                  border: `9px dashed ${colors.ink}`,
+                  padding: "26px 44px 30px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  fontFamily: fonts.text,
+                  fontWeight: 800,
+                  fontSize: fit.size,
+                  lineHeight: 1.12,
+                  letterSpacing: 2,
+                  color: colors.ink,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {fit.lines.map((l, i) => (
+                  <span key={`ghost-${i}`}>{l}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div style={{ position: "relative", left: BOX_CX - 540, opacity, transform: `rotate(${-7 + 2 * press}deg) scale(${scale * (1 - 0.06 * press)})` }}>
           <PaperBacking color={accent} seed="stamp-plate" amount={0.8} />
           <div style={{ position: "relative", padding: 24 }}>

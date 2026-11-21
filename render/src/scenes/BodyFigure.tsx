@@ -82,14 +82,18 @@ export const Head: React.FC<{ rig: Rig; blink: boolean; tilt: number; look: numb
         </>
       ) : view === "back" ? (
         <>
-          <Eye x={hx + 18} y={hy - 2} closed look={0} scale={0.7} />
-          <path d={`M${hx - 14} ${hy + 18} Q${hx} ${hy + 24} ${hx + 14} ${hy + 18}`} fill="none" stroke="rgba(31,26,20,.25)" strokeWidth={3} strokeLinecap="round" />
+          <path d={`M${hx - 20} ${hy - 18} Q${hx - 4} ${hy - 30} ${hx + 16} ${hy - 22} Q${hx + 2} ${hy - 12} ${hx - 6} ${hy + 4} Q${hx - 20} ${hy - 2} ${hx - 20} ${hy - 18} Z`} fill="rgba(31,26,20,.12)" />
+          <circle cx={hx + 25 + OFF[0]} cy={hy + 2 + OFF[1]} r={7} fill={shade} />
+          <circle cx={hx + 25} cy={hy + 2} r={7} fill={colors.yellow} />
+          <path d={`M${hx - 12} ${hy + 20} Q${hx} ${hy + 25} ${hx + 12} ${hy + 20}`} fill="none" stroke="rgba(31,26,20,.2)" strokeWidth={3} strokeLinecap="round" />
         </>
       ) : (
         (() => {
           const f = view === "right" ? 1 : -1;
           return (
             <>
+              <circle cx={hx + f * 27 + OFF[0]} cy={hy + 3 + OFF[1]} r={6} fill={shade} />
+              <circle cx={hx + f * 27} cy={hy + 3} r={6} fill={colors.yellow} />
               <Eye x={hx + f * 4} y={hy - 4} closed={closed} look={f * 2 + look} />
               <Eye x={hx + f * 18} y={hy - 4} closed={closed} look={f * 2 + look} scale={0.8} />
               <path d={`M${hx + f * 6} ${hy + 12} L${hx + f * 17} ${hy + 11}`} fill="none" stroke={colors.ink} strokeWidth={3} strokeLinecap="round" />
@@ -126,6 +130,14 @@ export const BodyFigure: React.FC<{ rig: Rig; blink: boolean; tilt: number; look
       {profile ? arm(far) : null}
       {legs}
       <Blob d={torsoPath(rig)} fill={colors.blue} />
+      {profile && rig.topView ? (
+        <>
+          <circle cx={rig.hips[near][0] + OFF[0]} cy={rig.hips[near][1] + OFF[1]} r={15} fill={shade} />
+          <circle cx={rig.hips[near][0]} cy={rig.hips[near][1]} r={15} fill={colors.ink} />
+          <circle cx={rig.shoulders[near][0] + OFF[0]} cy={rig.shoulders[near][1] + OFF[1]} r={14} fill={shade} />
+          <circle cx={rig.shoulders[near][0]} cy={rig.shoulders[near][1]} r={14} fill="#3354d6" />
+        </>
+      ) : null}
       {profile ? arm(near) : [arm(0), arm(1)]}
       <Head rig={rig} blink={blink} tilt={tilt} look={look} />
     </g>

@@ -16,9 +16,10 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { enterFor } from "./timing";
 
-const VIEW_X = 56;
-const VIEW_W = 288;
-const VIEW_H = 320;
+const UPRIGHT_VIEW = [56, 0, 288, 320] as const;
+const LYING_VIEW = [46, 64, 312, 192] as const;
+
+export const rotateLying = ([x, y]: P): P => [200 + (y - 160), 160 - (x - 200)];
 const LABEL_MAX = 52;
 const LABEL_MIN = 44;
 
@@ -96,9 +97,6 @@ export const BodyScene: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const marks = marksOf(props.marks);
   const top = areaTop(props);
   const area = areaFor(top + 10, BOX_L, BOX_W);
-  const W = BOX_W;
-  const s = W / VIEW_W;
-  const H = VIEW_H * s;
   const lying = pose.startsWith("lying");
   const breath = Math.sin((frame / 30) * Math.PI * 2 * (lying ? 0.22 : 0.3));
   const nod = beat ? 6 * Math.sin(beat.t * Math.PI * 2) * (1 - beat.t) : 0;
@@ -109,41 +107,97 @@ export const BodyScene: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const neck: P = [(rig.shoulders[0][0] + rig.shoulders[1][0]) / 2, (rig.shoulders[0][1] + rig.shoulders[1][1]) / 2];
   const figure = entry(frame, -3, { dy: 30, spin: 0, from: 0.95 });
 
-  const labelW = W * 0.46;
-  const labelFits = marks.map((m) => fitText(m.label, { maxWidth: labelW, maxLines: 3, max: LABEL_MAX, min: LABEL_MIN, prefer: true }));
+  const W = BOX_W;
+  const view = lying ? LYING_VIEW : UPRIGHT_VIEW;
+  const [VX, VY, VW, VH] = view;
+  const s = W / VW;
+  const H = VH * s;
+  const toView = (pt: P): P => (lying ? rotateLying(pt) : pt);
+  const labelW = lying ? W * 0.48 : W * 0.46;
+  const maxLines = lying ? 2 : 3;
+  const labelFits = marks.map((m) => fitText(m.label, { maxWidth: labelW, maxLines, max: LABEL_MAX, min: LABEL_MIN, prefer: true }));
   const labelSize = Math.max(LABEL_MIN, Math.min(LABEL_MAX, ...labelFits.filter((f) => f.lines.length).map((f) => f.size)));
-  const fits = marks.map((m) => fitText(m.label, { maxWidth: labelW, maxLines: 3, max: labelSize, min: LABEL_MIN, prefer: true }));
+  const fits = marks.map((m) => fitText(m.label, { maxWidth: labelW, maxLines, max: labelSize, min: LABEL_MIN, prefer: true }));
   const lineH = stripHeight(labelSize);
-  const slots: { side: number; y: number; h: number }[] = [];
-  const layout = marks.map((m, i) => {
+  const base = marks.map((m, i) => {
     const a = anchorOf(rig, m.part);
-    const px = (a.at[0] - VIEW_X) * s;
-    const py = a.at[1] * s;
+    const [vx, vy] = toView(a.at);
     const fit = fits[i];
     const labelH = fit.lines.length * lineH + Math.max(0, fit.lines.length - 1) * 6;
     const w = fit.lines.length ? Math.max(...fit.lines.map((l) => textWidth(l, fit.size) + fit.size * 0.6)) : 0;
-    let side = px < W / 2 ? -1 : 1;
-    if (slots.filter((sl) => sl.side === side).length >= 2 && slots.filter((sl) => sl.side === -side).length < 2) side = -side;
-    let y = py - labelH / 2;
-    for (const sl of slots.filter((sl) => sl.side === side).sort((p, q) => p.y - q.y)) {
-      if (y < sl.y + sl.h + 14 && y + labelH > sl.y - 14) y = sl.y + sl.h + 14;
-    }
-    y = Math.max(-labelH * 0.2, Math.min(H - labelH, y));
-    slots.push({ side, y, h: labelH });
-    const left = side < 0 ? 0 : W - w;
-    return { ...m, a, px, py, w, side, left, y, fit, labelH, at: enterFor(`marks.${i}`, items, from, to) };
+    return { ...m, a, ax: (vx - VX) * s, ay: (vy - VY) * s, fit, labelH, w, at: enterFor(`marks.${i}`, items, from, to) };
   });
+  type Placed = (typeof base)[number] & { left: number; y: number; side: number };
+  let placed: Placed[] = [];
+  let svgTop = 0;
+  let totalH = H;
+  if (lying) {
+    const rows: Placed[][] = [[], []];
+    base.forEach((m) => {
+      let row = m.ay < H / 2 ? 0 : 1;
+      if (rows[row].length >= 2 && rows[1 - row].length < 2) row = 1 - row;
+      rows[row].push({ ...m, left: 0, y: 0, side: row === 0 ? -1 : 1 });
+    });
+    const packRow = (row: Placed[]) => {
+      const sorted = [...row].sort((p, q) => p.ax - q.ax);
+      let line = 0;
+      let cursor = 0;
+      const lines: number[] = [];
+      sorted.forEach((m) => {
+        let left = Math.max(0, Math.min(W - m.w, m.ax - m.w / 2));
+        if (left < cursor) left = cursor;
+        if (left + m.w > W) {
+          line += 1;
+          left = Math.max(0, Math.min(W - m.w, m.ax - m.w / 2));
+        }
+        m.left = left;
+        m.y = line;
+        cursor = left + m.w + 18;
+        lines[line] = Math.max(lines[line] ?? 0, m.labelH);
+      });
+      return lines;
+    };
+    const topLines = packRow(rows[0]);
+    const bottomLines = packRow(rows[1]);
+    const topH = topLines.reduce((sum, h) => sum + h + 14, 0);
+    svgTop = topH ? topH + 20 : 0;
+    rows[0].forEach((m) => {
+      m.y = topLines.slice(0, m.y).reduce((sum, h) => sum + h + 14, 0);
+    });
+    rows[1].forEach((m) => {
+      m.y = svgTop + H + 20 + bottomLines.slice(0, m.y).reduce((sum, h) => sum + h + 14, 0);
+    });
+    const bottomH = bottomLines.reduce((sum, h) => sum + h + 14, 0);
+    totalH = svgTop + H + (bottomH ? bottomH + 20 : 0);
+    placed = [...rows[0], ...rows[1]];
+  } else {
+    const slots: { side: number; y: number; h: number }[] = [];
+    placed = base.map((m) => {
+      let side = m.ax < W / 2 ? -1 : 1;
+      if (slots.filter((sl) => sl.side === side).length >= 2 && slots.filter((sl) => sl.side === -side).length < 2) side = -side;
+      let y = m.ay - m.labelH / 2;
+      for (const sl of slots.filter((sl) => sl.side === side).sort((p, q) => p.y - q.y)) {
+        if (y < sl.y + sl.h + 14 && y + m.labelH > sl.y - 14) y = sl.y + sl.h + 14;
+      }
+      y = Math.max(-m.labelH * 0.2, Math.min(H - m.labelH, y));
+      slots.push({ side, y, h: m.labelH });
+      return { ...m, side, y, left: side < 0 ? 0 : W - m.w };
+    });
+  }
+  const layout = placed.map((m) => ({ ...m, px: m.ax, py: m.ay + svgTop }));
+  const groupTransform = lying ? `rotate(-90 200 160)` : undefined;
 
   return (
     <Stage>
       <FitBox area={area}>
-        <div style={{ position: "relative", width: W, height: H }}>
+        <div style={{ position: "relative", width: W, height: totalH }}>
           <svg
             width={W}
             height={H}
-            viewBox={`${VIEW_X} 0 ${VIEW_W} ${VIEW_H}`}
-            style={{ position: "absolute", left: 0, top: 0, overflow: "visible", opacity: figure.opacity, transform: `translateY(${figure.y}px)` }}
+            viewBox={`${VX} ${VY} ${VW} ${VH}`}
+            style={{ position: "absolute", left: 0, top: svgTop, overflow: "visible", opacity: figure.opacity, transform: `translateY(${figure.y}px)` }}
           >
+            <g transform={groupTransform}>
             <SettingBack setting={setting} pose={pose} rig={rig} />
             {layout.map((m) => {
               const on = tween(frame, m.at, 10);
@@ -175,21 +229,22 @@ export const BodyScene: React.FC<SceneProps> = ({ props, items, from, to }) => {
                 </g>
               );
             })}
+            </g>
           </svg>
           {layout.map((m) => {
             if (!m.label) return null;
             const on = tween(frame, m.at + 2, 8);
-            const lx = m.side < 0 ? m.left + m.w - 6 : m.left + 6;
-            const ly = m.y + Math.min(m.labelH, lineH) / 2;
+            const lx = lying ? m.left + m.w / 2 : m.side < 0 ? m.left + m.w - 6 : m.left + 6;
+            const ly = lying ? (m.side < 0 ? m.y + m.labelH - 8 : m.y + 8) : m.y + Math.min(m.labelH, lineH) / 2;
             const tx = m.px;
             return (
               <React.Fragment key={`label-${m.part}`}>
-                <svg width={W} height={H} style={{ position: "absolute", left: 0, top: 0, overflow: "visible", opacity: on }}>
+                <svg width={W} height={totalH} style={{ position: "absolute", left: 0, top: 0, overflow: "visible", opacity: on }}>
                   <line x1={lx} y1={ly} x2={lx + (tx - lx) * on} y2={ly + (m.py - ly) * on} stroke={colors.ink} strokeWidth={4} strokeLinecap="round" />
                   <circle cx={m.px} cy={m.py} r={7 * on} fill={colors.ink} />
                 </svg>
                 <div style={{ position: "absolute", left: m.left, top: m.y }}>
-                  <Strips lines={m.fit.lines} size={m.fit.size} enterAt={m.at + 2} seed={`body-label-${m.part}`} gap={6} align={m.side < 0 ? "flex-start" : "flex-end"} motion={{ dx: m.side * 40, dy: 0 }} style={{ width: m.w }} />
+                  <Strips lines={m.fit.lines} size={m.fit.size} enterAt={m.at + 2} seed={`body-label-${m.part}`} gap={6} align={lying ? "center" : m.side < 0 ? "flex-start" : "flex-end"} motion={lying ? { dx: 0, dy: m.side * 30 } : { dx: m.side * 40, dy: 0 }} style={{ width: m.w }} />
                 </div>
               </React.Fragment>
             );
