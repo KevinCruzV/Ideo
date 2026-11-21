@@ -405,6 +405,10 @@ Détail **[Proposition]**, à faire dans un plan dédié juste après la v1 :
   corps simple) et se distingue par des attributs choisis dans une liste fermée : couleur de tête et de corps
   (jamais le jaune de la mascotte), moustache, barbe, cheveux, chapeau, couronne, lunettes, cravate, et une
   étiquette de nom. Rien n'est dessiné sur mesure : pas de crédits en plus, et un rendu régulier.
+- **Personnage dans un décor [Kevin]** : quand il faut illustrer une situation, le personnage peut être plus
+  petit, avec un corps entier, placé dans un décor en papier découpé (une maison, une rue, une salle de
+  classe...). Les décors viennent d'une petite bibliothèque d'éléments (maison, arbre, table, porte, écran,
+  sol, ciel) que Claude assemble par nom, comme les formes aujourd'hui.
 - **Scènes à deux personnages** : face à face avec bulles, l'un qui agit sur l'autre, la mascotte qui commente.
 - **Personnes réelles** : pas de caricature d'un trait physique autre que les attributs de la liste. Pour une
   figure historique criminelle, expression neutre par défaut (jamais le sourire de la mascotte), aucun symbole
