@@ -1,0 +1,7 @@
+{
+  "name": "ideo",
+  "displayName": "Ideo",
+  "version": "0.1.0",
+  "description": "Turn a YouTube video into a series of short vertical explainer videos.",
+  "skills": ["./skills/"]
+}

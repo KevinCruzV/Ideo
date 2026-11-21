@@ -1,8 +1,9 @@
 jobs/
 voice/
 .venv/
-__pycache__/
-node_modules/
+render/node_modules/
 render/out/
 .superpowers/
+__pycache__/
 .DS_Store
+.pytest_cache/
