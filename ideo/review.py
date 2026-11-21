@@ -3,7 +3,7 @@ import math
 import re
 from pathlib import Path
 
-from ideo import countries, plan_check, scene_schema, target, textmatch
+from ideo import countries, plan_check, scene_schema, slop, target, textmatch
 from ideo.common import load_json
 
 LIMIT = 8
@@ -223,7 +223,9 @@ def _scene_list(indexes: list[int]) -> str:
     return ", ".join(str(i) for i in indexes)
 
 
-def _part_findings(part: dict, n: int, out: list) -> None:
+def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
+    for code, where, finding, todo in slop.findings(part, n, lang):
+        out.append((3, *_line(code, where, finding, todo)))
     scenes = part["scenes"]
     where = f"Partie {n}"
     count = len(scenes)
@@ -350,7 +352,7 @@ def _coverage(plan: dict, duration: float | None) -> float:
 def coded(plan: dict, job: Path, seconds: int) -> list[tuple[str, str]]:
     scored: list[tuple[int, str, str]] = []
     for part in plan["parts"]:
-        _part_findings(part, part["n"], scored)
+        _part_findings(part, part["n"], scored, plan.get("lang") or "fr")
     total = sum(len(p["scenes"]) for p in plan["parts"])
     if seconds and total / (seconds / 60) > MAX_SCENES_PER_MINUTE:
         scored.append((1, *_line("rythme-hache", "Plan", f"{total} scènes pour environ {seconds} s, plus de {MAX_SCENES_PER_MINUTE} scènes par minute (rythme haché)",
