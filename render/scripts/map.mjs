@@ -72,8 +72,10 @@ for (const f of geo.features) {
   const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
   const rings = [];
   for (const poly of polys) {
-    poly.forEach((ring, i) => {
-      const full = ring.map(project);
+    poly.forEach((source, i) => {
+      const crosses = source.some(([lon]) => lon > 170) && source.some(([lon]) => lon < -170);
+      const ring = crosses ? source.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat]) : source;
+      const full = ring.map(([lon, lat]) => (lon > 180 ? project([180, lat]).map((v, k) => (k === 0 ? v + (lon - 180) * 0.6 : v)) : project([lon, lat])));
       const thinned = thin(full, 0.6);
       const projected = thinned.length >= 4 ? thinned : full;
       if (projected.length < 3) return;
@@ -101,15 +103,15 @@ for (const f of geo.features) {
 }
 
 const FOCUS = {
-  world: [-180, -58, 180, 84],
-  europe: [-25, 34, 45, 71],
+  world: [-170, -50, 180, 78],
+  europe: [-12, 34, 42, 71],
   africa: [-20, -36, 53, 38],
-  asia: [5, -10, 150, 62],
-  "north-america": [-170, 5, -50, 84],
+  asia: [5, -10, 148, 62],
+  "north-america": [-130, 5, -55, 72],
   "south-america": [-85, -56, -33, 14],
   "middle-east": [24, 11, 64, 43],
   oceania: [110, -48, 180, -5],
-  arctic: [-100, 52, 60, 84],
+  arctic: [-85, 55, 15, 84],
 };
 
 const views = {};

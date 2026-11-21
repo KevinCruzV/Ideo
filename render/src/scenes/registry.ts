@@ -16,6 +16,7 @@ import { StackList } from "./StackList";
 import { Stamp } from "./Stamp";
 import { Timeline } from "./Timeline";
 import { Versus } from "./Versus";
+import { MapScene } from "./MapScene";
 
 export type SceneType =
   | "hook"
@@ -32,7 +33,8 @@ export type SceneType =
   | "object-state"
   | "shape-diagram"
   | "mascot"
-  | "versus";
+  | "versus"
+  | "map";
 
 export type SceneProps = {
   props: Record<string, unknown>;
@@ -57,6 +59,7 @@ export const SCENES: Record<SceneType, React.FC<SceneProps>> = {
   "shape-diagram": ShapeDiagram,
   mascot: Mascot,
   versus: Versus,
+  map: MapScene,
 };
 
 export const sceneKey = (segment: Segment): string =>

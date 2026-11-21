@@ -2,7 +2,7 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "durationInFrames": 2000,
+  "durationInFrames": 2100,
   "lang": "fr",
   "audio": null,
   "watermark": "Ideo",
@@ -623,6 +623,78 @@
       "from": 1800,
       "to": 1900,
       "props": {
+        "focus": "europe",
+        "kicker": "Révolution des œillets à Lis",
+        "places": [
+          {
+            "code": "fr",
+            "label": "République française uni"
+          },
+          {
+            "code": "de",
+            "label": "République fédérale alle"
+          },
+          {
+            "code": "it",
+            "label": "République italienne ok"
+          },
+          {
+            "code": "es",
+            "label": "Royaume d'Espagne et île"
+          },
+          {
+            "code": "pl",
+            "label": "République de Pologne ok"
+          },
+          {
+            "code": "gb",
+            "label": "Royaume-Uni de Grande-Br"
+          }
+        ],
+        "route": [
+          "es",
+          "fr",
+          "de",
+          "pl"
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 1804
+        },
+        {
+          "el": "places.1",
+          "at": 1812
+        },
+        {
+          "el": "places.2",
+          "at": 1820
+        },
+        {
+          "el": "places.3",
+          "at": 1828
+        },
+        {
+          "el": "places.4",
+          "at": 1836
+        },
+        {
+          "el": "places.5",
+          "at": 1844
+        },
+        {
+          "el": "route",
+          "at": 1856
+        }
+      ],
+      "type": "map"
+    },
+    {
+      "kind": "scene",
+      "from": 1900,
+      "to": 2000,
+      "props": {
         "bubble": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change",
         "pose": "surprise",
         "kicker": "Révolution des œillets à Lis"
@@ -630,15 +702,15 @@
       "items": [
         {
           "el": "bubble",
-          "at": 1806
+          "at": 1906
         }
       ],
       "type": "mascot"
     },
     {
       "kind": "outro",
-      "from": 1900,
-      "to": 2000,
+      "from": 2000,
+      "to": 2100,
       "props": {
         "text": "Abonne-toi pour la partie 2 : Les États-Unis et l'Union soviétique se"
       },
@@ -2425,6 +2497,95 @@
       ],
       "from": 1977,
       "to": 2000
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 2002,
+          "to": 2007
+        },
+        {
+          "w": "États-Unis",
+          "from": 2007,
+          "to": 2012
+        },
+        {
+          "w": "face",
+          "from": 2012,
+          "to": 2017
+        },
+        {
+          "w": "à",
+          "from": 2017,
+          "to": 2022
+        }
+      ],
+      "from": 2002,
+      "to": 2027
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 2027,
+          "to": 2032
+        },
+        {
+          "w": "soviétique",
+          "from": 2032,
+          "to": 2037
+        },
+        {
+          "w": ":",
+          "from": 2037,
+          "to": 2042
+        },
+        {
+          "w": "ça",
+          "from": 2042,
+          "to": 2047
+        }
+      ],
+      "from": 2027,
+      "to": 2052
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 2052,
+          "to": 2057
+        },
+        {
+          "w": "tout",
+          "from": 2057,
+          "to": 2062
+        },
+        {
+          "w": "pour",
+          "from": 2062,
+          "to": 2067
+        },
+        {
+          "w": "l'Égypte",
+          "from": 2067,
+          "to": 2072
+        }
+      ],
+      "from": 2052,
+      "to": 2077
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 2077,
+          "to": 2082
+        }
+      ],
+      "from": 2077,
+      "to": 2100
     }
   ]
 }
