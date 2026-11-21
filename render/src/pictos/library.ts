@@ -149,12 +149,31 @@ const DRAW: Record<PictoName, Draw> = {
     k.circle(50, 25, 5, "cream"),
   ],
   coin: (k) => [
-    k.circle(62, 40, 30, "red"),
-    k.circle(62, 40, 20, "yellow"),
-    k.circle(42, 60, 33, "yellow"),
-    k.ring(42, 60, 24, 24, 5, "ink"),
-    k.rect(38, 46, 8, 28, "ink"),
+    k.oval(30, 82, 24, 8, "ink"),
+    k.oval(30, 78, 24, 8, "yellow"),
+    k.oval(30, 70, 24, 8, "ink"),
+    k.oval(30, 66, 24, 8, "yellow"),
+    k.oval(30, 58, 24, 8, "ink"),
+    k.oval(30, 54, 24, 8, "yellow"),
+    k.circle(62, 46, 33, "yellow"),
+    k.ring(62, 46, 26, 26, 3.5, "ink"),
+    k.poly(
+      [
+        ...Array.from({ length: 15 }, (_, i) => {
+          const a = ((45 + (270 * i) / 14) * Math.PI) / 180;
+          return [62 + 16 * Math.cos(a), 46 + 16 * Math.sin(a)] as [number, number];
+        }),
+        ...Array.from({ length: 15 }, (_, i) => {
+          const a = ((315 - (270 * i) / 14) * Math.PI) / 180;
+          return [62 + 10 * Math.cos(a), 46 + 10 * Math.sin(a)] as [number, number];
+        }),
+      ],
+      "ink",
+    ),
+    k.rect(42, 40, 20, 4.5, "ink"),
+    k.rect(42, 48, 20, 4.5, "ink"),
   ],
+
   "chart-up": (k) => [
     k.rect(10, 10, 6, 82, "ink"),
     k.rect(10, 86, 82, 6, "ink"),
@@ -207,13 +226,20 @@ const DRAW: Record<PictoName, Draw> = {
     k.circle(54, 33, 5, "yellow"),
   ],
   satellite: (k) => [
-    k.rect(6, 41, 28, 18, "blue", -30),
-    k.rect(66, 41, 28, 18, "blue", -30),
-    k.rect(12, 49, 76, 4, "ink", -30),
-    k.rect(39, 39, 22, 22, "yellow", -30),
-    k.bar(50, 50, 40, 24, 3.5, "ink"),
-    k.circle(38, 21, 8, "red"),
+    k.rect(2, 38, 34, 22, "blue", -24, 50, 50),
+    k.rect(64, 38, 34, 22, "blue", -24, 50, 50),
+    k.rect(13, 38, 2.6, 22, "cream", -24, 50, 50),
+    k.rect(24, 38, 2.6, 22, "cream", -24, 50, 50),
+    k.rect(75, 38, 2.6, 22, "cream", -24, 50, 50),
+    k.rect(86, 38, 2.6, 22, "cream", -24, 50, 50),
+    k.rect(34, 47, 32, 4, "ink", -24, 50, 50),
+    k.rect(40, 34, 20, 32, "yellow", -24, 50, 50),
+    k.rect(40, 60, 20, 6, "red", -24, 50, 50),
+    k.bar(46, 32, 40, 20, 3, "ink"),
+    k.arc(37, 17, 11, 180, 360, "red"),
+    k.circle(37, 12, 3, "ink"),
   ],
+
   tank: (k) => [
     k.rect(58, 49, 36, 7, "ink"),
     k.poly([[30, 42], [62, 42], [69, 60], [24, 60]], "blue"),
@@ -255,16 +281,19 @@ const DRAW: Record<PictoName, Draw> = {
     k.oval(86, 56, 5, 2.6, "yellow", -20),
   ],
   handshake: (k) => [
-    k.bar(2, 90, 34, 60, 24, "blue"),
-    k.bar(98, 90, 66, 60, 24, "red"),
-    k.bar(28, 72, 38, 62, 26, "cream"),
-    k.bar(72, 72, 62, 62, 26, "cream"),
-    k.oval(50, 52, 25, 16, "yellow", -12),
-    k.oval(58, 38, 10, 6, "yellow", -30),
-    k.bar(42, 44, 46, 60, 3.4, "ink"),
-    k.bar(50, 42, 54, 58, 3.4, "ink"),
-    k.bar(58, 44, 61, 57, 3.4, "ink"),
+    k.bar(4, 96, 34, 62, 28, "blue"),
+    k.bar(96, 96, 66, 62, 28, "red"),
+    k.bar(26, 72, 36, 61, 30, "cream"),
+    k.bar(74, 72, 64, 61, 30, "cream"),
+    k.poly([[30, 62], [34, 42], [50, 30], [68, 34], [74, 50], [68, 64], [50, 70]], "yellow"),
+    k.oval(40, 36, 12, 7, "yellow", -35),
+    k.bar(48, 40, 62, 50, 4, "ink"),
+    k.bar(46, 48, 60, 58, 4, "ink"),
+    k.bar(44, 56, 56, 64, 4, "ink"),
+    k.bar(33, 40, 46, 31, 3, "ink"),
   ],
+
+
 
   justice: (k) => [
     k.rect(30, 86, 40, 7, "ink"),
@@ -401,19 +430,25 @@ const DRAW: Record<PictoName, Draw> = {
     k.bar(58, 62, 85, 58, 3.2, "ink"),
   ],
   brain: (k) => [
-    k.rect(54, 68, 11, 20, "red", -18),
-    k.circle(28, 50, 17, "red"),
-    k.circle(40, 32, 18, "red"),
-    k.circle(60, 28, 18, "red"),
-    k.circle(75, 44, 17, "red"),
-    k.circle(68, 60, 15, "red"),
-    k.circle(46, 60, 18, "red"),
-    k.bar(26, 46, 40, 40, 3.6, "cream"),
-    k.bar(46, 26, 58, 34, 3.6, "cream"),
-    k.bar(62, 44, 76, 38, 3.6, "cream"),
-    k.bar(40, 56, 54, 52, 3.6, "cream"),
-    k.bar(60, 58, 70, 54, 3.6, "cream"),
+    k.circle(22, 44, 13, "red"),
+    k.circle(30, 28, 14, "red"),
+    k.circle(30, 64, 14, "red"),
+    k.circle(42, 74, 11, "red"),
+    k.circle(43, 20, 12, "red"),
+    k.oval(36, 48, 15, 30, "red"),
+    k.circle(78, 44, 13, "red"),
+    k.circle(70, 28, 14, "red"),
+    k.circle(70, 64, 14, "red"),
+    k.circle(58, 74, 11, "red"),
+    k.circle(57, 20, 12, "red"),
+    k.oval(64, 48, 15, 30, "red"),
+    k.poly([[48.5, 10], [51.5, 10], [52, 86], [48, 86]], "ink"),
+    k.poly([[18, 40], [26, 36], [30, 42], [38, 38], [39, 42], [31, 47], [26, 41], [19, 45]], "cream"),
+    k.poly([[24, 60], [32, 56], [36, 62], [42, 58], [43, 62], [36, 67], [31, 61], [25, 64]], "cream"),
+    k.poly([[82, 40], [74, 36], [70, 42], [62, 38], [61, 42], [69, 47], [74, 41], [81, 45]], "cream"),
+    k.poly([[76, 60], [68, 56], [64, 62], [58, 58], [57, 62], [64, 67], [69, 61], [75, 64]], "cream"),
   ],
+
 
   heart: (k) => [
     k.circle(33, 38, 20, "red"),

@@ -34,12 +34,12 @@ export type PictoProps = {
   style?: React.CSSProperties;
 };
 
-export const Picto: React.FC<PictoProps> = ({ name, size, x, y, enterAt = SUPPORT_AT, rotate = 0, seed, float = 3, motion, style }) => {
+export const Picto: React.FC<PictoProps> = ({ name, size, x, y, enterAt = SUPPORT_AT, rotate = 0, seed, float = 7, motion, style }) => {
   const frame = useCurrentFrame();
   if (!pictoName(name)) return null;
   const key = seed ?? `picto-${String(name)}`;
   const e = entry(frame, enterAt, { dy: 40, spin: rotate >= 0 ? 8 : -8, from: 0.9, ...motion });
-  const d = drift(key, frame, float, 0.8);
+  const d = drift(key, frame, float, 2.4);
   const placed: React.CSSProperties = x !== undefined || y !== undefined ? { position: "absolute", left: x ?? 0, top: y ?? 0 } : { position: "relative" };
   return (
     <div style={{ ...placed, width: size, height: size, opacity: e.opacity, transform: paperTransform(e, d, rotate), ...style }}>
