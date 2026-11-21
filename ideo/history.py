@@ -95,6 +95,16 @@ def record_produce(job, seconds: float | None) -> None:
     _save(data)
 
 
+def new_wishes(job, wishes: list) -> list:
+    data = load()
+    entry = _entry(data, job)
+    seen = entry.get("wishes") if isinstance(entry.get("wishes"), list) else []
+    fresh = [w for w in wishes if isinstance(w, str) and w not in seen]
+    entry["wishes"] = seen + fresh
+    _save(data)
+    return fresh
+
+
 def videos_since() -> int:
     return load()["videos_since"]
 

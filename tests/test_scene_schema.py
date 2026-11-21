@@ -146,8 +146,9 @@ def ts_caps() -> dict:
     caps["versus.left"] = caps["versus.right"] = side
     kicker = caps.pop("kicker")
     caps.update({f"{kind}.kicker": kicker for kind in scene_schema.SCHEMA})
-    diagram = (SCENES_DIR / "ShapeDiagram.tsx").read_text(encoding="utf-8")
-    caps["shape-diagram.unit"] = int(re.search(r"props\.unit\)\.slice\(0, (\d+)\)", diagram).group(1))
+    for kind, component in (("shape-diagram", "ShapeDiagram"), ("counter", "Counter")):
+        source = (SCENES_DIR / f"{component}.tsx").read_text(encoding="utf-8")
+        caps[f"{kind}.unit"] = int(re.search(r"props\.unit\)\.slice\(0, (\d+)\)", source).group(1))
     return caps
 
 

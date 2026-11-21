@@ -160,7 +160,7 @@ def test_produce_line_ends_with_the_control(produce_job, capsys):
 
 
 def test_qc_never_makes_produce_fail(produce_job, monkeypatch, capsys):
-    monkeypatch.setattr(qc, "run", lambda job, only=None: (_ for _ in ()).throw(RuntimeError("boum")))
+    monkeypatch.setattr(qc, "run_coded", lambda job, only=None: (_ for _ in ()).throw(RuntimeError("boum")))
     assert cli.main(["produce", str(produce_job[0])]) == 0
     assert "Contrôle : indisponible" in capsys.readouterr().out
 

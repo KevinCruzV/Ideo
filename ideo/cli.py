@@ -4,11 +4,12 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import common, cost, learn, pipeline, plan_check, qc, review
+from ideo import codes, common, cost, entretien, history, learn, pipeline, plan_check, qc, retours, review
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
-         "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn")
+         "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] "
+         "| entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien")
 
 
 class UsageError(Exception):
@@ -52,6 +53,14 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if len(rest) != 1:
             raise UsageError(USAGE)
         return cmd, rest[0], None, opts
+    if cmd == "entretien":
+        if not rest:
+            return cmd, "", None, opts
+        if rest[0] == "--fait" and len(rest) <= 2:
+            return cmd, rest[1] if len(rest) == 2 else "", None, {"fait": True}
+        if rest[0] == "--echec" and len(rest) == 2:
+            return cmd, rest[1], None, {"echec": True}
+        raise UsageError(USAGE)
     if cmd == "produce" and "--part" in rest:
         i = rest.index("--part")
         if i + 1 >= len(rest) or not rest[i + 1].isdigit():
@@ -74,11 +83,13 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     opts = opts or {}
     if cmd == "learn":
         return _learn(arg, opts), 0
+    if cmd == "entretien":
+        return _entretien(arg, opts), 0
     if cmd == "prepare":
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
-                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}"], 0
+                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{_notice_tail()}"], 0
     job = pipeline.resolve_job(arg)
     if cmd == "cost":
         if not pipeline.prepared(job):
@@ -86,14 +97,22 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return [f"OK cost : {cost.line(job)}.{cost.advice(job)} Transcription : {job / 'transcript_compact.md'} "
                 f"({cost.reading_note(job)})"], 0
     if cmd == "check":
-        errors = plan_check.check_plan(job)
+        result = plan_check.analyze(job)
+        errors = result["errors"]
         if errors:
+            _safely(history.add_errors, job, codes.count([codes.error_code(e) for e in errors]))
             return [f"ERREUR check : {e}" for e in errors], 1
-        stats = plan_check.analyze(job)["stats"]
+        stats = result["stats"]
         plan = stats["plan"]
+        _safely(history.note_plan, job, stats["lang"], stats["source"], stats["scenes"])
+        for wish in _safely(history.new_wishes, job, plan.get("wishes") or []) or []:
+            _safely(retours.add_wish, wish)
         count = len(plan["parts"])
         what = "1 vidéo" if count == 1 else f"{count} parties"
-        lines = [] if opts.get("sans_relecture") else review.relire(job, plan, stats["seconds"])
+        pairs = [] if opts.get("sans_relecture") else review.relire_coded(job, plan, stats["seconds"])
+        if pairs:
+            _safely(history.add_relire, job, [c for c, _ in pairs])
+        lines = [text for _, text in pairs]
         points = ""
         if lines:
             points = f", {len(lines)} point{'s' if len(lines) > 1 else ''} à relire"
@@ -102,7 +121,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     if cmd == "produce":
         outputs = pipeline.produce(job, part)
         review.reset(job)
-        return [f"OK produce : {_paths(outputs)} ; {_control(job, part)}"], 0
+        return [f"OK produce : {_paths(outputs)} ; {' ; '.join(_after_produce(job, part))}"], 0
     if cmd == "qc":
         alerts = qc.run(job)
         return [f"OK qc : {qc.summary(job, alerts)}"] + [f"ALERTE : {a}" for a in alerts], 0
@@ -111,11 +130,60 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
 
 
-def _control(job: Path, part: int | None) -> str:
+def _notice_tail() -> str:
+    note = _safely(history.take_notice)
+    return f" {note}" if note else ""
+
+
+def _safely(fn, *args):
     try:
-        return qc.summary(job, qc.run(job, part))
+        return fn(*args)
+    except Exception:
+        return None
+
+
+def _produced_seconds(job: Path) -> float | None:
+    total, found = 0.0, False
+    for path in sorted((job / "parts").glob("*/timeline.json")):
+        try:
+            tl = common.load_json(path)
+            total += tl["durationInFrames"] / tl["fps"]
+            found = True
+        except (OSError, ValueError, KeyError, TypeError, ZeroDivisionError):
+            continue
+    return total if found else None
+
+
+def _learn_from_run(job: Path, pairs: list) -> list[str]:
+    history.add_qc(job, [c for c, _ in pairs])
+    history.record_produce(job, _produced_seconds(job))
+    for code, message in pairs:
+        if code in codes.CODE_ONLY:
+            _safely(retours.add_detected, code, job.name, message)
+    return [f"Leçon automatique : {lesson}" for lesson in (_safely(learn.auto_lessons) or [])]
+
+
+def _after_produce(job: Path, part: int | None) -> list[str]:
+    try:
+        pairs = qc.run_coded(job, part)
+        pieces = [qc.summary(job, [text for _, text in pairs])]
     except Exception as err:
-        return f"Contrôle : indisponible ({type(err).__name__} : {err})"
+        return [f"Contrôle : indisponible ({type(err).__name__} : {err})"]
+    pieces += _safely(_learn_from_run, job, pairs) or []
+    note = _safely(entretien.notice)
+    if note:
+        pieces.append(note.rstrip("."))
+    return pieces
+
+
+def _entretien(arg: str, opts: dict) -> list[str]:
+    if opts.get("fait"):
+        history.entretien_done(arg)
+        return ["OK entretien : fait, enregistré" + (f" ({arg})" if arg else "")]
+    if opts.get("echec"):
+        history.entretien_failed(arg)
+        return [f"OK entretien : échec enregistré ({arg})"]
+    return [entretien.report_line()]
 
 
 def _learn(arg: str, opts: dict) -> list[str]:
@@ -133,7 +201,7 @@ def _learn(arg: str, opts: dict) -> list[str]:
 
 def _log_for(cmd: str, arg: str) -> tuple[Path, Path | None]:
     job = None
-    if cmd == "learn":
+    if cmd in ("learn", "entretien"):
         return common.JOBS / "cli.log", None
     try:
         job = common.job_dir(arg) if cmd == "prepare" else pipeline.resolve_job(arg)

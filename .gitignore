@@ -11,3 +11,5 @@ config.json
 .venv-tools/
 .venv-voix/
 voix/
+historique.json
+entretien.md

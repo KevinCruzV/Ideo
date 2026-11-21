@@ -12,6 +12,11 @@ import pytest
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
+@pytest.fixture(autouse=True)
+def isolated_home(tmp_path_factory, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path_factory.mktemp("ideo-home")))
+
+
 @pytest.fixture
 def job_with_fixtures(tmp_path):
     job = tmp_path / "job"
