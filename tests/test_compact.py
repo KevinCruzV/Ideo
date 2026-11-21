@@ -207,3 +207,12 @@ def test_transcript_is_rebuilt_when_the_cache_version_is_old(tmp_path, monkeypat
     compact.prepare_transcript(job)
     text = (job / "transcript_compact.md").read_text(encoding="utf-8")
     assert "Durée conseillée" in text and "[fin de vidéo, ignorée]" in text
+
+
+def test_refresh_advice_rewrites_a_stale_line(tmp_path):
+    out = tmp_path / "transcript_compact.md"
+    out.write_text("Titre : x\nDurée conseillée : ancienne\n\n[0:00] texte\n", encoding="utf-8")
+    text = compact.refresh_advice(out, "Durée conseillée : nouvelle")
+    assert "Durée conseillée : nouvelle" in text
+    assert "ancienne" not in out.read_text(encoding="utf-8")
+    assert compact.refresh_advice(out, None) == text

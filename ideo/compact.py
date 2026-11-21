@@ -6,6 +6,7 @@ from ideo import common, sfx as sfx_mod, target
 
 PAUSE = 1.2
 TRANSCRIPT_VERSION = 3
+ADVICE_PREFIX = "Durée conseillée :"
 MAX_WORDS = 60
 SPONSOR_SPAN = 60.0
 SPONSOR_GAP = 2.0
@@ -177,6 +178,21 @@ def build(words: list[dict], sfx: list[dict], info: dict) -> tuple[str, list[dic
     return text, out
 
 
+def refresh_advice(out: Path, advice: str | None) -> str:
+    text = out.read_text(encoding="utf-8")
+    if not advice:
+        return text
+    lines = text.split("\n")
+    for i, line in enumerate(lines[:12]):
+        if line.startswith(ADVICE_PREFIX):
+            if line != advice:
+                lines[i] = advice
+                text = "\n".join(lines)
+                out.write_text(text, encoding="utf-8")
+            break
+    return text
+
+
 def prepare_transcript(job: Path) -> dict:
     job = Path(job)
     out = job / "transcript_compact.md"
@@ -189,7 +205,7 @@ def prepare_transcript(job: Path) -> dict:
     current = isinstance(cached, dict) and cached.get("version") == TRANSCRIPT_VERSION
     if step and step["ok"] and out.exists() and sfx_path.exists() and current:
         markers = common.load_json(sfx_path)
-        text = out.read_text(encoding="utf-8")
+        text = refresh_advice(out, target.for_job(job))
     else:
         info = {**common.load_json(job / "info.json"), "language": lang}
         rms = sfx_mod.rms_db_per_second(job / "source.wav")
