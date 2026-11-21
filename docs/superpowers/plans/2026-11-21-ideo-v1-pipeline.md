@@ -25,7 +25,8 @@ de la mascotte et de la bibliothèque de pictogrammes. Ici la mascotte est un em
 - macOS sur Apple Silicon uniquement (spec §12). Le skill `setup` refuse un Mac Intel avec un message clair.
 - Node : pnpm uniquement, jamais npm ni yarn.
 - Sortie : MP4 H.264 + AAC, 1080x1920, 30 im/s, loudness normalisée à -14 LUFS (`loudnorm=I=-14:TP=-1.5:LRA=11`).
-- Parties : 1 à 8 par vidéo, 60 à 90 s chacune, chacune compréhensible seule (spec §9).
+- Durée (spec §9, mise à jour) : une seule vidéo par défaut, de 45 à 300 s ; découpage en parties (8 au maximum, 45 à 300 s chacune)
+  seulement si le contenu utile dépasse 300 s. Avec une seule vidéo : pas de "Partie 1" à l'écran, fin "prochaine vidéo".
 - Ordre d'une partie : accroche (2 à 3 s) -> scènes -> fin "abonne-toi" (2 à 3 s) (spec §13, §14).
 - La langue du short est celle de la vidéo source, détectée à la transcription (spec §8). Citations jamais traduites.
 - Watermark : texte "Ideo", étiquette papier en haut à droite, présente du début à la fin (spec §13).

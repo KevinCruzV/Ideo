@@ -244,12 +244,18 @@ Conséquences **[Proposition]** :
 
 **[Kevin]** Une vidéo longue donne seulement ses idées principales, pas une couverture complète.
 
+**[Kevin, mis à jour le 2026-11-21]** Un short peut durer plus de 90 s : de 2 à 5 minutes selon le contenu, ou
+moins. Découper en parties n'est pas obligatoire : on l'évite quand le contenu tient dans une seule vidéo.
+
 Détail **[Proposition]** :
-- 60 à 90 s par partie, 8 parties au maximum par vidéo. Une vidéo courte peut n'en donner qu'une ou deux.
-- Chaque partie se comprend seule, sans avoir vu les autres.
-- Kevin peut demander après coup d'approfondir une partie ("approfondis la partie 3"), ce qui produit des
-  shorts supplémentaires à partir de la même transcription, sans tout refaire.
-- Les étapes voix et rendu se relancent partie par partie : une partie ratée ne fait pas tout recommencer.
+- Par défaut, **une seule vidéo** par source, de 45 s à 5 min (300 s), à la longueur que le contenu demande.
+- On découpe en parties seulement si le contenu utile dépasse 5 min, avec 8 parties au maximum, chacune de
+  45 s à 5 min et compréhensible seule.
+- Avec une seule vidéo : pas de "Partie 1" à l'écran (seulement le titre), et la fin dit "Abonne-toi pour la
+  prochaine vidéo" au lieu d'annoncer une partie suivante.
+- Kevin peut demander après coup d'approfondir un point, ce qui produit une vidéo supplémentaire à partir de
+  la même transcription, sans tout refaire.
+- Les étapes voix et rendu se relancent vidéo par vidéo.
 
 ## 10. Bande-son
 
