@@ -1,8 +1,7 @@
 import React from "react";
 import { PaperShape, ShapeKind } from "../paper/PaperShape";
 import { SUPPORT_AT } from "../paper/motion";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { list, str } from "./coerce";
 import { commonFit } from "./FactChips";
@@ -48,7 +47,7 @@ export const IconGrid: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
   const cells = list(props.cells, 9).map((c) => {
     const o = c && typeof c === "object" ? (c as Record<string, unknown>) : { label: c };
-    return { picto: pictoName(o.picto), label: str(o.label) };
+    return { picto: hasVisual(o.picto) ? (o.picto as string) : null, label: str(o.label) };
   });
   const shown = cells.length > 0 ? cells : [{ picto: null, label: "" }];
   const cols = shown.length <= 4 ? 2 : 3;

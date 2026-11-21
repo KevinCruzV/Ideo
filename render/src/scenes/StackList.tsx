@@ -1,7 +1,6 @@
 import React from "react";
 import { PaperShape } from "../paper/PaperShape";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { strList } from "./coerce";
@@ -19,7 +18,7 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
   const entries = strList(props.items, 5);
   const shown = entries.length > 0 ? entries : ["…"];
-  const hasPicto = pictoName(props.picto) !== null;
+  const hasPicto = hasVisual(props.picto);
   const dense = shown.join(" ").length > 120;
   const badge = dense ? 62 : shown.length <= 3 ? 104 : 80;
   const badgeGap = dense ? 18 : BADGE_GAP;

@@ -1,8 +1,7 @@
 import React from "react";
 import { PaperShape } from "../paper/PaperShape";
 import { stripHeight } from "../paper/PaperStrip";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { list, str } from "./coerce";
 import { areaFor, FitBox, largestFitting } from "./FitBox";
@@ -28,7 +27,7 @@ export const Timeline: React.FC<SceneProps> = ({ props, items, from, to }) => {
     const at = str(o.at);
     return { at, label: str(o.label) || at };
   });
-  const hasPicto = pictoName(props.picto) !== null;
+  const hasPicto = hasVisual(props.picto);
   const few = marks.length <= 3;
   const capH = hasPicto ? 150 : 70;
   const gap = few ? 56 : 34;

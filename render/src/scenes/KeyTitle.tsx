@@ -1,8 +1,7 @@
 import React from "react";
 import { SUPPORT_AT } from "../paper/motion";
 import { PaperStrip } from "../paper/PaperStrip";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
 import { areaFor, FitBox } from "./FitBox";
@@ -24,7 +23,7 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const tail = fitText(after, { maxWidth: TEXT_W, maxLines: 4, max: 100, min: 56 });
   const textAt = Math.min(enterFor("text", items, from, to), enterFor("accent", items, from, to));
   const accentAt = textAt + 5;
-  const hasPicto = pictoName(props.picto) !== null;
+  const hasPicto = hasVisual(props.picto);
 
   return (
     <Stage>

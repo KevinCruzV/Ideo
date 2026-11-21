@@ -1,8 +1,7 @@
 import React from "react";
 import { interpolate, spring, useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { accentCycle, AccentColor, colors, fonts } from "../theme";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
@@ -78,7 +77,7 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
                 />
                 <div style={{ position: "absolute", left: PANEL_W / 2 - picto * 0.62, top: panelH / 2 - picto * 0.62 - 10, width: picto * 1.24, height: picto * 1.24 }}>
                   <PaperShape kind="circle" color="cream" size={picto * 1.24} enterAt={s.at + 2} seed={`vs-disc-${s.key}`} float={2} motion={{ dx: 0, dy: 0, spin: 0, from: 0.9 }} />
-                  {pictoName(s.name) ? (
+                  {hasVisual(s.name) ? (
                     <Picto name={s.name} size={picto} x={picto * 0.12} y={picto * 0.12} enterAt={s.at + 4} rotate={s.tilt * 2} seed={`vs-picto-${s.key}`} motion={{ dx: s.dx * 0.3, dy: 0 }} />
                   ) : null}
                 </div>

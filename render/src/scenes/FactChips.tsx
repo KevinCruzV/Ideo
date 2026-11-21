@@ -1,8 +1,7 @@
 import React from "react";
 import { PaperShape } from "../paper/PaperShape";
 import { stripHeight } from "../paper/PaperStrip";
-import { Picto } from "../pictos/Picto";
-import { pictoName } from "../pictos/library";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { strList } from "./coerce";
 import { areaFor, FitBox, largestFitting } from "./FitBox";
@@ -26,7 +25,7 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
   const chips = strList(props.chips, 6);
   const shown = chips.length > 0 ? chips : ["…"];
-  const hasPicto = pictoName(props.picto) !== null;
+  const hasPicto = hasVisual(props.picto);
   const textW = BOX_W - DOT - DOT_GAP;
   const rowGap = shown.length <= 3 ? 44 : 28;
   const area = areaFor(areaTop(props) + 10, BOX_L, BOX_W);
