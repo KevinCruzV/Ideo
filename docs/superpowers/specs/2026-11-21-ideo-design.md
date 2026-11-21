@@ -176,7 +176,12 @@ découpé" et D3 "géométrie" du 2026-11-21).
   pour les textes et sous-titres ; Unbounded pour la watermark "Ideo". À confirmer à l'usage.
 - **Sous-titres** : karaoké 2 à 4 mots, le mot prononcé sur une bande de papier de couleur.
 - **Watermark** : "Ideo" sur une petite étiquette de papier en haut à droite.
-- **Mascotte** : en papier découpé dans ce style, conçue pour ideo, 2 ou 3 propositions à valider par Kevin.
+- **Logo [Kevin]** : une pastille ronde bleue avec un personnage, "le i vivant" (corps en bande de papier, tête
+  ronde jaune, deux yeux, un sourire) et une bulle rouge avec un point d'interrogation. Fichiers dans
+  `docs/logo/`.
+- **Mascotte [Kevin]** : c'est le personnage du logo. Il remplace l'emplacement en pointillés dans les scènes,
+  avec quelques poses (question, surprise, montre, content).
+- **Watermark [Kevin]** : l'étiquette de papier porte la petite tête du personnage à côté du mot "Ideo".
 
 Maquette de référence : `docs/mockups/style-fusion.html` (fond ivoire).
 
@@ -384,3 +389,23 @@ Ordre prévu **[Proposition]**, chaque point avec son propre plan :
 
 Tout regarder image par image est écarté : cela multiplierait la consommation de crédits par 5 à 30
 (estimation à mesurer).
+
+## 17. Après la v1 : personnages
+
+**[Kevin]** La mascotte doit parfois être dynamique, avec bras et jambes. Et certaines vidéos demandent d'autres
+personnages : quand une personne est au coeur de l'histoire (exemple donné : une vidéo d'histoire sur un
+dictateur), un second personnage l'incarne, reconnaissable à un trait (une moustache).
+
+Détail **[Proposition]**, à faire dans un plan dédié juste après la v1 :
+- **Deux cadrages de la mascotte** : le buste (par défaut, validé) et le corps entier avec bras et jambes en
+  bandes de papier, pour les scènes d'action. Actions de départ : marche, montre, lève les bras, réfléchit,
+  recule. Claude choisit le cadrage et l'action dans le plan.
+- **Une distribution par vidéo** : le plan déclare une fois les personnages secondaires (4 au maximum), puis les
+  scènes y font référence. Un personnage secondaire est construit comme la mascotte (tête ronde en papier,
+  corps simple) et se distingue par des attributs choisis dans une liste fermée : couleur de tête et de corps
+  (jamais le jaune de la mascotte), moustache, barbe, cheveux, chapeau, couronne, lunettes, cravate, et une
+  étiquette de nom. Rien n'est dessiné sur mesure : pas de crédits en plus, et un rendu régulier.
+- **Scènes à deux personnages** : face à face avec bulles, l'un qui agit sur l'autre, la mascotte qui commente.
+- **Personnes réelles** : pas de caricature d'un trait physique autre que les attributs de la liste. Pour une
+  figure historique criminelle, expression neutre par défaut (jamais le sourire de la mascotte), aucun symbole
+  ou insigne haineux à l'écran, identification par l'attribut et l'étiquette de nom.
