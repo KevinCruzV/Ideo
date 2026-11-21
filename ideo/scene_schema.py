@@ -6,6 +6,8 @@ TEXT = "text"
 NUMBER = "number"
 LABEL = "label"
 OPTIONAL_TEXT = "optional-text"
+PICTO = "picto"
+BOOL = "bool"
 OBJECTS = ("screen", "board", "jar", "door", "scale")
 GRID_SHAPES = ("circle", "square", "triangle", "diamond", "arrow", "strip")
 DIAGRAM_SHAPES = ("circle", "square", "triangle", "bar")
@@ -17,7 +19,30 @@ PICTOS = (
     "heart", "eye", "clock", "calendar", "lightbulb", "atom", "flask", "leaf", "sun", "drop", "fire", "lightning",
     "mountain", "barrel", "gear", "people",
 )
-PICTO_KINDS = ("key-title", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote")
+FLAGS = (
+    "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
+    "bd", "be", "bf", "bg", "bh", "bi", "bj", "bl", "bm", "bn", "bo", "bq", "br", "bs", "bt", "bv", "bw", "by",
+    "bz", "ca", "cc", "cd", "cf", "cg", "ch", "ci", "ck", "cl", "cm", "cn", "co", "cr", "cu", "cv", "cw", "cx",
+    "cy", "cz", "de", "dj", "dk", "dm", "do", "dz", "ec", "ee", "eg", "eh", "er", "es", "et", "eu", "fi", "fj",
+    "fk", "fm", "fo", "fr", "ga", "gb", "gd", "ge", "gf", "gg", "gh", "gi", "gl", "gm", "gn", "gp", "gq", "gr",
+    "gs", "gt", "gu", "gw", "gy", "hk", "hm", "hn", "hr", "ht", "hu", "id", "ie", "il", "im", "in", "io", "iq",
+    "ir", "is", "it", "je", "jm", "jo", "jp", "ke", "kg", "kh", "ki", "km", "kn", "kp", "kr", "kw", "ky", "kz",
+    "la", "lb", "lc", "li", "lk", "lr", "ls", "lt", "lu", "lv", "ly", "ma", "mc", "md", "me", "mf", "mg", "mh",
+    "mk", "ml", "mm", "mn", "mo", "mp", "mq", "mr", "ms", "mt", "mu", "mv", "mw", "mx", "my", "mz", "na", "nc",
+    "ne", "nf", "ng", "ni", "nl", "no", "np", "nr", "nu", "nz", "om", "pa", "pe", "pf", "pg", "ph", "pk", "pl",
+    "pm", "pn", "pr", "ps", "pt", "pw", "py", "qa", "re", "ro", "rs", "ru", "rw", "sa", "sb", "sc", "sd", "se",
+    "sg", "sh", "si", "sj", "sk", "sl", "sm", "sn", "so", "sr", "ss", "st", "su", "sv", "sx", "sy", "sz", "tc",
+    "td", "tf", "tg", "th", "tj", "tk", "tl", "tm", "tn", "to", "tr", "tt", "tv", "tw", "tz", "ua", "ug", "um",
+    "un", "us", "uy", "uz", "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "yt", "za", "zm", "zw",
+)
+PICTO_KINDS = ("key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote")
+FLAG_EXAMPLES = ("fr", "us", "cn", "de", "br", "za")
+HAIRS = ("none", "short", "side", "long", "curly", "wild", "bun", "crown-bald")
+HAIR_COLORS = ("black", "brown", "blond", "red", "grey", "white")
+FACIALS = ("none", "moustache", "beard", "goatee", "sideburns")
+HATS = ("none", "cap", "kepi", "bicorne", "crown", "helmet", "top-hat", "beret", "turban", "laurel", "wig")
+OUTFITS = ("suit", "uniform", "robe", "lab-coat", "casual", "toga", "armor", "dress")
+SKINS = ("light", "tan", "brown", "dark")
 KICKER_CAP = 28
 
 
@@ -35,7 +60,12 @@ def object_list(most: int, keys: dict, required: tuple) -> dict:
 
 SCHEMA = {
     "key-title": {"required": {"text": TEXT}, "optional": {"accent": TEXT}, "el": ("text", "accent")},
-    "person-card": {"required": {"name": TEXT}, "optional": {"role": TEXT}, "el": ("avatar", "name", "role")},
+    "person-card": {
+        "required": {"name": TEXT},
+        "optional": {"role": TEXT, "hair": HAIRS, "hair_color": HAIR_COLORS, "facial": FACIALS, "hat": HATS,
+                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS},
+        "el": ("avatar", "name", "role"),
+    },
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},
     "stack-list": {"required": {"items": text_list(5)}, "optional": {}, "el": ("items.<i>",)},
     "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT, "unit": TEXT}, "el": ("to", "label")},
@@ -45,7 +75,7 @@ SCHEMA = {
         "el": ("marks.<i>",),
     },
     "icon-grid": {
-        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT, "picto": PICTOS}, ("label",))},
+        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT, "picto": PICTO}, ("label",))},
         "optional": {},
         "el": ("cells.<i>",),
     },
@@ -60,14 +90,14 @@ SCHEMA = {
     "mascot": {"required": {"bubble": TEXT}, "optional": {"pose": MASCOT_POSES}, "el": ("bubble",)},
     "versus": {
         "required": {"left": TEXT, "right": TEXT},
-        "optional": {"left_picto": PICTOS, "right_picto": PICTOS},
+        "optional": {"left_picto": PICTO, "right_picto": PICTO},
         "el": ("left", "right"),
     },
 }
 for _kind, _schema in SCHEMA.items():
     _schema["optional"]["kicker"] = TEXT
     if _kind in PICTO_KINDS:
-        _schema["optional"]["picto"] = PICTOS
+        _schema["optional"]["picto"] = PICTO
 
 PART_CAPS = {"hook": 60, "title": 40}
 TEXT_CAPS = {
@@ -94,6 +124,37 @@ INDEXED = re.compile(r"^([a-z]+)\.(\d+)$")
 NOT_WORD = re.compile(r"[\W_]+")
 
 
+FLAG_PREFIX = "flag:"
+
+
+def is_flag(value) -> bool:
+    return isinstance(value, str) and value.startswith(FLAG_PREFIX) and value[len(FLAG_PREFIX):] in FLAGS
+
+
+def _flag_problems(props: dict) -> list[tuple[str, str]]:
+    found = []
+    for key in ("picto", "left_picto", "right_picto"):
+        value = props.get(key)
+        if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+            found.append((f"props.{key}", value))
+    cells = props.get("cells")
+    for i, cell in enumerate(cells if isinstance(cells, list) else []):
+        value = cell.get("picto") if isinstance(cell, dict) else None
+        if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+            found.append((f"props.cells.{i}.picto", value))
+    return found
+
+
+def _neutral(value):
+    if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+        return PICTOS[0]
+    if isinstance(value, list):
+        return [_neutral(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _neutral(v) for k, v in value.items()}
+    return value
+
+
 def _is_number(value) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
@@ -107,6 +168,11 @@ def _describe(spec) -> str:
         return "un texte ou un nombre"
     if spec == OPTIONAL_TEXT:
         return "un texte, vide si inconnu"
+    if spec == PICTO:
+        return ("un des dessins " + ", ".join(PICTOS) + ", ou un drapeau « flag:<code> » avec un code de pays à deux lettres "
+                "en minuscules (par exemple flag:fr)")
+    if spec == BOOL:
+        return "true ou false, sans guillemets"
     if isinstance(spec, tuple):
         return "une de ces valeurs : " + ", ".join(spec)
     if spec["list"] == TEXT:
@@ -126,6 +192,10 @@ def _valid(spec, value) -> bool:
         return isinstance(value, str)
     if spec == LABEL:
         return (isinstance(value, str) and bool(value.strip())) or _is_number(value)
+    if spec == PICTO:
+        return isinstance(value, str) and (value in PICTOS or is_flag(value))
+    if spec == BOOL:
+        return isinstance(value, bool)
     if isinstance(spec, tuple):
         return value in spec
     if not isinstance(value, list) or not 1 <= len(value) <= spec["max"]:
@@ -230,8 +300,14 @@ def check_props(kind: str, props: dict, where: str) -> list[str]:
     for key in schema["required"]:
         if key not in props:
             errors.append(f"{where} : prop « {key} » manquante pour « {kind} ». Props acceptées : {accepted_props(kind)}.")
+    problems = _flag_problems(props)
+    for field, value in problems:
+        errors.append(f"{where} : « {field} » : « {value} » n'est pas un drapeau connu. Écris « flag: » suivi d'un code de pays "
+                      f"à deux lettres en minuscules, par exemple {', '.join(FLAG_PREFIX + c for c in FLAG_EXAMPLES)}.")
     for key, spec in known.items():
         if key in props and not _valid(spec, props[key]):
+            if problems and _valid(spec, _neutral(props[key])):
+                continue
             errors.append(f"{where} : « props.{key} » doit être {_describe(spec)}.")
     return errors + _coherence(kind, props, where) + _caps(kind, props, where)
 

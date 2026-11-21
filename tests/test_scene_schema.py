@@ -17,6 +17,7 @@ COMPONENTS = {
 }
 SHARED = {"kicker": REPO / "render" / "src" / "scenes" / "SceneFrame.tsx"}
 SHORT = REPO / "render" / "src" / "Short.tsx"
+EXTRA_SOURCES = {"person-card": [SCENES_DIR / "personLook.ts"]}
 
 
 def test_schema_covers_exactly_the_plan_types():
@@ -45,6 +46,8 @@ def test_mascot_pose_fixture_validates_against_schema():
 def test_schema_props_are_the_ones_the_component_reads(kind):
     source = (SCENES_DIR / f"{COMPONENTS[kind]}.tsx").read_text(encoding="utf-8")
     read = set(re.findall(r"props\.(\w+)", source))
+    for extra in EXTRA_SOURCES.get(kind, ()):
+        read |= set(re.findall(r"props\.(\w+)", extra.read_text(encoding="utf-8")))
     assert "<SceneFrame" in SHORT.read_text(encoding="utf-8")
     for shared, path in SHARED.items():
         if re.search(rf"props\.{shared}\b", path.read_text(encoding="utf-8")):
@@ -202,3 +205,28 @@ def test_pictos_are_the_ones_the_render_library_draws():
     source = (REPO / "render" / "src" / "pictos" / "library.ts").read_text(encoding="utf-8")
     block = re.search(r"export const PICTOS = \[(.*?)\]", source, re.S).group(1)
     assert tuple(re.findall(r'"([\w-]+)"', block)) == scene_schema.PICTOS
+
+
+def ts_list(path, name):
+    source = (REPO / "render" / "src" / path).read_text(encoding="utf-8")
+    block = re.search(rf"export const {name} = \[(.*?)\]", source, re.S).group(1)
+    return tuple(re.findall(r'"([\w:-]+)"', block))
+
+
+def test_flags_are_the_ones_the_render_knows():
+    assert ts_list("pictos/flags.ts", "FLAGS") == scene_schema.FLAGS
+
+
+@pytest.mark.parametrize("name,expected", [
+    ("HAIRS", "HAIRS"), ("HAIR_COLORS", "HAIR_COLORS"), ("FACIALS", "FACIALS"), ("HATS", "HATS"), ("OUTFITS", "OUTFITS"),
+    ("SKINS", "SKINS"),
+])
+def test_person_values_are_the_ones_the_render_draws(name, expected):
+    assert ts_list("scenes/personLook.ts", name) == getattr(scene_schema, expected)
+
+
+def test_person_props_are_the_ones_the_render_reads():
+    source = (SCENES_DIR / "personLook.ts").read_text(encoding="utf-8")
+    read = set(re.findall(r"props\.(\w+)", source))
+    schema = scene_schema.SCHEMA["person-card"]
+    assert read == set(schema["optional"]) - {"role", "kicker", "picto"}

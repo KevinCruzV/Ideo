@@ -33,14 +33,14 @@ def test_kicker_is_accepted_on_every_type_with_a_cap_of_28(kind):
     assert len(errors) == 1 and "kicker" in errors[0] and "28" in errors[0]
 
 
-@pytest.mark.parametrize("kind", ["key-title", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote"])
+@pytest.mark.parametrize("kind", ["key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote"])
 def test_picto_accepted_on_its_types_and_checked(kind):
     assert scene_schema.check_props(kind, {**KICKER_KINDS[kind], "picto": "globe"}, "x") == []
     errors = scene_schema.check_props(kind, {**KICKER_KINDS[kind], "picto": "licorne"}, "x")
     assert len(errors) == 1 and "picto" in errors[0] and "globe" in errors[0]
 
 
-@pytest.mark.parametrize("kind", ["person-card", "icon-grid", "object-state", "shape-diagram", "mascot", "versus"])
+@pytest.mark.parametrize("kind", ["icon-grid", "object-state", "shape-diagram", "mascot", "versus"])
 def test_picto_is_refused_on_other_types(kind):
     errors = scene_schema.check_props(kind, {**KICKER_KINDS[kind], "picto": "globe"}, "x")
     assert errors and "prop inconnue" in errors[0]
@@ -158,3 +158,69 @@ def test_break_must_be_a_boolean(job_with_fixtures):
     from ideo import codes
 
     assert codes.error_code(errors[0]) == "break-invalide"
+
+
+def test_flags_are_accepted_wherever_a_picto_is():
+    assert scene_schema.check_props("key-title", {"text": "T", "picto": "flag:cn"}, "x") == []
+    assert scene_schema.check_props("person-card", {"name": "N", "picto": "flag:fr"}, "x") == []
+    assert scene_schema.check_props("versus", {"left": "a", "right": "b", "left_picto": "flag:us", "right_picto": "flag:su"}, "x") == []
+    assert scene_schema.check_props("icon-grid", {"cells": [{"label": "a", "picto": "flag:in"}, {"label": "b", "picto": "globe"}]}, "x") == []
+
+
+def test_special_flag_codes():
+    for code in ("eu", "un", "su"):
+        assert code in scene_schema.FLAGS
+
+
+def test_flags_list_has_no_hateful_regime_and_is_sorted_two_letter_codes():
+    assert len(scene_schema.FLAGS) == len(set(scene_schema.FLAGS)) == 252
+    assert all(len(c) == 2 and c == c.lower() for c in scene_schema.FLAGS)
+    assert "xx" not in scene_schema.FLAGS
+
+
+@pytest.mark.parametrize("value", ["flag:xx", "flag:", "flag:FR", "flag:fra", "flag:fr "])
+def test_unknown_flag_codes_say_what_to_write(value):
+    errors = scene_schema.check_props("key-title", {"text": "T", "picto": value}, "Partie 1, scène 2")
+    assert len(errors) == 1
+    assert errors[0].startswith("Partie 1, scène 2 : « props.picto » : « " + value + " » n'est pas un drapeau connu.")
+    assert "deux lettres en minuscules" in errors[0]
+    assert all(f"flag:{c}" in errors[0] for c in ("fr", "us", "cn", "de", "br", "za"))
+
+
+def test_unknown_flag_in_a_grid_cell_gives_one_precise_error():
+    errors = scene_schema.check_props("icon-grid", {"cells": [{"label": "a", "picto": "flag:zz"}]}, "x")
+    assert len(errors) == 1 and "props.cells.0.picto" in errors[0]
+
+
+def test_unknown_flag_does_not_hide_other_problems_in_the_same_list():
+    errors = scene_schema.check_props("icon-grid", {"cells": [{"label": "a", "picto": "flag:zz", "icon": 1}]}, "x")
+    assert len(errors) == 2
+
+
+def test_plain_unknown_picto_still_lists_the_names_and_the_flag_form():
+    errors = scene_schema.check_props("key-title", {"text": "T", "picto": "licorne"}, "x")
+    assert len(errors) == 1 and "globe" in errors[0] and "flag:<code>" in errors[0]
+
+
+PERSON = {"name": "N", "hair": "crown-bald", "hair_color": "grey", "facial": "goatee", "hat": "wig", "glasses": True,
+          "outfit": "lab-coat", "skin": "dark"}
+
+
+def test_person_card_accepts_every_character_prop():
+    assert scene_schema.check_props("person-card", PERSON, "x") == []
+    assert scene_schema.check_props("person-card", {"name": "N"}, "x") == []
+    assert scene_schema.check_props("person-card", {**PERSON, "glasses": False}, "x") == []
+
+
+@pytest.mark.parametrize("prop,bad", [("hair", "chauve"), ("hair_color", "bleu"), ("facial", "tresse"), ("hat", "casque"),
+                                      ("outfit", "pyjama"), ("skin", "vert"), ("glasses", "oui"), ("glasses", 1)])
+def test_person_card_closed_values_are_checked(prop, bad):
+    errors = scene_schema.check_props("person-card", {"name": "N", prop: bad}, "x")
+    assert len(errors) == 1 and f"« props.{prop} » doit être" in errors[0]
+    assert ("true ou false" in errors[0]) if prop == "glasses" else ("une de ces valeurs :" in errors[0])
+
+
+def test_person_card_value_lists_are_the_contract_ones():
+    assert scene_schema.HAIRS == ("none", "short", "side", "long", "curly", "wild", "bun", "crown-bald")
+    assert scene_schema.HATS[-1] == "wig" and len(scene_schema.HATS) == 11
+    assert scene_schema.OUTFITS == ("suit", "uniform", "robe", "lab-coat", "casual", "toga", "armor", "dress")
