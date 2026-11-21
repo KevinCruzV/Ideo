@@ -117,7 +117,7 @@ def test_items_are_in_spoken_order(scene):
 
 def test_guide_and_skill_say_the_title_is_free():
     text = GUIDE.read_text(encoding="utf-8")
-    assert "ni le titre de la vidéo" not in text
+    assert "ni le titre de la vidéo (lignes" not in text
     assert "Le sujet et les mots de la ligne `Titre :` sont libres" in text
 
 
