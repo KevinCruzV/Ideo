@@ -221,6 +221,20 @@ def test_status_after_produce_says_done(produce_job, capsys):
     assert len(out) == 1 and "produce" in out[0] and "rien" in out[0]
 
 
+def test_status_after_plan_edit_asks_for_produce(produce_job, capsys):
+    job, _, _ = produce_job
+    for step in ("fetch", "transcribe", "transcript"):
+        common.mark(job, step, True)
+    (job / "transcript_compact.md").write_text("x", encoding="utf-8")
+    cli.main(["produce", str(job)])
+    edit_first_say(job, "Aujourd'hui nous allons voir pourquoi notre mémoire laisse filer presque tout ce que "
+                        "nous venons de lire ou d'apprendre, en quelques jours à peine seulement.")
+    cli.main(["check", str(job)])
+    capsys.readouterr()
+    cli.main(["status", str(job)])
+    assert "suivant : produce (partie 1)" in lines(capsys)[0]
+
+
 def test_status_steps_in_order(job_with_fixtures, capsys):
     job = job_with_fixtures
     (job / "plan.json").unlink()

@@ -172,8 +172,7 @@ def status(job: Path) -> str:
     if not md.exists() or md.stat().st_mtime < plan_path.stat().st_mtime:
         return f"fait : prepare ; suivant : check{note}"
     plan = common.load_json(plan_path)
-    todo = [p["n"] for p in plan["parts"]
-            if not (_ok(steps, f"render-{p['n']:02d}") and render._mp4_path(job, plan, p["n"]).exists())]
+    todo = [p["n"] for p in plan["parts"] if not _done(job, plan, p["n"], part_hash(plan, p))]
     if todo:
         return f"fait : check ; suivant : produce (partie {todo[0]}){note}"
     return f"fait : produce ; suivant : rien, tout est dans {(job / 'out').resolve()}{note}"
