@@ -72,7 +72,7 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 | `person-card` | qui a dit ou fait quoi | `name`* [48 caractères], `role` [100 caractères] ; `kicker` (voir sous le tableau) | `avatar`, `name`, `role` |
 | `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) [28 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `chips.0` à `chips.5` |
 | `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) [60 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `items.0` à `items.4` |
-| `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` [60 caractères] : l'unité ou ce qu'on compte ; `kicker`, `picto` (voir sous le tableau) | `to` (lance le compte), `label` |
+| `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` [60 caractères] : ce qu'on compte ; `unit` [4 caractères] : l'unité écrite après le nombre ("%", "x", "km") ; `kicker`, `picto` (voir sous le tableau) | `to` (lance le compte), `label` |
 | `timeline` | une chronologie | `marks`* : liste de `{at, label}` (5 max, `at` obligatoire) [`at` 12 caractères, `label` 48 caractères] ; `start`, `end` : textes [30 caractères] ; `kicker`, `picto` (voir sous le tableau) | `marks.0` à `marks.4` |
 | `icon-grid` | des catégories, une famille | `cells`* : liste de `{shape, label}` (9 max, `label` obligatoire) [`label` 16 caractères], `shape` = `circle`, `square`, `triangle`, `diamond`, `arrow` ou `strip` ; `kicker` (voir sous le tableau) | `cells.0` à `cells.8` |
 | `stamp` | une conclusion forte, une idée reçue démentie | `text`* [48 caractères] (affiché en majuscules) ; `kicker`, `picto` (voir sous le tableau) | `text` |
@@ -121,6 +121,7 @@ Un exemple par type :
 - Chaque élément du visuel apparaît sur le mot indiqué dans `on`. Un élément absent de `items` est visible dès la première image. Liste tous les éléments sauf `states.0` (visible dès le début) et `speaker` quand il est vide.
 - `on` = un mot ou une courte suite de mots recopiés exactement du `say` de la même scène, là où l'élément doit apparaître.
 - Mets les `items` dans l'ordre où leurs mots sont dits. Deux éléments peuvent partager le même mot.
+- Répartis les éléments sur toute la durée du `say` : le dernier s'ancre sur un mot de la dernière phrase, sinon l'écran reste figé pendant que la voix continue.
 - Pour tous les types : ancre le premier élément sur un des premiers mots du `say`. Le code le fait de toute façon apparaître au début de la scène, pour que l'écran ne reste jamais vide.
 
 ## 7. Citations et sons
