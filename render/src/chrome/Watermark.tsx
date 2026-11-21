@@ -2,6 +2,9 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { colors, fonts, layout, shadowFilter } from "../theme";
 import { jitter } from "../paper/stopMotion";
+import { MascotHead } from "../mascot/Character";
+
+export const WATERMARK_HEAD = 44;
 
 export const Watermark: React.FC<{ text: string }> = ({ text }) => {
   const frame = useCurrentFrame();
@@ -17,16 +20,20 @@ export const Watermark: React.FC<{ text: string }> = ({ text }) => {
     >
       <div
         style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
           background: colors.cream,
           color: colors.ink,
           fontFamily: fonts.brand,
           fontWeight: 800,
           fontSize: 36,
           lineHeight: 1,
-          padding: "12px 24px",
+          padding: "6px 22px 6px 12px",
         }}
       >
-        {text}
+        <MascotHead size={WATERMARK_HEAD} />
+        <span>{text}</span>
       </div>
     </div>
   );

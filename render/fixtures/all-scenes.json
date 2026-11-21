@@ -344,7 +344,8 @@
    "from": 1080,
    "to": 1170,
    "props": {
-    "bubble": "Révise demain, pas ce soir. Ton cerveau te dira merci."
+    "bubble": "Révise demain, pas ce soir. Ton cerveau te dira merci.",
+    "pose": "question"
    },
    "items": [
     {
