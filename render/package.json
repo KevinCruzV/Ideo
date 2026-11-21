@@ -1,0 +1,23 @@
+{
+  "name": "ideo-render",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "still": "remotion still src/index.ts Short out/minimal.png --props=fixtures/minimal.json --frame=45",
+    "render": "remotion render src/index.ts Short out/minimal.mp4 --props=fixtures/minimal.json"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.545",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.545"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}
