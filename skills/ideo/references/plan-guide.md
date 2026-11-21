@@ -29,6 +29,7 @@ La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 - `title` : le titre de la vidéo, affiché en haut de l'écran pendant toute la vidéo, 40 caractères au plus (espaces compris).
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
+- La transcription est automatique : les noms propres y sont parfois mal écrits. Écris un nom seulement si tu reconnais la personne ou le lieu avec certitude, avec sa bonne orthographe. Sinon, désigne-la par son rôle ("le président de l'époque").
 - N'utilise jamais un passage de sponsor, de promotion, d'appel à s'abonner ou de vie de la chaîne. Les lignes `[passage sponsorisé a à b, ignoré]` et `[passage probablement sponsorisé a à b, ignoré]` remplacent ces passages : n'utilise aucun minutage compris entre a et b (ni `src`, ni citation, ni `sfx`).
 - Ne nomme jamais une marque ou un produit que la vidéo est payée pour promouvoir.
 - N'écris jamais le nom de la ligne `Chaîne :`, ni celui de la personne qui anime la chaîne : ni dans `title`, ni dans `hook`, ni dans `say`, ni dans les `props`, ni dans une citation (`quote`, `props.text`) : si l'extrait le prononce, choisis un autre extrait. Le sujet et les mots de la ligne `Titre :` sont libres : tu peux les reprendre.
@@ -93,7 +94,7 @@ Personnages (`person-card`) : compose l'apparence de la personne avec ces props,
 - `outfit` : `suit`, `uniform`, `robe`, `lab-coat`, `casual`, `toga`, `armor`, `dress` ; `skin` : `light`, `tan`, `brown`, `dark`
 Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dès qu'une personne compte dans l'histoire, donne-lui une `person-card` avec son apparence.
 
-Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du code du pays à deux lettres en minuscules : `flag:us`, `flag:cn`, `flag:ru`, `flag:in`, `flag:br`, `flag:za`, `flag:fr`, `flag:gb`, `flag:de`, `flag:jp`. Aussi `flag:eu` (Union européenne), `flag:un` (ONU) et `flag:su` (Union soviétique). Dès qu'un pays est nommé à l'écran, montre son drapeau : une `icon-grid` de pays a un drapeau par cellule, un `versus` entre deux pays a un drapeau de chaque côté.
+Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du code du pays à deux lettres en minuscules : `flag:us`, `flag:cn`, `flag:ru`, `flag:in`, `flag:br`, `flag:za`, `flag:fr`, `flag:gb`, `flag:de`, `flag:jp`. Aussi `flag:eu` (Union européenne), `flag:un` (ONU) et `flag:su` (Union soviétique). Tous les pays ont leur drapeau, même s'ils ne sont pas dans ces exemples : écris leur code (`flag:iq` pour l'Irak, `flag:eg` pour l'Égypte). Ne demande jamais un drapeau de pays dans `wishes`. Dès qu'un pays est nommé à l'écran, montre son drapeau. Quand un `say` cite trois pays ou plus (une alliance, un groupe, des pays visés), la scène est une `icon-grid` avec un drapeau et le nom du pays par cellule. Un `versus` entre deux pays a un drapeau de chaque côté.
 
 Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `picto` approximatif. Note ce qui t'a manqué dans un champ `"wishes"` au premier niveau du plan, à côté de `"parts"` : une liste de 0 à 5 textes courts [40 caractères], par exemple `"wishes": ["drapeau américain", "carte du monde"]`. Ces dessins seront ajoutés plus tard.
 
@@ -140,7 +141,7 @@ Un exemple par type :
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
 - Si la transcription ne dit pas qui parle, ou parle seulement d'"un journal" ou d'"un reportage" sans nommer le média, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. `speaker` n'est jamais le nom de la chaîne YouTube, ni le titre de la vidéo, ni un nom inventé.
 - Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa") : quand on entend le présentateur ou l'auteur de la vidéo, mets `"speaker": ""`.
-- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment. Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
+- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment, et jamais sur un sujet grave (section 4). Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
 
 Exemple : la transcription contient
 
