@@ -292,21 +292,72 @@ def set_info(job, **info):
 @pytest.mark.parametrize("mutate,where,field", [
     (lambda p: p.update(series_title="Le meilleur de Chaîne Test"), "Plan", "series_title"),
     (lambda p: p["parts"][0].update(title="Chaîne Test explique"), "Partie 1", "title"),
-    (lambda p: p["parts"][0].update(hook="Dis-moi pourquoi Mémoire et oubli marche ?"), "Partie 1", "hook"),
+    (lambda p: p["parts"][0].update(hook="Dis-moi pourquoi Chaîne Test oublie tout ?"), "Partie 1", "hook"),
     (lambda p: p["parts"][0]["scenes"][0].update(say=p["parts"][0]["scenes"][0]["say"] + " Merci chaine test."), "Partie 1, scène 1", "say"),
-    (lambda p: p["parts"][0]["scenes"][2]["props"]["chips"].append("CHAÎNE-TEST"), "Partie 1, scène 3", "props"),
+    (lambda p: p["parts"][0]["scenes"][2]["props"]["chips"].append("CHAÎNE-TEST"), "Partie 1, scène 3", "props.chips"),
 ])
-def test_channel_or_title_blocked_in_every_string(job_with_fixtures, mutate, where, field):
+def test_channel_blocked_in_every_string(job_with_fixtures, mutate, where, field):
     set_info(job_with_fixtures, channel="Chaîne Test", title="Mémoire et oubli")
     plan = load(job_with_fixtures)
     mutate(plan)
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
-    assert any(e.startswith(f"{where} : « {field} » contient") and "Reformule" in e for e in errors), errors
+    assert any(e.startswith(f"{where} : « {field} » contient le nom de la chaîne YouTube") and "Reformule" in e
+               for e in errors), errors
 
 
-def test_short_channel_name_is_not_blocked(job_with_fixtures):
-    set_info(job_with_fixtures, channel="Le", title="Lune")
+def test_video_title_words_are_free_to_use(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Chaîne Test", title="La Lune")
+    plan = load(job_with_fixtures)
+    plan["series_title"] = "La Lune"
+    plan["parts"][0]["title"] = "La Lune"
+    plan["parts"][0]["hook"] = "Dis-moi pourquoi la lune nous fait oublier ?"
+    plan["parts"][0]["scenes"][0]["say"] += " Comme la lune."
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_long_video_title_is_not_blocked(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Chaîne Test", title="Pourquoi on oublie")
+    assert load(job_with_fixtures)["series_title"] == "Pourquoi on oublie"
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_channel_inside_quote_text_is_allowed(job_with_fixtures):
+    set_info(job_with_fixtures, channel="moins d'une journée")
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def add_words(job, word, count):
+    words = json.loads((job / "words.json").read_text(encoding="utf-8"))
+    words += [{"w": word, "s": 112.0 + i, "e": 112.5 + i} for i in range(count)]
+    (job / "words.json").write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
+
+
+def say_word(job, word):
+    plan = load(job)
+    plan["parts"][0]["scenes"][0]["say"] += f" La {word} avance."
+    write(job, plan)
+
+
+def test_single_word_channel_is_blocked_when_rare_in_transcript(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Science")
+    add_words(job_with_fixtures, "science", 3)
+    say_word(job_with_fixtures, "science")
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("« say » contient le nom de la chaîne YouTube (« Science »)" in e for e in errors), errors
+
+
+def test_single_word_channel_is_free_when_common_in_transcript(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Science")
+    add_words(job_with_fixtures, "Science,", 4)
+    say_word(job_with_fixtures, "science")
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_short_single_word_channel_is_not_blocked(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Lunes", title="Lune")
+    say_word(job_with_fixtures, "lunes")
     assert plan_check.check_plan(job_with_fixtures) == []
 
 

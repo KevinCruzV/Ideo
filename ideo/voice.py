@@ -65,7 +65,7 @@ def retranscribe(wav: Path, lang: str) -> list[dict]:
     return words
 
 
-def _segments(plan: dict, part: dict) -> list[tuple[str, str]]:
+def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
     lang = plan["lang"]
     parts = plan["parts"]
     index = parts.index(part)
@@ -95,7 +95,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     backend = backend or get_backend()
     paths = []
     try:
-        for name, text in _segments(plan, part):
+        for name, text in segments(plan, part):
             wav = out_dir / f"{name}.wav"
             words_path = out_dir / f"{name}.words.json"
             paths.append(wav)

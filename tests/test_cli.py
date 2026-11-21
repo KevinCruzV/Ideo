@@ -29,7 +29,7 @@ def produce_job(job_with_voice_fixtures, monkeypatch, fake_whisper):
     def fake_render(job_path, n):
         renders.append(n)
         plan = common.load_json(job_path / "plan.json")
-        out = render._mp4_path(job_path, plan, n)
+        out = render.mp4_path(job_path, plan, n)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(b"mp4")
         common.mark(job_path, f"render-{n:02d}", True)
@@ -180,6 +180,28 @@ def test_produce_invalidates_part_when_plan_changes(produce_job, capsys):
     assert "quelques jours à peine" in backend.calls[first + 1][0]
 
 
+def test_src_edit_on_a_plain_scene_keeps_the_part(produce_job, capsys):
+    job, backend, renders = produce_job
+    assert cli.main(["produce", str(job)]) == 0
+    first = len(backend.calls)
+    plan = common.load_json(job / "plan.json")
+    plan["parts"][0]["scenes"][3]["src"] = "0:36"
+    common.save_json(job / "plan.json", plan)
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == first and renders == [1]
+
+
+def test_quote_src_edit_redoes_the_part(produce_job, capsys):
+    job, backend, renders = produce_job
+    assert cli.main(["produce", str(job)]) == 0
+    plan = common.load_json(job / "plan.json")
+    assert plan["parts"][0]["scenes"][4]["type"] == "quote"
+    plan["parts"][0]["scenes"][4]["src"] = "0:27"
+    common.save_json(job / "plan.json", plan)
+    assert cli.main(["produce", str(job)]) == 0
+    assert renders == [1, 1]
+
+
 def test_invalidation_deletes_stale_artifacts_and_marks(produce_job, monkeypatch, capsys):
     job, backend, renders = produce_job
     assert cli.main(["produce", str(job)]) == 0
@@ -263,6 +285,11 @@ def test_deepen_creates_sibling_job_sharing_prepared_files(job_with_fixtures, mo
     assert len(out) == 1 and str(new.resolve()) in out[0]
     for name in ("words.json", "lang.txt", "info.json", "sfx.json", "skip.json", "transcript_compact.md", "source.m4a"):
         assert (new / name).read_bytes() == (job / name).read_bytes()
+    assert (new / "source.m4a").stat().st_ino == (job / "source.m4a").stat().st_ino
+    for name in ("words.json", "skip.json", "transcript_compact.md"):
+        assert (new / name).stat().st_ino != (job / name).stat().st_ino
+    (new / "transcript_compact.md").write_text("autre", encoding="utf-8")
+    assert (job / "transcript_compact.md").read_text(encoding="utf-8") == "[0:02] Le matin"
     assert not (new / "plan.json").exists()
     assert set(common.read_status(new)["steps"]) == {"fetch", "transcribe", "transcript"}
     assert cli.main(["deepen", str(job)]) == 0

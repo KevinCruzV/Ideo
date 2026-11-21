@@ -118,7 +118,7 @@ def _build(job: Path, n: int, total: int) -> Path:
     if not offsets_path.exists():
         raise common.IdeoError(f"offsets.json est introuvable : assemblez d'abord l'audio de la partie {n}.")
     offsets = common.load_json(offsets_path)
-    texts = dict(voice._segments(plan, part))
+    texts = dict(voice.segments(plan, part))
     scenes = {f"seg_{i:02d}": scene for i, scene in enumerate(part["scenes"], start=1)}
     source_words = common.load_json(job / "words.json") if (job / "words.json").exists() else []
 

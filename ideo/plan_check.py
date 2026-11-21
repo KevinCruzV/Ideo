@@ -14,6 +14,8 @@ MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0
 QUOTE_WINDOW = 90.0
 EM_DASH = chr(0x2014)
+CHANNEL_MIN_CHARS = 6
+CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
 
 
@@ -72,26 +74,36 @@ def _check_dash(texts, where: str, errors: list[str]) -> None:
             return
 
 
-def _publisher_names(info) -> list[tuple[str, str]]:
-    if not isinstance(info, dict):
-        return []
-    names = []
-    for key, label in (("channel", "le nom de la chaîne YouTube"), ("title", "le titre de la vidéo source")):
-        value = info.get(key)
-        plain = _plain(value)
-        if plain and (len(plain.split()) >= 2 or len(plain) >= 5):
-            names.append((value, label))
-    return names
+def blocked_channel(info, words: list[dict]) -> str | None:
+    if not isinstance(info, dict) or not isinstance(info.get("channel"), str):
+        return None
+    channel = info["channel"]
+    plain = _plain(channel).split()
+    if len(plain) >= 2:
+        return channel
+    if len(plain) == 1 and len(plain[0]) >= CHANNEL_MIN_CHARS:
+        spoken = sum(_plain(w["w"]).split().count(plain[0]) for w in words)
+        if spoken <= CHANNEL_MAX_SPOKEN:
+            return channel
+    return None
 
 
-def _check_publisher(fields, where: str, ctx: dict, errors: list[str]) -> None:
+def _check_channel(fields, where: str, ctx: dict, errors: list[str]) -> None:
+    name = ctx["channel"]
+    if name is None:
+        return
     for field, text in fields:
-        if not isinstance(text, str):
+        if isinstance(text, str) and find_span(text.split(), name) is not None:
+            errors.append(f"{where} : « {field} » contient le nom de la chaîne YouTube (« {name} »). Reformule sans le reprendre : on ne nomme jamais la chaîne ni la personne qui l'anime.")
+            return
+
+
+def _prop_strings(kind, props: dict):
+    for key, value in props.items():
+        if kind == "quote" and key in ("text", "speaker"):
             continue
-        for name, label in ctx["names"]:
-            if find_span(text.split(), name) is not None:
-                errors.append(f"{where} : « {field} » contient {label} (« {name} »). Reformule sans le reprendre : on ne nomme ni la chaîne ni la vidéo source.")
-                return
+        for text in _strings(value):
+            yield f"props.{key}", text
 
 
 def _ranges(value) -> list[tuple[float, float]]:
@@ -153,8 +165,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     known = isinstance(kind, str) and kind in SCENE_TYPES
     if known:
         errors.extend(scene_schema.check_props(kind, props, where))
-    shown = {k: v for k, v in props.items() if not (kind == "quote" and k == "speaker")}
-    _check_publisher([("say", say)] + [("props", t) for t in _strings(shown)], where, ctx, errors)
+    _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors)
 
     items = scene.get("items", [])
     if not isinstance(items, list):
@@ -189,8 +200,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
             entry = ctx["sfx"].get(round(at, 2))
             if entry is None:
                 part_state["unresolved"] += 1
-                known = ", ".join(e["at"] for e in ctx["sfx"].values()) or "aucun"
-                errors.append(f"{where} : le son {scene['sfx']} n'est pas dans sfx.json. Repères disponibles : {known}. Prends l'un d'eux ou retire « sfx ».")
+                available = ", ".join(e["at"] for e in ctx["sfx"].values()) or "aucun"
+                errors.append(f"{where} : le son {scene['sfx']} n'est pas dans sfx.json. Repères disponibles : {available}. Prends l'un d'eux ou retire « sfx ».")
             else:
                 try:
                     part_state["seconds"] += max(0.0, float(entry["e"]) - float(entry["s"]))
@@ -214,7 +225,7 @@ def _plain(value) -> str:
 def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> None:
     speaker = props.get("speaker")
     speaker = speaker.strip() if isinstance(speaker, str) else ""
-    named = any(find_span(speaker.split(), name) is not None for name, _ in ctx["names"])
+    named = ctx["channel"] is not None and find_span(speaker.split(), ctx["channel"]) is not None
     if speaker and (named or _plain(speaker) in ctx["publisher"]):
         errors.append(f"{where} : « speaker » doit nommer la personne ou le média qu'on entend, pas la chaîne YouTube. Laisse-le vide si la transcription ne le dit pas.")
     text = props.get("text")
@@ -259,7 +270,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         _check_dash([hook], where, errors)
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
-    _check_publisher([("title", part.get("title")), ("hook", hook)], where, ctx, errors)
+    _check_channel([("title", part.get("title")), ("hook", hook)], where, ctx, errors)
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
@@ -337,7 +348,7 @@ def check_plan(job: Path) -> list[str]:
     publisher = {_plain(info.get(k)) for k in ("channel", "title")} if isinstance(info, dict) else set()
     ctx = {
         "publisher": publisher - {""},
-        "names": _publisher_names(info),
+        "channel": blocked_channel(info, words),
         "lang": lang if isinstance(lang, str) else (job_lang or "fr"),
         "duration": float(duration) if isinstance(duration, (int, float)) else None,
         "words": words,
@@ -345,7 +356,7 @@ def check_plan(job: Path) -> list[str]:
         "hidden": hidden,
         "sponsor": sponsor,
     }
-    _check_publisher([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
+    _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
     results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
     clips_by_part = [clips for clips, _ in results]
     seconds = [sec for _, sec in results]

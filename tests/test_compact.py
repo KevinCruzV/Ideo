@@ -1,3 +1,5 @@
+import pytest
+
 from ideo import compact
 
 INFO = {"title": "T", "channel": "C", "duration": 60}
@@ -67,14 +69,29 @@ def test_sponsorblock_segment_replaces_paragraphs():
 def test_paragraph_mostly_outside_segment_is_kept():
     info = {**INFO, "skip": [{"s": 4.0, "e": 5.0, "kind": "selfpromo"}]}
     text, hidden = compact.build(SPEECH, [], info)
-    assert "[0:00] La lumière" in text and hidden == [r for r in hidden if r["s"] >= 10]
+    assert "[0:00] La lumière" in text and hidden == []
 
 
-def test_keyword_fallback_hides_up_to_sixty_seconds():
-    text, hidden = compact.build(SPEECH, [], INFO)
-    assert "[passage probablement sponsorisé 0:10 à 0:23, ignoré]" in text
-    assert "matelas" not in text and "[1:30] Revenons" in text
-    assert hidden == [{"s": 10.0, "e": 23.1, "probable": True}]
+RUN = (para_words(0, "La lumière du soleil est blanche et le ciel est bleu")
+       + para_words(10, "Cette vidéo est sponsorisée par une marque de matelas")
+       + para_words(15, "Leurs matelas sont très confortables pour bien dormir")
+       + para_words(25, "Revenons au ciel qui diffuse le bleu partout"))
+
+
+def test_keyword_fallback_window_ends_at_first_long_pause():
+    text, hidden = compact.build(RUN, [], INFO)
+    assert "[passage probablement sponsorisé 0:10 à 0:18, ignoré]" in text
+    assert "matelas" not in text and "[0:25] Revenons" in text
+    assert hidden == [{"s": 10.0, "e": 18.1, "probable": True}]
+
+
+def test_keyword_fallback_window_stops_after_sixty_seconds():
+    words = para_words(0, "Cette vidéo est sponsorisée par Acme et ses matelas")
+    for k in range(1, 15):
+        words += para_words(k * 5.2, "Acme vend des matelas très doux pour bien dormir")
+    text, hidden = compact.build(words, [], INFO)
+    assert hidden == [{"s": 0.0, "e": 60.7, "probable": True}]
+    assert "[1:02] Acme vend" in text
 
 
 def test_no_fallback_when_sponsorblock_has_data():
@@ -85,6 +102,23 @@ def test_no_fallback_when_sponsorblock_has_data():
 
 def test_sponsor_wording_in_both_languages():
     assert compact.is_sponsor_text("This video is brought to you by Acme")
-    assert compact.is_sponsor_text("le lien en description, et utilise le CODE PROMO")
-    assert compact.is_sponsor_text("Use code SKY for ten percent off")
+    assert compact.is_sponsor_text("utilise le CODE PROMO ciel pour dix pour cent")
+    assert compact.is_sponsor_text("Today 's sponsor is Acme")
+    assert compact.is_sponsor_text("Cette vidéo est sponsorisée par Acme")
     assert not compact.is_sponsor_text("Le ciel est bleu à cause de la diffusion")
+
+
+@pytest.mark.parametrize("text", [
+    "cette vidéo n'est pas sponsorisée",
+    "Cette vidéo n'est pas sponsorisée par une marque",
+    "This video is not sponsored by anyone",
+    "we use code to draw the sky",
+    "Use code SKY for ten percent off",
+    "en partenariat avec le CNRS",
+    "la source est en lien en description",
+    "the paper is linked, link in the description",
+    "brought to you by the same team as last year",
+    "c'est sponsorisé, mais pas ici",
+])
+def test_weak_or_negated_wording_is_not_a_sponsor(text):
+    assert not compact.is_sponsor_text(text)

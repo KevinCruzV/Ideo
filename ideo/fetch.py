@@ -7,6 +7,7 @@ from ideo import common
 INFO_FIELDS = ("id", "title", "channel", "webpage_url", "duration", "chapters", "language")
 SPONSOR_CATEGORIES = ("sponsor", "selfpromo", "interaction")
 
+SPONSORBLOCK_FAILURES = ("sponsorblock api", "unable to communicate with sponsorblock")
 ERROR_PATTERNS = [
     (("private video",), "Impossible de récupérer cette vidéo privée."),
     (("confirm your age", "age-restricted", "age restricted"),
@@ -78,7 +79,7 @@ def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
             break
         except common.IdeoError as e:
             tail = _read_new(log, offset)
-            if sponsorblock and "sponsorblock" in tail.lower():
+            if sponsorblock and any(p in tail.lower() for p in SPONSORBLOCK_FAILURES):
                 continue
             raise common.IdeoError(explain_ytdlp_error(tail if tail.strip() else str(e))) from e
     audio, info_file = tmp / "audio.m4a", tmp / "audio.info.json"

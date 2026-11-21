@@ -7,8 +7,8 @@ from pathlib import Path
 
 from ideo import assemble, common, compact, fetch, plan_check, render, timeline, transcribe, voice
 
-PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md", "source.wav",
-                  "source.m4a")
+PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md")
+AUDIO_FILES = ("source.wav", "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")
 PART_FILES = ("part.wav", "offsets.json", "timeline.json")
@@ -57,13 +57,19 @@ def prepared(job: Path) -> bool:
     return all(_ok(steps, s) for s in PREPARE_STEPS) and (job / "transcript_compact.md").exists()
 
 
+def voiced_scene(scene: dict) -> dict:
+    if scene.get("type") == "quote":
+        return scene
+    return {k: v for k, v in scene.items() if k != "src"}
+
+
 def part_hash(plan: dict, part: dict) -> str:
     content = {
         "lang": plan["lang"],
         "total": len(plan["parts"]),
         "title": part["title"],
-        "segments": voice._segments(plan, part),
-        "scenes": part["scenes"],
+        "segments": voice.segments(plan, part),
+        "scenes": [voiced_scene(scene) for scene in part["scenes"]],
     }
     raw = json.dumps(content, ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
@@ -100,8 +106,8 @@ def invalidate(job: Path, n: int) -> None:
 
 def _clean_extra_outputs(job: Path, plan: dict) -> None:
     numbers = {p["n"] for p in plan["parts"]}
-    keep = {render._mp4_path(job, plan, n).name for n in numbers}
-    keep |= {render._description_path(job, plan, n).name for n in numbers}
+    keep = {render.mp4_path(job, plan, n).name for n in numbers}
+    keep |= {render.description_path(job, plan, n).name for n in numbers}
     out = job / "out"
     if out.is_dir():
         for pattern in ("video.mp4", "partie-*.mp4", "description*.txt"):
@@ -117,7 +123,7 @@ def _clean_extra_outputs(job: Path, plan: dict) -> None:
 
 def _done(job: Path, plan: dict, n: int, digest: str) -> bool:
     return (_stored_hash(job, n) == digest and _ok(_steps(job), f"render-{n:02d}")
-            and render._mp4_path(job, plan, n).exists())
+            and render.mp4_path(job, plan, n).exists())
 
 
 def produce(job: Path, only: int | None = None) -> list[Path]:
@@ -152,7 +158,7 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
             render.render_part(job, n)
             progress(job, f"OK render-{n:02d}")
         render.write_description(job, n)
-        outputs += [render._mp4_path(job, plan, n), render._description_path(job, plan, n)]
+        outputs += [render.mp4_path(job, plan, n), render.description_path(job, plan, n)]
     outputs.append(render.write_sources(job))
     progress(job, "OK sources")
     return [p.resolve() for p in outputs]
@@ -178,7 +184,7 @@ def status(job: Path) -> str:
     return f"fait : produce ; suivant : rien, tout est dans {(job / 'out').resolve()}{note}"
 
 
-def _share(src: Path, dst: Path) -> None:
+def _link(src: Path, dst: Path) -> None:
     try:
         os.link(src, dst)
     except OSError:
@@ -197,7 +203,10 @@ def deepen(job: Path) -> Path:
     new.mkdir()
     for name in PREPARED_FILES:
         if (job / name).exists():
-            _share(job / name, new / name)
+            shutil.copy2(job / name, new / name)
+    for name in AUDIO_FILES:
+        if (job / name).exists():
+            _link(job / name, new / name)
     steps = _steps(job)
     common.save_json(new / "status.json", {"steps": {s: steps[s] for s in PREPARE_STEPS}})
     return new.resolve()

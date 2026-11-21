@@ -124,7 +124,7 @@ def _assemble(job: Path, n: int) -> Path:
     if part is None:
         raise common.IdeoError(f"partie {n} introuvable dans plan.json")
     out_dir = job / "parts" / f"{n:02d}"
-    names = [name for name, _ in voice._segments(plan, part)]
+    names = [name for name, _ in voice.segments(plan, part)]
     for name in names:
         if not (out_dir / f"{name}.wav").exists():
             raise common.IdeoError(f"{name}.wav est introuvable : lancez d'abord la voix de la partie {n}.")

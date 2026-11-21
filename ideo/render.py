@@ -24,12 +24,12 @@ def _single(plan: dict) -> bool:
     return len(plan["parts"]) == 1
 
 
-def _mp4_path(job: Path, plan: dict, n: int) -> Path:
+def mp4_path(job: Path, plan: dict, n: int) -> Path:
     name = "video.mp4" if _single(plan) else f"partie-{n:02d}.mp4"
     return Path(job) / "out" / name
 
 
-def _description_path(job: Path, plan: dict, n: int) -> Path:
+def description_path(job: Path, plan: dict, n: int) -> Path:
     name = "description.txt" if _single(plan) else f"description-{n:02d}.txt"
     return Path(job) / "out" / name
 
@@ -119,7 +119,7 @@ def _render(job: Path, n: int) -> Path:
         raise common.IdeoError(f"timeline.json est introuvable : construisez d'abord la timeline de la partie {n}.")
     if not (part_dir / "part.wav").exists():
         raise common.IdeoError(f"part.wav est introuvable : assemblez d'abord l'audio de la partie {n}.")
-    out = _mp4_path(job, plan, n)
+    out = mp4_path(job, plan, n)
     step = f"render-{n:02d}"
     if out.exists() and out.stat().st_mtime >= timeline.stat().st_mtime and common.read_status(job)["steps"].get(
         step, {}
@@ -187,7 +187,7 @@ def write_description(job: Path, n: int) -> str:
     text = f"{part['title']}\n"
     if speakers:
         text += f"\nVoix citées : {', '.join(speakers)}\n"
-    path = _description_path(job, plan, n)
+    path = description_path(job, plan, n)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return text

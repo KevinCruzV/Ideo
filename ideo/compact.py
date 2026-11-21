@@ -6,11 +6,14 @@ from ideo import common, sfx as sfx_mod
 PAUSE = 1.2
 MAX_WORDS = 60
 SPONSOR_SPAN = 60.0
+SPONSOR_GAP = 2.0
 SPONSOR_WORDS = (
-    "sponsorisé par", "sponsorisée par", "sponsorisé", "en partenariat avec", "partenaire de cette vidéo",
-    "code promo", "lien en description", "lien dans la description",
-    "sponsored by", "this video is brought to you by", "brought to you by", "today's sponsor",
-    "thanks to our sponsor", "use code", "link in the description",
+    "sponsorisé par", "sponsorisée par", "code promo",
+    "sponsored by", "today's sponsor", "this video is brought to you by", "thanks to our sponsor",
+)
+SPONSOR_NEGATIONS = (
+    "pas sponsoris", "non sponsoris", "jamais sponsoris", "aucun sponsor", "pas de sponsor", "pas de code promo",
+    "not sponsored", "n't sponsored", "no sponsor", "not a sponsor",
 )
 
 
@@ -52,6 +55,8 @@ def paragraphs(words: list[dict], breaks: list[float] = ()) -> list[dict]:
 def is_sponsor_text(text: str) -> bool:
     low = re.sub(r"\s+(['’])", r"\1", text.lower()).replace("’", "'")
     low = " ".join(low.split())
+    if any(phrase in low for phrase in SPONSOR_NEGATIONS):
+        return False
     return any(phrase in low for phrase in SPONSOR_WORDS)
 
 
@@ -81,8 +86,9 @@ def hidden_ranges(paras: list[dict], info: dict) -> list[dict]:
     flags = [False] * len(paras)
     for i, para in enumerate(paras):
         if is_sponsor_text(para["text"]):
-            for j in range(i, len(paras)):
-                if paras[j]["s"] >= para["s"] + SPONSOR_SPAN:
+            flags[i] = True
+            for j in range(i + 1, len(paras)):
+                if paras[j]["s"] >= para["s"] + SPONSOR_SPAN or paras[j]["s"] - paras[j - 1]["e"] >= SPONSOR_GAP:
                     break
                 flags[j] = True
     return _ranges(paras, flags, True)

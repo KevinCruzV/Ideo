@@ -154,13 +154,17 @@ def test_fetch_real_short_video(tmp_path, monkeypatch):
     info = common.load_json(job / "info.json")
     assert info["id"] == "jNQXAC9IVRw"
     assert info["duration"] < 60
-    assert set(info) == {"id", "title", "channel", "webpage_url", "duration", "chapters", "language"}
+    assert set(info) == {"id", "title", "channel", "webpage_url", "duration", "chapters", "language", "skip"}
+    assert isinstance(info["skip"], list)
     assert (job / "source.wav").stat().st_size > 10000
     assert (job / "source.m4a").stat().st_size > 1000
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
 
 
-def fake_run_sponsor(calls, fail_sponsorblock=False):
+API_DOWN = "ERROR: Postprocessing: Unable to communicate with SponsorBlock API\n"
+
+
+def fake_run_sponsor(calls, fail_sponsorblock=False, tail=API_DOWN):
     def fake(cmd, log):
         calls.append(cmd)
         if "yt_dlp" not in " ".join(cmd):
@@ -169,7 +173,7 @@ def fake_run_sponsor(calls, fail_sponsorblock=False):
         if fail_sponsorblock and "--sponsorblock-mark" in cmd:
             log.parent.mkdir(parents=True, exist_ok=True)
             with open(log, "a", encoding="utf-8") as f:
-                f.write("ERROR: Postprocessing: Unable to communicate with SponsorBlock API\n")
+                f.write(tail)
             raise common.IdeoError("code 1")
         base = cmd[cmd.index("-o") + 1].replace(".%(ext)s", "")
         open(base + ".m4a", "wb").write(b"m4a")
@@ -206,6 +210,17 @@ def test_fetch_continues_without_sponsorblock_when_api_fails(tmp_path, monkeypat
     assert "--sponsorblock-mark" in calls[0] and "--sponsorblock-mark" not in calls[1]
     assert common.load_json(job / "info.json")["skip"] == []
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
+
+
+def test_unrelated_failure_with_sponsorblock_info_line_is_not_retried(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    calls = []
+    tail = "[SponsorBlock] Fetching SponsorBlock segments\nERROR: [youtube] abc: Private video\n"
+    monkeypatch.setattr(common, "run", fake_run_sponsor(calls, fail_sponsorblock=True, tail=tail))
+    with pytest.raises(common.IdeoError, match="privée"):
+        fetch.fetch(URL)
+    assert len(calls) == 1
 
 
 @pytest.mark.network
