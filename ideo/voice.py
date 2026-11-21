@@ -7,13 +7,12 @@ from typing import Protocol
 
 import numpy as np
 
-from ideo import align, common, i18n, pacing, transcribe
+from ideo import align, common, config, i18n, pacing, transcribe
 
-EDGE_RATE = "+6%"
 TICKS = 1e7
 
 EDGE_VOICES = {
-    "fr": "fr-FR-HenriNeural",
+    "fr": "fr-FR-RemyMultilingualNeural",
     "en": "en-US-GuyNeural",
     "es": "es-ES-AlvaroNeural",
     "de": "de-DE-ChristophNeural",
@@ -49,16 +48,17 @@ class EdgeTTSBackend:
         self.log = log
 
     def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None:
-        voice = EDGE_VOICES.get(lang)
-        if not voice:
+        if lang not in EDGE_VOICES:
             raise common.IdeoError(unsupported(lang))
+        voice = config.voice_for(lang)
+        rate = config.rate()
         import edge_tts
 
         out_wav = Path(out_wav)
         words: list[dict] = []
 
         async def run(mp3: Path) -> None:
-            communicate = edge_tts.Communicate(text, voice, rate=EDGE_RATE, boundary="WordBoundary")
+            communicate = edge_tts.Communicate(text, voice, rate=rate, boundary="WordBoundary")
             with mp3.open("wb") as f:
                 async for chunk in communicate.stream():
                     if chunk["type"] == "audio":

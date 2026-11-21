@@ -101,7 +101,7 @@ def test_edge_backend_rejects_unknown_language():
 
 def test_edge_backend_voices():
     assert voice.EDGE_VOICES == {
-        "fr": "fr-FR-HenriNeural", "en": "en-US-GuyNeural", "es": "es-ES-AlvaroNeural",
+        "fr": "fr-FR-RemyMultilingualNeural", "en": "en-US-GuyNeural", "es": "es-ES-AlvaroNeural",
         "de": "de-DE-ChristophNeural", "it": "it-IT-DiegoNeural", "pt": "pt-BR-AntonioNeural",
         "nl": "nl-NL-MaartenNeural", "pl": "pl-PL-MarekNeural", "tr": "tr-TR-AhmetNeural",
     }
@@ -211,7 +211,7 @@ def test_words_json_has_one_word_per_script_word_with_script_text(job_with_plan,
     assert all(0 <= w["s"] <= w["e"] <= 1.0 + 1e-6 for w in words)
 
 
-def test_edge_backend_requests_word_boundaries_and_faster_rate(tmp_path, monkeypatch):
+def test_edge_backend_requests_word_boundaries_and_default_rate(tmp_path, monkeypatch):
     import edge_tts
 
     seen = {}
@@ -227,7 +227,7 @@ def test_edge_backend_requests_word_boundaries_and_faster_rate(tmp_path, monkeyp
     monkeypatch.setattr(edge_tts, "Communicate", Streams)
     monkeypatch.setattr(voice, "_ffmpeg", lambda: "/usr/bin/true")
     words = voice.EdgeTTSBackend().synthesize("Bonjour", "fr", tmp_path / "x.wav")
-    assert seen["rate"] == "+6%" and seen["boundary"] == "WordBoundary"
+    assert seen["rate"] == "+0%" and seen["boundary"] == "WordBoundary"
     assert words == [{"w": "Bonjour", "s": 0.1, "e": 0.3}]
 
 

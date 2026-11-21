@@ -4,7 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
-from ideo import assemble, common, compact, fetch, plan_check, render, timeline, transcribe, voice
+from ideo import assemble, common, config, compact, fetch, plan_check, render, timeline, transcribe, voice
 
 PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md")
 AUDIO_FILES = ("source.wav", "source.m4a")
@@ -65,6 +65,8 @@ def voiced_scene(scene: dict) -> dict:
 def part_hash(plan: dict, part: dict) -> str:
     content = {
         "lang": plan["lang"],
+        "voice": config.voice_for(plan["lang"]),
+        "rate": config.rate(),
         "total": len(plan["parts"]),
         "title": part["title"],
         "segments": voice.segments(plan, part),
