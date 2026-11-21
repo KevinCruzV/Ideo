@@ -1,0 +1,255 @@
+from pathlib import Path
+
+from ideo.common import fmt_ts, load_json, parse_ts
+from ideo.textmatch import closest_passage, find_span
+
+SCENE_TYPES = frozenset({
+    "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot",
+})
+MAX_PARTS = 8
+MIN_SECONDS = 55
+MAX_SECONDS = 95
+OUTRO_SECONDS = 3.0
+QUOTE_WINDOW = 90.0
+EM_DASH = chr(0x2014)
+RATES = {"fr": 2.6, "en": 2.8}
+
+
+def estimate_seconds(text: str, lang: str) -> float:
+    return len(text.split()) / RATES.get(lang, 2.6)
+
+
+def _read(job: Path, name: str, default):
+    path = job / name
+    if not path.exists():
+        return default
+    try:
+        return load_json(path)
+    except (ValueError, OSError):
+        return default
+
+
+def _strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for v in value.values():
+            yield from _strings(v)
+    elif isinstance(value, list):
+        for v in value:
+            yield from _strings(v)
+
+
+def _ts(value, where: str, field: str, errors: list[str]):
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{where} : « {field} » doit être un minutage texte « mm:ss » ou « h:mm:ss », par exemple « 12:30 ».")
+        return None
+    try:
+        seconds = parse_ts(value)
+    except ValueError:
+        errors.append(f"{where} : minutage invalide « {value} » dans « {field} ». Écris « mm:ss » ou « h:mm:ss », par exemple « 12:30 ».")
+        return None
+    if seconds < 0:
+        errors.append(f"{where} : minutage invalide « {value} » dans « {field} ». Il ne peut pas être négatif.")
+        return None
+    return seconds
+
+
+def _text_field(obj: dict, key: str, where: str, errors: list[str]) -> str | None:
+    value = obj.get(key)
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{where} : « {key} » est manquant ou vide. Écris le texte de « {key} » en une chaîne non vide.")
+        return None
+    return value
+
+
+def _check_dash(texts, where: str, errors: list[str]) -> None:
+    for text in texts:
+        if EM_DASH in text:
+            errors.append(f"{where} : tiret cadratin interdit dans « {text[:60]} ». Remplace-le par une virgule, deux-points ou un point.")
+            return
+
+
+def _sfx_by_ts(sfx: list) -> dict:
+    out = {}
+    for entry in sfx:
+        if isinstance(entry, dict) and isinstance(entry.get("at"), str):
+            try:
+                out[round(parse_ts(entry["at"]), 2)] = entry
+            except ValueError:
+                continue
+    return out
+
+
+def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: dict) -> None:
+    if not isinstance(scene, dict):
+        errors.append(f"{where} : la scène doit être un objet JSON avec « type », « say » et « props ».")
+        return
+    kind = scene.get("type")
+    if not isinstance(kind, str) or kind not in SCENE_TYPES:
+        errors.append(f"{where} : type inconnu « {kind} ». Types possibles : {', '.join(sorted(SCENE_TYPES))}.")
+    say = _text_field(scene, "say", where, errors)
+    if say is not None:
+        part_state["seconds"] += estimate_seconds(say, ctx["lang"])
+        _check_dash([say], where, errors)
+    props = scene.get("props", {})
+    if not isinstance(props, dict):
+        errors.append(f"{where} : « props » doit être un objet JSON.")
+        props = {}
+    _check_dash(_strings(props), where, errors)
+
+    items = scene.get("items", [])
+    if not isinstance(items, list):
+        errors.append(f"{where} : « items » doit être une liste d'objets {{\"el\": ..., \"on\": ...}}.")
+        items = []
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("on"), str) or not item["on"].strip():
+            errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide qui apparaît dans « say ».")
+            continue
+        if say is not None and find_span(say.split(), item["on"]) is None:
+            errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
+
+    src_seconds = None
+    if "src" in scene:
+        src_seconds = _ts(scene["src"], where, "src", errors)
+        if src_seconds is not None and ctx["duration"] is not None and src_seconds > ctx["duration"]:
+            errors.append(f"{where} : « src » {scene['src']} dépasse la durée de la vidéo ({fmt_ts(ctx['duration'])}). Utilise le minutage d'un paragraphe de la transcription compacte.")
+
+    if "sfx" in scene:
+        at = _ts(scene["sfx"], where, "sfx", errors)
+        if at is not None:
+            entry = ctx["sfx"].get(round(at, 2))
+            if entry is None:
+                known = ", ".join(e["at"] for e in ctx["sfx"].values()) or "aucun"
+                errors.append(f"{where} : le son {scene['sfx']} n'est pas dans sfx.json. Repères disponibles : {known}. Prends l'un d'eux ou retire « sfx ».")
+            else:
+                try:
+                    part_state["seconds"] += max(0.0, float(entry["e"]) - float(entry["s"]))
+                except (KeyError, TypeError, ValueError):
+                    pass
+                part_state["clips"].append(("sfx", scene["sfx"], ""))
+
+    if kind == "quote":
+        _check_quote(scene, props, src_seconds, where, ctx, errors, part_state)
+
+
+def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> None:
+    text = props.get("text")
+    if not isinstance(text, str) or not text.strip():
+        errors.append(f"{where} : une scène « quote » demande « props.text », la citation exacte dite dans la vidéo.")
+        return
+    if src_seconds is None:
+        if "src" not in scene:
+            errors.append(f"{where} : une citation demande « src », le minutage « mm:ss » où elle est dite dans la vidéo.")
+        return
+    words = ctx["words"]
+    window = [w for w in words if abs(w["s"] - src_seconds) <= QUOTE_WINDOW]
+    span = find_span([w["w"] for w in window], text) if window else None
+    if span is None:
+        hint = closest_passage(words, text) if words else "transcription vide"
+        errors.append(f"{where} : citation introuvable à ± 90 s de {scene['src']}. Passage le plus proche : {hint}. Recopie la citation exacte de ce passage dans « props.text », ou corrige « src ».")
+        part_state["failed"] = True
+        return
+    clip = window[span[1]]["e"] - window[span[0]]["s"]
+    part_state["seconds"] += clip
+    part_state["clips"].append(("citation", scene["src"], text))
+
+
+def _check_part(part, index: int, ctx: dict, errors: list[str]) -> None:
+    where = f"Partie {index}"
+    if not isinstance(part, dict):
+        errors.append(f"{where} : la partie doit être un objet JSON avec « n », « title », « hook » et « scenes ».")
+        return
+    before = len(errors)
+    if part.get("n") != index:
+        errors.append(f"{where} : numéro « n » = {part.get('n')!r}, attendu {index}. Numérote les parties 1, 2, 3, dans l'ordre.")
+    _text_field(part, "title", where, errors)
+    hook = part.get("hook")
+    state = {"seconds": OUTRO_SECONDS, "clips": [], "failed": False}
+    if not isinstance(hook, str) or not hook.strip():
+        errors.append(f"{where} : l'accroche « hook » est manquante ou vide. Écris une phrase d'accroche qui donne envie de regarder.")
+    else:
+        state["seconds"] += estimate_seconds(hook, ctx["lang"])
+        _check_dash([hook], where, errors)
+    if isinstance(part.get("title"), str):
+        _check_dash([part["title"]], where, errors)
+    scenes = part.get("scenes")
+    if not isinstance(scenes, list) or not scenes:
+        errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
+        return
+    for k, scene in enumerate(scenes, 1):
+        _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
+    if len(errors) > before or state["failed"]:
+        return
+    total = round(state["seconds"])
+    if total < MIN_SECONDS:
+        errors.append(f"{where} : durée estimée {total} s, trop courte (minimum {MIN_SECONDS} s). Ajoute environ {MIN_SECONDS - total} s de texte « say » ou une scène.")
+    elif total > MAX_SECONDS:
+        errors.append(f"{where} : durée estimée {total} s, trop longue (maximum {MAX_SECONDS} s). Coupe environ {total - MAX_SECONDS} s de texte « say » ou une scène, ou découpe en deux parties.")
+    else:
+        part["_clips"] = state["clips"]
+
+
+def _write_md(job: Path, plan: dict) -> None:
+    lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", ""]
+    for part in plan["parts"]:
+        lines += [f"## Partie {part['n']} : {part['title']}", "", f"Accroche : {part['hook']}", ""]
+        lines += [f"- [{s['type']}] {s['say']}" for s in part["scenes"]]
+        lines += ["", "Extraits audio source conservés :"]
+        clips = part.pop("_clips", [])
+        lines += [f"- {kind} à {ts}" + (f" : {text}" if text else "") for kind, ts, text in clips] or ["- aucun"]
+        lines.append("")
+    (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def check_plan(job: Path) -> list[str]:
+    job = Path(job)
+    path = job / "plan.json"
+    if not path.exists():
+        return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."]
+    try:
+        plan = load_json(path)
+    except ValueError as exc:
+        return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."]
+    if not isinstance(plan, dict):
+        return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."]
+
+    errors: list[str] = []
+    lang_file = job / "lang.txt"
+    job_lang = lang_file.read_text(encoding="utf-8").strip() if lang_file.exists() else None
+    if plan.get("version") != 1:
+        errors.append(f"Plan : version {plan.get('version')!r} non supportée. Mets « version »: 1.")
+    lang = plan.get("lang")
+    if not isinstance(lang, str) or (job_lang is not None and lang != job_lang):
+        errors.append(f"Plan : langue « {lang} » différente de celle de la vidéo (« {job_lang} »). Mets « lang »: « {job_lang} » et écris tous les textes dans cette langue.")
+    if "series_title" in plan:
+        _check_dash([plan["series_title"]] if isinstance(plan["series_title"], str) else [], "Plan", errors)
+
+    parts = plan.get("parts")
+    if not isinstance(parts, list):
+        errors.append("Plan : « parts » doit être une liste de parties.")
+        return errors
+    if not parts:
+        errors.append("Plan : il faut au moins 1 partie dans « parts ».")
+    if len(parts) > MAX_PARTS:
+        errors.append(f"Plan : {len(parts)} parties, {MAX_PARTS} parties au maximum. Regroupe ou retire des parties.")
+
+    info = _read(job, "info.json", {})
+    duration = info.get("duration") if isinstance(info, dict) else None
+    words = _read(job, "words.json", [])
+    if not isinstance(words, list):
+        words = []
+    words = [w for w in words if isinstance(w, dict) and isinstance(w.get("w"), str) and "s" in w and "e" in w]
+    sfx = _read(job, "sfx.json", [])
+    ctx = {
+        "lang": lang if isinstance(lang, str) else (job_lang or "fr"),
+        "duration": float(duration) if isinstance(duration, (int, float)) else None,
+        "words": words,
+        "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
+    }
+    for i, part in enumerate(parts, 1):
+        _check_part(part, i, ctx, errors)
+    if not errors:
+        _write_md(job, plan)
+    return errors
