@@ -1,5 +1,6 @@
 import React from "react";
 import { PaperStrip, stripHeight } from "../paper/PaperStrip";
+import { SUPPORT_AT } from "../paper/motion";
 import { Picto } from "../pictos/Picto";
 import { pictoName } from "../pictos/library";
 import { useAccent } from "./accent";
@@ -49,7 +50,7 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
         }}
       >
         {hasPicto ? <Picto name={props.picto} size={PICTO} rotate={-5} style={{ marginBottom: 20 }} /> : null}
-        <Strips lines={head.lines} size={head.size} enterAt={textAt} seed="kt-head" />
+        <Strips lines={head.lines} size={head.size} enterAt={Math.min(textAt, SUPPORT_AT)} seed="kt-head" />
         {word.lines.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             {word.lines.map((line, i) => (

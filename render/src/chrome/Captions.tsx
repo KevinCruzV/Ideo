@@ -13,7 +13,7 @@ export const CAPTION_ROW = content.width;
 export const CAPTION_LINE = 1.2;
 export const CAPTION_TWO_LINE_MAX = 58;
 const PAD = 0.2;
-const GAP = 0.2;
+const GAP = 0.04;
 
 export const captionWord = (word: string): string => str(word);
 
@@ -70,6 +70,23 @@ export const captionLayout = (raw: string[]): CaptionLayout => {
 
 export const captionSize = (words: string[]): number => captionLayout(words).size;
 
+const LONE_MARK = /^[:;!?»%…]+$/;
+
+export type CaptionToken = { w: string; from: number; to: number; first: number };
+
+export const captionTokens = (words: { w: string; from: number; to: number }[]): CaptionToken[] =>
+  words.reduce<CaptionToken[]>((tokens, word, i) => {
+    const text = captionWord(word.w);
+    if (!text) return tokens;
+    const prev = tokens[tokens.length - 1];
+    if (prev && LONE_MARK.test(text)) {
+      tokens[tokens.length - 1] = { ...prev, w: `${prev.w}\u00a0${text}`, to: word.to };
+      return tokens;
+    }
+    tokens.push({ w: text, from: word.from, to: word.to, first: i });
+    return tokens;
+  }, []);
+
 export const currentWordIndex = (group: CaptionGroup, frame: number): number => {
   let index = 0;
   group.words.forEach((word, i) => {
@@ -82,7 +99,7 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
   const frame = useCurrentFrame();
   const group = groups.find((g) => frame >= g.from && frame < g.to);
   if (!group) return null;
-  const words = group.words.filter((w) => captionWord(w.w).length > 0);
+  const words = captionTokens(group.words);
   const active = currentWordIndex({ ...group, words }, frame);
   const accent = accentAt(accents, frame);
   const { size, lines } = captionLayout(words.map((w) => w.w));
@@ -110,12 +127,12 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
             const i = index++;
             const word = words[i];
             const isActive = i === active;
-            const pop = isActive ? interpolate(frame - word.from, [0, 3], [0.82, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : 1;
+            const pop = isActive ? interpolate(frame - word.from, [0, 3], [0.9, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : 1;
             const edge = cutEdge(`${group.from}-${i}`, 1.6);
             return (
-              <span key={`${group.from}-${i}`} style={{ position: "relative", display: "inline-block", padding: `0 ${size * PAD}px` }}>
+              <span key={`${group.from}-${i}`} style={{ position: "relative", display: "inline-block", padding: `0 ${size * PAD}px`, transform: `scale(${pop})` }}>
                 {isActive ? (
-                  <span style={{ position: "absolute", inset: `${size * 0.04}px 0 ${size * 0.02}px`, transform: `rotate(${i % 2 ? 1.2 : -1.2}deg) scaleX(${pop})` }}>
+                  <span style={{ position: "absolute", inset: `${size * 0.04}px 0 ${size * 0.02}px`, transform: `rotate(${i % 2 ? 1.2 : -1.2}deg)` }}>
                     <span style={{ position: "absolute", inset: 0, transform: `translate(${SHADOW_X}px, ${SHADOW_Y}px)`, background: shade, clipPath: edge }} />
                     <span style={{ position: "absolute", inset: 0, background: colors[accent], clipPath: edge }} />
                   </span>

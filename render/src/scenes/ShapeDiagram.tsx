@@ -1,6 +1,7 @@
 import React from "react";
 import { interpolate, spring, useCurrentFrame } from "remotion";
 import { PaperCut, PaperShape, ShapeKind } from "../paper/PaperShape";
+import { SUPPORT_AT } from "../paper/motion";
 import { colors, fonts } from "../theme";
 import { useAccent } from "./accent";
 import { formatCount } from "./Counter";
@@ -203,7 +204,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
               <Strips
                 lines={fit.lines}
                 size={fit.size}
-                enterAt={Math.min(enterFor(`labels.${i}`, items, from, to), enterFor(`values.${i}`, items, from, to))}
+                enterAt={SUPPORT_AT + i * 2}
                 seed={`sd-label-${i}`}
                 gap={6}
                 tilt={0}
@@ -213,7 +214,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
         : sharedFit
           ? (
               <div style={{ position: "absolute", top: baseline + 14 + baseGap, left: BOX_L, width: BOX_W, display: "flex", justifyContent: "center" }}>
-                <Strips lines={sharedFit.lines} size={sharedFit.size} enterAt={enterFor("labels.0", items, from, to)} seed="sd-label" gap={6} />
+                <Strips lines={sharedFit.lines} size={sharedFit.size} enterAt={SUPPORT_AT} seed="sd-label" gap={6} />
               </div>
             )
           : null}

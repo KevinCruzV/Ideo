@@ -39,7 +39,8 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
   let picto = hasPicto ? PICTO : 0;
   let plan = layoutFor(max, picto);
   while (plan.total > avail && (max > 44 || picto > 160)) {
-    if (picto > 160) picto -= 30;
+    if (max > 60) max -= 4;
+    else if (picto > 160) picto -= 30;
     else max -= 4;
     plan = layoutFor(max, picto);
   }
@@ -69,9 +70,9 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
           return (
             <div key={`chip-${i}`} style={{ position: "relative", display: "flex", alignItems: "flex-start" }}>
               <div style={{ position: "relative", width: DOT, height: lineH, marginRight: DOT_GAP, flex: "none" }}>
-                <PaperShape kind="circle" color={accent} size={DOT} y={(lineH - DOT) / 2} enterAt={at} seed={`chip-dot-${i}`} float={1.5} />
+                <PaperShape kind="circle" color={accent} size={DOT} y={(lineH - DOT) / 2} enterAt={i * 2 - 3} seed={`chip-dot-${i}`} float={1.5} />
               </div>
-              <Strips lines={fit.lines} size={fit.size} enterAt={at + 2} align="flex-start" seed={`chip-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
+              <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`chip-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
             </div>
           );
         })}

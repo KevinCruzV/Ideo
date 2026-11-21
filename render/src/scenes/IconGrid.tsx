@@ -1,5 +1,6 @@
 import React from "react";
 import { PaperShape, ShapeKind } from "../paper/PaperShape";
+import { SUPPORT_AT } from "../paper/motion";
 import { Picto } from "../pictos/Picto";
 import { pictoName } from "../pictos/library";
 import { useAccent } from "./accent";
@@ -74,7 +75,7 @@ export const IconGrid: React.FC<SceneProps> = ({ props, items, from, to }) => {
         }}
       >
         {shown.map((cell, i) => {
-          const at = enterFor(`cells.${i}`, items, from, to);
+          const at = i === 0 ? Math.min(SUPPORT_AT, enterFor("cells.0", items, from, to)) : enterFor(`cells.${i}`, items, from, to);
           const wide = cell.kind === "strip" || cell.kind === "arrow";
           const size = wide ? art * 0.42 : art * 0.86;
           const w = wide ? size * 2.4 : size;

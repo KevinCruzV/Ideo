@@ -35,7 +35,8 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
   let picto = hasPicto ? PICTO : 0;
   let plan = layoutFor(max, picto);
   while (plan.total > avail && (max > 44 || picto > 150)) {
-    if (picto > 150) picto -= 30;
+    if (max > 60) max -= 4;
+    else if (picto > 150) picto -= 30;
     else max -= 4;
     plan = layoutFor(max, picto);
   }
@@ -63,12 +64,12 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
           return (
             <div key={`stack-${i}`} style={{ display: "flex", alignItems: "center", gap: BADGE_GAP, minHeight: rowH[i] }}>
               <div style={{ position: "relative", width: badge, height: badge, flex: "none" }}>
-                <PaperShape kind="square" color={accent} size={badge} rotate={i % 2 === 0 ? -5 : 4} enterAt={at} seed={`stack-badge-${i}`} float={2}>
+                <PaperShape kind="square" color={accent} size={badge} rotate={i % 2 === 0 ? -5 : 4} enterAt={i * 2 - 3} seed={`stack-badge-${i}`} float={2}>
                   <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: badge * 0.6, lineHeight: 1, color: onPaper[accent] }}>{i + 1}</span>
                 </PaperShape>
               </div>
               <div style={{ height: textH, display: "flex", alignItems: "center", minWidth: stripHeight(fit.size) }}>
-                <Strips lines={fit.lines} size={fit.size} enterAt={at + 3} align="flex-start" seed={`stack-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
+                <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`stack-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
               </div>
             </div>
           );

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionWord, lineWidth } from "./Captions";
+import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionTokens, captionWord, lineWidth } from "./Captions";
 import { chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
 import { layout } from "../theme";
 import { progressTicks } from "./Progress";
@@ -73,5 +73,17 @@ describe("sous-titres", () => {
     const { lines, size } = captionLayout(["Constantinople", "révolutionnaire", "soviétique"]);
     expect(lines.length === 1 || lines.every((l) => l.length >= 1)).toBe(true);
     lines.forEach((line) => expect(lineWidth(line, size)).toBeLessThanOrEqual(CAPTION_ROW));
+  });
+});
+
+describe("ponctuation isolée", () => {
+  test("un point d'interrogation seul rejoint le mot d'avant", () => {
+    const tokens = captionTokens([
+      { w: "bataille", from: 0, to: 5 },
+      { w: "?", from: 5, to: 6 },
+      { w: "Ça", from: 6, to: 9 },
+    ]);
+    expect(tokens.map((t) => t.w)).toEqual(["bataille ?", "Ça"]);
+    expect(tokens[0].to).toBe(6);
   });
 });
