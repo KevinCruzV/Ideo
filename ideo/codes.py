@@ -29,7 +29,7 @@ DEFAULT_ERROR = "plan-invalide"
 LESSONS = {
     "annee-sans-kicker": "Dès qu'un say donne une année, mets cette date dans le kicker de la scène.",
     "rythme-hache": "Vise 4 à 6 scènes par minute : fusionne les scènes courtes et développe chaque idée avant la suivante.",
-    "survol": "Ne survole pas la source : garde moins d'événements et explique chacun en 3 ou 4 scènes.",
+    "survol": "Ne survole pas la source : garde moins de sujets et explique bien chacun, une vidéo courte convient.",
     "peu-de-dessins": "Mets un picto ou un dessin (object-state, versus, shape-diagram, timeline, mascot) sur au moins une scène sur deux.",
     "liste-nue": "N'écris jamais une liste de simples noms : ajoute un chiffre ou un détail à chaque entrée, ou prends un dessin.",
     "barres-sans-unite": "Donne toujours un unit à un shape-diagram en barres, par exemple Md$ ou %.",
@@ -70,6 +70,8 @@ LESSONS = {
     "pays-sans-drapeau": "Mets flag:<code> sur chaque nom de pays affiché seul, par exemple flag:cn pour la Chine, dans une icon-grid, un versus ou une liste.",
     "scene-trop-chargee": "Coupe en deux scènes une liste de 5 éléments ou plus aux textes longs : le texte doit rester lisible sur téléphone.",
     "pays-cites-sans-drapeaux": "Quand un say cite 3 pays ou plus, montre leurs drapeaux avec une icon-grid : une cellule par pays, picto flag:<code>.",
+    "route-sans-carte": "Quand un say décrit une route ou un trajet entre des pays, fais une scène map avec route : [codes des pays].",
+    "corps-sans-dessin": "Quand une vidéo parle du corps ou d'une posture, fais une scène body avec pose et marks sur les zones citées.",
     "drapeau-existe": "Avant de noter un drapeau dans wishes, cherche flag:<code> : les drapeaux de pays existent tous.",
     "drapeau-inconnu": "Écris flag: suivi du code de pays à deux lettres en minuscules, par exemple flag:fr.",
     "wishes-invalides": "Garde wishes à 5 textes de 40 caractères au plus.",

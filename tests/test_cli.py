@@ -79,8 +79,8 @@ def test_cli_check_adds_relire_lines_and_counts_them(job_with_fixtures, capsys):
     assert out[1:] == relire
 
 
-def test_cli_check_stops_emitting_after_two_passes(job_with_fixtures, capsys):
-    for _ in range(2):
+def test_cli_check_stops_emitting_after_three_passes(job_with_fixtures, capsys):
+    for _ in range(3):
         cli.main(["check", str(job_with_fixtures)])
         assert any(line.startswith("RELIRE") for line in lines(capsys))
     cli.main(["check", str(job_with_fixtures)])

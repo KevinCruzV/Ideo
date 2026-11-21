@@ -280,3 +280,37 @@ def test_flat_voice_is_a_code_originated_defect():
     from ideo import codes
 
     assert "voix-plate" in codes.CODE_ONLY
+
+
+def test_a_beat_breaks_a_long_still_period(made):
+    job, _ = made
+
+    def still(tl):
+        scene = tl["segments"][2]
+        scene["to"] = scene["from"] + 300
+        scene["items"] = [{"el": "values.0", "at": scene["from"] + 3}]
+        scene.pop("beats", None)
+
+    edit_timeline(job, still)
+    assert any("rien n'apparaît pendant" in a for a in qc.run(job))
+
+    def with_beats(tl):
+        scene = tl["segments"][2]
+        scene["beats"] = [scene["from"] + 120, scene["from"] + 240]
+
+    edit_timeline(job, with_beats)
+    assert not any("rien n'apparaît pendant" in a for a in qc.run(job))
+
+
+def test_beats_that_leave_six_seconds_still_alert(made):
+    job, _ = made
+
+    def sparse(tl):
+        scene = tl["segments"][2]
+        scene["to"] = scene["from"] + 400
+        scene["items"] = [{"el": "values.0", "at": scene["from"] + 3}]
+        scene["beats"] = [scene["from"] + 100]
+
+    edit_timeline(job, sparse)
+    found = [a for a in qc.run(job) if "rien n'apparaît pendant" in a]
+    assert found and "10,0 s" in found[0] or "10" in found[0]

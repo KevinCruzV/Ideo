@@ -7,7 +7,7 @@ from ideo import countries, plan_check, scene_schema, target, textmatch
 from ideo.common import load_json
 
 LIMIT = 8
-MAX_PASSES = 2
+MAX_PASSES = 3
 YEAR = re.compile(r"(?<!\d)(1\d{3}|20\d{2}|2100)(?!\d)")
 DRAWING_TYPES = frozenset({"object-state", "versus", "shape-diagram", "timeline", "mascot"})
 LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
@@ -15,6 +15,28 @@ LONG_SAY = 30
 BARE_WORDS = 3
 MAX_VERSUS = 3
 MIN_CITED = 3
+ROUTE_WORDS = frozenset({"route", "routes", "trajet", "trajets", "chemin", "chemins", "traverse", "traversent", "traversant",
+                         "frontiere", "frontieres", "canal", "canaux"})
+BODY_MIN_SCENES = 5
+BODY_MAX_MARKS = 4
+BODY_PARTS_WORDS = {
+    "dos": "back", "back": "back", "ventre": "stomach", "belly": "stomach", "estomac": "stomach", "stomach": "stomach",
+    "cou": "neck", "nuque": "neck", "neck": "neck", "coeur": "heart", "heart": "heart", "poumon": "lungs",
+    "poumons": "lungs", "lungs": "lungs", "colonne": "spine", "spine": "spine", "hanche": "hips", "hanches": "hips",
+    "hips": "hips", "genou": "knees", "genoux": "knees", "knees": "knees", "tete": "head", "head": "head",
+    "gorge": "throat", "throat": "throat", "cerveau": "brain", "brain": "brain", "epaule": "shoulders",
+    "epaules": "shoulders", "shoulders": "shoulders", "bras": "arms", "arms": "arms", "main": "hands", "mains": "hands",
+    "hands": "hands", "jambe": "legs", "jambes": "legs", "legs": "legs", "pied": "feet", "pieds": "feet", "feet": "feet",
+    "poitrine": "chest", "chest": "chest",
+}
+POSTURE_WORDS = {
+    "allonge": "lying-back", "allongee": "lying-back", "allonges": "lying-back", "allongees": "lying-back",
+    "couche": "lying-back", "couchee": "lying-back", "couches": "lying-back", "lying": "lying-back", "laid": "lying-back",
+    "assis": "sitting", "assise": "sitting", "assises": "sitting", "sitting": "sitting", "seated": "sitting",
+    "debout": "standing", "standing": "standing",
+}
+POSTURE_PHRASES = {("sur", "le", "cote"): "lying-side-left", ("on", "your", "side"): "lying-side-left",
+                   ("sur", "le", "ventre"): "lying-stomach", ("on", "your", "stomach"): "lying-stomach"}
 CROWDED = {"timeline": ("marks", 5, ("marks.at", "marks.label")), "stack-list": ("items", 5, ("items",)),
            "icon-grid": ("cells", 7, ("cells.label",)), "shape-diagram": ("values", 6, ("labels",))}
 CROWDED_RATIO = 0.5
@@ -26,6 +48,7 @@ MAX_MASCOTS = 4
 KEY_TITLE_SPAN = 6
 MAX_SCENES_PER_MINUTE = 9
 SURVEY_SHARE = 0.6
+SURVEY_MINIMUM_SHARE = 0.6
 GRAVE = {
     "fr": ("mort", "morts", "morte", "mortes", "tue", "tues", "tuee", "tuees", "victime", "victimes", "attentat",
            "attentats", "deces", "massacre", "massacres", "assassine", "assassines"),
@@ -139,6 +162,31 @@ def _missing_flags(scene: dict) -> list[tuple[str, str]]:
     return missing
 
 
+def _tokens_of(say: str) -> list[str]:
+    return countries.plain(say).split()
+
+
+def _body_hits(say: str) -> tuple[list[str], list[str]]:
+    tokens = _tokens_of(say)
+    parts = [BODY_PARTS_WORDS[t] for t in tokens if t in BODY_PARTS_WORDS]
+    postures = [POSTURE_WORDS[t] for t in tokens if t in POSTURE_WORDS]
+    postures += [pose for phrase, pose in POSTURE_PHRASES.items()
+                 if any(tuple(tokens[i:i + len(phrase)]) == phrase for i in range(len(tokens)))]
+    return parts, postures
+
+
+def _pose_for(scenes: list) -> str:
+    for scene in scenes:
+        tokens = _tokens_of(_say(scene))
+        for phrase, pose in POSTURE_PHRASES.items():
+            if any(tuple(tokens[i:i + len(phrase)]) == phrase for i in range(len(tokens))):
+                return pose
+        for token in tokens:
+            if token in POSTURE_WORDS:
+                return POSTURE_WORDS[token]
+    return "standing"
+
+
 def _grouped_early(scene: dict) -> bool:
     say = _say(scene)
     words = say.split()
@@ -234,6 +282,29 @@ def _part_findings(part: dict, n: int, out: list) -> None:
     if count > BREAK_MIN_SCENES and not any(s.get("break") is True for s in scenes):
         out.append((3, *_line("sans-pause-d-acte", where, f"{count} scènes sans aucune pause d'acte",
                               "Ajoute « \"break\": true » sur la première scène de chaque nouvel acte pour marquer une pause")))
+    routes = [(i, countries.mentions(_say(s))) for i, s in enumerate(scenes, 1)
+              if set(_tokens_of(_say(s))) & ROUTE_WORDS and len(countries.mentions(_say(s))) >= 2]
+    if routes and not any(s.get("type") == "map" for s in scenes):
+        first = routes[0][1]
+        listing = ", ".join(str(i) for i, _ in routes)
+        names = ", ".join(name for _, name in first)
+        places = ", ".join(json.dumps({"code": code}) for code, _ in first[:6])
+        route = json.dumps([code for code, _ in first[:6]])
+        out.append((2, *_line("route-sans-carte", f"{where}, scène{'s' if len(routes) > 1 else ''} {listing}",
+                              f"le texte parle d'une route ou d'un trajet entre pays ({names}) sans scène « map »",
+                              f"Ajoute une scène « map » avec « route » : "
+                              f"{{\"focus\": \"world\", \"places\": [{places}], \"route\": {route}}}")))
+    talk = [_body_hits(_say(s)) for s in scenes]
+    talking = [(parts, posts) for parts, posts in talk if parts or posts]
+    if len(talking) >= BODY_MIN_SCENES and not any(s.get("type") == "body" for s in scenes):
+        cited: dict = {}
+        for parts, _ in talking:
+            for part in parts:
+                cited[part] = cited.get(part, 0) + 1
+        top = sorted(cited, key=lambda p: -cited[p])[:BODY_MAX_MARKS]
+        marks = ", ".join(json.dumps({"part": p}) for p in top)
+        out.append((2, *_line("corps-sans-dessin", where, f"{len(talking)} scènes parlent du corps ou d'une posture sans scène « body »",
+                              f"Ajoute une scène « body » : {{\"pose\": \"{_pose_for(scenes)}\", \"marks\": [{marks}]}}")))
     versus = sum(1 for s in scenes if s.get("type") == "versus")
     if versus > MAX_VERSUS:
         out.append((3, *_line("trop-de-versus", where, f"{versus} scènes « versus »", f"Garde-en {MAX_VERSUS} au plus, remplace les autres")))
@@ -289,9 +360,9 @@ def coded(plan: dict, job: Path, seconds: int) -> list[tuple[str, str]]:
     if isinstance(duration, (int, float)) and not isinstance(duration, bool) and duration > 0:
         _, ranges = plan_check.sponsor_ranges(job, info)
         low, _ = target.bounds(target.useful_seconds(float(duration), ranges))
-        if seconds < low and _coverage(plan, float(duration)) > SURVEY_SHARE:
-            scored.append((1, *_line("survol", "Plan", f"durée estimée {seconds} s, sous les {low} s conseillés, alors que les « src » couvrent plus de {round(SURVEY_SHARE * 100)} % de la source",
-                                    "Tu survoles toute la source en peu de temps : garde moins d'événements ou explique davantage chacun")))
+        if seconds < SURVEY_MINIMUM_SHARE * low and _coverage(plan, float(duration)) > SURVEY_SHARE:
+            scored.append((1, *_line("survol", "Plan", f"durée estimée {seconds} s, bien sous les {low} s conseillés, alors que les « src » couvrent plus de {round(SURVEY_SHARE * 100)} % de la source",
+                                    "Tu survoles toute la source : garde moins de sujets et explique bien chacun, une vidéo courte convient")))
     kickers = any(isinstance(s.get("props"), dict) and s["props"].get("kicker")
                   for p in plan["parts"] for s in p["scenes"])
     if not kickers:

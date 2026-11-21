@@ -157,10 +157,25 @@ def test_chopped_rhythm(job):
 
 def test_skimming_the_whole_source_in_little_time(job):
     plan = plan_of(scene(src="0:10"), scene(src="9:30"))
-    assert only(plan, job, "survoles toute la source", seconds=60)
+    assert only(plan, job, "survoles toute la source", seconds=40)
+    assert not only(plan, job, "survoles toute la source", seconds=72)
     assert not only(plan, job, "survoles toute la source", seconds=150)
     near = plan_of(scene(src="0:10"), scene(src="1:30"))
-    assert not only(near, job, "survoles toute la source", seconds=60)
+    assert not only(near, job, "survoles toute la source", seconds=40)
+
+
+def test_skimming_advice_never_says_to_lengthen(job):
+    plan = plan_of(scene(src="0:10"), scene(src="9:30"))
+    line = only(plan, job, "survoles toute la source", seconds=40)[0]
+    assert "moins de sujets" in line
+    low = line.lower()
+    assert "allonge" not in low and "rallonge" not in low and "développe" not in low and "ajoute" not in low
+
+
+def test_skimming_threshold_is_sixty_percent_of_the_advised_minimum(job):
+    plan = plan_of(scene(src="0:10"), scene(src="9:30"))
+    assert only(plan, job, "survoles toute la source", seconds=71)
+    assert not only(plan, job, "survoles toute la source", seconds=72)
 
 
 def test_findings_are_sorted_by_importance_and_capped(job):
@@ -178,13 +193,15 @@ def test_findings_are_capped(job, monkeypatch):
     assert len(review.relire(job, plan, 120)) == 2
 
 
-def test_review_stops_after_two_passes_and_is_recorded(job):
+def test_review_stops_after_three_emissions_and_is_recorded(job):
     plan = plan_of(scene(say="court"), kicker=False)
+    assert review.MAX_PASSES == 3
     assert review.relire(job, plan, 120)
     assert review.passes(job) == 1
     assert review.relire(job, plan, 120)
+    assert review.relire(job, plan, 120)
     assert review.relire(job, plan, 120) == []
-    assert review.passes(job) == 2
+    assert review.passes(job) == 3
 
 
 def test_clean_plan_has_no_findings_and_records_nothing(job):
@@ -199,7 +216,8 @@ def test_clean_plan_has_no_findings_and_records_nothing(job):
 def test_reset_clears_the_pass_counter(job):
     plan = plan_of(scene(say="court"), kicker=False)
     review.relire(job, plan, 120)
-    review.relire(job, plan, 120)
+    for _ in range(3):
+        review.relire(job, plan, 120)
     assert review.relire(job, plan, 120) == []
     review.reset(job)
     assert review.passes(job) == 0 and review.relire(job, plan, 120)
@@ -388,3 +406,80 @@ def test_automatic_lesson_for_cited_countries():
     from ideo import codes
 
     assert "icon-grid" in codes.LESSONS["pays-cites-sans-drapeaux"] and "drapeau-existe" in codes.LESSONS
+
+
+ROUTE_SAY = "La route de la soie reliait la Chine et l'Inde en traversant de nombreuses montagnes très hautes."
+
+
+def test_route_between_countries_without_a_map(job):
+    plan = plan_of(scene(say=ROUTE_SAY), scene(say="Le canal relie le Japon et le Brésil par la mer pour les bateaux."))
+    found = [t for c, t in review.coded(plan, job, 120) if c == "route-sans-carte"]
+    assert len(found) == 1
+    line = found[0]
+    assert line.startswith("RELIRE : Partie 1, scènes 1, 2 : ") and "(Chine, Inde)" in line
+    assert "« map »" in line and '"route": ["cn", "in"]' in line and '{"code": "cn"}' in line
+
+
+@pytest.mark.parametrize("word", ["route", "trajet", "chemin", "traverse", "frontière", "canal"])
+def test_every_route_word_counts(job, word):
+    plan = plan_of(scene(say=f"Le {word} entre la Russie et la Chine compte beaucoup pour toute la région."))
+    assert "route-sans-carte" in codes_of(plan, job)
+
+
+def test_route_needs_two_countries_and_no_map(job):
+    assert "route-sans-carte" not in codes_of(plan_of(scene(say="La route de la Chine est longue et pleine de montagnes hautes.")), job)
+    assert "route-sans-carte" not in codes_of(plan_of(scene(say="Les Chinois aiment la Russie et l'Inde, sans aucune idée précise.")), job)
+    with_map = plan_of(scene(say=ROUTE_SAY), scene(kind="map", say="Voici la carte de tout cela pour bien suivre.",
+                                                  props={"focus": "asia", "places": [{"code": "cn"}]}))
+    assert "route-sans-carte" not in codes_of(with_map, job)
+
+
+def body_scene(word, extra=""):
+    return scene(say=f"Quand tu es {word} pendant la nuit, ton corps change {extra} beaucoup plus que prévu.")
+
+
+def test_body_talk_without_a_body_scene(job):
+    sayings = ["ton dos fait mal chaque matin quand tu te lèves", "la douleur dans le ventre augmente",
+               "tu dors allongé sur le côté droit", "le cou reste raide", "tes genoux plient trop"]
+    plan = plan_of(*[scene(say=s + " pendant la nuit entière") for s in sayings])
+    found = [t for c, t in review.coded(plan, job, 120) if c == "corps-sans-dessin"]
+    assert len(found) == 1
+    line = found[0]
+    assert line.startswith("RELIRE : Partie 1 : 5 scènes parlent du corps ou d'une posture")
+    assert "« body »" in line and '"pose": "lying-side-left"' in line and '{"part": "back"}' in line
+
+
+def test_four_body_scenes_are_not_enough(job):
+    sayings = ["ton dos fait mal", "la douleur dans le ventre", "tu dors allongé", "le cou reste raide"]
+    plan = plan_of(*[scene(say=s + " pendant la nuit entière") for s in sayings], scene(say="Une phrase sans rien de spécial ici présent."))
+    assert "corps-sans-dessin" not in codes_of(plan, job)
+
+
+def test_a_body_scene_silences_it(job):
+    sayings = ["ton dos fait mal", "la douleur dans le ventre", "tu dors allongé", "le cou reste raide", "tes genoux plient"]
+    scenes = [scene(say=s + " pendant la nuit entière") for s in sayings]
+    scenes.append(scene(kind="body", say="Voici la posture idéale pour dormir toute la nuit.", props={"pose": "lying-back"}))
+    assert "corps-sans-dessin" not in codes_of(plan_of(*scenes), job)
+
+
+def test_english_words_and_postures(job):
+    sayings = ["your back hurts every single morning", "the belly gets heavy", "sitting all day is bad", "your neck stays stiff",
+               "your knees bend too much"]
+    plan = plan_of(*[scene(say=s + " during the whole long night") for s in sayings])
+    line = [t for c, t in review.coded(plan, job, 120) if c == "corps-sans-dessin"][0]
+    assert '"pose": "sitting"' in line
+
+
+def test_posture_defaults_and_zones_are_the_most_cited(job):
+    sayings = ["le dos le dos et encore le dos", "ton dos aussi dans la nuit", "tes hanches et ton dos ici", "ton cou et tes hanches", "ton cœur bat vite ici"]
+    plan = plan_of(*[scene(say=s + " pendant la nuit entière") for s in sayings])
+    line = [t for c, t in review.coded(plan, job, 120) if c == "corps-sans-dessin"][0]
+    assert '"pose": "standing"' in line
+    assert line.index('"back"') < line.index('"hips"')
+    assert line.count('{"part"') <= 4
+
+
+def test_new_findings_have_automatic_lessons():
+    from ideo import codes
+
+    assert "map" in codes.LESSONS["route-sans-carte"] and "body" in codes.LESSONS["corps-sans-dessin"]

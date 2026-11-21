@@ -73,7 +73,7 @@ def _scene_alerts(where: str, timeline: dict, offsets: list) -> list[tuple[str, 
         has_clip = index < len(offsets) and offsets[index].get("clip")
         if seg.get("type") == "quote" or has_clip:
             continue
-        points = [seg["from"]] + sorted(i["at"] for i in items) + [seg["to"]]
+        points = sorted([seg["from"], seg["to"]] + [i["at"] for i in items] + list(seg.get("beats") or []))
         gap = max(b - a for a, b in zip(points, points[1:])) / fps
         if gap > IDLE_SECONDS:
             alerts.append(("scene-figee", f"{at} : rien n'apparaît pendant {_sec(gap)}. "
