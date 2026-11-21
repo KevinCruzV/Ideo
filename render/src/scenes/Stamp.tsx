@@ -1,11 +1,11 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
-import { jitter, stepFrame, STEP_FPS } from "../paper/stopMotion";
+import { jitter, stepIndex } from "../paper/stopMotion";
 import { colors, fonts, onPaper, shadowFilter } from "../theme";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H, STAGE_W } from "./Stage";
 import { enterFor } from "./timing";
@@ -19,7 +19,7 @@ export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const fit = fitText(text, { maxWidth: 700, maxLines: 3, max: 150, min: 56 });
   const at = enterFor("text", items, from, to);
   const local = frame - at;
-  const step = local < 0 ? -1 : Math.round(stepFrame(local) / (30 / STEP_FPS));
+  const step = local < 0 ? -1 : stepIndex(local);
   const scale = step < 0 ? 0 : SLAM[Math.min(step, SLAM.length - 1)];
   const ink = onPaper[accent];
 

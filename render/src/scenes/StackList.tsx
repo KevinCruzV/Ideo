@@ -3,7 +3,7 @@ import { PaperShape } from "../paper/PaperShape";
 import { fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { strList } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H } from "./Stage";
 import { Strips } from "./Strips";

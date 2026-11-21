@@ -8,7 +8,7 @@
  "watermark": "Ideo",
  "chapter": {
   "part": 1,
-  "total": 4,
+  "total": 1,
   "title": "L'oubli",
   "label": "Partie"
  },
@@ -358,7 +358,7 @@
    "from": 1170,
    "to": 1260,
    "props": {
-    "text": "Abonne-toi pour la partie 2 : pourquoi le sommeil aide"
+    "text": "Abonne-toi pour la prochaine vidéo"
    },
    "items": []
   }
@@ -1122,12 +1122,12 @@
   {
    "words": [
     {
-     "w": "partie",
+     "w": "prochaine",
      "from": 1224,
      "to": 1242
     },
     {
-     "w": "deux.",
+     "w": "vidéo.",
      "from": 1242,
      "to": 1260
     }

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { cleanItems, initials, str, strList, unitList } from "./coerce";
-import { fitText, splitKey, textWidth } from "./fit";
+import { fitText, splitKey, textWidth } from "../text/fit";
+import { splitOutro } from "./Outro";
 import { enterFor, stateIndex, stateTimes } from "./timing";
 
 describe("coerce", () => {
@@ -54,5 +55,13 @@ describe("timing", () => {
     expect(listed).toEqual([0, 30, 60]);
     expect(stateIndex(listed, 45)).toBe(1);
     expect(stateTimes("states", 3, [], 0, 90)).toEqual([0, 30, 60]);
+  });
+});
+
+describe("outro", () => {
+  test("la fin met les derniers mots sur la bande d'accent", () => {
+    expect(splitOutro("Abonne-toi pour la prochaine vidéo")).toEqual({ head: "Abonne-toi pour la", tail: "prochaine vidéo" });
+    expect(splitOutro("Abonne-toi pour la partie 2 : le sommeil")).toEqual({ head: "Abonne-toi pour la partie 2", tail: "le sommeil" });
+    expect(splitOutro("À suivre")).toEqual({ head: "À suivre", tail: "" });
   });
 });

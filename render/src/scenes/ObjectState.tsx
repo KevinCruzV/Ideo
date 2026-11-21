@@ -2,11 +2,11 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
 import { PaperStrip } from "../paper/PaperStrip";
-import { stepFrame, STEP_FPS } from "../paper/stopMotion";
+import { stepIndex } from "../paper/stopMotion";
 import { AccentColor, colors, fonts, onPaper, shadow } from "../theme";
 import { useAccent } from "./accent";
 import { str, strList } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H, STAGE_W } from "./Stage";
 import { stateIndex, stateTimes } from "./timing";
@@ -32,7 +32,7 @@ export const objectKind = (value: unknown): ObjectKind => {
 const CX = STAGE_W / 2;
 
 const tween = (frame: number, at: number, prev: number, next: number): number => {
-  const step = Math.round(stepFrame(Math.max(0, frame - at)) / (30 / STEP_FPS));
+  const step = stepIndex(frame - at);
   const t = Math.min(1, step / 3);
   return prev + (next - prev) * t;
 };
@@ -41,7 +41,7 @@ type Look = { accent: AccentColor; index: number; count: number; label: string; 
 
 const Swap: React.FC<{ at: number; children: React.ReactNode }> = ({ at, children }) => {
   const frame = useCurrentFrame();
-  const step = Math.round(stepFrame(Math.max(0, frame - at)) / (30 / STEP_FPS));
+  const step = stepIndex(frame - at);
   const scale = [0.86, 0.95, 1][Math.min(step, 2)];
   return <div style={{ transform: `scale(${scale})`, display: "flex", flexDirection: "column", alignItems: "center" }}>{children}</div>;
 };

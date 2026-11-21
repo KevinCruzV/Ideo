@@ -3,19 +3,25 @@ import { PaperShape } from "../paper/PaperShape";
 import { PaperStrip } from "../paper/PaperStrip";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H } from "./Stage";
 import { Strips } from "./Strips";
 
 const TEXT_W = 900;
 
+export const splitOutro = (text: string): { head: string; tail: string } => {
+  const cut = text.indexOf(":");
+  if (cut > 0) return { head: text.slice(0, cut).trim(), tail: text.slice(cut + 1).trim() };
+  const words = text.split(" ").filter((w) => w.length > 0);
+  if (words.length < 4) return { head: text, tail: "" };
+  return { head: words.slice(0, -2).join(" "), tail: words.slice(-2).join(" ") };
+};
+
 export const Outro: React.FC<SceneProps> = ({ props }) => {
   const accent = useAccent();
   const text = str(props.text, "À suivre");
-  const cut = text.indexOf(":");
-  const head = cut > 0 ? text.slice(0, cut).trim() : text;
-  const tail = cut > 0 ? text.slice(cut + 1).trim() : "";
+  const { head, tail } = splitOutro(text);
   const headFit = fitText(head, { maxWidth: TEXT_W, maxLines: 3, max: 84, min: 52 });
   const tailFit = fitText(tail, { maxWidth: TEXT_W, maxLines: 2, max: 130, min: 60 });
 

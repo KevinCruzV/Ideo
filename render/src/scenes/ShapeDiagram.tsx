@@ -2,7 +2,7 @@ import React from "react";
 import { PaperShape, ShapeKind } from "../paper/PaperShape";
 import { useAccent } from "./accent";
 import { str, strList, unitList } from "./coerce";
-import { Fit, fitText, textWidth } from "./fit";
+import { Fit, fitText, textWidth } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H, STAGE_W } from "./Stage";
 import { Strips } from "./Strips";
@@ -45,12 +45,12 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
   const rowW = sizes.reduce((a, b) => a + b, 0) + GAP * (shown.length - 1);
   const tallest = Math.max(...heights);
   const perShape = labels.length === shown.length;
-  const labelMax = perShape && shown.length > 3 ? 46 : 60;
+  const labelMax = 60;
   const labelBlock = labels.length > 0 ? (perShape ? 260 : 150) : 0;
   const baseline = (STAGE_H - tallest - labelBlock) / 2 + tallest;
   const left0 = (STAGE_W - rowW) / 2;
   const labelFits: Fit[] = perShape
-    ? labels.map((label) => fitText(label, { maxWidth: 320, maxLines: 2, max: labelMax, min: 40 }))
+    ? labels.map((label) => fitText(label, { maxWidth: 320, maxLines: 2, max: labelMax, min: 48 }))
     : [];
   const widths = labelFits.map((f) => Math.max(...f.lines.map((l) => textWidth(l, f.size)), 0) + f.size * 0.6);
   const labelRow = Math.max(0, ...labelFits.map((f) => f.lines.length * f.size * 1.3)) + 16;
@@ -62,7 +62,10 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
     return { x, w: sizes[i], h: heights[i] };
   });
 
-  const centers = placed.map((p) => Math.min(STAGE_W - 60, Math.max(60, p.x + p.w / 2)));
+  const centers = placed.map((p, i) => {
+    const half = (widths[i] ?? 0) / 2 + 12;
+    return Math.min(STAGE_W - 48 - half, Math.max(48 + half, p.x + p.w / 2));
+  });
   const stagger = centers.some((c, i) => i > 0 && c - centers[i - 1] < (widths[i] + widths[i - 1]) / 2 + 16);
 
   return (
@@ -115,7 +118,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
             }}
           >
             {labels.map((label, i) => {
-              const fit = fitText(label, { maxWidth: 940 / Math.max(1, labels.length), maxLines: 2, max: 64, min: 40 });
+              const fit = fitText(label, { maxWidth: 940 / Math.max(1, labels.length), maxLines: 2, max: 64, min: 48 });
               return (
                 <Strips
                   key={`label-${i}`}

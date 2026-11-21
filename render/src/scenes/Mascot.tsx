@@ -4,7 +4,7 @@ import { enterScale, jitter } from "../paper/stopMotion";
 import { colors, fonts, onPaper, shadowFilter } from "../theme";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage } from "./Stage";
 import { enterFor } from "./timing";

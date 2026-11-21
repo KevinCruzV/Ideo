@@ -2,7 +2,7 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { accentAt, AccentSpan, colors, fonts, layout, onPaper, shadowFilter, stripClip } from "../theme";
 import { jitter } from "../paper/stopMotion";
-import { textWidth } from "../scenes/fit";
+import { textWidth } from "../text/fit";
 import { CaptionGroup } from "../types";
 
 const FONT_SIZE = 76;

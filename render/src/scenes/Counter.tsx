@@ -5,7 +5,7 @@ import { stepFrame } from "../paper/stopMotion";
 import { fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { num, str, suffixOf } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_W } from "./Stage";
 import { Strips } from "./Strips";

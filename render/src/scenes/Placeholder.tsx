@@ -2,7 +2,7 @@ import React from "react";
 import { PaperShape } from "../paper/PaperShape";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
-import { fitText } from "./fit";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H, STAGE_W } from "./Stage";
 import { Strips } from "./Strips";

@@ -2,10 +2,10 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
 import { PaperStrip } from "../paper/PaperStrip";
-import { stepFrame, STEP_FPS } from "../paper/stopMotion";
+import { stepIndex } from "../paper/stopMotion";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
-import { fitText, splitKey } from "./fit";
+import { fitText, splitKey } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { Stage, STAGE_H } from "./Stage";
 import { Strips } from "./Strips";
@@ -22,7 +22,7 @@ export const Hook: React.FC<SceneProps> = ({ props }) => {
   const head = fitText(before, { maxWidth: TEXT_W, maxLines: 2, max: 80, min: 52 });
   const word = fitText(key, { maxWidth: TEXT_W, maxLines: 1, max: after ? 160 : 180, min: 64 });
   const tail = fitText(after, { maxWidth: TEXT_W, maxLines: 3, max: 72, min: 48 });
-  const step = Math.round(stepFrame(frame) / (30 / STEP_FPS));
+  const step = stepIndex(frame);
   const slideX = SLIDE[Math.min(step, SLIDE.length - 1)];
 
   return (
