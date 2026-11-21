@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from ideo import common, timeline
+from ideo import align, common, timeline
 
 
 def test_anchor_found_with_normalisation():
@@ -207,3 +207,91 @@ def test_object_state_first_item_keeps_its_own_word(job_with_offsets):
     seg = tl["segments"][4]
     assert seg["type"] == "object-state"
     assert seg["items"][0]["at"] > seg["from"] + 9
+
+
+def words_at(texts_and_times):
+    return [{"w": w, "s": s, "e": s + 0.2} for w, s in texts_and_times]
+
+
+def test_sentence_starts_become_beats_except_the_first():
+    say = "Il est parti. Elle reste ici ! Ensuite quoi ? Rien."
+    words = align.script_words(say)
+    seg = words_at(zip(words, [0.0, 0.3, 0.6, 1.0, 1.3, 1.6, 1.9, 2.2, 2.5]))
+    beats = timeline.beat_frames(say, seg, 10.0, 3.0, 300, 400, [])
+    assert beats == [round((10.0 + t) * 30) for t in (1.0, 1.9, 2.5)]
+
+
+def test_no_sentence_break_no_beat_in_a_short_scene():
+    say = "Une seule phrase assez courte pour tenir"
+    seg = words_at([(w, i * 0.4) for i, w in enumerate(align.script_words(say))])
+    assert timeline.beat_frames(say, seg, 0.0, 3.0, 0, 90, []) == []
+
+
+def test_midpoint_beat_in_any_gap_over_four_seconds_on_a_word_start():
+    say = "un deux trois quatre cinq six sept huit neuf dix onze douze treize"
+    seg = words_at([(w, i * 1.0) for i, w in enumerate(align.script_words(say))])
+    beats = timeline.beat_frames(say, seg, 0.0, 13.0, 0, 390, [])
+    starts = {round(i * 30) for i in range(13)}
+    assert beats and all(b in starts for b in beats)
+    points = [0] + beats + [390]
+    assert all(b - a <= 120 for a, b in zip(points, points[1:]))
+    assert beats == sorted(beats)
+
+
+def test_gaps_are_measured_between_items_and_beats_too():
+    say = "un deux trois quatre cinq six sept huit neuf dix onze douze"
+    seg = words_at([(w, i * 1.0) for i, w in enumerate(align.script_words(say))])
+    beats = timeline.beat_frames(say, seg, 0.0, 12.0, 0, 360, [180])
+    points = sorted([0, 180, 360] + beats)
+    assert all(b - a <= 120 for a, b in zip(points, points[1:]))
+
+
+def test_never_within_twenty_frames_of_an_item():
+    say = "Une phrase. Une autre phrase. Encore une. Et la fin."
+    words = align.script_words(say)
+    seg = words_at([(w, i * 0.5) for i, w in enumerate(words)])
+    plain = timeline.beat_frames(say, seg, 0.0, 6.0, 0, 180, [])
+    assert plain
+    item = plain[0] + 10
+    beats = timeline.beat_frames(say, seg, 0.0, 6.0, 0, 180, [item])
+    assert all(abs(b - item) >= 20 for b in beats)
+
+
+def test_beats_are_inside_the_scene_and_stop_before_a_source_clip():
+    say = "Une phrase. Une autre phrase. Encore une. Et la fin de la scene."
+    seg = words_at([(w, i * 1.2) for i, w in enumerate(align.script_words(say))])
+    beats = timeline.beat_frames(say, seg, 0.0, 14.0, 100, 300, [])
+    assert all(100 < b < 300 for b in beats)
+
+
+def test_proportional_fallback_when_word_counts_differ():
+    say = "Une phrase. Une autre phrase."
+    beats = timeline.beat_frames(say, [{"w": "x", "s": 0.0, "e": 1.0}], 0.0, 4.0, 0, 120, [])
+    assert len(beats) == 1 and 40 <= beats[0] <= 80
+
+
+def test_scene_segments_carry_increasing_beats_clear_of_items(job_with_offsets):
+    tl = build(job_with_offsets)
+    for seg in tl["segments"]:
+        beats = seg.get("beats", [])
+        assert beats == sorted(set(beats))
+        assert all(seg["from"] < b < seg["to"] for b in beats)
+        assert all(abs(b - i["at"]) >= 20 for b in beats for i in seg.get("items", []))
+        if seg["kind"] != "scene":
+            assert "beats" not in seg
+
+
+def test_beats_follow_the_second_sentence_of_a_scene(job_with_offsets):
+    from ideo import common as c
+
+    plan = c.load_json(job_with_offsets / "plan.json")
+    plan["parts"][0]["scenes"][3]["say"] = "Heureusement il existe des gestes simples. Voici le premier."
+    c.save_json(job_with_offsets / "plan.json", plan)
+    from tests.conftest import VOICE_WORDS, _timed_words
+
+    words = ["Heureusement", "il", "existe", "des", "gestes", "simples.", "Voici", "le", "premier."]
+    c.save_json(job_with_offsets / "parts" / "01" / "seg_04.words.json", _timed_words(words, 1.0))
+    tl = build(job_with_offsets)
+    offsets = c.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
+    seg = tl["segments"][4]
+    assert seg["beats"][0] == round((offsets[4]["start"] + 6 * (1.0 / 9)) * 30)

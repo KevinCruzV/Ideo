@@ -11,6 +11,10 @@ PAUSE = 0.5
 MAX_GROUP = 4
 FIRST_ITEM_FRAMES = 9
 UNCAPPED = frozenset({"object-state"})
+SENTENCE_END = (".", "!", "?", "…")
+CLOSERS = "»”\"')]"
+BEAT_GAP = 4 * FPS
+BEAT_MARGIN = 20
 FINAL_PUNCT = (".", "!", "?", "…", ";", ":")
 APOSTROPHES = re.compile("['’‘ʼ`´]")
 
@@ -45,6 +49,41 @@ def anchor_frame(seg_words: list[dict], anchor: str, seg_start: float, seg_dur: 
     pos = say.lower().find(anchor.lower())
     ratio = pos / len(say) if pos >= 0 and say else 0.0
     return _frame(seg_start + ratio * seg_dur, fps)
+
+
+def beat_frames(say: str, seg_words: list[dict], seg_start: float, seg_dur: float, begin: int, limit: int,
+                item_ats: list[int]) -> list[int]:
+    words = align.script_words(say)
+    if not words:
+        return []
+    if len(seg_words) == len(words):
+        frames = [_frame(seg_start + w["s"]) for w in seg_words]
+    else:
+        total = max(len(say), 1)
+        cursor, frames = 0, []
+        for word in words:
+            pos = say.find(word, cursor)
+            pos = cursor if pos < 0 else pos
+            frames.append(_frame(seg_start + pos / total * seg_dur))
+            cursor = pos + len(word)
+
+    def clear(frame: int) -> bool:
+        return begin < frame < limit and all(abs(frame - a) >= BEAT_MARGIN for a in item_ats)
+
+    beats = sorted({frames[i] for i in range(1, len(words)) if words[i - 1].rstrip(CLOSERS).endswith(SENTENCE_END)
+                    and clear(frames[i])})
+    stuck: set = set()
+    while True:
+        points = sorted({begin, limit, *item_ats, *beats})
+        gap = next(((a, b) for a, b in zip(points, points[1:]) if b - a > BEAT_GAP and (a, b) not in stuck), None)
+        if gap is None:
+            return beats
+        a, b = gap
+        options = [f for f in frames if a < f < b and clear(f)]
+        if not options:
+            stuck.add(gap)
+            continue
+        beats = sorted({*beats, min(options, key=lambda f: abs(f - (a + b) // 2))})
 
 
 def _runs(words: list[dict]) -> list[list[dict]]:
@@ -165,8 +204,13 @@ def _build(job: Path, n: int, total: int) -> Path:
                 if not items and scene["type"] not in UNCAPPED:
                     at = min(at, begin + FIRST_ITEM_FRAMES)
                 items.append({"el": item["el"], "at": at})
-            segments.append({"kind": "scene", "type": scene["type"], "from": begin, "to": finish,
-                             "props": scene.get("props", {}), "items": items})
+            segment = {"kind": "scene", "type": scene["type"], "from": begin, "to": finish,
+                       "props": scene.get("props", {}), "items": items}
+            limit = min(_frame(clip["start"]), finish) if clip else finish
+            beats = beat_frames(scene["say"], seg_words, entry["start"], seg_dur, begin, limit, [i["at"] for i in items])
+            if beats:
+                segment["beats"] = beats
+            segments.append(segment)
 
     timeline = {
         "fps": FPS,
