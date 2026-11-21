@@ -253,6 +253,7 @@ def test_deepen_creates_sibling_job_sharing_prepared_files(job_with_fixtures, mo
     job = root / "abcdefghijk"
     job_with_fixtures.rename(job)
     (job / "transcript_compact.md").write_text("[0:02] Le matin", encoding="utf-8")
+    (job / "skip.json").write_text("{}", encoding="utf-8")
     (job / "source.m4a").write_bytes(b"audio")
     for step in ("fetch", "transcribe", "transcript"):
         common.mark(job, step, True)
@@ -260,7 +261,7 @@ def test_deepen_creates_sibling_job_sharing_prepared_files(job_with_fixtures, mo
     new = root / "abcdefghijk-2"
     out = lines(capsys)
     assert len(out) == 1 and str(new.resolve()) in out[0]
-    for name in ("words.json", "lang.txt", "info.json", "sfx.json", "transcript_compact.md", "source.m4a"):
+    for name in ("words.json", "lang.txt", "info.json", "sfx.json", "skip.json", "transcript_compact.md", "source.m4a"):
         assert (new / name).read_bytes() == (job / name).read_bytes()
     assert not (new / "plan.json").exists()
     assert set(common.read_status(new)["steps"]) == {"fetch", "transcribe", "transcript"}

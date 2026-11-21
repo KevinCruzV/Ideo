@@ -5,6 +5,7 @@ from pathlib import Path
 from ideo import common
 
 INFO_FIELDS = ("id", "title", "channel", "webpage_url", "duration", "chapters", "language")
+SPONSOR_CATEGORIES = ("sponsor", "selfpromo", "interaction")
 
 ERROR_PATTERNS = [
     (("private video",), "Impossible de récupérer cette vidéo privée."),
@@ -38,34 +39,55 @@ def _cleanup(tmp: Path) -> None:
     shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _ytdlp(url: str, tmp: Path, sponsorblock: bool) -> list[str]:
+    cmd = [
+        sys.executable, "-m", "yt_dlp", "--no-playlist", "--no-progress",
+        "-f", "bestaudio[ext=m4a]/bestaudio",
+        "-x", "--audio-format", "m4a",
+        "--write-info-json",
+        "-o", str(tmp / "audio.%(ext)s"),
+    ]
+    if sponsorblock:
+        cmd += ["--sponsorblock-mark", ",".join(SPONSOR_CATEGORIES)]
+    return cmd + [url]
+
+
+def skip_segments(raw: dict) -> list[dict]:
+    out = []
+    for chapter in raw.get("sponsorblock_chapters") or []:
+        try:
+            segment = {"s": float(chapter["start_time"]), "e": float(chapter["end_time"]),
+                       "kind": str(chapter["category"])}
+        except (KeyError, TypeError, ValueError):
+            continue
+        if segment["kind"] in SPONSOR_CATEGORIES and segment["e"] > segment["s"]:
+            out.append(segment)
+    return out
+
+
 def _download(url: str, job: Path, log: Path, tmp: Path) -> None:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise common.IdeoError("ffmpeg est introuvable : installez-le (par exemple avec brew install ffmpeg).")
-    _cleanup(tmp)
-    tmp.mkdir(parents=True)
-    offset = log.stat().st_size if log.exists() else 0
-    try:
-        common.run(
-            [
-                sys.executable, "-m", "yt_dlp", "--no-playlist", "--no-progress",
-                "-f", "bestaudio[ext=m4a]/bestaudio",
-                "-x", "--audio-format", "m4a",
-                "--write-info-json",
-                "-o", str(tmp / "audio.%(ext)s"),
-                url,
-            ],
-            log,
-        )
-    except common.IdeoError as e:
-        tail = _read_new(log, offset)
-        raise common.IdeoError(explain_ytdlp_error(tail if tail.strip() else str(e))) from e
+    for sponsorblock in (True, False):
+        _cleanup(tmp)
+        tmp.mkdir(parents=True)
+        offset = log.stat().st_size if log.exists() else 0
+        try:
+            common.run(_ytdlp(url, tmp, sponsorblock), log)
+            break
+        except common.IdeoError as e:
+            tail = _read_new(log, offset)
+            if sponsorblock and "sponsorblock" in tail.lower():
+                continue
+            raise common.IdeoError(explain_ytdlp_error(tail if tail.strip() else str(e))) from e
     audio, info_file = tmp / "audio.m4a", tmp / "audio.info.json"
     if not audio.exists() or not info_file.exists():
         raise common.IdeoError(f"Le téléchargement n'a produit ni audio ni métadonnées. Voir {log}")
     raw = common.load_json(info_file)
     info = {k: raw.get(k) for k in INFO_FIELDS}
     info["chapters"] = info["chapters"] or []
+    info["skip"] = skip_segments(raw)
     wav = tmp / "source.wav"
     common.run([ffmpeg, "-y", "-i", str(audio), "-vn", "-ac", "1", "-ar", "16000", str(wav)], log)
     if not wav.exists():

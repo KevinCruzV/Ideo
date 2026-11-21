@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ideo import assemble, common, compact, fetch, plan_check, render, timeline, transcribe, voice
 
-PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "transcript_compact.md", "source.wav",
+PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md", "source.wav",
                   "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")

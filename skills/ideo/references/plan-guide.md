@@ -16,6 +16,8 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
+- N'utilise jamais un passage de sponsor, de promotion, d'appel à s'abonner ou de vie de la chaîne. Les lignes `[passage sponsorisé ...]` et `[passage probablement sponsorisé ...]` sont déjà retirées : ne cite rien autour.
+- Ne nomme jamais une marque ou un produit que la vidéo est payée pour promouvoir.
 - N'écris nulle part dans le plan le nom de la chaîne, celui de la personne qui a fait la vidéo, ni le titre de la vidéo (lignes `Chaîne :` et `Titre :`). Reformule le sujet avec tes mots.
 
 ## 3. L'accroche (`hook`)
@@ -289,3 +291,4 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `trop courte` | ajoute du texte `say` ou une scène, de la durée indiquée |
 | `trop longue` | retire du texte ou des scènes, de la durée indiquée |
 | `tient en une seule vidéo` | fusionne toutes les parties en une seule |
+| `est dans un passage sponsorisé` | prends un autre passage, hors sponsor |

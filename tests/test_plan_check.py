@@ -308,3 +308,34 @@ def test_channel_or_title_blocked_in_every_string(job_with_fixtures, mutate, whe
 def test_short_channel_name_is_not_blocked(job_with_fixtures):
     set_info(job_with_fixtures, channel="Le", title="Lune")
     assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def set_skip(job, hidden=(), segments=()):
+    (job / "skip.json").write_text(json.dumps({
+        "hidden": [{"s": s, "e": e, "probable": False} for s, e in hidden],
+        "segments": [{"s": s, "e": e, "kind": "sponsor"} for s, e in segments],
+    }), encoding="utf-8")
+
+
+def test_src_in_hidden_sponsor_passage_is_an_error(job_with_fixtures):
+    set_skip(job_with_fixtures, hidden=[(14.0, 20.0)])
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors == ["Partie 1, scène 2 : « src » 0:15 est dans un passage sponsorisé (0:14 à 0:20), choisis un autre passage."]
+
+
+def test_src_of_paragraph_right_after_hidden_passage_is_valid(job_with_fixtures):
+    set_skip(job_with_fixtures, hidden=[(10.0, 15.4)])
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_sfx_and_quote_in_sponsor_segment_are_errors(job_with_fixtures):
+    set_skip(job_with_fixtures, segments=[(69.0, 71.0), (20.0, 40.0)])
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any(e.startswith("Partie 1, scène 3 : le son 1:10 est dans un passage sponsorisé") for e in errors)
+    assert any(e.startswith("Partie 1, scène 5 : la citation est dans un passage sponsorisé") for e in errors)
+    assert not any("« src »" in e for e in errors)
+
+
+def test_sponsor_segments_from_info_when_no_skip_json(job_with_fixtures):
+    set_info(job_with_fixtures, skip=[{"s": 69.0, "e": 71.0, "kind": "sponsor"}])
+    assert any("le son 1:10" in e and "sponsorisé" in e for e in plan_check.check_plan(job_with_fixtures))

@@ -50,7 +50,7 @@ def test_fetch_success_writes_outputs_and_is_idempotent(tmp_path, monkeypatch):
     info = common.load_json(job / "info.json")
     assert info == {
         "id": "abcdefghijk", "title": "T", "channel": "C", "webpage_url": URL,
-        "duration": 42, "chapters": [], "language": "fr",
+        "duration": 42, "chapters": [], "language": "fr", "skip": [],
     }
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
     ffmpeg_cmd = calls[1]
@@ -158,3 +158,62 @@ def test_fetch_real_short_video(tmp_path, monkeypatch):
     assert (job / "source.wav").stat().st_size > 10000
     assert (job / "source.m4a").stat().st_size > 1000
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
+
+
+def fake_run_sponsor(calls, fail_sponsorblock=False):
+    def fake(cmd, log):
+        calls.append(cmd)
+        if "yt_dlp" not in " ".join(cmd):
+            open(cmd[-1], "wb").write(b"wav")
+            return
+        if fail_sponsorblock and "--sponsorblock-mark" in cmd:
+            log.parent.mkdir(parents=True, exist_ok=True)
+            with open(log, "a", encoding="utf-8") as f:
+                f.write("ERROR: Postprocessing: Unable to communicate with SponsorBlock API\n")
+            raise common.IdeoError("code 1")
+        base = cmd[cmd.index("-o") + 1].replace(".%(ext)s", "")
+        open(base + ".m4a", "wb").write(b"m4a")
+        raw = {"id": "abcdefghijk", "title": "T", "channel": "C", "webpage_url": URL, "duration": 1145,
+               "chapters": [{"start_time": 0, "end_time": 62, "title": "Intro"}], "language": "en"}
+        if "--sponsorblock-mark" in cmd:
+            raw["sponsorblock_chapters"] = [
+                {"start_time": 0, "end_time": 5.48, "category": "sponsor", "title": "Sponsor", "type": "skip"},
+                {"start_time": 1027.3, "end_time": 1145, "category": "selfpromo", "title": "Self", "type": "skip"},
+                {"start_time": 400, "end_time": 400, "category": "poi_highlight", "title": "H", "type": "poi"},
+            ]
+        open(base + ".info.json", "w", encoding="utf-8").write(json.dumps(raw))
+    return fake
+
+
+def test_fetch_stores_sponsorblock_segments_apart_from_chapters(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_sponsor(calls))
+    info = common.load_json(fetch.fetch(URL) / "info.json")
+    ytdlp = calls[0]
+    assert ytdlp[ytdlp.index("--sponsorblock-mark") + 1] == "sponsor,selfpromo,interaction"
+    assert info["skip"] == [{"s": 0.0, "e": 5.48, "kind": "sponsor"}, {"s": 1027.3, "e": 1145.0, "kind": "selfpromo"}]
+    assert info["chapters"] == [{"start_time": 0, "end_time": 62, "title": "Intro"}]
+
+
+def test_fetch_continues_without_sponsorblock_when_api_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_sponsor(calls, fail_sponsorblock=True))
+    job = fetch.fetch(URL)
+    assert "--sponsorblock-mark" in calls[0] and "--sponsorblock-mark" not in calls[1]
+    assert common.load_json(job / "info.json")["skip"] == []
+    assert common.read_status(job)["steps"]["fetch"]["ok"] is True
+
+
+@pytest.mark.network
+@pytest.mark.slow
+def test_real_sponsorblock_segments(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    info = common.load_json(fetch.fetch("https://www.youtube.com/watch?v=pTn6Ewhb27k") / "info.json")
+    assert any(s["kind"] == "sponsor" and s["s"] > 1000 for s in info["skip"])
+    assert all("start_time" in c for c in info["chapters"])
+    none = common.load_json(fetch.fetch("https://www.youtube.com/watch?v=fwiEcPCXLcI") / "info.json")
+    assert none["skip"] == []

@@ -42,3 +42,49 @@ def test_compact_header_with_chapters():
 def test_compact_header_without_chapters():
     text = compact.compact([{"w": "a", "s": 0, "e": 1}], [], {**INFO, "chapters": None})
     assert "- " not in text
+
+
+def para_words(start, text, step=0.4):
+    return [{"w": w, "s": round(start + i * step, 2), "e": round(start + i * step + 0.3, 2)}
+            for i, w in enumerate(text.split())]
+
+
+SPEECH = (para_words(0, "La lumière du soleil est blanche et le ciel est bleu")
+          + para_words(10, "Cette vidéo est sponsorisée par une marque de matelas avec un code promo")
+          + para_words(20, "Leurs matelas sont très confortables pour bien dormir")
+          + para_words(90, "Revenons au ciel qui diffuse le bleu partout"))
+
+
+def test_sponsorblock_segment_replaces_paragraphs():
+    info = {**INFO, "skip": [{"s": 9.5, "e": 25.0, "kind": "sponsor"}]}
+    text, hidden = compact.build(SPEECH, [{"at": "0:22", "s": 22.0, "e": 23.0}], info)
+    assert "[passage sponsorisé 0:10 à 0:23, ignoré]" in text
+    assert "matelas" not in text and "[son 0:22" not in text
+    assert "[0:00] La lumière" in text and "[1:30] Revenons" in text
+    assert hidden == [{"s": 10.0, "e": 23.1, "probable": False}]
+
+
+def test_paragraph_mostly_outside_segment_is_kept():
+    info = {**INFO, "skip": [{"s": 4.0, "e": 5.0, "kind": "selfpromo"}]}
+    text, hidden = compact.build(SPEECH, [], info)
+    assert "[0:00] La lumière" in text and hidden == [r for r in hidden if r["s"] >= 10]
+
+
+def test_keyword_fallback_hides_up_to_sixty_seconds():
+    text, hidden = compact.build(SPEECH, [], INFO)
+    assert "[passage probablement sponsorisé 0:10 à 0:23, ignoré]" in text
+    assert "matelas" not in text and "[1:30] Revenons" in text
+    assert hidden == [{"s": 10.0, "e": 23.1, "probable": True}]
+
+
+def test_no_fallback_when_sponsorblock_has_data():
+    info = {**INFO, "skip": [{"s": 200.0, "e": 210.0, "kind": "sponsor"}]}
+    text, hidden = compact.build(SPEECH, [], info)
+    assert "matelas" in text and hidden == []
+
+
+def test_sponsor_wording_in_both_languages():
+    assert compact.is_sponsor_text("This video is brought to you by Acme")
+    assert compact.is_sponsor_text("le lien en description, et utilise le CODE PROMO")
+    assert compact.is_sponsor_text("Use code SKY for ten percent off")
+    assert not compact.is_sponsor_text("Le ciel est bleu à cause de la diffusion")

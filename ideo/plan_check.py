@@ -94,6 +94,32 @@ def _check_publisher(fields, where: str, ctx: dict, errors: list[str]) -> None:
                 return
 
 
+def _ranges(value) -> list[tuple[float, float]]:
+    out = []
+    for r in value if isinstance(value, list) else []:
+        try:
+            out.append((float(r["s"]), float(r["e"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
+def _sponsor_ranges(job: Path, info) -> tuple[list, list]:
+    skip = _read(job, "skip.json", {})
+    skip = skip if isinstance(skip, dict) else {}
+    segments = skip.get("segments") if "segments" in skip else (info.get("skip") if isinstance(info, dict) else [])
+    hidden = _ranges(skip.get("hidden"))
+    return hidden, hidden + _ranges(segments)
+
+
+def _sponsored(start: float, end: float, ranges: list) -> tuple[float, float] | None:
+    return next(((s, e) for s, e in ranges if start < e and end > s), None)
+
+
+def _sponsor_error(where: str, what: str, hit: tuple[float, float]) -> str:
+    return f"{where} : {what} est dans un passage sponsorisé ({fmt_ts(hit[0])} à {fmt_ts(hit[1])}), choisis un autre passage."
+
+
 def _sfx_by_ts(sfx: list) -> dict:
     out = {}
     for entry in sfx:
@@ -150,6 +176,10 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         src_seconds = _ts(scene["src"], where, "src", errors)
         if src_seconds is not None and ctx["duration"] is not None and src_seconds > ctx["duration"]:
             errors.append(f"{where} : « src » {scene['src']} dépasse la durée de la vidéo ({fmt_ts(ctx['duration'])}). Utilise le minutage d'un paragraphe de la transcription compacte.")
+        if src_seconds is not None:
+            hit = next(((a, b) for a, b in ctx["hidden"] if a <= src_seconds < int(b)), None)
+            if hit:
+                errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit))
 
     if "sfx" in scene:
         at = _ts(scene["sfx"], where, "sfx", errors)
@@ -164,8 +194,11 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
             else:
                 try:
                     part_state["seconds"] += max(0.0, float(entry["e"]) - float(entry["s"]))
+                    hit = _sponsored(float(entry["s"]), float(entry["e"]), ctx["sponsor"])
                 except (KeyError, TypeError, ValueError):
-                    pass
+                    hit = None
+                if hit:
+                    errors.append(_sponsor_error(where, f"le son {scene['sfx']}", hit))
                 part_state["clips"].append(("sfx", scene["sfx"], "", ""))
 
     if kind == "quote":
@@ -201,6 +234,9 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
         part_state["unresolved"] += 1
         return
     clip = window[span[1]]["e"] - window[span[0]]["s"]
+    hit = _sponsored(window[span[0]]["s"], window[span[1]]["e"], ctx["sponsor"])
+    if hit:
+        errors.append(_sponsor_error(where, "la citation", hit))
     part_state["seconds"] += clip
     part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text, speaker or "voix non identifiée"))
 
@@ -297,6 +333,7 @@ def check_plan(job: Path) -> list[str]:
         words = []
     words = [w for w in words if isinstance(w, dict) and isinstance(w.get("w"), str) and "s" in w and "e" in w]
     sfx = _read(job, "sfx.json", [])
+    hidden, sponsor = _sponsor_ranges(job, info)
     publisher = {_plain(info.get(k)) for k in ("channel", "title")} if isinstance(info, dict) else set()
     ctx = {
         "publisher": publisher - {""},
@@ -305,6 +342,8 @@ def check_plan(job: Path) -> list[str]:
         "duration": float(duration) if isinstance(duration, (int, float)) else None,
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
+        "hidden": hidden,
+        "sponsor": sponsor,
     }
     _check_publisher([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
     results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
