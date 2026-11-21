@@ -64,6 +64,20 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
 - Le `say` d'une scène `quote` présente la citation sans la répéter : la vraie voix de la source est jouée juste après.
 
+### Écrire sans tics d'IA (filtre anti-slop)
+
+Le spectateur repère vite un texte écrit par une IA. Dans `hook`, `say` et les textes à l'écran :
+- Aucun tiret long (`—`, `–`) ni double trait (`--`), aucun trait d'union isolé entre deux espaces. Remplace par un point, une virgule ou deux-points. Les traits d'union des mots composés restent (« États-Unis », « quatre-vingt-dix »).
+- Pas de mots creux qui veulent impressionner : « révolutionnaire », « incroyable », « fascinant », « véritable », « crucial », « essentiel », « au cœur de », « un monde où », « une nouvelle ère », « changer la donne ». Dis le fait précis.
+- Pas d'annonce de ce que tu vas dire : « Plongeons », « Voyons ensemble », « Dans cette vidéo », « Tu vas voir que ». Dis-le directement.
+- Pas de fausse confidence : « Honnêtement », « Soyons clairs », « Spoiler », « Le truc, c'est que ».
+- Pas de formule « Ce n'est pas X, c'est Y », « Non seulement X, mais aussi Y » plus d'une fois par vidéo.
+- Pas de suite de phrases de trois mots pour faire un effet. Une phrase courte pour appuyer, oui ; trois de suite, non.
+- Pas de liste forcée à trois éléments : autant d'éléments que la source en donne.
+- Pas de conclusion vague : « L'avenir nous le dira », « Une chose est sûre », « À méditer ». Finis sur la réponse concrète.
+- Pas de majuscules pour crier dans `say`, pas de guillemets pour souligner.
+- Un sujet qui agit : « les chercheurs ont mesuré », pas « il a été montré ».
+
 ## 5. Les 15 types de scène
 
 Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.

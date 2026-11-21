@@ -24,7 +24,7 @@ Règles pour toute la tâche :
    Voix locale : si la ligne `OK prepare` finit par `Voix locale : à installer (environ N Go).`, le moteur de voix n'est pas installé sur ce Mac. Dis-le à l'utilisateur en une phrase ("La voix locale n'est pas installée sur ce Mac : je l'installe maintenant, environ N Go, ça prend quelques minutes.") et lance tout de suite, en arrière-plan (`run_in_background`) :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo setup-voix`
    Continue les étapes suivantes sans attendre. Avant l'étape 6, attends sa notification de fin : `OK setup-voix` : dis "voix locale prête" ; `ERREUR setup-voix : ...` : montre la ligne à l'utilisateur et dis que cette vidéo utilisera la voix en ligne. Dans les deux cas, continue.
-3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide.
+3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide, y compris le filtre anti-slop de la section 4 (« Écrire sans tics d'IA »). Si un skill antislop est installé, ne le charge pas : ses règles utiles à la voix off sont déjà dans le guide, et `check` les vérifie.
 4. Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` (pas en arrière-plan).
    - Lignes `ERREUR check : ...` : corrige seulement ce qu'elles nomment, avec l'outil Edit sur `JOB/plan.json`, puis relance check. Si Edit refuse parce que le fichier a changé, lis `JOB/plan.json` une fois avec Read, puis refais l'Edit.
    - Lance check 3 fois au plus de suite. Après le 3e échec, montre les lignes d'erreur à l'utilisateur et arrête-toi. Le compte repart à zéro après chaque demande de l'utilisateur.
