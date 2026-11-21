@@ -116,7 +116,7 @@ def test_timeline_segments_are_contiguous_and_cover_the_part(job_with_offsets):
     assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "outro"]
     assert [s.get("type") for s in segs[1:-1]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
     assert segs[0]["props"]["text"].startswith("Dis-moi")
-    assert segs[-1]["props"]["text"] == "Abonne-toi pour la prochaine vidéo"
+    assert segs[-1]["props"]["text"] == "Si ça t'a plu, abonne-toi pour la prochaine !"
 
 
 def test_timeline_items_anchor_on_found_and_missing_words(job_with_offsets):

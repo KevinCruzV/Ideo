@@ -31,20 +31,20 @@ def test_voice_part_texts_and_lang(job_with_plan, fake_backend, fake_whisper):
     part = plan["parts"][0]
     assert fake_backend.calls[0][:2] == (part["hook"], "fr")
     assert fake_backend.calls[1][0] == part["scenes"][0]["say"]
-    assert fake_backend.calls[-1][0] == "Abonne-toi pour la prochaine vidéo"
+    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la prochaine !"
     assert all(lang == "fr" for _, lang in fake_whisper)
 
 
 def test_voice_part_outro_next(job_with_plan, fake_backend, fake_whisper):
     set_next_part(job_with_plan)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert fake_backend.calls[-1][0] == "Abonne-toi pour la partie 2 : Le sommeil"
+    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie 2 : Le sommeil !"
 
 
 def test_voice_part_outro_last_of_several_parts(job_with_plan, fake_backend, fake_whisper):
     set_next_part(job_with_plan)
     voice.voice_part(job_with_plan, 2, backend=fake_backend)
-    assert fake_backend.calls[-1][0] == "Abonne-toi pour la prochaine série"
+    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la prochaine série !"
 
 
 def test_voice_part_skips_existing_segments(job_with_plan, fake_backend, fake_whisper):
