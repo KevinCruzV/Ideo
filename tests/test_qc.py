@@ -358,3 +358,10 @@ def test_imperfect_hook_is_a_code_originated_defect():
     from ideo import codes
 
     assert "accroche-imparfaite" in codes.CODE_ONLY
+
+
+def test_a_hook_chosen_by_hand_raises_no_alert(made):
+    job, _ = made
+    common.save_json(job / "parts" / "01" / "voice-hook.json",
+                     {"passed": False, "failed": ["fin traînante"], "takes": 12, "chosen": "manuel : prise validée à l'oreille"})
+    assert not [c for c, _ in qc.run_coded(job) if c == "accroche-imparfaite"]

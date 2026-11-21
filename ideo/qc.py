@@ -99,7 +99,7 @@ def _hook_alerts(where: str, out_dir: Path) -> list[tuple[str, str]]:
         info = common.load_json(path) if path.exists() else {}
     except (OSError, ValueError):
         return []
-    if not isinstance(info, dict) or info.get("passed") is not False:
+    if not isinstance(info, dict) or info.get("passed") is not False or isinstance(info.get("chosen"), str):
         return []
     why = ", ".join(info.get("failed") or ["critères non atteints"])
     return [("accroche-imparfaite", f"{where} : l'accroche reste imparfaite après {info.get('takes', 12)} prises ({why}). "
