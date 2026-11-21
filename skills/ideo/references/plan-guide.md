@@ -21,8 +21,8 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Une idée par scène. Garde moins d'idées, mais explique chacune jusqu'au bout et relie-la à la suivante. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
 
 La vidéo raconte UNE histoire, elle n'aligne pas des faits :
-- Scène 1 : le point de départ, avec sa date ou son lieu.
-- Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes. Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène. Ajoute `"break": true` à cette scène, à côté de `"type"` (sauf pour la toute première scène) : la voix marque alors une vraie pause avant de changer de sujet.
+- Scène 1 : le point de départ. Pour une histoire, sa date ou son lieu. Pour un sujet sans chronologie (science, santé, méthode), le problème concret que le spectateur reconnaît chez lui.
+- Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes : par époque pour une histoire, par thème ou par cas pour un sujet sans chronologie (un acte par position, par organe, par méthode). Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène. Ajoute `"break": true` à cette scène, à côté de `"type"` (sauf pour la toute première scène) : la voix marque alors une vraie pause avant de changer de sujet.
 - Chaque `say` part de la scène d'avant : dis ce qui relie les deux (la cause, la conséquence, l'opposition, le temps passé). Exemples de liens : "Résultat", "Mais dix ans plus tard", "C'est là que", "Face à ça", "Le problème". Si on peut mélanger deux scènes sans que ça se voie, il manque le lien.
 - Quand un événement a une date ou un lieu dans la source, le spectateur doit le voir : mets-le dans `kicker` (section 5), et dis l'année dans `say` quand elle aide à suivre.
 - Dernière scène : la réponse à la question de l'accroche, en une phrase claire. Pas une ouverture vague.
@@ -103,7 +103,7 @@ Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `hou
 Détails :
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres et écrit la valeur au-dessus de chacune, suivie de `unit` : donne toujours `unit` quand la valeur en a une.
 - `counter` : `from` est le nombre affiché au départ du compte (0 si tu ne le mets pas).
-- Un écran doit apprendre quelque chose seul, sans le son : pas de liste de noms nus. "Russie", "Inde", "Chine" n'apprend rien ; "BRICS, créés en 2011" avec un `picto` apprend quelque chose.
+- Un écran doit apprendre quelque chose seul, sans le son : pas de liste de noms nus. Chaque texte d'une liste (`chips`, `items`, `label` d'une cellule) dit un fait complet, avec un chiffre ou un verbe : "8 % dorment sur le dos", pas "Sur le dos". "Russie", "Inde", "Chine" n'apprend rien ; "BRICS, créés en 2011" avec un `picto` apprend quelque chose.
 - `mascot` : choisis `pose` selon la bulle. `question` : la question naïve du spectateur. `surprise` : un fait qui va contre l'intuition. `montre` : il désigne ce qui vient ensuite. `content` : la leçon à retenir.
 
 Ces exemples viennent d'une autre vidéo : n'en recopie ni les textes ni les minutages.
