@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
-import { captionAccent, colors, fonts, layout, onPaper, shadowFilter, stripClip } from "../theme";
+import { accentAt, AccentSpan, colors, fonts, layout, onPaper, shadowFilter, stripClip } from "../theme";
 import { jitter } from "../paper/stopMotion";
 import { CaptionGroup } from "../types";
 
@@ -14,11 +14,15 @@ export const currentWordIndex = (group: CaptionGroup, frame: number): number => 
   return index;
 };
 
-export const Captions: React.FC<{ groups: CaptionGroup[] }> = ({ groups }) => {
+export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[] }> = ({
+  groups,
+  accents = [],
+}) => {
   const frame = useCurrentFrame();
   const group = groups.find((g) => frame >= g.from && frame < g.to);
   if (!group) return null;
   const active = currentWordIndex(group, frame);
+  const accent = accentAt(accents, frame);
 
   return (
     <div
@@ -55,8 +59,8 @@ export const Captions: React.FC<{ groups: CaptionGroup[] }> = ({ groups }) => {
               style={{
                 display: "inline-block",
                 padding: `0 ${FONT_SIZE * 0.2}px`,
-                background: isActive ? colors[captionAccent] : "transparent",
-                color: isActive ? onPaper[captionAccent] : colors.ink,
+                background: isActive ? colors[accent] : "transparent",
+                color: isActive ? onPaper[accent] : colors.ink,
                 clipPath: isActive ? stripClip : undefined,
               }}
             >

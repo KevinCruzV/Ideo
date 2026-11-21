@@ -1,8 +1,7 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { fonts, onPaper, PaperColor, colors, shadowFilter, stripClip } from "../theme";
-import { enterScale } from "./PaperShape";
-import { jitter } from "./stopMotion";
+import { enterScale, jitter } from "./stopMotion";
 
 export type PaperStripProps = {
   text: string;

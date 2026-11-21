@@ -5,10 +5,15 @@ import { ChapterLabel } from "./chrome/ChapterLabel";
 import { Progress } from "./chrome/Progress";
 import { Watermark } from "./chrome/Watermark";
 import { resolveScene } from "./scenes/registry";
-import { colors } from "./theme";
+import { accentForIndex, colors } from "./theme";
 import { Timeline } from "./types";
 
 export const Short: React.FC<Timeline> = (timeline) => {
+  const accents = timeline.segments.map((segment, i) => ({
+    from: segment.from,
+    to: segment.to,
+    accent: accentForIndex(i),
+  }));
   return (
     <AbsoluteFill style={{ background: colors.background }}>
       {timeline.audio ? <Audio src={staticFile(timeline.audio)} /> : null}
@@ -30,7 +35,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
       <ChapterLabel chapter={timeline.chapter} />
       <Watermark text={timeline.watermark} />
       <Progress chapter={timeline.chapter} />
-      <Captions groups={timeline.captions} />
+      <Captions groups={timeline.captions} accents={accents} />
     </AbsoluteFill>
   );
 };

@@ -1,4 +1,4 @@
-import { continueRender, delayRender } from "remotion";
+import { cancelRender, continueRender, delayRender } from "remotion";
 import bricolageUrl from "../public/fonts/BricolageGrotesque-Variable.ttf";
 import unboundedUrl from "../public/fonts/Unbounded-Variable.ttf";
 
@@ -20,6 +20,7 @@ export const loadFonts = (): Promise<void> => {
     }),
   )
     .then(() => document.fonts.ready)
-    .then(() => continueRender(handle));
+    .then(() => continueRender(handle))
+    .catch((err: unknown) => cancelRender(err));
   return loading;
 };

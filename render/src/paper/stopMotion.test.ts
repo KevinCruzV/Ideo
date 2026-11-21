@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { jitter, stepFrame } from "./stopMotion";
+import { enterScale, jitter, stepFrame } from "./stopMotion";
 
 describe("stopMotion", () => {
   test("stepFrame quantise à 12 im/s", () => {
@@ -20,5 +20,12 @@ describe("stopMotion", () => {
     expect(values.every((v) => Math.abs(v) <= 2.5)).toBe(true);
     expect(new Set(values).size).toBeGreaterThan(5);
     expect(jitter("a", 0)).not.toBe(jitter("b", 0));
+  });
+
+  test("enterScale entre en trois pas puis reste à 1", () => {
+    expect(enterScale(9, 10)).toBe(0);
+    expect([10, 11, 12, 13, 14, 15, 16, 30].map((f) => enterScale(f, 10))).toEqual([
+      0.4, 0.4, 0.4, 0.75, 0.75, 1, 1, 1,
+    ]);
   });
 });

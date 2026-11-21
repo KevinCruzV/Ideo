@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { colors, PaperColor, shadow, shadowFilter, stripClip } from "../theme";
-import { stepFrame } from "./stopMotion";
+import { enterScale } from "./stopMotion";
 
 export type ShapeKind = "circle" | "square" | "strip" | "arrow";
 
@@ -14,16 +14,6 @@ export type PaperShapeProps = {
   x?: number;
   y?: number;
   style?: React.CSSProperties;
-};
-
-const ENTER_SCALES = [0.4, 0.75, 1];
-const STEP_FRAMES = 2.5;
-
-export const enterScale = (frame: number, enterAt: number): number => {
-  const local = frame - enterAt;
-  if (local < 0) return 0;
-  const index = Math.round(stepFrame(local) / STEP_FRAMES);
-  return ENTER_SCALES[Math.min(index, ENTER_SCALES.length - 1)];
 };
 
 const arrowClip = "polygon(0 30%, 58% 30%, 58% 0, 100% 50%, 58% 100%, 58% 70%, 0 70%)";

@@ -34,5 +34,19 @@ export const layout = {
   progressHeight: 16,
 } as const;
 
-export const captionAccent: PaperColor = "red";
+export type AccentColor = "red" | "yellow" | "blue";
+
+export const accentCycle: readonly AccentColor[] = ["red", "yellow", "blue"];
+
+export const accentForIndex = (index: number): AccentColor => {
+  const i = Number.isFinite(index) ? Math.abs(Math.trunc(index)) : 0;
+  return accentCycle[i % accentCycle.length];
+};
+
+export type AccentSpan = { from: number; to: number; accent: AccentColor };
+
+export const accentAt = (spans: AccentSpan[], frame: number): AccentColor => {
+  const span = spans.find((s) => frame >= s.from && frame < s.to);
+  return span ? span.accent : accentCycle[0];
+};
 export const stripClip = "polygon(0 4%, 100% 0, 98% 100%, 2% 94%)";

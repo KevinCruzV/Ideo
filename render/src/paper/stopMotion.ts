@@ -23,3 +23,12 @@ export const jitter = (seed: string, frame: number, maxDeg = 2.5): number => {
   const step = Math.round(stepFrame(frame) * 1000);
   return (hash(`${seed}:${step}`) * 2 - 1) * maxDeg;
 };
+
+const ENTER_SCALES = [0.4, 0.75, 1];
+
+export const enterScale = (frame: number, enterAt: number, fps = 30): number => {
+  const local = frame - enterAt;
+  if (local < 0) return 0;
+  const index = Math.round(stepFrame(local, fps) / (fps / STEP_FPS));
+  return ENTER_SCALES[Math.min(index, ENTER_SCALES.length - 1)];
+};
