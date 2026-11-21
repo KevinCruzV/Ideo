@@ -56,7 +56,7 @@ def test_guide_table_lists_schema_props(kind):
 
 
 @pytest.mark.parametrize("kind,props,fragment", [
-    ("key-title", {"title": "x"}, "prop inconnue « title » pour « key-title ». Props acceptées : text, accent."),
+    ("key-title", {"title": "x"}, "prop inconnue « title » pour « key-title ». Props acceptées : text, accent, kicker, picto."),
     ("key-title", {"accent": "x"}, "prop « text » manquante pour « key-title »"),
     ("counter", {"to": "2300 mots"}, "« props.to » doit être un nombre"),
     ("fact-chips", {"chips": ["a"] * 7}, "« props.chips » doit être une liste de 1 à 6 textes"),
@@ -117,8 +117,8 @@ def test_plan_check_reports_props_and_el_errors(job_with_fixtures):
     plan["parts"][0]["scenes"][1]["items"][1]["el"] = "values.9"
     (job_with_fixtures / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
     errors = plan_check.check_plan(job_with_fixtures)
-    assert "Partie 1, scène 1 : prop inconnue « title » pour « key-title ». Props acceptées : text, accent." in errors
-    assert "Partie 1, scène 1 : prop « text » manquante pour « key-title ». Props acceptées : text, accent." in errors
+    assert "Partie 1, scène 1 : prop inconnue « title » pour « key-title ». Props acceptées : text, accent, kicker, picto." in errors
+    assert "Partie 1, scène 1 : prop « text » manquante pour « key-title ». Props acceptées : text, accent, kicker, picto." in errors
     assert any(e.startswith("Partie 1, scène 2 : « el » « values.9 »") and "values.0 à values.3" in e for e in errors)
 
 

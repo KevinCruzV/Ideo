@@ -10,6 +10,15 @@ OBJECTS = ("screen", "board", "jar", "door", "scale")
 GRID_SHAPES = ("circle", "square", "triangle", "diamond", "arrow", "strip")
 DIAGRAM_SHAPES = ("circle", "square", "triangle", "bar")
 MASCOT_POSES = ("question", "surprise", "montre", "content")
+PICTOS = (
+    "globe", "flag", "pin", "city", "house", "factory", "bank", "coin", "chart-up", "chart-down", "ship", "plane",
+    "train", "rocket", "satellite", "tank", "shield", "sword", "bomb", "dove", "handshake", "justice", "wall", "chain",
+    "lock", "key", "crown", "ballot", "megaphone", "newspaper", "tv", "phone", "computer", "chip", "book", "brain",
+    "heart", "eye", "clock", "calendar", "lightbulb", "atom", "flask", "leaf", "sun", "drop", "fire", "lightning",
+    "mountain", "barrel", "gear", "people",
+)
+PICTO_KINDS = ("key-title", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote")
+KICKER_CAP = 28
 
 
 def text_list(most: int) -> dict:
@@ -36,7 +45,7 @@ SCHEMA = {
         "el": ("marks.<i>",),
     },
     "icon-grid": {
-        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT}, ("label",))},
+        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT, "picto": PICTOS}, ("label",))},
         "optional": {},
         "el": ("cells.<i>",),
     },
@@ -45,11 +54,20 @@ SCHEMA = {
     "object-state": {"required": {"object": OBJECTS, "states": text_list(6)}, "optional": {}, "el": ("states.<i>",)},
     "shape-diagram": {
         "required": {"values": number_list(8)},
-        "optional": {"shape": DIAGRAM_SHAPES, "labels": text_list(8)},
+        "optional": {"shape": DIAGRAM_SHAPES, "labels": text_list(8), "unit": TEXT},
         "el": ("values.<i>", "labels.<i>"),
     },
     "mascot": {"required": {"bubble": TEXT}, "optional": {"pose": MASCOT_POSES}, "el": ("bubble",)},
+    "versus": {
+        "required": {"left": TEXT, "right": TEXT},
+        "optional": {"left_picto": PICTOS, "right_picto": PICTOS},
+        "el": ("left", "right"),
+    },
 }
+for _kind, _schema in SCHEMA.items():
+    _schema["optional"]["kicker"] = TEXT
+    if _kind in PICTO_KINDS:
+        _schema["optional"]["picto"] = PICTOS
 
 PART_CAPS = {"hook": 60, "title": 40}
 TEXT_CAPS = {
@@ -65,7 +83,11 @@ TEXT_CAPS = {
     "object-state": {"states": 36},
     "shape-diagram": {"labels": 14},
     "mascot": {"bubble": 80},
+    "versus": {"left": 24, "right": 24},
 }
+for _kind, _fields in TEXT_CAPS.items():
+    _fields["kicker"] = KICKER_CAP
+TEXT_CAPS["shape-diagram"]["unit"] = 8
 CHARS_PER_WORD = 6
 
 INDEXED = re.compile(r"^([a-z]+)\.(\d+)$")

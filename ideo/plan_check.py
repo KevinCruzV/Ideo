@@ -2,13 +2,14 @@ from pathlib import Path
 
 from ideo import scene_schema, voice
 from ideo.common import fmt_ts, load_json, parse_ts
-from ideo.textmatch import SPLIT, closest_passage, find_span, normalize
+from ideo.textmatch import SPLIT, anchor_text, closest_passage, find_span, normalize
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
-    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus",
 })
 MAX_PARTS = 8
+MAX_SCENES = 45
 MIN_SECONDS = 45
 MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0
@@ -175,14 +176,15 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         items = []
     spoken = []
     for item in items:
-        if not isinstance(item, dict) or not isinstance(item.get("on"), str) or not item["on"].strip():
-            errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide qui apparaît dans « say ».")
+        anchor = anchor_text(item.get("on")) if isinstance(item, dict) else None
+        if anchor is None:
+            errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide (texte ou nombre) qui apparaît dans « say ».")
             continue
         if known:
             errors.extend(scene_schema.check_el(kind, props, item.get("el"), where))
-        span = find_span(say.split(), item["on"]) if say is not None else None
+        span = find_span(say.split(), anchor) if say is not None else None
         if say is not None and span is None:
-            errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
+            errors.append(f"{where} : « {anchor} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
         elif span is not None:
             spoken.append((span[0], item))
     _check_order(spoken, where, errors)
@@ -230,7 +232,7 @@ def _check_order(spoken: list, where: str, errors: list[str]) -> None:
     for (before, first), (after, second) in zip(spoken, spoken[1:]):
         if after < before:
             order = ", ".join(str(item.get("el")) for _, item in sorted(spoken, key=lambda pair: pair[0]))
-            errors.append(f"{where} : l'item « {second.get('el')} » (« {second['on']} ») est dit avant l'item « {first.get('el')} » (« {first['on']} »). "
+            errors.append(f"{where} : l'item « {second.get('el')} » (« {anchor_text(second['on'])} ») est dit avant l'item « {first.get('el')} » (« {anchor_text(first['on'])} »). "
                           f"Échange ces deux items : les items suivent l'ordre des mots dans « say ». Ordre attendu : {order}.")
             return
 
@@ -301,6 +303,8 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
         return [], None
+    if len(scenes) > MAX_SCENES:
+        errors.append(f"{where} : {len(scenes)} scènes, {MAX_SCENES} au plus par vidéo. Retire ou fusionne {len(scenes) - MAX_SCENES} scène(s), ou découpe en plusieurs parties.")
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
     if not state["usable"]:
