@@ -31,6 +31,14 @@ def test_render_fixture_scenes_validate_against_schema():
             assert scene_schema.check_el(s["type"], s["props"], item["el"], s["type"]) == []
 
 
+def test_mascot_pose_fixture_validates_against_schema():
+    timeline = json.loads((REPO / "render" / "fixtures" / "mascot-poses.json").read_text(encoding="utf-8"))
+    scenes = [s for s in timeline["segments"] if s["kind"] == "scene"]
+    assert {s["props"]["pose"] for s in scenes} == {"question", "surprise", "montre", "content"}
+    for s in scenes:
+        assert scene_schema.check_props(s["type"], s["props"], s["type"]) == []
+
+
 @pytest.mark.parametrize("kind", sorted(COMPONENTS))
 def test_schema_props_are_the_ones_the_component_reads(kind):
     source = (SCENES_DIR / f"{COMPONENTS[kind]}.tsx").read_text(encoding="utf-8")
@@ -58,10 +66,37 @@ def test_guide_table_lists_schema_props(kind):
     ("icon-grid", {"cells": [{"label": "a", "icon": "x"}]}, "objets avec"),
     ("timeline", {"marks": [{"label": "a"}]}, "« props.marks »"),
     ("shape-diagram", {"values": ["1"]}, "liste de 1 à 8 nombres"),
+    ("mascot", {"bubble": "Et alors ?", "pose": "colère"},
+     "« props.pose » doit être une de ces valeurs : question, surprise, montre, content"),
+    ("shape-diagram", {"values": [1, 2, 3], "labels": ["a", "b"]},
+     "« props.labels » a 2 textes et « props.values » 3 nombres : donne autant de « labels » que de « values », sinon les étiquettes ne s'affichent pas."),
+    ("key-title", {"text": "La courbe de l'oubli", "accent": "oubli"},
+     "« props.accent » « oubli » n'est pas un mot de « props.text ». Recopie un mot ou une suite de mots exacts de « text »."),
+    ("key-title", {"text": "Le ciel bleu", "accent": "rouge"}, "n'est pas un mot de « props.text »"),
 ])
 def test_check_props_errors(kind, props, fragment):
     errors = scene_schema.check_props(kind, props, "Partie 1, scène 2")
     assert any(e.startswith("Partie 1, scène 2 : ") and fragment in e for e in errors), errors
+
+
+@pytest.mark.parametrize("kind,props", [
+    ("shape-diagram", {"values": [1, 2], "labels": ["a", "b"]}),
+    ("shape-diagram", {"values": [1, 2]}),
+    ("key-title", {"text": "La courbe de l'oubli", "accent": "l'oubli"}),
+    ("key-title", {"text": "La courbe de l'oubli", "accent": "L'OUBLI"}),
+    ("key-title", {"text": "Une lumière blanche, un ciel bleu", "accent": "ciel bleu"}),
+    ("key-title", {"text": "Une lumière blanche, un ciel bleu", "accent": "blanche"}),
+    ("key-title", {"text": "Pourquoi on oublie"}),
+])
+def test_check_props_accepts_matching_labels_and_accent(kind, props):
+    assert scene_schema.check_props(kind, props, "S") == []
+
+
+@pytest.mark.parametrize("el", ["chips.<i>", "values.<i>", "labels.<i>"])
+def test_check_el_refuses_literal_patterns(el):
+    kind = "fact-chips" if el.startswith("chips") else "shape-diagram"
+    props = {"chips": ["a"], "values": [1], "labels": ["a"]}
+    assert scene_schema.check_el(kind, props, el, "S")
 
 
 def test_check_el_names_the_valid_range():

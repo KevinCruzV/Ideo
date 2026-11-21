@@ -13,6 +13,7 @@ MIN_SECONDS = 45
 MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0
 QUOTE_WINDOW = 90.0
+QUOTE_MAX_SECONDS = 8.0
 EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
@@ -171,14 +172,19 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     if not isinstance(items, list):
         errors.append(f"{where} : « items » doit être une liste d'objets {{\"el\": ..., \"on\": ...}}.")
         items = []
+    spoken = []
     for item in items:
         if not isinstance(item, dict) or not isinstance(item.get("on"), str) or not item["on"].strip():
             errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide qui apparaît dans « say ».")
             continue
         if known:
             errors.extend(scene_schema.check_el(kind, props, item.get("el"), where))
-        if say is not None and find_span(say.split(), item["on"]) is None:
+        span = find_span(say.split(), item["on"]) if say is not None else None
+        if say is not None and span is None:
             errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
+        elif span is not None:
+            spoken.append((span[0], item))
+    _check_order(spoken, where, errors)
 
     src_seconds = None
     if "src" not in scene:
@@ -216,6 +222,15 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         _check_quote(scene, props, src_seconds, where, ctx, errors, part_state)
 
 
+def _check_order(spoken: list, where: str, errors: list[str]) -> None:
+    for (before, first), (after, second) in zip(spoken, spoken[1:]):
+        if after < before:
+            order = ", ".join(str(item.get("el")) for _, item in sorted(spoken, key=lambda pair: pair[0]))
+            errors.append(f"{where} : l'item « {second.get('el')} » (« {second['on']} ») est dit avant l'item « {first.get('el')} » (« {first['on']} »). "
+                          f"Échange ces deux items : les items suivent l'ordre des mots dans « say ». Ordre attendu : {order}.")
+            return
+
+
 def _plain(value) -> str:
     if not isinstance(value, str):
         return ""
@@ -245,6 +260,8 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
         part_state["unresolved"] += 1
         return
     clip = window[span[1]]["e"] - window[span[0]]["s"]
+    if clip > QUOTE_MAX_SECONDS:
+        errors.append(f"{where} : la citation dure {round(clip)} s, {QUOTE_MAX_SECONDS:.0f} s au plus. Choisis une suite de mots plus courte dans le même passage.")
     hit = _sponsored(window[span[0]]["s"], window[span[1]]["e"], ctx["sponsor"])
     if hit:
         errors.append(_sponsor_error(where, "la citation", hit))

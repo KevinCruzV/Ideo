@@ -40,7 +40,7 @@
         },
         {
           "type": "counter",
-          "say": "Elles renvoient la lumière partout. Et plus l'onde est courte, plus elle rebondit : le bleu, plus de cinq fois plus que le rouge.",
+          "say": "Plus l'onde est courte, plus elle rebondit : le bleu, plus de cinq fois plus que le rouge.",
           "props": {"label": "fois plus de bleu renvoyé", "from": 1, "to": 5},
           "items": [{"el": "to", "on": "bleu"}, {"el": "label", "on": "rouge"}],
           "src": "1:11"
@@ -83,9 +83,9 @@
         },
         {
           "type": "object-state",
-          "say": "Tu peux le voir chez toi : un verre d'eau, quelques gouttes de lait, une lampe. De côté, l'eau devient bleutée.",
+          "say": "Chez toi, éclaire un verre d'eau avec quelques gouttes de lait : vu de côté, il devient bleuté.",
           "props": {"object": "jar", "states": ["Eau et lait", "Vu de côté : bleuté"]},
-          "items": [{"el": "states.1", "on": "bleutée"}],
+          "items": [{"el": "states.1", "on": "bleuté"}],
           "sfx": "2:43",
           "src": "2:33"
         },
@@ -94,10 +94,10 @@
           "say": "Le soir, la lumière traverse jusqu'à quarante fois plus d'air qu'à midi. Le bleu se perd en route, il reste le rouge.",
           "props": {"shape": "square", "values": [1, 40], "labels": ["midi", "soir"]},
           "items": [
-            {"el": "values.0", "on": "midi"},
             {"el": "values.1", "on": "soir"},
-            {"el": "labels.0", "on": "midi"},
-            {"el": "labels.1", "on": "rouge"}
+            {"el": "labels.1", "on": "soir"},
+            {"el": "values.0", "on": "midi"},
+            {"el": "labels.0", "on": "midi"}
           ],
           "src": "3:00"
         },

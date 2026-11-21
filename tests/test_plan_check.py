@@ -390,3 +390,35 @@ def test_sfx_and_quote_in_sponsor_segment_are_errors(job_with_fixtures):
 def test_sponsor_segments_from_info_when_no_skip_json(job_with_fixtures):
     set_info(job_with_fixtures, skip=[{"s": 69.0, "e": 71.0, "kind": "sponsor"}])
     assert any("le son 1:10" in e and "sponsorisé" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+def test_items_out_of_spoken_order_name_the_two_items(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][1]["items"].reverse()
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors == ["Partie 1, scène 2 : l'item « values.0 » (« lundi ») est dit avant l'item « values.3 » (« jeudi »). "
+                      "Échange ces deux items : les items suivent l'ordre des mots dans « say ». "
+                      "Ordre attendu : values.0, values.3."]
+
+
+def test_items_on_the_same_word_keep_their_order(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][1]["items"] = [
+        {"el": "values.0", "on": "lundi"}, {"el": "labels.0", "on": "lundi"},
+        {"el": "values.3", "on": "jeudi"}, {"el": "labels.3", "on": "jeudi"},
+    ]
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_quote_longer_than_eight_seconds_is_an_error(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][4]["props"]["text"] = (
+        "Les résultats montraient une chute très rapide dès les premières heures. "
+        "Nous oublions la plupart de ce que nous apprenons en moins d'une journée")
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert len(errors) == 1
+    assert errors[0].startswith("Partie 1, scène 5 : la citation dure ")
+    assert errors[0].endswith(" s, 8 s au plus. Choisis une suite de mots plus courte dans le même passage.")

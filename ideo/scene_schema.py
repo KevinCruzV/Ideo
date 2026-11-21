@@ -7,6 +7,7 @@ OPTIONAL_TEXT = "optional-text"
 OBJECTS = ("screen", "board", "jar", "door", "scale")
 GRID_SHAPES = ("circle", "square", "triangle", "diamond", "arrow", "strip")
 DIAGRAM_SHAPES = ("circle", "square", "triangle", "bar")
+MASCOT_POSES = ("question", "surprise", "montre", "content")
 
 
 def text_list(most: int) -> dict:
@@ -45,10 +46,11 @@ SCHEMA = {
         "optional": {"shape": DIAGRAM_SHAPES, "labels": text_list(8)},
         "el": ("values.<i>", "labels.<i>"),
     },
-    "mascot": {"required": {"bubble": TEXT}, "optional": {}, "el": ("bubble",)},
+    "mascot": {"required": {"bubble": TEXT}, "optional": {"pose": MASCOT_POSES}, "el": ("bubble",)},
 }
 
 INDEXED = re.compile(r"^([a-z]+)\.(\d+)$")
+NOT_WORD = re.compile(r"[\W_]+")
 
 
 def _is_number(value) -> bool:
@@ -99,6 +101,32 @@ def _valid(spec, value) -> bool:
     return True
 
 
+def bare_words(text: str) -> list[str]:
+    return [w for w in (NOT_WORD.sub("", part.lower()) for part in text.split(" ")) if w]
+
+
+def accent_in_text(text: str, accent: str) -> bool:
+    words, wanted = bare_words(text), bare_words(accent)
+    if not wanted:
+        return False
+    return any(words[i:i + len(wanted)] == wanted for i in range(len(words) - len(wanted) + 1))
+
+
+def _coherence(kind: str, props: dict, where: str) -> list[str]:
+    if kind == "shape-diagram":
+        values, labels = props.get("values"), props.get("labels")
+        if (_valid(SCHEMA[kind]["required"]["values"], values) and _valid(SCHEMA[kind]["optional"]["labels"], labels)
+                and len(values) != len(labels)):
+            return [f"{where} : « props.labels » a {len(labels)} textes et « props.values » {len(values)} nombres : "
+                    "donne autant de « labels » que de « values », sinon les étiquettes ne s'affichent pas."]
+    if kind == "key-title":
+        text, accent = props.get("text"), props.get("accent")
+        if _valid(TEXT, text) and _valid(TEXT, accent) and not accent_in_text(text, accent):
+            return [f"{where} : « props.accent » « {accent} » n'est pas un mot de « props.text ». "
+                    "Recopie un mot ou une suite de mots exacts de « text »."]
+    return []
+
+
 def accepted_props(kind: str) -> str:
     schema = SCHEMA[kind]
     return ", ".join(list(schema["required"]) + list(schema["optional"]))
@@ -117,7 +145,7 @@ def check_props(kind: str, props: dict, where: str) -> list[str]:
     for key, spec in known.items():
         if key in props and not _valid(spec, props[key]):
             errors.append(f"{where} : « props.{key} » doit être {_describe(spec)}.")
-    return errors
+    return errors + _coherence(kind, props, where)
 
 
 def el_paths(kind: str, props: dict) -> list[str]:
@@ -135,7 +163,7 @@ def el_paths(kind: str, props: dict) -> list[str]:
 
 
 def check_el(kind: str, props: dict, el, where: str) -> list[str]:
-    valid = isinstance(el, str) and el in SCHEMA[kind]["el"]
+    valid = isinstance(el, str) and el in SCHEMA[kind]["el"] and not el.endswith(".<i>")
     if isinstance(el, str):
         match = INDEXED.match(el)
         if match and f"{match.group(1)}.<i>" in SCHEMA[kind]["el"]:

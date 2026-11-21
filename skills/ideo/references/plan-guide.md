@@ -16,9 +16,9 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
-- N'utilise jamais un passage de sponsor, de promotion, d'appel à s'abonner ou de vie de la chaîne. Les lignes `[passage sponsorisé ...]` et `[passage probablement sponsorisé ...]` sont déjà retirées : ne cite rien autour.
+- N'utilise jamais un passage de sponsor, de promotion, d'appel à s'abonner ou de vie de la chaîne. Les lignes `[passage sponsorisé a à b, ignoré]` et `[passage probablement sponsorisé a à b, ignoré]` remplacent ces passages : n'utilise aucun minutage compris entre a et b (ni `src`, ni citation, ni `sfx`).
 - Ne nomme jamais une marque ou un produit que la vidéo est payée pour promouvoir.
-- N'écris nulle part dans le plan le nom de la chaîne, celui de la personne qui a fait la vidéo, ni le titre de la vidéo (lignes `Chaîne :` et `Titre :`). Reformule le sujet avec tes mots.
+- N'écris jamais le nom de la ligne `Chaîne :`, ni celui de la personne qui anime la chaîne : ni dans `title`, ni dans `hook`, ni dans `say`, ni dans les `props`. Seule exception : une citation exacte (`quote`, `props.text`) qui le contient. Le sujet et les mots de la ligne `Titre :` sont libres : tu peux les reprendre.
 
 ## 3. L'accroche (`hook`)
 
@@ -42,7 +42,7 @@ Mauvaises accroches :
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Un `say` = 1 à 3 phrases courtes, 12 à 25 mots. Une phrase = 15 mots au plus.
 - Nombres en lettres dans `say` : "quarante fois", pas "40 fois". Évite les dates dans `say`, mets-les dans les `props` à l'écran.
-- Pas de parenthèses, pas d'abréviations ("nanomètres", pas "nm"), pas de symboles (%, €, &, /).
+- Dans `say` seulement : pas de parenthèses, pas d'abréviations ("nanomètres", pas "nm"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
 - Pas d'énumération lue à voix haute. Trois éléments au plus, chacun dans sa phrase.
 - En français, tutoie le spectateur.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
@@ -50,28 +50,28 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 
 ## 5. Les 12 types de scène
 
-Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Courts : 2 à 6 mots par étiquette.
+Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Courts : 2 à 6 mots par étiquette. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
 
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|
-| `key-title` | la phrase-clé d'une idée | `text`, `accent` (un mot de `text`, posé sur la bande de couleur) | `text`, `accent` |
-| `person-card` | qui a dit ou fait quoi | `name`, `role` | `avatar`, `name`, `role` |
-| `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips` : liste de textes (6 max) | `chips.0` ... `chips.5` |
-| `stack-list` | étapes ou raisons qui s'accumulent | `items` : liste de textes (5 max) | `items.0` ... `items.4` |
-| `counter` | un nombre qui monte | `label`, `from`, `to` (nombres) | `to` (lance le compte), `label` |
-| `timeline` | une chronologie | `start`, `end` (textes), `marks` : liste de `{at, label}` (5 max) | `marks.0` ... `marks.4` |
-| `icon-grid` | des catégories, une famille | `cells` : liste de `{shape, label}` (9 max), `shape` = `circle`, `square`, `triangle`, `diamond`, `arrow` ou `strip` | `cells.0` ... `cells.8` |
-| `stamp` | une conclusion forte, une idée reçue démentie | `text` (affiché en majuscules) | `text` |
-| `quote` | une phrase exacte de la source, avec sa vraie voix | `text` (citation exacte), `speaker` (section 7) | `text`, `speaker` |
-| `object-state` | un objet qui change d'état | `object` = `screen`, `board`, `jar`, `door` ou `scale` ; `states` : liste de textes (6 max) | `states.1` ... `states.5` |
-| `shape-diagram` | une comparaison de tailles ou de quantités | `shape` = `circle`, `square`, `triangle` ou `bar` ; `values` : nombres (8 max) ; `labels` : textes, autant que `values` | `values.0` ..., `labels.0` ... |
-| `mascot` | la question naïve du spectateur | `bubble` | `bubble` |
+| `key-title` | la phrase-clé d'une idée | `text`*, `accent` (un mot ou une suite de mots recopiés de `text`, posés sur la bande de couleur) | `text`, `accent` |
+| `person-card` | qui a dit ou fait quoi | `name`*, `role` | `avatar`, `name`, `role` |
+| `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) | `chips.0` à `chips.5` |
+| `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) | `items.0` à `items.4` |
+| `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` : l'unité ou ce qu'on compte | `to` (lance le compte), `label` |
+| `timeline` | une chronologie | `marks`* : liste de `{at, label}` (5 max, `at` obligatoire) ; `start`, `end` : textes | `marks.0` à `marks.4` |
+| `icon-grid` | des catégories, une famille | `cells`* : liste de `{shape, label}` (9 max, `label` obligatoire), `shape` = `circle`, `square`, `triangle`, `diamond`, `arrow` ou `strip` | `cells.0` à `cells.8` |
+| `stamp` | une conclusion forte, une idée reçue démentie | `text`* (affiché en majuscules) | `text` |
+| `quote` | une phrase exacte de la source, avec sa vraie voix | `text`* (citation exacte), `speaker` (section 7) | `text`, `speaker` |
+| `object-state` | un objet qui change d'état | `object`* = `screen`, `board`, `jar`, `door` ou `scale` ; `states`* : liste de textes (6 max). Le premier état est visible dès le début, chaque état suivant le remplace sur son mot. `screen` et `board` affichent le texte dans l'objet ; `jar` se remplit, `door` s'ouvre, `scale` penche, avec le texte en dessous | `states.1` à `states.5` |
+| `shape-diagram` | une comparaison de tailles ou de quantités | `values`* : nombres (8 max) ; `shape` = `circle`, `square`, `triangle` ou `bar` ; `labels` : textes, exactement autant que `values` | `values.0` à `values.7`, `labels.0` à `labels.7` |
+| `mascot` | le personnage Ideo qui réagit : la question naïve du spectateur, un fait surprenant, l'élément suivant, la leçon à retenir | `bubble`* : sa bulle ; `pose` = `question` (par défaut), `surprise`, `montre` ou `content` | `bubble` |
 
 Détails :
-- `object-state` : le premier état est visible dès le début, chaque `states.N` suivant le remplace sur son mot. `screen` et `board` affichent le texte de l'état dans l'objet ; `jar` se remplit, `door` s'ouvre, `scale` penche, avec le texte en dessous.
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres.
-- `counter` : `to` est un nombre, sans texte. L'unité va dans `label`.
-- `mascot` : au plus une fois par vidéo (le personnage n'est pas encore dessiné).
+- `mascot` : choisis `pose` selon la bulle. `question` : la question naïve du spectateur. `surprise` : un fait qui va contre l'intuition. `montre` : il désigne ce qui vient ensuite. `content` : la leçon à retenir.
+
+Ces exemples viennent d'une autre vidéo : n'en recopie ni les textes ni les minutages.
 
 Un exemple par type :
 
@@ -87,23 +87,23 @@ Un exemple par type :
 {"type": "quote", "say": "Une chercheuse interrogée sur France Culture le dit simplement.", "props": {"text": "on n'oublie pas par paresse, le cerveau fait du tri", "speaker": "France Culture"}, "items": [{"el": "text", "on": "dit"}, {"el": "speaker", "on": "simplement"}], "src": "3:12"}
 {"type": "object-state", "say": "À chaque révision, le souvenir tient plus longtemps, et le bocal se remplit.", "props": {"object": "jar", "states": ["1re révision", "2e révision", "3e révision"]}, "items": [{"el": "states.1", "on": "souvenir"}, {"el": "states.2", "on": "remplit"}], "src": "6:40"}
 {"type": "shape-diagram", "say": "Juste après la leçon, tu retiens tout. Un jour plus tard, il reste à peine un tiers.", "props": {"shape": "circle", "values": [1, 0.34], "labels": ["Juste après", "Un jour plus tard"]}, "items": [{"el": "values.0", "on": "leçon"}, {"el": "labels.0", "on": "retiens"}, {"el": "values.1", "on": "jour"}, {"el": "labels.1", "on": "tiers"}], "src": "2:30"}
-{"type": "mascot", "say": "Alors, réviser la veille de l'examen, ça ne sert à rien ?", "props": {"bubble": "Et réviser la veille ?"}, "items": [{"el": "bubble", "on": "réviser"}], "src": "5:40"}
+{"type": "mascot", "say": "Alors, réviser la veille de l'examen, ça ne sert à rien ?", "props": {"bubble": "Et réviser la veille ?", "pose": "question"}, "items": [{"el": "bubble", "on": "réviser"}], "src": "5:40"}
 ```
 
 ## 6. `items[].on` : quand un élément apparaît
 
-- Chaque élément du visuel apparaît sur le mot indiqué dans `on`. Un élément absent de `items` est visible dès la première image : liste-les tous.
+- Chaque élément du visuel apparaît sur le mot indiqué dans `on`. Un élément absent de `items` est visible dès la première image. Liste tous les éléments sauf `states.0` (visible dès le début) et `speaker` quand il est vide.
 - `on` = un mot ou une courte suite de mots recopiés exactement du `say` de la même scène, là où l'élément doit apparaître.
-- Choisis un mot, pas un nombre : la voix peut l'écrire autrement.
-- Mets les `items` dans l'ordre où leurs mots sont dits.
+- `on` ne doit pas être un nombre, ni en chiffres ni en lettres : la voix peut l'écrire autrement.
+- Mets les `items` dans l'ordre où leurs mots sont dits. Deux éléments peuvent partager le même mot.
 - Le premier élément doit apparaître dans la première phrase du `say`, sinon l'écran reste vide (surtout `stamp`, `quote`, `key-title`).
 
 ## 7. Citations et sons
 
-- Une scène `quote` joue la vraie voix de la source. `props.text` = des mots recopiés exactement, dans l'ordre, d'un seul paragraphe de la transcription. Seule correction permise : recolle les apostrophes et les traits d'union ("c 'est" s'écrit "c'est", "est -il" s'écrit "est-il"). Moins de 8 secondes : 20 mots au plus. Jamais traduite.
+- Une scène `quote` joue la vraie voix de la source. `props.text` = des mots recopiés exactement, dans l'ordre, d'un seul paragraphe de la transcription. Seule correction permise : recolle les apostrophes et les traits d'union ("c 'est" s'écrit "c'est", "est -il" s'écrit "est-il"). 8 secondes au plus, soit environ 20 mots : `check` refuse un extrait plus long. Jamais traduite.
 - `src` de la citation = le `[mm:ss]` du paragraphe qui la contient.
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
-- Si la transcription ne dit pas qui parle, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. Jamais la chaîne YouTube, jamais le titre de la vidéo, jamais un nom inventé.
+- Si la transcription ne dit pas qui parle, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. `speaker` n'est jamais le nom de la chaîne YouTube, ni le titre de la vidéo, ni un nom inventé.
 - Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa") : quand on entend le présentateur ou l'auteur de la vidéo, mets `"speaker": ""`.
 - Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment.
 
@@ -122,6 +122,7 @@ La citation devient `"text": "Le ciel n'est pas peint en bleu, c'est de la lumi�
 Pour que la vidéo n'ait pas l'air générée :
 - Jamais deux fois de suite le même type de scène.
 - `key-title` : 2 fois au plus par vidéo.
+- `mascot` : 3 fois au plus par vidéo, jamais deux scènes `mascot` de suite.
 - Une `quote` ou un `object-state` toutes les 4 à 6 scènes.
 - Varie les débuts de `say` : pas trois scènes de suite qui commencent par le même mot.
 
@@ -172,7 +173,7 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
         },
         {
           "type": "counter",
-          "say": "Elles renvoient la lumière partout. Et plus l'onde est courte, plus elle rebondit : le bleu, plus de cinq fois plus que le rouge.",
+          "say": "Plus l'onde est courte, plus elle rebondit : le bleu, plus de cinq fois plus que le rouge.",
           "props": {"label": "fois plus de bleu renvoyé", "from": 1, "to": 5},
           "items": [{"el": "to", "on": "bleu"}, {"el": "label", "on": "rouge"}],
           "src": "1:11"
@@ -215,9 +216,9 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
         },
         {
           "type": "object-state",
-          "say": "Tu peux le voir chez toi : un verre d'eau, quelques gouttes de lait, une lampe. De côté, l'eau devient bleutée.",
+          "say": "Chez toi, éclaire un verre d'eau avec quelques gouttes de lait : vu de côté, il devient bleuté.",
           "props": {"object": "jar", "states": ["Eau et lait", "Vu de côté : bleuté"]},
-          "items": [{"el": "states.1", "on": "bleutée"}],
+          "items": [{"el": "states.1", "on": "bleuté"}],
           "sfx": "2:43",
           "src": "2:33"
         },
@@ -226,10 +227,10 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
           "say": "Le soir, la lumière traverse jusqu'à quarante fois plus d'air qu'à midi. Le bleu se perd en route, il reste le rouge.",
           "props": {"shape": "square", "values": [1, 40], "labels": ["midi", "soir"]},
           "items": [
-            {"el": "values.0", "on": "midi"},
             {"el": "values.1", "on": "soir"},
-            {"el": "labels.0", "on": "midi"},
-            {"el": "labels.1", "on": "rouge"}
+            {"el": "labels.1", "on": "soir"},
+            {"el": "values.0", "on": "midi"},
+            {"el": "labels.0", "on": "midi"}
           ],
           "src": "3:00"
         },
@@ -270,17 +271,22 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `langue` | mets dans `lang` la langue indiquée et écris les textes dans cette langue |
 | `parties au maximum` ou `au moins 1 partie` | entre 1 et 8 objets dans `parts` |
 | `numéro « n »` | numérote les parties 1, 2, 3 dans l'ordre |
-| `est manquant ou vide` | remplis le champ nommé (`title`, `say`) |
+| `« title » est manquant ou vide` ou `« say » est manquant ou vide` | remplis ce champ |
 | `l'accroche « hook »` | écris une accroche (section 3) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
 | `type inconnu` | prends un des 12 types de la section 5 |
 | `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |
 | `« props.X » doit être` | donne à cette prop le format indiqué (nombre, liste, valeur permise) |
+| `« props.labels » a` | donne autant de `labels` que de `values` |
+| `« props.accent »` | recopie dans `accent` un mot de `text` |
 | `« el » ... invalide` | prends un des chemins acceptés que l'erreur liste |
-| `contient le nom de la chaîne` ou `le titre de la vidéo source` | reformule ce champ sans ce nom ni ce titre |
+| `contient le nom de la chaîne YouTube` | réécris ce champ sans ce nom |
+| `« speaker » doit nommer` | vide `speaker` (`""`), ou mets la personne ou le média qu'on entend |
 | `« props » doit être un objet` | écris `props` entre accolades |
+| `« items » doit être une liste` | écris `items` entre crochets : `[{"el": ..., "on": ...}]` |
 | `tiret cadratin` | remplace-le par une virgule, deux-points ou un point |
 | `n'est pas dans le texte de « say »` | recopie dans `on` un mot exact du `say` de cette scène |
+| `est dit avant l'item` | remets les items dans l'« Ordre attendu » donné |
 | `chaque élément de « items »` | chaque item a `el` et un `on` non vide |
 | `« src » est manquant` | ajoute le `[mm:ss]` du paragraphe source |
 | `minutage invalide` | écris `mm:ss`, par exemple `"12:30"` |
@@ -288,6 +294,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `n'est pas dans sfx.json` | recopie un minutage d'une ligne `[son ...]` ou retire `sfx` |
 | `demande « props.text »` | mets la citation exacte dans `props.text` |
 | `citation introuvable` | recopie la citation depuis le "passage le plus proche" donné, et mets son minutage dans `src` |
+| `la citation dure` | garde seulement une partie des mots de la citation (8 s, environ 20 mots au plus) |
 | `trop courte` | ajoute du texte `say` ou une scène, de la durée indiquée |
 | `trop longue` | retire du texte ou des scènes, de la durée indiquée |
 | `tient en une seule vidéo` | fusionne toutes les parties en une seule |
