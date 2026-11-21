@@ -18,12 +18,9 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
-CHAR_RATES = {"ja": 6.0, "zh": 4.5}
 
 
 def estimate_seconds(text: str, lang: str) -> float:
-    if lang in CHAR_RATES:
-        return sum(1 for c in text if c.isalnum()) / CHAR_RATES[lang]
     return len(text.split()) / RATES.get(lang, 2.6)
 
 

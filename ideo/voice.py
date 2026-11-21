@@ -16,12 +16,6 @@ EDGE_VOICES = {
     "nl": "nl-NL-MaartenNeural",
     "pl": "pl-PL-MarekNeural",
     "tr": "tr-TR-AhmetNeural",
-    "ar": "ar-SA-HamedNeural",
-    "ru": "ru-RU-DmitryNeural",
-    "ja": "ja-JP-KeitaNeural",
-    "ko": "ko-KR-InJoonNeural",
-    "zh": "zh-CN-YunxiNeural",
-    "hi": "hi-IN-MadhurNeural",
 }
 
 
@@ -29,7 +23,8 @@ def unsupported(lang: str) -> str | None:
     if lang in EDGE_VOICES:
         return None
     return (f"la langue de la vidéo (« {lang} ») n'a pas de voix de synthèse. "
-            f"Langues possibles : {', '.join(EDGE_VOICES)}. Choisis une vidéo dans l'une de ces langues.")
+            f"Langues possibles : {', '.join(EDGE_VOICES)}. Les langues qui ne s'écrivent pas en alphabet latin "
+            f"ne sont pas encore prises en charge. Choisis une vidéo dans l'une de ces langues.")
 
 
 class VoiceBackend(Protocol):

@@ -102,8 +102,6 @@ def test_edge_backend_voices():
         "fr": "fr-FR-HenriNeural", "en": "en-US-GuyNeural", "es": "es-ES-AlvaroNeural",
         "de": "de-DE-ChristophNeural", "it": "it-IT-DiegoNeural", "pt": "pt-BR-AntonioNeural",
         "nl": "nl-NL-MaartenNeural", "pl": "pl-PL-MarekNeural", "tr": "tr-TR-AhmetNeural",
-        "ar": "ar-SA-HamedNeural", "ru": "ru-RU-DmitryNeural", "ja": "ja-JP-KeitaNeural",
-        "ko": "ko-KR-InJoonNeural", "zh": "zh-CN-YunxiNeural", "hi": "hi-IN-MadhurNeural",
     }
 
 
@@ -135,11 +133,12 @@ def test_edge_backend_real_synthesis(tmp_path):
         assert w.getnframes() / 48000 > 0.5
 
 
-LANGS = ("fr", "en", "es", "de", "it", "pt", "nl", "pl", "tr", "ar", "ru", "ja", "ko", "zh", "hi")
+LANGS = ("fr", "en", "es", "de", "it", "pt", "nl", "pl", "tr")
+NON_LATIN = ("ar", "ru", "ja", "ko", "zh", "hi")
 
 
-def test_voice_table_covers_the_supported_languages():
-    assert set(LANGS) <= set(voice.EDGE_VOICES)
+def test_voice_table_is_exactly_the_latin_script_languages():
+    assert set(voice.EDGE_VOICES) == set(LANGS)
     for lang, name in voice.EDGE_VOICES.items():
         assert name.startswith(f"{lang}-") and name.endswith("Neural")
 
@@ -147,7 +146,9 @@ def test_voice_table_covers_the_supported_languages():
 def test_unsupported_language_message_lists_supported_ones():
     assert voice.unsupported("fr") is None
     message = voice.unsupported("sw")
-    assert "« sw »" in message and "fr" in message and "ja" in message
+    assert "« sw »" in message and "fr, en, es, de, it, pt, nl, pl, tr" in message
+    for lang in NON_LATIN:
+        assert "alphabet latin" in voice.unsupported(lang)
 
 
 @pytest.mark.network

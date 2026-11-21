@@ -45,7 +45,7 @@ def test_missing_key_falls_back_to_english_per_key(monkeypatch):
 
 
 def test_new_languages_are_translated():
-    for lang in ("nl", "pl", "tr", "ru", "ja", "ko", "zh", "hi", "ar"):
+    for lang in ("nl", "pl", "tr"):
         text = i18n.t("outro_next", lang, n=4, title="Titre")
         assert "4" in text and "Titre" in text and text != i18n.t("outro_next", "en", n=4, title="Titre")
 
@@ -58,3 +58,7 @@ def test_voices_line_in_every_voiced_language():
     for lang in voice.EDGE_VOICES:
         assert i18n.t("voices_line", lang, names="Zed").count("Zed") == 1
         assert lang == "en" or i18n.t("voices_line", lang, names="Zed") != i18n.t("voices_line", "en", names="Zed")
+
+
+def test_removed_languages_have_no_fixed_strings():
+    assert set(i18n.STRINGS) == {"fr", "en", "es", "de", "it", "pt", "nl", "pl", "tr"}

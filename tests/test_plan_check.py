@@ -436,27 +436,14 @@ def test_language_without_voice_is_refused_by_check(job_with_fixtures):
     assert any("« sw »" in e and "Langues possibles" in e for e in errors)
 
 
-def test_japanese_plan_without_spaces_is_measured_and_anchored(job_with_fixtures):
-    (job_with_fixtures / "lang.txt").write_text("ja", encoding="utf-8")
-    say = "空が青く見えるのは、太陽の光が空気の粒にぶつかって散らばるからです。青い光ほど強く散らばります。"
-    scenes = [
-        {"type": t, "say": say, "props": p, "items": [{"el": el, "on": "青く"}], "src": "0:10"}
-        for t, p, el in [
-            ("key-title", {"text": "空はなぜ青い"}, "text"),
-            ("stamp", {"text": "光の散乱"}, "text"),
-            ("key-title", {"text": "青い光"}, "text"),
-            ("stamp", {"text": "空気の粒"}, "text"),
-            ("mascot", {"bubble": "どうして？"}, "bubble"),
-            ("stamp", {"text": "太陽の光"}, "text"),
-            ("key-title", {"text": "散らばる光"}, "text"),
-        ]
-    ]
-    plan = {"version": 1, "lang": "ja", "series_title": "空", "parts": [
-        {"n": 1, "title": "空はなぜ青い", "hook": "空はなぜ青いのか知ってる？", "scenes": scenes}]}
+@pytest.mark.parametrize("lang", ["ja", "zh", "ru", "ar", "ko", "hi"])
+def test_non_latin_language_is_refused_by_check(job_with_fixtures, lang):
+    (job_with_fixtures / "lang.txt").write_text(lang, encoding="utf-8")
+    plan = load(job_with_fixtures)
+    plan["lang"] = lang
     write(job_with_fixtures, plan)
-    assert plan_check.check_plan(job_with_fixtures) == []
-    assert plan_check.estimate_seconds(say, "ja") == pytest.approx(
-        sum(1 for c in say if c.isalnum()) / plan_check.CHAR_RATES["ja"])
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any(f"« {lang} »" in e and "alphabet latin" in e for e in errors), errors
 
 
 @pytest.mark.parametrize("field,cap", [("hook", 60), ("title", 40)])

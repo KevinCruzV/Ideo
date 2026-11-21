@@ -278,7 +278,6 @@ def test_probe_gets_the_canonical_url(tmp_path, monkeypatch, fake_probe):
 @pytest.mark.parametrize("meta", [
     {"is_live": True, "live_status": "is_live", "duration": None},
     {"is_live": False, "live_status": "is_upcoming"},
-    {"live_status": "post_live", "duration": 7200},
 ])
 def test_live_and_upcoming_are_refused_before_download(tmp_path, monkeypatch, meta):
     monkeypatch.setenv("IDEO_HOME", str(tmp_path))
@@ -342,3 +341,15 @@ def test_real_probe_unreadable_json(tmp_path, monkeypatch):
 
 def test_is_live_text_alone_is_not_a_live_error():
     assert "en direct" not in fetch.explain_ytdlp_error("ERROR: this channel is live streaming elsewhere")
+
+
+def test_post_live_is_refused_without_asking_to_wait_for_the_end(tmp_path, monkeypatch):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(fetch, "probe", lambda url, log: {"live_status": "post_live", "duration": 7200})
+    calls = []
+    monkeypatch.setattr(common, "run", fake_run_ok(calls))
+    with pytest.raises(common.IdeoError) as exc:
+        fetch.fetch(URL)
+    assert "direct est terminé" in str(exc.value) and "une fois le direct terminé" not in str(exc.value)
+    assert calls == []

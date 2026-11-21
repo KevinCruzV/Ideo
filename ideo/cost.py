@@ -5,7 +5,7 @@ from ideo import common, plan_check
 REPO = Path(__file__).resolve().parent.parent
 SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md")
 SKILL_LANG = "fr"
-CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0, "ja": 1.0, "zh": 1.0, "ko": 1.5}
+CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0}
 OTHER_CHARS_PER_TOKEN = 3.5
 OUTPUT_SHARE = 0.15
 LONG_CONTENT_FACTOR = 2.0

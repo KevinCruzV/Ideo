@@ -129,12 +129,6 @@ def test_long_transcript_gets_fixed_chunks_covering_every_line_once(tmp_path):
                     f"offset {offsets}, chacun avec limit {chunk}")
 
 
-def test_wide_characters_use_their_own_token_ratio(tmp_path):
-    text = "\n".join(["[0:00] " + "空" * 200] * 100) + "\n"
-    assert cost.reading(reading_job(tmp_path, text, "ja"))["chunk"] is not None
-    assert cost.reading(reading_job(tmp_path / "b", text, "fr"))["chunk"] is None
-
-
 def test_two_hour_source_is_read_in_chunks(tmp_path):
     from ideo import compact
 

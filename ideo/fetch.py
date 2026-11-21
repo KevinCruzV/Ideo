@@ -11,8 +11,10 @@ SPONSOR_CATEGORIES = ("sponsor", "selfpromo", "interaction")
 
 MAX_SOURCE_SECONDS = 4 * 3600
 PROBE_TIMEOUT = 180
-LIVE_STATUSES = ("is_live", "is_upcoming", "post_live")
+LIVE_STATUSES = ("is_live", "is_upcoming")
 LIVE_MESSAGE = "Cette vidéo est en direct ou pas encore diffusée : réessayez une fois le direct terminé."
+POST_LIVE_MESSAGE = ("Ce direct est terminé mais YouTube le prépare encore : la vidéo complète n'est pas encore "
+                     "disponible. Réessayez plus tard.")
 
 SPONSORBLOCK_FAILURES = ("sponsorblock api", "unable to communicate with sponsorblock")
 ERROR_PATTERNS = [
@@ -84,6 +86,8 @@ def probe(url: str, log: Path) -> dict:
 def refuse_unsupported(meta: dict) -> None:
     if meta.get("is_live") or meta.get("is_upcoming") or meta.get("live_status") in LIVE_STATUSES:
         raise common.IdeoError(LIVE_MESSAGE)
+    if meta.get("live_status") == "post_live":
+        raise common.IdeoError(POST_LIVE_MESSAGE)
     duration = meta.get("duration")
     if isinstance(duration, (int, float)) and duration > MAX_SOURCE_SECONDS:
         raise common.IdeoError(

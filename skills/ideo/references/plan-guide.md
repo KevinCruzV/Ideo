@@ -10,10 +10,10 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 
 ## 2. Choisir
 
-- Une seule vidéo (une seule partie dans `parts`). Plusieurs parties seulement si le contenu utile dépasse 5 minutes de voix off (environ 750 mots de `say`), 8 parties au maximum, chacune compréhensible seule.
+- Une seule vidéo (une seule partie dans `parts`). Plusieurs parties seulement si le contenu utile dépasse nettement 5 minutes de voix off (environ 750 mots de `say`), ou si l'utilisateur demande des parties : 8 parties au maximum, chacune compréhensible seule.
 - Garde les quelques idées qui comptent, pas tout. Une idée par scène.
 - Une vidéo fait 8 à 25 scènes. Repère : 12 scènes d'environ 18 mots donnent environ 90 s.
-- Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais ; en japonais et en chinois, caractères divisés par 6 et par 4,5), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
+- Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - `title` : le titre de la vidéo, affiché en haut de l'écran pendant toute la vidéo, 40 caractères au plus (espaces compris).
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
@@ -51,7 +51,7 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 
 ## 5. Les 12 types de scène
 
-Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). Un caractère chinois, japonais ou coréen compte double. `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
+Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
 
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|

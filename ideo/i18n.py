@@ -62,48 +62,6 @@ STRINGS = {
         "outro_single": "Sonraki video için takip et",
         "voices_line": "Alıntılanan sesler: {names}",
     },
-    "ru": {
-        "part_label": "Часть",
-        "outro_next": "Подпишись, чтобы увидеть часть {n}: {title}",
-        "outro_last": "Подпишись, чтобы увидеть следующую серию",
-        "outro_single": "Подпишись, чтобы увидеть следующее видео",
-        "voices_line": "Цитируемые голоса: {names}",
-    },
-    "ar": {
-        "part_label": "الجزء",
-        "outro_next": "تابعنا لمشاهدة الجزء {n}: {title}",
-        "outro_last": "تابعنا لمشاهدة السلسلة القادمة",
-        "outro_single": "تابعنا لمشاهدة الفيديو القادم",
-        "voices_line": "الأصوات المقتبسة: {names}",
-    },
-    "ja": {
-        "part_label": "パート",
-        "outro_next": "フォローしてパート{n}も見てね：{title}",
-        "outro_last": "フォローして次のシリーズも見てね",
-        "outro_single": "フォローして次の動画も見てね",
-        "voices_line": "引用した声：{names}",
-    },
-    "ko": {
-        "part_label": "파트",
-        "outro_next": "팔로우하고 파트 {n}도 보세요: {title}",
-        "outro_last": "팔로우하고 다음 시리즈도 보세요",
-        "outro_single": "팔로우하고 다음 영상도 보세요",
-        "voices_line": "인용된 목소리: {names}",
-    },
-    "zh": {
-        "part_label": "部分",
-        "outro_next": "关注我，继续看第{n}部分：{title}",
-        "outro_last": "关注我，继续看下一个系列",
-        "outro_single": "关注我，继续看下一个视频",
-        "voices_line": "引用的声音：{names}",
-    },
-    "hi": {
-        "part_label": "भाग",
-        "outro_next": "भाग {n} के लिए फ़ॉलो करें: {title}",
-        "outro_last": "अगली सीरीज़ के लिए फ़ॉलो करें",
-        "outro_single": "अगले वीडियो के लिए फ़ॉलो करें",
-        "voices_line": "उद्धृत आवाज़ें: {names}",
-    },
 }
 
 
