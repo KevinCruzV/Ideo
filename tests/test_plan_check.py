@@ -122,21 +122,21 @@ def test_part_too_short_reports_estimate(job_with_fixtures):
     n = expected_estimate(job_with_fixtures, says)
     assert short and short[0].startswith("Partie 1 : ")
     assert f"dur\u00e9e estim\u00e9e {n} s" in short[0]
-    assert f"Ajoute environ {55 - n} s" in short[0]
+    assert f"Ajoute environ {45 - n} s" in short[0]
 
 
 def test_part_too_long_reports_estimate(job_with_fixtures):
     plan = load(job_with_fixtures)
     scenes = plan["parts"][0]["scenes"]
     says = [s["say"] for s in scenes]
-    says[0] = "mot " * 120
+    says[0] = "mot " * 700
     scenes[0]["say"] = says[0]
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
     long = [e for e in errors if "trop longue" in e]
     n = expected_estimate(job_with_fixtures, says)
     assert long and f"dur\u00e9e estim\u00e9e {n} s" in long[0]
-    assert f"Coupe environ {n - 95} s" in long[0]
+    assert f"Coupe environ {n - 300} s" in long[0]
 
 
 def test_duration_is_reported_in_the_same_pass_as_other_errors(job_with_fixtures):
@@ -232,3 +232,27 @@ def test_wrong_types_never_raise(job_with_fixtures):
         write(job_with_fixtures, bad)
         errors = plan_check.check_plan(job_with_fixtures)
         assert errors and all(isinstance(e, str) for e in errors)
+
+
+def test_several_parts_that_fit_one_video_are_rejected(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"].append(dict(plan["parts"][0], n=2))
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    merge = [e for e in errors if "tient en une seule vid\u00e9o" in e]
+    assert merge and merge[0].startswith("Plan : ")
+    assert "Fusionne les parties en une seule." in merge[0]
+    total = 2 * (expected_estimate(job_with_fixtures, [s["say"] for s in plan["parts"][0]["scenes"]]))
+    assert f"dur\u00e9e estim\u00e9e totale {total} s" in merge[0]
+    assert not (job_with_fixtures / "plan.md").exists()
+
+
+def test_several_long_parts_are_valid(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"] = [dict(plan["parts"][0], n=i) for i in range(1, 7)]
+    write(job_with_fixtures, plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_single_part_is_never_a_merge_error(job_with_fixtures):
+    assert not any("tient en une seule" in e for e in plan_check.check_plan(job_with_fixtures))

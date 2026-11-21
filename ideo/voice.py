@@ -69,7 +69,9 @@ def _segments(plan: dict, part: dict) -> list[tuple[str, str]]:
     lang = plan["lang"]
     parts = plan["parts"]
     index = parts.index(part)
-    if index + 1 < len(parts):
+    if len(parts) == 1:
+        outro = i18n.t("outro_single", lang)
+    elif index + 1 < len(parts):
         nxt = parts[index + 1]
         outro = i18n.t("outro_next", lang, n=nxt["n"], title=nxt["title"])
     else:

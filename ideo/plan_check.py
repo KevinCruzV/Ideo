@@ -8,8 +8,8 @@ SCENE_TYPES = frozenset({
     "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot",
 })
 MAX_PARTS = 8
-MIN_SECONDS = 55
-MAX_SECONDS = 95
+MIN_SECONDS = 45
+MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0
 QUOTE_WINDOW = 90.0
 EM_DASH = chr(0x2014)
@@ -164,11 +164,11 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
     part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text))
 
 
-def _check_part(part, index: int, ctx: dict, errors: list[str]) -> list:
+def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, float | None]:
     where = f"Partie {index}"
     if not isinstance(part, dict):
         errors.append(f"{where} : la partie doit être un objet JSON avec « n », « title », « hook » et « scenes ».")
-        return []
+        return [], None
     if part.get("n") != index:
         errors.append(f"{where} : numéro « n » = {part.get('n')!r}, attendu {index}. Numérote les parties 1, 2, 3, dans l'ordre.")
     _text_field(part, "title", where, errors)
@@ -185,11 +185,11 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> list:
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
-        return []
+        return [], None
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
     if not state["usable"]:
-        return state["clips"]
+        return state["clips"], None
     total = round(state["seconds"])
     note = ""
     if state["unresolved"]:
@@ -197,8 +197,8 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> list:
     if total < MIN_SECONDS:
         errors.append(f"{where} : durée estimée {total} s{note}, trop courte (minimum {MIN_SECONDS} s). Ajoute environ {MIN_SECONDS - total} s de texte « say » ou une scène.")
     elif total > MAX_SECONDS:
-        errors.append(f"{where} : durée estimée {total} s{note}, trop longue (maximum {MAX_SECONDS} s). Coupe environ {total - MAX_SECONDS} s de texte « say » ou une scène, ou découpe en deux parties.")
-    return state["clips"]
+        errors.append(f"{where} : durée estimée {total} s{note}, trop longue (maximum {MAX_SECONDS} s). Coupe environ {total - MAX_SECONDS} s de texte « say » ou une scène, ou découpe en plusieurs parties.")
+    return state["clips"], state["seconds"]
 
 
 def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
@@ -260,7 +260,11 @@ def check_plan(job: Path) -> list[str]:
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
     }
-    clips_by_part = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
+    results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
+    clips_by_part = [clips for clips, _ in results]
+    seconds = [sec for _, sec in results]
+    if len(parts) > 1 and all(sec is not None for sec in seconds) and sum(seconds) <= MAX_SECONDS:
+        errors.append(f"Plan : le contenu tient en une seule vidéo (durée estimée totale {round(sum(seconds))} s). Fusionne les parties en une seule.")
     if not errors:
         _write_md(job, plan, clips_by_part)
     return errors

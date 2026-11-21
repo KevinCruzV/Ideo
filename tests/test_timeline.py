@@ -99,6 +99,11 @@ def test_timeline_has_hook_first_outro_last_and_watermark(job_with_offsets):
     assert common.read_status(job_with_offsets)["steps"]["timeline-01"]["ok"] is True
 
 
+def test_single_part_plan_has_chapter_total_one(job_with_offsets):
+    tl = common.load_json(timeline.build_timeline(job_with_offsets, 1, 1))
+    assert tl["chapter"]["part"] == 1 and tl["chapter"]["total"] == 1
+
+
 def test_timeline_segments_are_contiguous_and_cover_the_part(job_with_offsets):
     tl = build(job_with_offsets)
     segs = tl["segments"]
@@ -111,7 +116,7 @@ def test_timeline_segments_are_contiguous_and_cover_the_part(job_with_offsets):
     assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "outro"]
     assert [s.get("type") for s in segs[1:-1]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
     assert segs[0]["props"]["text"].startswith("Dis-moi")
-    assert segs[-1]["props"]["text"] == "Abonne-toi pour la prochaine série"
+    assert segs[-1]["props"]["text"] == "Abonne-toi pour la prochaine vidéo"
 
 
 def test_timeline_items_anchor_on_found_and_missing_words(job_with_offsets):

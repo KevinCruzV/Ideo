@@ -14,6 +14,14 @@ def test_fr_and_en_strings():
     assert i18n.t("outro_last", "en") == "Follow for the next series"
 
 
+def test_outro_single_all_languages():
+    assert i18n.t("outro_single", "fr") == "Abonne-toi pour la prochaine vid\u00e9o"
+    assert i18n.t("outro_single", "en") == "Follow for the next video"
+    assert i18n.t("outro_single", "ja") == i18n.t("outro_single", "en")
+    for lang in ("es", "de", "it", "pt"):
+        assert i18n.t("outro_single", lang) != i18n.t("outro_single", "en")
+
+
 def test_translated_languages_differ_from_english():
     for lang in ("es", "de", "it", "pt"):
         for key in ("part_label", "outro_last"):
