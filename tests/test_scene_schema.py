@@ -127,3 +127,59 @@ def test_plan_check_requires_el(job_with_fixtures):
     del plan["parts"][0]["scenes"][1]["items"][0]["el"]
     (job_with_fixtures / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
     assert any("« el »" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+CAPS_TEST = REPO / "render" / "src" / "text" / "caps.test.ts"
+
+
+def ts_caps() -> dict:
+    text = CAPS_TEST.read_text(encoding="utf-8")
+    caps = {key: int(cap) for key, cap in re.findall(r'^\s+"?([\w.-]+)"?: \{\s*cap: (\d+)', text, re.M)}
+    caps["title"] = int(re.search(r"TITLE_CAP = (\d+)", text).group(1))
+    return caps
+
+
+def test_caps_are_the_ones_proven_by_the_render_test():
+    assert scene_schema.flat_caps() == ts_caps()
+
+
+@pytest.mark.parametrize("kind,props,field,cap", [
+    ("key-title", {"text": "x" * 91}, "props.text", 90),
+    ("key-title", {"text": "un " + "x" * 41, "accent": "x" * 41}, "props.accent", 40),
+    ("mascot", {"bubble": "x" * 81}, "props.bubble", 80),
+    ("fact-chips", {"chips": ["court", "x" * 29]}, "props.chips.1", 28),
+    ("stack-list", {"items": ["x" * 61]}, "props.items.0", 60),
+    ("icon-grid", {"cells": [{"label": "a"}, {"label": "x" * 17}]}, "props.cells.1.label", 16),
+    ("shape-diagram", {"values": [1, 2], "labels": ["a", "x" * 15]}, "props.labels.1", 14),
+    ("stamp", {"text": "x" * 49}, "props.text", 48),
+    ("person-card", {"name": "x" * 49}, "props.name", 48),
+    ("person-card", {"name": "A", "role": "x" * 101}, "props.role", 100),
+    ("counter", {"to": 3, "label": "x" * 61}, "props.label", 60),
+    ("timeline", {"marks": [{"at": "x" * 13}]}, "props.marks.0.at", 12),
+    ("timeline", {"marks": [{"at": 1990, "label": "x" * 49}]}, "props.marks.0.label", 48),
+    ("timeline", {"marks": [{"at": 1}], "start": "x" * 31}, "props.start", 30),
+    ("timeline", {"marks": [{"at": 1}], "end": "x" * 31}, "props.end", 30),
+    ("quote", {"text": "x" * 201}, "props.text", 200),
+    ("quote", {"text": "a", "speaker": "x" * 33}, "props.speaker", 32),
+    ("object-state", {"object": "jar", "states": ["a", "x" * 37]}, "props.states.1", 36),
+])
+def test_each_cap_is_enforced_with_limit_and_count(kind, props, field, cap):
+    errors = scene_schema.check_props(kind, props, "Partie 1, scène 2")
+    assert len(errors) == 1, errors
+    assert errors[0].startswith(f"Partie 1, scène 2 : « {field} » fait {cap + 1} caractères, {cap} au plus")
+    assert "raccourcis" in errors[0]
+    at_cap = json.loads(json.dumps(props).replace("x" * (cap + 1), "x" * cap))
+    assert scene_schema.check_props(kind, at_cap, "x") == []
+
+
+def test_wide_characters_count_double():
+    assert scene_schema.screen_length("空気") == 4
+    assert scene_schema.screen_length("abc") == 3
+    errors = scene_schema.check_props("stamp", {"text": "空" * 25}, "x")
+    assert errors and "50 caractères, 48 au plus" in errors[0]
+
+
+def test_guide_type_table_lists_every_cap():
+    text = GUIDE.read_text(encoding="utf-8")
+    for key, cap in scene_schema.flat_caps().items():
+        assert f"{cap} caractères" in text, key

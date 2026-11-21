@@ -92,19 +92,23 @@ def blocked_channel(info, words: list[dict]) -> str | None:
     return None
 
 
-def _check_channel(fields, where: str, ctx: dict, errors: list[str]) -> None:
+def _check_channel(fields, where: str, ctx: dict, errors: list[str], quoted: tuple = ()) -> None:
     name = ctx["channel"]
     if name is None:
         return
     for field, text in fields:
         if isinstance(text, str) and find_span(text.split(), name) is not None:
-            errors.append(f"{where} : « {field} » contient le nom de la chaîne YouTube (« {name} »). Reformule sans le reprendre : on ne nomme jamais la chaîne ni la personne qui l'anime.")
+            if field in quoted:
+                fix = "Une citation ne se reformule pas : choisis un autre extrait qui ne nomme pas la chaîne."
+            else:
+                fix = "Reformule sans le reprendre : on ne nomme jamais la chaîne ni la personne qui l'anime."
+            errors.append(f"{where} : « {field} » contient le nom de la chaîne YouTube (« {name} »). {fix}")
             return
 
 
 def _prop_strings(kind, props: dict):
     for key, value in props.items():
-        if kind == "quote" and key in ("text", "speaker"):
+        if kind == "quote" and key == "speaker":
             continue
         for text in _strings(value):
             yield f"props.{key}", text
@@ -169,7 +173,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     known = isinstance(kind, str) and kind in SCENE_TYPES
     if known:
         errors.extend(scene_schema.check_props(kind, props, where))
-    _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors)
+    quoted = ("props.text",) if kind == "quote" else ()
+    _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
 
     items = scene.get("items", [])
     if not isinstance(items, list):
@@ -290,6 +295,11 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         _check_dash([hook], where, errors)
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
+    for field in ("title", "hook"):
+        if isinstance(part.get(field), str):
+            error = scene_schema.cap_error(where, field, part[field], scene_schema.PART_CAPS[field])
+            if error:
+                errors.append(error)
     _check_channel([("title", part.get("title")), ("hook", hook)], where, ctx, errors)
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:

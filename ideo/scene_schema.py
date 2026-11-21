@@ -1,4 +1,6 @@
+import math
 import re
+import unicodedata
 
 TEXT = "text"
 NUMBER = "number"
@@ -48,6 +50,23 @@ SCHEMA = {
     },
     "mascot": {"required": {"bubble": TEXT}, "optional": {"pose": MASCOT_POSES}, "el": ("bubble",)},
 }
+
+PART_CAPS = {"hook": 60, "title": 40}
+TEXT_CAPS = {
+    "key-title": {"text": 90, "accent": 40},
+    "person-card": {"name": 48, "role": 100},
+    "fact-chips": {"chips": 28},
+    "stack-list": {"items": 60},
+    "counter": {"label": 60},
+    "timeline": {"marks.at": 12, "marks.label": 48, "start": 30, "end": 30},
+    "icon-grid": {"cells.label": 16},
+    "stamp": {"text": 48},
+    "quote": {"text": 200, "speaker": 32},
+    "object-state": {"states": 36},
+    "shape-diagram": {"labels": 14},
+    "mascot": {"bubble": 80},
+}
+CHARS_PER_WORD = 6
 
 INDEXED = re.compile(r"^([a-z]+)\.(\d+)$")
 NOT_WORD = re.compile(r"[\W_]+")
@@ -127,6 +146,53 @@ def _coherence(kind: str, props: dict, where: str) -> list[str]:
     return []
 
 
+def flat_caps() -> dict:
+    caps = dict(PART_CAPS)
+    for kind, fields in TEXT_CAPS.items():
+        caps.update({f"{kind}.{path}": cap for path, cap in fields.items()})
+    return caps
+
+
+def screen_length(text: str) -> int:
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in text)
+
+
+def cap_error(where: str, field: str, text: str, cap: int) -> str | None:
+    length = screen_length(text.strip())
+    if length <= cap:
+        return None
+    words = max(1, math.ceil((length - cap) / CHARS_PER_WORD))
+    return (f"{where} : « {field} » fait {length} caractères, {cap} au plus à l'écran : "
+            f"raccourcis-le d'environ {words} mot{'s' if words > 1 else ''}, sinon le texte est coupé.")
+
+
+def _capped(props: dict, path: str):
+    name, _, key = path.partition(".")
+    value = props.get(name)
+    if not key:
+        if isinstance(value, list):
+            yield from ((f"props.{name}.{i}", v) for i, v in enumerate(value))
+        else:
+            yield f"props.{name}", value
+        return
+    for i, entry in enumerate(value if isinstance(value, list) else []):
+        if isinstance(entry, dict) and key in entry:
+            yield f"props.{name}.{i}.{key}", entry[key]
+
+
+def _caps(kind: str, props: dict, where: str) -> list[str]:
+    errors = []
+    for path, cap in TEXT_CAPS[kind].items():
+        for field, value in _capped(props, path):
+            if _is_number(value):
+                value = str(value)
+            if isinstance(value, str):
+                error = cap_error(where, field, value, cap)
+                if error:
+                    errors.append(error)
+    return errors
+
+
 def accepted_props(kind: str) -> str:
     schema = SCHEMA[kind]
     return ", ".join(list(schema["required"]) + list(schema["optional"]))
@@ -145,7 +211,7 @@ def check_props(kind: str, props: dict, where: str) -> list[str]:
     for key, spec in known.items():
         if key in props and not _valid(spec, props[key]):
             errors.append(f"{where} : « props.{key} » doit être {_describe(spec)}.")
-    return errors + _coherence(kind, props, where)
+    return errors + _coherence(kind, props, where) + _caps(kind, props, where)
 
 
 def el_paths(kind: str, props: dict) -> list[str]:

@@ -1,7 +1,10 @@
 const PAD_EM = 0.6;
 
+const WIDE = /[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/;
+
 const charEm = (c: string): number => {
   if (c === " ") return 0.26;
+  if (WIDE.test(c)) return 1;
   if ("iljfrt.,:;!'’|()".includes(c)) return 0.34;
   if ("mwMW".includes(c)) return 0.86;
   if (/[A-Z0-9]/.test(c)) return 0.66;

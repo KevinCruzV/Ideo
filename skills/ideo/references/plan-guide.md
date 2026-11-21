@@ -14,15 +14,16 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Garde les quelques idées qui comptent, pas tout. Une idée par scène.
 - Une vidéo fait 8 à 25 scènes. Repère : 12 scènes d'environ 18 mots donnent environ 90 s.
 - Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
+- `title` : le titre de la vidéo, affiché en haut de l'écran pendant toute la vidéo, 40 caractères au plus (espaces compris).
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
 - N'utilise jamais un passage de sponsor, de promotion, d'appel à s'abonner ou de vie de la chaîne. Les lignes `[passage sponsorisé a à b, ignoré]` et `[passage probablement sponsorisé a à b, ignoré]` remplacent ces passages : n'utilise aucun minutage compris entre a et b (ni `src`, ni citation, ni `sfx`).
 - Ne nomme jamais une marque ou un produit que la vidéo est payée pour promouvoir.
-- N'écris jamais le nom de la ligne `Chaîne :`, ni celui de la personne qui anime la chaîne : ni dans `title`, ni dans `hook`, ni dans `say`, ni dans les `props`. Seule exception : une citation exacte (`quote`, `props.text`) qui le contient. Le sujet et les mots de la ligne `Titre :` sont libres : tu peux les reprendre.
+- N'écris jamais le nom de la ligne `Chaîne :`, ni celui de la personne qui anime la chaîne : ni dans `title`, ni dans `hook`, ni dans `say`, ni dans les `props`, ni dans une citation (`quote`, `props.text`) : si l'extrait le prononce, choisis un autre extrait. Le sujet et les mots de la ligne `Titre :` sont libres : tu peux les reprendre.
 
 ## 3. L'accroche (`hook`)
 
-Même format à chaque fois : une phrase de 6 à 10 mots, en général une question, qui donne envie de connaître la réponse. La phrase s'adapte au sujet. "Dis-moi pourquoi..." est la formule par défaut quand elle colle. Autres formules : "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". L'accroche doit être vraie et la vidéo doit y répondre. Aucun chiffre qui n'est pas dans la source. Avec plusieurs parties, ne reprends pas la même formule deux parties de suite.
+Même format à chaque fois : une phrase de 6 à 10 mots, 60 caractères au plus (espaces compris), en général une question, qui donne envie de connaître la réponse. La phrase s'adapte au sujet. "Dis-moi pourquoi..." est la formule par défaut quand elle colle. Autres formules : "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". L'accroche doit être vraie et la vidéo doit y répondre. Aucun chiffre qui n'est pas dans la source. Avec plusieurs parties, ne reprends pas la même formule deux parties de suite.
 
 Bonnes accroches :
 - "Dis-moi pourquoi le ciel est bleu et pas violet ?"
@@ -50,22 +51,22 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 
 ## 5. Les 12 types de scène
 
-Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Courts : 2 à 6 mots par étiquette. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
+Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). Un caractère chinois, japonais ou coréen compte double. `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
 
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|
-| `key-title` | la phrase-clé d'une idée | `text`*, `accent` (un mot ou une suite de mots recopiés de `text`, posés sur la bande de couleur) | `text`, `accent` |
-| `person-card` | qui a dit ou fait quoi | `name`*, `role` | `avatar`, `name`, `role` |
-| `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) | `chips.0` à `chips.5` |
-| `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) | `items.0` à `items.4` |
-| `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` : l'unité ou ce qu'on compte | `to` (lance le compte), `label` |
-| `timeline` | une chronologie | `marks`* : liste de `{at, label}` (5 max, `at` obligatoire) ; `start`, `end` : textes | `marks.0` à `marks.4` |
-| `icon-grid` | des catégories, une famille | `cells`* : liste de `{shape, label}` (9 max, `label` obligatoire), `shape` = `circle`, `square`, `triangle`, `diamond`, `arrow` ou `strip` | `cells.0` à `cells.8` |
-| `stamp` | une conclusion forte, une idée reçue démentie | `text`* (affiché en majuscules) | `text` |
-| `quote` | une phrase exacte de la source, avec sa vraie voix | `text`* (citation exacte), `speaker` (section 7) | `text`, `speaker` |
-| `object-state` | un objet qui change d'état | `object`* = `screen`, `board`, `jar`, `door` ou `scale` ; `states`* : liste de textes (6 max). Le premier état est visible dès le début, chaque état suivant le remplace sur son mot. `screen` et `board` affichent le texte dans l'objet ; `jar` se remplit, `door` s'ouvre, `scale` penche, avec le texte en dessous | `states.1` à `states.5` |
-| `shape-diagram` | une comparaison de tailles ou de quantités | `values`* : nombres (8 max) ; `shape` = `circle`, `square`, `triangle` ou `bar` ; `labels` : textes, exactement autant que `values` | `values.0` à `values.7`, `labels.0` à `labels.7` |
-| `mascot` | le personnage Ideo qui réagit : la question naïve du spectateur, un fait surprenant, l'élément suivant, la leçon à retenir | `bubble`* : sa bulle ; `pose` = `question` (par défaut), `surprise`, `montre` ou `content` | `bubble` |
+| `key-title` | la phrase-clé d'une idée | `text`* [90 caractères], `accent` [40 caractères] (un mot ou une suite de mots recopiés de `text`, posés sur la bande de couleur) | `text`, `accent` |
+| `person-card` | qui a dit ou fait quoi | `name`* [48 caractères], `role` [100 caractères] | `avatar`, `name`, `role` |
+| `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) [28 caractères chacun] | `chips.0` à `chips.5` |
+| `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) [60 caractères chacun] | `items.0` à `items.4` |
+| `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` [60 caractères] : l'unité ou ce qu'on compte | `to` (lance le compte), `label` |
+| `timeline` | une chronologie | `marks`* : liste de `{at, label}` (5 max, `at` obligatoire) [`at` 12 caractères, `label` 48 caractères] ; `start`, `end` : textes [30 caractères] | `marks.0` à `marks.4` |
+| `icon-grid` | des catégories, une famille | `cells`* : liste de `{shape, label}` (9 max, `label` obligatoire) [`label` 16 caractères], `shape` = `circle`, `square`, `triangle`, `diamond`, `arrow` ou `strip` | `cells.0` à `cells.8` |
+| `stamp` | une conclusion forte, une idée reçue démentie | `text`* [48 caractères] (affiché en majuscules) | `text` |
+| `quote` | une phrase exacte de la source, avec sa vraie voix | `text`* [200 caractères] (citation exacte), `speaker` [32 caractères] (section 7) | `text`, `speaker` |
+| `object-state` | un objet qui change d'état | `object`* = `screen`, `board`, `jar`, `door` ou `scale` ; `states`* : liste de textes (6 max) [36 caractères chacun]. Le premier état est visible dès le début, chaque état suivant le remplace sur son mot. `screen` et `board` affichent le texte dans l'objet ; `jar` se remplit, `door` s'ouvre, `scale` penche, avec le texte en dessous | `states.1` à `states.5` |
+| `shape-diagram` | une comparaison de tailles ou de quantités | `values`* : nombres (8 max) ; `shape` = `circle`, `square`, `triangle` ou `bar` ; `labels` : textes [14 caractères chacun], exactement autant que `values` | `values.0` à `values.7`, `labels.0` à `labels.7` |
+| `mascot` | le personnage Ideo qui réagit : la question naïve du spectateur, un fait surprenant, l'élément suivant, la leçon à retenir | `bubble`* [80 caractères] : sa bulle ; `pose` = `question` (par défaut), `surprise`, `montre` ou `content` | `bubble` |
 
 Détails :
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres.
@@ -86,7 +87,7 @@ Un exemple par type :
 {"type": "stamp", "say": "Relire ses notes la veille ne suffit pas. C'est même la méthode la moins efficace.", "props": {"text": "Relire ne suffit pas"}, "items": [{"el": "text", "on": "suffit"}], "src": "5:50"}
 {"type": "quote", "say": "Une chercheuse interrogée sur France Culture le dit simplement.", "props": {"text": "on n'oublie pas par paresse, le cerveau fait du tri", "speaker": "France Culture"}, "items": [{"el": "text", "on": "dit"}, {"el": "speaker", "on": "simplement"}], "src": "3:12"}
 {"type": "object-state", "say": "À chaque révision, le souvenir tient plus longtemps, et le bocal se remplit.", "props": {"object": "jar", "states": ["1re révision", "2e révision", "3e révision"]}, "items": [{"el": "states.1", "on": "souvenir"}, {"el": "states.2", "on": "remplit"}], "src": "6:40"}
-{"type": "shape-diagram", "say": "Juste après la leçon, tu retiens tout. Un jour plus tard, il reste à peine un tiers.", "props": {"shape": "circle", "values": [1, 0.34], "labels": ["Juste après", "Un jour plus tard"]}, "items": [{"el": "values.0", "on": "leçon"}, {"el": "labels.0", "on": "retiens"}, {"el": "values.1", "on": "jour"}, {"el": "labels.1", "on": "tiers"}], "src": "2:30"}
+{"type": "shape-diagram", "say": "Juste après la leçon, tu retiens tout. Un jour plus tard, il reste à peine un tiers.", "props": {"shape": "circle", "values": [1, 0.34], "labels": ["Juste après", "Le lendemain"]}, "items": [{"el": "values.0", "on": "leçon"}, {"el": "labels.0", "on": "retiens"}, {"el": "values.1", "on": "jour"}, {"el": "labels.1", "on": "tiers"}], "src": "2:30"}
 {"type": "mascot", "say": "Alors, réviser la veille de l'examen, ça ne sert à rien ?", "props": {"bubble": "Et réviser la veille ?", "pose": "question"}, "items": [{"el": "bubble", "on": "réviser"}], "src": "5:40"}
 ```
 
@@ -281,7 +282,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `« props.labels » a` | donne autant de `labels` que de `values` |
 | `« props.accent »` | recopie dans `accent` un mot de `text` |
 | `« el » ... invalide` | prends un des chemins acceptés que l'erreur liste |
-| `contient le nom de la chaîne YouTube` | réécris ce champ sans ce nom |
+| `contient le nom de la chaîne YouTube` | réécris ce champ sans ce nom ; pour `props.text` d'une `quote`, prends un autre extrait qui ne le dit pas |
 | `« speaker » doit nommer` | vide `speaker` (`""`), ou mets la personne ou le média qu'on entend |
 | `« props » doit être un objet` | écris `props` entre accolades |
 | `« items » doit être une liste` | écris `items` entre crochets : `[{"el": ..., "on": ...}]` |
@@ -299,4 +300,5 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `trop courte` | ajoute du texte `say` ou une scène, de la durée indiquée |
 | `trop longue` | retire du texte ou des scènes, de la durée indiquée |
 | `tient en une seule vidéo` | fusionne toutes les parties en une seule |
+| `caractères, N au plus` | raccourcis ce texte sous N caractères ; pour `props.text` d'une `quote`, garde une partie des mots de la citation |
 | `est dans un passage sponsorisé` | prends un autre passage, hors sponsor |

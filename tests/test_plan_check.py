@@ -323,9 +323,12 @@ def test_long_video_title_is_not_blocked(job_with_fixtures):
     assert plan_check.check_plan(job_with_fixtures) == []
 
 
-def test_channel_inside_quote_text_is_allowed(job_with_fixtures):
+def test_channel_inside_quote_text_is_refused(job_with_fixtures):
     set_info(job_with_fixtures, channel="moins d'une journée")
-    assert plan_check.check_plan(job_with_fixtures) == []
+    errors = plan_check.check_plan(job_with_fixtures)
+    hits = [e for e in errors if "« props.text » contient le nom de la chaîne YouTube" in e]
+    assert len(hits) == 1, errors
+    assert "choisis un autre extrait qui ne nomme pas la chaîne" in hits[0]
 
 
 def add_words(job, word, count):
@@ -454,3 +457,14 @@ def test_japanese_plan_without_spaces_is_measured_and_anchored(job_with_fixtures
     assert plan_check.check_plan(job_with_fixtures) == []
     assert plan_check.estimate_seconds(say, "ja") == pytest.approx(
         sum(1 for c in say if c.isalnum()) / plan_check.CHAR_RATES["ja"])
+
+
+@pytest.mark.parametrize("field,cap", [("hook", 60), ("title", 40)])
+def test_hook_and_title_caps(job_with_fixtures, field, cap):
+    plan = load(job_with_fixtures)
+    plan["parts"][0][field] = "Dis-moi pourquoi " + "x" * (cap + 1 - 17)
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    hits = [e for e in errors if e.startswith(f"Partie 1 : « {field} » fait ")]
+    assert len(hits) == 1, errors
+    assert f"caractères, {cap} au plus" in hits[0] and "raccourcis" in hits[0]
