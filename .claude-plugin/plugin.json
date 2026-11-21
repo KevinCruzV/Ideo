@@ -1,0 +1,8 @@
+{
+  "name": "ideo",
+  "displayName": "Ideo",
+  "version": "0.1.0",
+  "description": "Turn a YouTube video into a short vertical explainer video, or a few parts when the content is long.",
+  "author": { "name": "Kevin" },
+  "skills": ["./skills/"]
+}

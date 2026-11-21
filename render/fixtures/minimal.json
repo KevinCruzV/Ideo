@@ -1,0 +1,36 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 120,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": { "part": 1, "total": 3, "title": "L'oubli", "label": "Partie" },
+  "segments": [
+    { "kind": "hook", "from": 0, "to": 60, "props": { "text": "Dis-moi pourquoi tu oublies" }, "items": [] },
+    { "kind": "scene", "type": "shape-diagram", "from": 60, "to": 120, "props": {}, "items": [{ "el": "values.0", "at": 72 }] }
+  ],
+  "captions": [
+    {
+      "words": [
+        { "w": "Dis-moi", "from": 0, "to": 15 },
+        { "w": "pourquoi", "from": 15, "to": 35 },
+        { "w": "tu", "from": 35, "to": 50 },
+        { "w": "oublies", "from": 50, "to": 60 }
+      ],
+      "from": 0,
+      "to": 60
+    },
+    {
+      "words": [
+        { "w": "ça", "from": 60, "to": 75 },
+        { "w": "rétrécit", "from": 75, "to": 100 },
+        { "w": "chaque", "from": 100, "to": 112 },
+        { "w": "jour", "from": 112, "to": 120 }
+      ],
+      "from": 60,
+      "to": 120
+    }
+  ]
+}

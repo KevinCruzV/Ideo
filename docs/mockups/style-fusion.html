@@ -1,0 +1,81 @@
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Unbounded:wght@800&display=swap" rel="stylesheet">
+<style>
+  .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:6px 0}
+  .fr{position:relative;width:200px;height:356px;border-radius:10px;overflow:hidden;flex:none;font-family:'Bricolage Grotesque',sans-serif;color:#1f1a14}
+  .K{background:#d8c19c}
+  .I{background:#f4efe4}
+  .pp{position:absolute;box-shadow:2px 3px 0 rgba(0,0,0,.22)}
+  .strip{display:inline-block;background:#fbf6ea;padding:2px 8px;box-shadow:2px 3px 0 rgba(0,0,0,.22);clip-path:polygon(0 4%,100% 0,98% 100%,2% 94%);font-weight:800}
+  .red{background:#e2462c;color:#fbf6ea}
+  .yel{background:#f5bf2a}
+  .blu{background:#2747c9;color:#fbf6ea}
+  .wm{position:absolute;right:9px;top:8px;background:#fbf6ea;padding:2px 6px;font-family:Unbounded;font-weight:800;font-size:9px;transform:rotate(3deg);box-shadow:1px 2px 0 rgba(0,0,0,.25)}
+  .lbl{position:absolute;left:10px;top:9px;font-weight:800;font-size:10px;transform:rotate(-2deg)}
+  .cap{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-weight:800;font-size:15px}
+  .dim{opacity:.4}
+  .masc{position:absolute;width:44px;height:54px;border:2px dashed currentColor;border-radius:22px 22px 10px 10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:7px;text-align:center}
+  .circ{border-radius:50%}
+</style>
+
+<h2>D1 + D3 : la géométrie en papier découpé</h2>
+<p class="subtitle">Les idées s'expliquent avec des formes simples (la force de D3 : clair, régulier, pas cher à générer), mais chaque forme est découpée dans du papier coloré et posée avec une petite ombre (la chaleur de D1). En vidéo, les formes arrivent de façon un peu saccadée, comme en stop-motion. Même contenu, deux fonds possibles.</p>
+
+<div class="cards">
+  <div class="card" data-choice="fusion-kraft" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="row">
+      <div class="fr K">
+        <div class="lbl">Partie 1 · l'oubli</div><div class="wm">Ideo</div>
+        <div class="pp circ" style="left:-34px;top:64px;width:150px;height:150px;background:#e2462c"></div>
+        <div class="pp" style="right:-14px;top:168px;width:84px;height:84px;background:#f5bf2a;transform:rotate(8deg)"></div>
+        <div style="position:absolute;left:14px;right:10px;top:96px;line-height:1.55">
+          <span class="strip" style="font-size:12px;transform:rotate(-3deg)">Dis-moi pourquoi</span><br>
+          <span class="strip" style="font-size:28px;transform:rotate(1.5deg);margin-top:4px">tu oublies</span><br>
+          <span class="strip blu" style="font-size:12px;transform:rotate(-1deg);margin-top:4px">ce que tu viens de lire ?</span>
+        </div>
+        <div class="cap">Dis-moi <span class="strip red" style="padding:0 4px">pourquoi</span> <span class="dim">tu</span></div>
+      </div>
+      <div class="fr K">
+        <div class="lbl">Partie 1 · l'oubli</div><div class="wm">Ideo</div>
+        <div style="position:absolute;top:78px;left:0;right:0;display:flex;justify-content:center;align-items:flex-end;gap:9px;height:100px">
+          <div class="pp circ" style="position:relative;width:70px;height:70px;background:#e2462c"></div>
+          <div class="pp circ" style="position:relative;width:44px;height:44px;background:#e2462c;transform:rotate(10deg)"></div>
+          <div class="pp circ" style="position:relative;width:24px;height:24px;background:#e2462c"></div>
+          <div class="pp circ" style="position:relative;width:12px;height:12px;background:#e2462c"></div>
+        </div>
+        <div style="position:absolute;top:190px;left:22px;right:22px;display:flex;justify-content:space-between"><span class="strip" style="font-size:9px;transform:rotate(-4deg)">lundi</span><span class="strip" style="font-size:9px;transform:rotate(3deg)">jeudi</span></div>
+        <div class="masc" style="right:16px;bottom:62px">[MAS-COTTE]</div>
+        <div class="cap">ça <span class="strip yel" style="padding:0 4px">rétrécit</span> <span class="dim">chaque jour</span></div>
+      </div>
+    </div></div>
+    <div class="card-body"><h3>Fond kraft</h3><p>Plus chaud et plus « atelier ». Le papier se voit partout, l'identité est très marquée.</p></div>
+  </div>
+
+  <div class="card" data-choice="fusion-ivoire" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="row">
+      <div class="fr I">
+        <div class="lbl">Partie 1 · l'oubli</div><div class="wm">Ideo</div>
+        <div class="pp circ" style="left:-34px;top:64px;width:150px;height:150px;background:#e2462c"></div>
+        <div class="pp" style="right:-14px;top:168px;width:84px;height:84px;background:#f5bf2a;transform:rotate(8deg)"></div>
+        <div style="position:absolute;left:14px;right:10px;top:96px;line-height:1.55">
+          <span class="strip" style="font-size:12px;transform:rotate(-3deg)">Dis-moi pourquoi</span><br>
+          <span class="strip" style="font-size:28px;transform:rotate(1.5deg);margin-top:4px">tu oublies</span><br>
+          <span class="strip blu" style="font-size:12px;transform:rotate(-1deg);margin-top:4px">ce que tu viens de lire ?</span>
+        </div>
+        <div class="cap">Dis-moi <span class="strip red" style="padding:0 4px">pourquoi</span> <span class="dim">tu</span></div>
+      </div>
+      <div class="fr I">
+        <div class="lbl">Partie 1 · l'oubli</div><div class="wm">Ideo</div>
+        <div style="position:absolute;top:78px;left:0;right:0;display:flex;justify-content:center;align-items:flex-end;gap:9px;height:100px">
+          <div class="pp circ" style="position:relative;width:70px;height:70px;background:#e2462c"></div>
+          <div class="pp circ" style="position:relative;width:44px;height:44px;background:#e2462c;transform:rotate(10deg)"></div>
+          <div class="pp circ" style="position:relative;width:24px;height:24px;background:#e2462c"></div>
+          <div class="pp circ" style="position:relative;width:12px;height:12px;background:#e2462c"></div>
+        </div>
+        <div style="position:absolute;top:190px;left:22px;right:22px;display:flex;justify-content:space-between"><span class="strip" style="font-size:9px;transform:rotate(-4deg)">lundi</span><span class="strip" style="font-size:9px;transform:rotate(3deg)">jeudi</span></div>
+        <div class="masc" style="right:16px;bottom:62px">[MAS-COTTE]</div>
+        <div class="cap">ça <span class="strip yel" style="padding:0 4px">rétrécit</span> <span class="dim">chaque jour</span></div>
+      </div>
+    </div></div>
+    <div class="card-body"><h3>Fond ivoire</h3><p>Plus net et plus lisible sur téléphone. Le papier se voit surtout dans les formes et les bandes de texte.</p></div>
+  </div>
+</div>

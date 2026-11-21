@@ -1,0 +1,60 @@
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from ideo import common
+
+MIN_WORDS = 150
+_MODELS: dict = {}
+
+
+def read_pcm(wav_path) -> np.ndarray:
+    with wave.open(str(wav_path), "rb") as w:
+        return np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32) / 32768.0
+
+
+def load_model(model: str = "small"):
+    from faster_whisper import WhisperModel
+
+    key = (WhisperModel, model)
+    if key not in _MODELS:
+        _MODELS[key] = WhisperModel(model, device="cpu", compute_type="int8")
+    return _MODELS[key]
+
+
+def whisper_words(pcm: np.ndarray, model: str = "small", language: str | None = None) -> tuple[list[dict], str]:
+    whisper = load_model(model)
+    options = {"language": language} if language else {}
+    segments, info = whisper.transcribe(pcm, word_timestamps=True, vad_filter=True, **options)
+    words = [
+        {"w": word.word.strip(), "s": round(word.start, 2), "e": round(word.end, 2)}
+        for seg in segments
+        for word in (seg.words or [])
+    ]
+    return words, info.language
+
+
+def transcribe(job: Path, model: str = "small", min_words: int = MIN_WORDS) -> list[dict]:
+    job = Path(job)
+    words_path = job / "words.json"
+    lang_path = job / "lang.txt"
+    step = common.read_status(job)["steps"].get("transcribe")
+    if step and step["ok"] and words_path.exists() and lang_path.exists():
+        return common.load_json(words_path)
+    try:
+        words, language = whisper_words(read_pcm(job / "source.wav"), model)
+        if len(words) < min_words:
+            raise common.IdeoError(
+                f"pas assez de parole : {len(words)} mots détectés, il en faut au moins {min_words}"
+            )
+    except common.IdeoError as err:
+        common.mark(job, "transcribe", False, str(err))
+        raise
+    except Exception as err:
+        common.mark(job, "transcribe", False, str(err))
+        raise common.IdeoError(f"la transcription a échoué : {err}") from err
+    common.save_json(words_path, words)
+    lang_path.write_text(language, encoding="utf-8")
+    common.mark(job, "transcribe", True, f"{len(words)} mots, langue {language}")
+    return words

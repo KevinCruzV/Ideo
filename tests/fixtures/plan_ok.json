@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "lang": "fr",
+  "series_title": "Pourquoi on oublie",
+  "parts": [
+    {
+      "n": 1,
+      "title": "L'oubli",
+      "hook": "Dis-moi pourquoi tu oublies ce que tu viens de lire ?",
+      "scenes": [
+        {
+          "type": "key-title",
+          "say": "Aujourd'hui nous allons comprendre pourquoi notre mémoire laisse filer presque tout ce que nous venons de lire ou d'apprendre en quelques jours seulement.",
+          "props": {
+            "text": "Pourquoi on oublie"
+          },
+          "src": "0:02"
+        },
+        {
+          "type": "shape-diagram",
+          "say": "Le lundi tout est clair dans la tête, mais dès le jeudi il ne reste presque rien de la leçon, et la courbe de l'oubli descend très vite chaque jour.",
+          "props": {
+            "shape": "circle",
+            "values": [
+              1,
+              0.6,
+              0.35,
+              0.15
+            ],
+            "labels": [
+              "lundi",
+              "mardi",
+              "mercredi",
+              "jeudi"
+            ]
+          },
+          "items": [
+            {
+              "el": "values.0",
+              "on": "lundi"
+            },
+            {
+              "el": "values.3",
+              "on": "jeudi"
+            }
+          ],
+          "src": "0:15"
+        },
+        {
+          "type": "fact-chips",
+          "say": "Un chercheur allemand a mesuré ce phénomène il y a plus d'un siècle avec des listes de syllabes absurdes qu'il apprenait puis testait à intervalles réguliers.",
+          "props": {
+            "chips": [
+              "1885",
+              "syllabes",
+              "courbe"
+            ]
+          },
+          "sfx": "1:10",
+          "src": "1:09"
+        },
+        {
+          "type": "stack-list",
+          "say": "Heureusement il existe des gestes simples pour ralentir cette perte, comme revoir une information juste avant de l'oublier ou se tester soi-même plutôt que relire.",
+          "props": {
+            "items": [
+              "revoir",
+              "se tester"
+            ]
+          },
+          "src": "0:35"
+        },
+        {
+          "type": "quote",
+          "say": "Voici comment il décrit le résultat de ses expériences à la fin.",
+          "props": {
+            "text": "Nous oublions la plupart de ce que nous apprenons en moins d'une journée",
+            "speaker": "Ebbinghaus"
+          },
+          "src": "0:26"
+        }
+      ]
+    }
+  ]
+}

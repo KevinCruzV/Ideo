@@ -1,0 +1,318 @@
+{
+ "fps": 30,
+ "width": 1080,
+ "height": 1920,
+ "durationInFrames": 360,
+ "lang": "fr",
+ "audio": null,
+ "watermark": "Ideo",
+ "chapter": {
+  "part": 2,
+  "total": 3,
+  "title": "La courbe",
+  "label": "Partie"
+ },
+ "segments": [
+  {
+   "kind": "hook",
+   "from": 0,
+   "to": 90,
+   "props": {
+    "text": "Dis-moi pourquoi tu oublies ce que tu viens de lire ?"
+   },
+   "items": []
+  },
+  {
+   "kind": "scene",
+   "type": "shape-diagram",
+   "from": 90,
+   "to": 180,
+   "props": {
+    "shape": "circle",
+    "values": [
+     1,
+     0.58,
+     0.34,
+     0.21
+    ],
+    "labels": [
+     "appris",
+     "20 min",
+     "1 jour",
+     "1 mois"
+    ]
+   },
+   "items": [
+    {
+     "el": "values.0",
+     "at": 94
+    },
+    {
+     "el": "values.1",
+     "at": 112
+    },
+    {
+     "el": "values.2",
+     "at": 132
+    },
+    {
+     "el": "values.3",
+     "at": 152
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "quote",
+   "from": 180,
+   "to": 270,
+   "props": {
+    "text": "Psychology has a long past, but only a short history.",
+    "speaker": "Hermann Ebbinghaus"
+   },
+   "items": [
+    {
+     "el": "text",
+     "at": 184
+    },
+    {
+     "el": "speaker",
+     "at": 230
+    }
+   ]
+  },
+  {
+   "kind": "outro",
+   "from": 270,
+   "to": 360,
+   "props": {
+    "text": "Abonne-toi pour la partie 3 : pourquoi le sommeil aide"
+   },
+   "items": []
+  }
+ ],
+ "captions": [
+  {
+   "words": [
+    {
+     "w": "Dis-moi",
+     "from": 0,
+     "to": 8
+    },
+    {
+     "w": "pourquoi",
+     "from": 8,
+     "to": 16
+    },
+    {
+     "w": "tu",
+     "from": 16,
+     "to": 25
+    }
+   ],
+   "from": 0,
+   "to": 25
+  },
+  {
+   "words": [
+    {
+     "w": "oublies",
+     "from": 25,
+     "to": 33
+    },
+    {
+     "w": "ce",
+     "from": 33,
+     "to": 41
+    },
+    {
+     "w": "que",
+     "from": 41,
+     "to": 49
+    }
+   ],
+   "from": 25,
+   "to": 49
+  },
+  {
+   "words": [
+    {
+     "w": "tu",
+     "from": 49,
+     "to": 57
+    },
+    {
+     "w": "viens",
+     "from": 57,
+     "to": 65
+    },
+    {
+     "w": "de",
+     "from": 65,
+     "to": 74
+    }
+   ],
+   "from": 49,
+   "to": 74
+  },
+  {
+   "words": [
+    {
+     "w": "lire",
+     "from": 74,
+     "to": 82
+    },
+    {
+     "w": "?",
+     "from": 82,
+     "to": 90
+    }
+   ],
+   "from": 74,
+   "to": 90
+  },
+  {
+   "words": [
+    {
+     "w": "Après",
+     "from": 90,
+     "to": 99
+    },
+    {
+     "w": "vingt",
+     "from": 99,
+     "to": 108
+    },
+    {
+     "w": "minutes",
+     "from": 108,
+     "to": 117
+    }
+   ],
+   "from": 90,
+   "to": 117
+  },
+  {
+   "words": [
+    {
+     "w": "il",
+     "from": 117,
+     "to": 126
+    },
+    {
+     "w": "reste",
+     "from": 126,
+     "to": 135
+    },
+    {
+     "w": "à",
+     "from": 135,
+     "to": 144
+    }
+   ],
+   "from": 117,
+   "to": 144
+  },
+  {
+   "words": [
+    {
+     "w": "peine",
+     "from": 144,
+     "to": 153
+    },
+    {
+     "w": "six",
+     "from": 153,
+     "to": 162
+    }
+   ],
+   "from": 144,
+   "to": 162
+  },
+  {
+   "words": [
+    {
+     "w": "sur",
+     "from": 162,
+     "to": 171
+    },
+    {
+     "w": "dix.",
+     "from": 171,
+     "to": 180
+    }
+   ],
+   "from": 162,
+   "to": 180
+  },
+  {
+   "words": [
+    {
+     "w": "Lui-même",
+     "from": 180,
+     "to": 202
+    },
+    {
+     "w": "le",
+     "from": 202,
+     "to": 225
+    }
+   ],
+   "from": 180,
+   "to": 225
+  },
+  {
+   "words": [
+    {
+     "w": "résumait",
+     "from": 225,
+     "to": 248
+    },
+    {
+     "w": "ainsi.",
+     "from": 248,
+     "to": 270
+    }
+   ],
+   "from": 225,
+   "to": 270
+  },
+  {
+   "words": [
+    {
+     "w": "Abonne-toi",
+     "from": 270,
+     "to": 288
+    },
+    {
+     "w": "pour",
+     "from": 288,
+     "to": 306
+    },
+    {
+     "w": "la",
+     "from": 306,
+     "to": 324
+    }
+   ],
+   "from": 270,
+   "to": 324
+  },
+  {
+   "words": [
+    {
+     "w": "partie",
+     "from": 324,
+     "to": 342
+    },
+    {
+     "w": "trois.",
+     "from": 342,
+     "to": 360
+    }
+   ],
+   "from": 324,
+   "to": 360
+  }
+ ]
+}

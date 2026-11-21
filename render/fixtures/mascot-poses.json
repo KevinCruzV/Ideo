@@ -1,0 +1,84 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 360,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": { "part": 1, "total": 1, "title": "La mascotte", "label": "Partie" },
+  "segments": [
+    {
+      "kind": "scene",
+      "type": "mascot",
+      "from": 0,
+      "to": 90,
+      "props": { "bubble": "Et réviser la veille, ça sert à quoi ?", "pose": "question" },
+      "items": [{ "el": "bubble", "at": 10 }]
+    },
+    {
+      "kind": "scene",
+      "type": "mascot",
+      "from": 90,
+      "to": 180,
+      "props": { "bubble": "Attends, on oublie la moitié en vingt minutes ?", "pose": "surprise" },
+      "items": [{ "el": "bubble", "at": 100 }]
+    },
+    {
+      "kind": "scene",
+      "type": "mascot",
+      "from": 180,
+      "to": 270,
+      "props": { "bubble": "Regarde : trois révisions suffisent.", "pose": "montre" },
+      "items": [{ "el": "bubble", "at": 190 }]
+    },
+    {
+      "kind": "scene",
+      "type": "mascot",
+      "from": 270,
+      "to": 360,
+      "props": { "bubble": "Révise demain, pas ce soir. Ton cerveau te dira merci.", "pose": "content" },
+      "items": [{ "el": "bubble", "at": 280 }]
+    }
+  ],
+  "captions": [
+    {
+      "words": [
+        { "w": "Et", "from": 0, "to": 20 },
+        { "w": "réviser", "from": 20, "to": 50 },
+        { "w": "la", "from": 50, "to": 65 },
+        { "w": "veille ?", "from": 65, "to": 90 }
+      ],
+      "from": 0,
+      "to": 90
+    },
+    {
+      "words": [
+        { "w": "La", "from": 90, "to": 110 },
+        { "w": "moitié", "from": 110, "to": 140 },
+        { "w": "en", "from": 140, "to": 155 },
+        { "w": "vingt minutes ?", "from": 155, "to": 180 }
+      ],
+      "from": 90,
+      "to": 180
+    },
+    {
+      "words": [
+        { "w": "Trois", "from": 180, "to": 210 },
+        { "w": "révisions", "from": 210, "to": 240 },
+        { "w": "suffisent.", "from": 240, "to": 270 }
+      ],
+      "from": 180,
+      "to": 270
+    },
+    {
+      "words": [
+        { "w": "Ton", "from": 270, "to": 295 },
+        { "w": "cerveau", "from": 295, "to": 320 },
+        { "w": "te dira merci.", "from": 320, "to": 360 }
+      ],
+      "from": 270,
+      "to": 360
+    }
+  ]
+}
