@@ -73,3 +73,60 @@ def fake_whisper(monkeypatch):
 
     monkeypatch.setattr(voice, "retranscribe", fake)
     return calls
+
+
+VOICE_DURATIONS = {
+    "seg_00_hook": 0.8,
+    "seg_01": 1.0,
+    "seg_02": 1.0,
+    "seg_03": 1.0,
+    "seg_04": 1.0,
+    "seg_05": 0.6,
+    "seg_99_outro": 0.8,
+}
+
+VOICE_WORDS = {
+    "seg_00_hook": ["Dis-moi", "pourquoi", "tu", "oublies", "ce", "que", "tu", "viens", "de", "lire", "?"],
+    "seg_01": ["Aujourd'hui", "nous", "allons", "comprendre", "pourquoi", "on", "oublie."],
+    "seg_02": ["Le", "lundi", "tout", "est", "clair", "dans", "la", "tête,", "mais", "dès", "le", "quatrième", "jour",
+               "rien."],
+    "seg_03": ["Un", "chercheur", "allemand", "a", "mesuré", "ce", "phénomène."],
+    "seg_04": ["Heureusement", "il", "existe", "des", "gestes", "simples."],
+    "seg_05": ["Voici", "son", "résultat."],
+    "seg_99_outro": ["Abonne-toi", "pour", "la", "suite."],
+}
+
+
+def _timed_words(words, duration):
+    step = duration / len(words)
+    return [{"w": w, "s": round(i * step, 3), "e": round(i * step + step * 0.8, 3)} for i, w in enumerate(words)]
+
+
+def write_silence_wav(path, seconds, rate=16000):
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(bytes(2 * int(rate * seconds)))
+
+
+@pytest.fixture
+def job_with_voice_fixtures(job_with_fixtures):
+    from ideo import common
+
+    job = job_with_fixtures
+    part_dir = job / "parts" / "01"
+    part_dir.mkdir(parents=True)
+    for name, duration in VOICE_DURATIONS.items():
+        write_sine_wav(part_dir / f"{name}.wav", seconds=duration)
+        common.save_json(part_dir / f"{name}.words.json", _timed_words(VOICE_WORDS[name], duration))
+    write_silence_wav(job / "source.wav", 80.0)
+    return job
+
+
+@pytest.fixture
+def job_with_offsets(job_with_voice_fixtures):
+    from ideo import assemble
+
+    assemble.assemble_part(job_with_voice_fixtures, 1)
+    return job_with_voice_fixtures
