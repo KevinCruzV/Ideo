@@ -19,7 +19,9 @@ def test_voice_part_creates_one_wav_per_segment(job_with_plan, fake_backend, fak
                      "seg_99_outro.wav"]
     assert all(p.parent == job_with_plan / "parts" / "01" for p in paths)
     assert all(p.with_suffix(".words.json").exists() for p in paths)
-    assert common.load_json(paths[0].with_suffix(".words.json")) == [{"w": "mot", "s": 0.0, "e": 0.3}]
+    hook = common.load_json(paths[0].with_suffix(".words.json"))
+    plan = common.load_json(job_with_plan / "plan.json")
+    assert [w["w"] for w in hook] == plan["parts"][0]["hook"].replace(" ?", "?").split()
     assert common.read_status(job_with_plan)["steps"]["voice-01"]["ok"] is True
 
 
@@ -109,11 +111,12 @@ def test_edge_backend_network_error_is_french(tmp_path, monkeypatch):
     import edge_tts
 
     class Failing:
-        def __init__(self, text, voice):
+        def __init__(self, text, voice, **kw):
             pass
 
-        async def save(self, path):
+        async def stream(self):
             raise OSError("down")
+            yield
 
     monkeypatch.setattr(edge_tts, "Communicate", Failing)
     with pytest.raises(common.IdeoError, match="synthèse vocale"):
@@ -165,11 +168,11 @@ def test_voice_ffmpeg_failure_points_to_a_log_that_exists(job_with_plan, monkeyp
     import edge_tts
 
     class Writes:
-        def __init__(self, text, voice):
+        def __init__(self, text, voice, **kw):
             pass
 
-        async def save(self, path):
-            Path(path).write_bytes(b"mp3")
+        async def stream(self):
+            yield {"type": "audio", "data": b"mp3"}
 
     monkeypatch.setattr(edge_tts, "Communicate", Writes)
     monkeypatch.setattr(voice.shutil, "which", lambda name: "/usr/bin/false")
@@ -178,3 +181,71 @@ def test_voice_ffmpeg_failure_points_to_a_log_that_exists(job_with_plan, monkeyp
     log = job_with_plan / "logs" / "voice-01.log"
     assert f"Voir {log}" in str(exc.value)
     assert log.exists()
+
+
+class TimedBackend:
+    def __init__(self, heard):
+        self.heard = heard
+
+    def synthesize(self, text, lang, out_wav):
+        from tests.conftest import write_sine_wav
+
+        write_sine_wav(out_wav, seconds=1.0)
+        return self.heard
+
+
+def test_boundaries_from_backend_skip_speech_recognition(job_with_plan, fake_whisper):
+    heard = [{"w": "x", "s": 0.1, "e": 0.2}]
+    voice.voice_part(job_with_plan, 1, backend=TimedBackend(heard))
+    assert fake_whisper == []
+
+
+def test_words_json_has_one_word_per_script_word_with_script_text(job_with_plan, fake_whisper):
+    recognised = [{"w": "Sommalie", "s": 0.1, "e": 0.4}, {"w": "s", "s": 0.5, "e": 0.6}, {"w": "'entrancher", "s": 0.6, "e": 0.9}]
+    voice.voice_part(job_with_plan, 1, backend=TimedBackend(recognised))
+    plan = common.load_json(job_with_plan / "plan.json")
+    say = plan["parts"][0]["scenes"][0]["say"]
+    words = common.load_json(job_with_plan / "parts" / "01" / "seg_01.words.json")
+    assert [w["w"] for w in words] == say.split()
+    assert all(a["s"] <= b["s"] for a, b in zip(words, words[1:]))
+    assert all(0 <= w["s"] <= w["e"] <= 1.0 + 1e-6 for w in words)
+
+
+def test_edge_backend_requests_word_boundaries_and_faster_rate(tmp_path, monkeypatch):
+    import edge_tts
+
+    seen = {}
+
+    class Streams:
+        def __init__(self, text, voice, **kw):
+            seen.update(kw)
+
+        async def stream(self):
+            yield {"type": "WordBoundary", "offset": 1000000, "duration": 2000000, "text": "Bonjour"}
+            yield {"type": "audio", "data": b"mp3"}
+
+    monkeypatch.setattr(edge_tts, "Communicate", Streams)
+    monkeypatch.setattr(voice, "_ffmpeg", lambda: "/usr/bin/true")
+    words = voice.EdgeTTSBackend().synthesize("Bonjour", "fr", tmp_path / "x.wav")
+    assert seen["rate"] == "+6%" and seen["boundary"] == "WordBoundary"
+    assert words == [{"w": "Bonjour", "s": 0.1, "e": 0.3}]
+
+
+def test_finish_segment_trims_silence_and_shifts_words(tmp_path):
+    import numpy as np
+
+    wav = tmp_path / "s.wav"
+    rate = 48000
+    t = np.arange(rate)
+    pcm = np.concatenate([np.zeros(rate // 2), 8000 * np.sin(2 * np.pi * 440 * t / rate), np.zeros(rate)]).astype("<i2")
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    words = voice.finish_segment(wav, "Un deux", [{"w": "Un", "s": 0.5, "e": 1.0}, {"w": "deux", "s": 1.0, "e": 1.5}])
+    with wave.open(str(wav), "rb") as w:
+        duration = w.getnframes() / rate
+    assert duration == pytest.approx(1.06, abs=0.02)
+    assert words[0]["s"] == pytest.approx(0.03, abs=0.02)
+    assert words[-1]["e"] <= duration

@@ -1,10 +1,16 @@
 import asyncio
 import shutil
 import tempfile
+import wave
 from pathlib import Path
 from typing import Protocol
 
-from ideo import common, i18n, transcribe
+import numpy as np
+
+from ideo import align, common, i18n, pacing, transcribe
+
+EDGE_RATE = "+6%"
+TICKS = 1e7
 
 EDGE_VOICES = {
     "fr": "fr-FR-HenriNeural",
@@ -28,7 +34,7 @@ def unsupported(lang: str) -> str | None:
 
 
 class VoiceBackend(Protocol):
-    def synthesize(self, text: str, lang: str, out_wav: Path) -> None: ...
+    def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None: ...
 
 
 def _ffmpeg() -> str:
@@ -42,17 +48,29 @@ class EdgeTTSBackend:
     def __init__(self, log: Path | None = None):
         self.log = log
 
-    def synthesize(self, text: str, lang: str, out_wav: Path) -> None:
+    def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None:
         voice = EDGE_VOICES.get(lang)
         if not voice:
             raise common.IdeoError(unsupported(lang))
         import edge_tts
 
         out_wav = Path(out_wav)
+        words: list[dict] = []
+
+        async def run(mp3: Path) -> None:
+            communicate = edge_tts.Communicate(text, voice, rate=EDGE_RATE, boundary="WordBoundary")
+            with mp3.open("wb") as f:
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        f.write(chunk["data"])
+                    elif chunk["type"] == "WordBoundary":
+                        start = chunk["offset"] / TICKS
+                        words.append({"w": chunk["text"], "s": start, "e": start + chunk["duration"] / TICKS})
+
         with tempfile.TemporaryDirectory() as tmp:
             mp3 = Path(tmp) / "voice.mp3"
             try:
-                asyncio.run(edge_tts.Communicate(text, voice).save(str(mp3)))
+                asyncio.run(run(mp3))
             except Exception as err:
                 raise common.IdeoError(
                     f"la synthèse vocale a échoué (connexion à edge-tts impossible ?) : {err}"
@@ -63,6 +81,7 @@ class EdgeTTSBackend:
                 [_ffmpeg(), "-y", "-i", str(mp3), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le", str(out_wav)],
                 self.log or out_wav.parent / "ffmpeg.log",
             )
+        return words or None
 
 
 def get_backend(log: Path | None = None) -> VoiceBackend:
@@ -78,6 +97,23 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
         )
         words, _ = transcribe.whisper_words(transcribe.read_pcm(wav16), language=lang)
     return words
+
+
+def finish_segment(wav: Path, text: str, heard: list[dict]) -> list[dict]:
+    wav = Path(wav)
+    with wave.open(str(wav), "rb") as w:
+        if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (pacing.RATE, 1, 2):
+            raise common.IdeoError(f"{wav.name} doit être en 48 kHz mono 16 bits : relancez la voix.")
+        pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
+    tight, mapping = pacing.tighten(pcm)
+    if len(tight) != len(pcm):
+        with wave.open(str(wav), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(pacing.RATE)
+            w.writeframes(tight.astype("<i2").tobytes())
+    duration = len(tight) / pacing.RATE
+    return align.align_words(align.script_words(text), pacing.remap(heard, mapping), duration)
 
 
 def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
@@ -117,8 +153,10 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             paths.append(wav)
             if wav.exists() and words_path.exists():
                 continue
-            backend.synthesize(text, lang, wav)
-            common.save_json(words_path, retranscribe(wav, lang, log))
+            heard = backend.synthesize(text, lang, wav)
+            if not heard:
+                heard = retranscribe(wav, lang, log)
+            common.save_json(words_path, finish_segment(wav, text, heard))
     except common.IdeoError as err:
         common.mark(job, step, False, str(err))
         raise
