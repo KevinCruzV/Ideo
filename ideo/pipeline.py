@@ -2,7 +2,6 @@ import hashlib
 import json
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
 
 from ideo import assemble, common, compact, fetch, plan_check, render, timeline, transcribe, voice
@@ -26,11 +25,7 @@ def resolve_job(arg: str) -> Path:
 
 
 def progress(job: Path, line: str) -> None:
-    log = Path(job) / "logs" / "progress.log"
-    log.parent.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with log.open("a", encoding="utf-8") as f:
-        f.write(f"{stamp} {line}\n")
+    common.progress(job, line)
 
 
 def prepare(url: str) -> tuple[Path, dict]:

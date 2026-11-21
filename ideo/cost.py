@@ -60,6 +60,14 @@ def speech_words(job: Path) -> int:
     return count
 
 
+def _source(duration) -> str:
+    if not isinstance(duration, (int, float)):
+        return "0 min"
+    if duration < 60:
+        return f"{round(duration)} s"
+    return f"{round(duration / 60)} min"
+
+
 def estimate(job: Path) -> dict:
     job = Path(job)
     lang = _lang(job)
@@ -79,13 +87,14 @@ def estimate(job: Path) -> dict:
         "write_low": round_hundred(seconds * WRITE_TOKENS_PER_SECOND),
         "write_high": round_hundred(seconds * WRITE_TOKENS_PER_SECOND * WRITE_SPREAD),
         "minutes": round(duration / 60) if isinstance(duration, (int, float)) else 0,
+        "source": _source(duration),
     }
 
 
 def line(job: Path) -> str:
     e = estimate(job)
     text = (f"lecture au moins ~{fmt(e['reading'])} tokens (transcription {fmt(e['transcript'])} + skill et guide {fmt(e['skill'])}), "
-            f"écriture ~{fmt(e['write_low'])} à {fmt(e['write_high'])} tokens, source {e['minutes']} min")
+            f"écriture ~{fmt(e['write_low'])} à {fmt(e['write_high'])} tokens, source {e['source']}")
     if e["long"]:
         text += ", contenu long : une vidéo de 5 min ou plusieurs parties"
     return text

@@ -23,7 +23,7 @@ def produce_job(job_with_voice_fixtures, monkeypatch, fake_whisper):
     job = job_with_voice_fixtures
     common.save_json(job / "info.json", INFO)
     backend = FakeBackend()
-    monkeypatch.setattr(voice, "get_backend", lambda: backend)
+    monkeypatch.setattr(voice, "get_backend", lambda log=None: backend)
     renders = []
 
     def fake_render(job_path, n):

@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ideo import common
+from ideo import common, i18n, plan_check
 
 REPO = Path(__file__).resolve().parent.parent
 FPS = 30
@@ -141,6 +141,9 @@ def _render(job: Path, n: int) -> Path:
     if not out.exists():
         raise common.IdeoError(f"le rendu n'a produit aucun fichier : voir {log}")
     probe = verify_mp4(out, frames)
+    if not plan_check.MIN_SECONDS <= probe["duration"] <= plan_check.MAX_SECONDS:
+        common.progress(job, f"ATTENTION partie {n:02d} : durée réelle {probe['duration']:.1f} s, hors de "
+                             f"{plan_check.MIN_SECONDS} à {plan_check.MAX_SECONDS} s")
     common.mark(job, step, True, f"{out.name}, {probe['duration']:.1f} s")
     return out
 
@@ -186,7 +189,7 @@ def write_description(job: Path, n: int) -> str:
             speakers.append(who)
     text = f"{part['title']}\n"
     if speakers:
-        text += f"\nVoix citées : {', '.join(speakers)}\n"
+        text += "\n" + i18n.t("voices_line", plan.get("lang", "en"), names=", ".join(speakers)) + "\n"
     path = description_path(job, plan, n)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")

@@ -3,12 +3,15 @@ import { useCurrentFrame } from "remotion";
 import { accentAt, AccentSpan, colors, fonts, layout, onPaper, shadowFilter, stripClip } from "../theme";
 import { jitter } from "../paper/stopMotion";
 import { textWidth } from "../text/fit";
+import { str } from "../scenes/coerce";
 import { CaptionGroup } from "../types";
 
 const FONT_SIZE = 76;
 const MIN_SIZE = 52;
 const MAX_LINES = 2;
 const ROW_WIDTH = layout.width - layout.marginSide * 2;
+
+export const captionWord = (word: string): string => str(word);
 
 export const captionSize = (words: string[]): number => {
   for (let size = FONT_SIZE; size > MIN_SIZE; size -= 2) {
@@ -88,7 +91,7 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
                 clipPath: isActive ? stripClip : undefined,
               }}
             >
-              {word.w}
+              {captionWord(word.w)}
             </span>
           </span>
         );

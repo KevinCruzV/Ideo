@@ -67,7 +67,7 @@ def fake_whisper(monkeypatch):
 
     calls = []
 
-    def fake(wav, lang):
+    def fake(wav, lang, log=None):
         calls.append((Path(wav).name, lang))
         return [{"w": "mot", "s": 0.0, "e": 0.3}]
 

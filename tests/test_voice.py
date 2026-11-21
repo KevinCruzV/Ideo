@@ -158,3 +158,22 @@ def test_every_voice_exists_on_edge_tts():
 
     names = {v["ShortName"] for v in asyncio.run(edge_tts.list_voices())}
     assert set(voice.EDGE_VOICES.values()) <= names
+
+
+def test_voice_ffmpeg_failure_points_to_a_log_that_exists(job_with_plan, monkeypatch):
+    import edge_tts
+
+    class Writes:
+        def __init__(self, text, voice):
+            pass
+
+        async def save(self, path):
+            Path(path).write_bytes(b"mp3")
+
+    monkeypatch.setattr(edge_tts, "Communicate", Writes)
+    monkeypatch.setattr(voice.shutil, "which", lambda name: "/usr/bin/false")
+    with pytest.raises(common.IdeoError) as exc:
+        voice.voice_part(job_with_plan, 1)
+    log = job_with_plan / "logs" / "voice-01.log"
+    assert f"Voir {log}" in str(exc.value)
+    assert log.exists()

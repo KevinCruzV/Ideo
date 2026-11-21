@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import subprocess
@@ -115,8 +116,19 @@ def run(cmd: list[str], log: Path) -> None:
 def parse_ts(s: str) -> float:
     total = 0.0
     for part in s.strip().split(":"):
-        total = total * 60 + float(part)
+        value = float(part)
+        if not math.isfinite(value) or value < 0 or part.strip().startswith("-"):
+            raise ValueError(f"minutage invalide : {s}")
+        total = total * 60 + value
     return total
+
+
+def progress(job: Path, line: str) -> None:
+    log = Path(job) / "logs" / "progress.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with log.open("a", encoding="utf-8") as f:
+        f.write(f"{stamp} {line}\n")
 
 
 def fmt_ts(sec: float) -> str:

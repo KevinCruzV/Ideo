@@ -146,3 +146,8 @@ def test_two_hour_source_is_read_in_chunks(tmp_path):
     longest = max(len(line) for line in text.splitlines())
     assert plan["chunk"] * longest <= cost.READ_TOKENS * 3.3
     assert plan["offsets"][-1] <= plan["lines"] < plan["offsets"][-1] + plan["chunk"]
+
+
+def test_source_under_a_minute_is_shown_in_seconds(tmp_path):
+    assert cost.line(make_job(tmp_path, words=50, duration=25)).endswith("source 25 s")
+    assert cost.line(make_job(tmp_path / "b", words=50, duration=90)).endswith("source 2 min")

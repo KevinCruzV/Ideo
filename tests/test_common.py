@@ -89,3 +89,16 @@ def test_video_id_rejects_foreign_hosts_and_options(url, tmp_path, monkeypatch):
 
 def test_canonical_url_is_rebuilt_from_the_id():
     assert common.canonical_url("https://youtu.be/dQw4w9WgXcQ?t=5") == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "-1:30", "1:-30", "-5", "1:nan"])
+def test_parse_ts_rejects_non_finite_and_negative(value):
+    with pytest.raises(ValueError):
+        common.parse_ts(value)
+
+
+def test_progress_appends_a_stamped_line(tmp_path):
+    common.progress(tmp_path, "OK x")
+    common.progress(tmp_path, "OK y")
+    lines = (tmp_path / "logs" / "progress.log").read_text(encoding="utf-8").splitlines()
+    assert [line.split(" ", 2)[2] for line in lines] == ["OK x", "OK y"]

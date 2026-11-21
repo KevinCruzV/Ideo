@@ -13,7 +13,7 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Une seule vidéo (une seule partie dans `parts`). Plusieurs parties seulement si le contenu utile dépasse 5 minutes de voix off (environ 750 mots de `say`), 8 parties au maximum, chacune compréhensible seule.
 - Garde les quelques idées qui comptent, pas tout. Une idée par scène.
 - Une vidéo fait 8 à 25 scènes. Repère : 12 scènes d'environ 18 mots donnent environ 90 s.
-- Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
+- Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais ; en japonais et en chinois, caractères divisés par 6 et par 4,5), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - `title` : le titre de la vidéo, affiché en haut de l'écran pendant toute la vidéo, 40 caractères au plus (espaces compris).
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
@@ -106,7 +106,7 @@ Un exemple par type :
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
 - Si la transcription ne dit pas qui parle, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. `speaker` n'est jamais le nom de la chaîne YouTube, ni le titre de la vidéo, ni un nom inventé.
 - Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa") : quand on entend le présentateur ou l'auteur de la vidéo, mets `"speaker": ""`.
-- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment.
+- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment. Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
 
 Exemple : la transcription contient
 
@@ -294,11 +294,12 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `minutage invalide` | écris `mm:ss`, par exemple `"12:30"` |
 | `dépasse la durée de la vidéo` | prends un minutage qui existe dans la transcription |
 | `n'est pas dans sfx.json` | recopie un minutage d'une ligne `[son ...]` ou retire `sfx` |
+| `« sfx » sur une scène « quote »` | retire `sfx` de la citation, ou mets-le sur une autre scène |
 | `demande « props.text »` | mets la citation exacte dans `props.text` |
 | `citation introuvable` | recopie la citation depuis le "passage le plus proche" donné, et mets son minutage dans `src` |
 | `la citation dure` | garde seulement une partie des mots de la citation (8 s, environ 20 mots au plus) |
 | `trop courte` | ajoute du texte `say` ou une scène, de la durée indiquée |
 | `trop longue` | retire du texte ou des scènes, de la durée indiquée |
 | `tient en une seule vidéo` | fusionne toutes les parties en une seule |
-| `caractères, N au plus` | raccourcis ce texte sous N caractères ; pour `props.text` d'une `quote`, garde une partie des mots de la citation |
+| `caractères, N au plus` | raccourcis ce texte à N caractères au plus ; pour `props.text` d'une `quote`, garde une partie des mots de la citation |
 | `est dans un passage sponsorisé` | prends un autre passage, hors sponsor |

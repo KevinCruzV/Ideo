@@ -1,6 +1,7 @@
 import json
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -124,3 +125,20 @@ def test_guide_and_skill_say_the_title_is_free():
 def test_no_em_dash_in_task_files():
     for name in OWN_FILES:
         assert EM_DASH not in (REPO / name).read_text(encoding="utf-8"), name
+
+
+def tracked_text_files():
+    names = subprocess.run(["git", "ls-files", "-z"], cwd=REPO, capture_output=True, check=True).stdout.split(b"\0")
+    for name in filter(None, names):
+        path = REPO / name.decode("utf-8")
+        if not path.is_file():
+            continue
+        try:
+            yield path, path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+
+
+def test_no_em_dash_in_any_tracked_file():
+    hits = [str(path.relative_to(REPO)) for path, text in tracked_text_files() if EM_DASH in text]
+    assert hits == []

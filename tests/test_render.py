@@ -220,3 +220,29 @@ def test_render_fixture_part(job_with_timeline_fixture):
     assert abs(probe["duration"] - 4.0) < 0.1
     assert probe["has_audio"] is True
     assert (job / "logs" / "render-01.log").exists()
+
+
+def test_real_duration_outside_bounds_is_flagged_in_progress_log(job_sources, monkeypatch):
+    prepare_render(job_sources, 120)
+    monkeypatch.setattr(common, "run", fake_run([]))
+    monkeypatch.setattr(render, "probe_media", lambda p: dict(GOOD))
+    render.render_part(job_sources, 1)
+    log = (job_sources / "logs" / "progress.log").read_text(encoding="utf-8")
+    assert "ATTENTION partie 01 : durée réelle 4.0 s, hors de 45 à 300 s" in log
+
+
+def test_real_duration_inside_bounds_is_not_flagged(job_sources, monkeypatch):
+    prepare_render(job_sources, 1800)
+    monkeypatch.setattr(common, "run", fake_run([]))
+    monkeypatch.setattr(render, "probe_media", lambda p: {**GOOD, "duration": 60.0})
+    render.render_part(job_sources, 1)
+    progress = job_sources / "logs" / "progress.log"
+    assert not progress.exists() or "ATTENTION" not in progress.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("lang,label", [("fr", "Voix citées : "), ("en", "Quoted voices: "), ("de", "Zitierte Stimmen: ")])
+def test_description_voices_label_follows_the_language(job_sources, lang, label):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["lang"] = lang
+    common.save_json(job_sources / "plan.json", plan)
+    assert render.write_description(job_sources, 1) == f"L'oubli\n\n{label}Ebbinghaus\n"

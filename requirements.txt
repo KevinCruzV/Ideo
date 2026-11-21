@@ -1,5 +1,5 @@
 yt-dlp
-faster-whisper
-edge-tts
-numpy
-pytest
+faster-whisper>=1.2,<2
+edge-tts>=7.3,<8
+numpy>=2,<3
+pytest>=9,<10

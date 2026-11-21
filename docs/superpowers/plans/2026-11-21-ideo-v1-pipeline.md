@@ -346,7 +346,7 @@ def test_valid_plan_has_no_errors(job_with_fixtures):
 @pytest.mark.parametrize("mutate,fragment", [
     (lambda p: p["parts"][0]["scenes"][0]["items"].append({"el": "x", "on": "absent"}), "« absent » n'est pas dans le texte"),
     (lambda p: p["parts"].extend([dict(p["parts"][0], n=i) for i in range(2, 10)]), "8 parties au maximum"),
-    (lambda p: p["parts"][0].update(hook="Pourquoi — vraiment ?"), "tiret cadratin"),
+    (lambda p: p["parts"][0].update(hook="Pourquoi " + chr(0x2014) + " vraiment ?"), "tiret cadratin"),
     (lambda p: p["parts"][0]["scenes"][0].update(type="carousel"), "type inconnu"),
     (lambda p: p.update(lang="de"), "langue"),
 ])

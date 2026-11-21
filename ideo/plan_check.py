@@ -53,14 +53,10 @@ def _ts(value, where: str, field: str, errors: list[str]):
         errors.append(f"{where} : « {field} » doit être un minutage texte « mm:ss » ou « h:mm:ss », par exemple « 12:30 ».")
         return None
     try:
-        seconds = parse_ts(value)
+        return parse_ts(value)
     except ValueError:
         errors.append(f"{where} : minutage invalide « {value} » dans « {field} ». Écris « mm:ss » ou « h:mm:ss », par exemple « 12:30 ».")
         return None
-    if seconds < 0:
-        errors.append(f"{where} : minutage invalide « {value} » dans « {field} ». Il ne peut pas être négatif.")
-        return None
-    return seconds
 
 
 def _text_field(obj: dict, key: str, where: str, errors: list[str]) -> str | None:
@@ -206,7 +202,10 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
             if hit:
                 errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit))
 
-    if "sfx" in scene:
+    if "sfx" in scene and kind == "quote":
+        errors.append(f"{where} : « sfx » sur une scène « quote » ne serait pas joué, la citation joue déjà la vraie voix. Retire « sfx » ou mets-le sur une autre scène.")
+        part_state["unresolved"] += 1
+    elif "sfx" in scene:
         at = _ts(scene["sfx"], where, "sfx", errors)
         if at is None:
             part_state["unresolved"] += 1

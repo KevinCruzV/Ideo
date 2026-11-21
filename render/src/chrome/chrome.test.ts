@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { captionSize } from "./Captions";
+import { captionSize, captionWord } from "./Captions";
 import { chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
 import { layout } from "../theme";
 import { progressTicks } from "./Progress";
@@ -13,6 +13,11 @@ const segments = [
 ];
 
 describe("chrome", () => {
+  test("un sous-titre n'affiche jamais de tiret cadratin", () => {
+    expect(captionWord(`oui${String.fromCharCode(0x2014)}non`)).toBe("oui,non");
+    expect(captionWord("mot")).toBe("mot");
+  });
+
   test("une vidéo seule n'affiche que le titre", () => {
     expect(chapterText(single)).toBe("L'oubli");
     expect(chapterText(series)).toBe("Partie 2 · Le sommeil");

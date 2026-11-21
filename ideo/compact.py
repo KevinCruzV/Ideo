@@ -119,10 +119,6 @@ def build(words: list[dict], sfx: list[dict], info: dict) -> tuple[str, list[dic
     return text, [{"s": round(r["s"], 2), "e": round(r["e"], 2), "probable": r["probable"]} for r in hidden]
 
 
-def compact(words: list[dict], sfx: list[dict], info: dict) -> str:
-    return build(words, sfx, info)[0]
-
-
 def prepare_transcript(job: Path) -> dict:
     job = Path(job)
     out = job / "transcript_compact.md"

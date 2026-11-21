@@ -468,3 +468,21 @@ def test_hook_and_title_caps(job_with_fixtures, field, cap):
     hits = [e for e in errors if e.startswith(f"Partie 1 : « {field} » fait ")]
     assert len(hits) == 1, errors
     assert f"caractères, {cap} au plus" in hits[0] and "raccourcis" in hits[0]
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-0:10"])
+def test_non_finite_or_negative_src_is_a_plan_error(job_with_fixtures, value):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][1]["src"] = value
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("minutage invalide" in e and value in e for e in errors), errors
+
+
+def test_sfx_on_a_quote_scene_is_refused(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    quote = next(s for s in plan["parts"][0]["scenes"] if s["type"] == "quote")
+    quote["sfx"] = "1:10"
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("« sfx »" in e and "quote" in e and "Retire" in e for e in errors), errors

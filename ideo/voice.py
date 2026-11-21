@@ -44,6 +44,9 @@ def _ffmpeg() -> str:
 
 
 class EdgeTTSBackend:
+    def __init__(self, log: Path | None = None):
+        self.log = log
+
     def synthesize(self, text: str, lang: str, out_wav: Path) -> None:
         voice = EDGE_VOICES.get(lang)
         if not voice:
@@ -63,19 +66,20 @@ class EdgeTTSBackend:
                 raise common.IdeoError("la synthèse vocale a échoué : aucun audio reçu")
             common.run(
                 [_ffmpeg(), "-y", "-i", str(mp3), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le", str(out_wav)],
-                Path(tmp) / "ffmpeg.log",
+                self.log or out_wav.parent / "ffmpeg.log",
             )
 
 
-def get_backend() -> VoiceBackend:
-    return EdgeTTSBackend()
+def get_backend(log: Path | None = None) -> VoiceBackend:
+    return EdgeTTSBackend(log)
 
 
-def retranscribe(wav: Path, lang: str) -> list[dict]:
+def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
+    wav = Path(wav)
     with tempfile.TemporaryDirectory() as tmp:
         wav16 = Path(tmp) / "seg16.wav"
         common.run(
-            [_ffmpeg(), "-y", "-i", str(wav), "-ac", "1", "-ar", "16000", str(wav16)], Path(tmp) / "ffmpeg.log"
+            [_ffmpeg(), "-y", "-i", str(wav), "-ac", "1", "-ar", "16000", str(wav16)], log or wav.parent / "ffmpeg.log"
         )
         words, _ = transcribe.whisper_words(transcribe.read_pcm(wav16), language=lang)
     return words
@@ -108,7 +112,8 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     step = f"voice-{n:02d}"
     out_dir = job / "parts" / f"{n:02d}"
     out_dir.mkdir(parents=True, exist_ok=True)
-    backend = backend or get_backend()
+    log = job / "logs" / f"voice-{n:02d}.log"
+    backend = backend or get_backend(log)
     paths = []
     try:
         for name, text in segments(plan, part):
@@ -118,7 +123,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             if wav.exists() and words_path.exists():
                 continue
             backend.synthesize(text, lang, wav)
-            common.save_json(words_path, retranscribe(wav, lang))
+            common.save_json(words_path, retranscribe(wav, lang, log))
     except common.IdeoError as err:
         common.mark(job, step, False, str(err))
         raise

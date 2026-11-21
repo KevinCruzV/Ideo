@@ -35,7 +35,7 @@ def test_every_voiced_language_has_its_fixed_strings_or_english():
 
     for lang in voice.EDGE_VOICES:
         for key in i18n.STRINGS["en"]:
-            assert i18n.t(key, lang, n=2, title="T")
+            assert i18n.t(key, lang, n=2, title="T", names="A")
 
 
 def test_missing_key_falls_back_to_english_per_key(monkeypatch):
@@ -48,3 +48,13 @@ def test_new_languages_are_translated():
     for lang in ("nl", "pl", "tr", "ru", "ja", "ko", "zh", "hi", "ar"):
         text = i18n.t("outro_next", lang, n=4, title="Titre")
         assert "4" in text and "Titre" in text and text != i18n.t("outro_next", "en", n=4, title="Titre")
+
+
+def test_voices_line_in_every_voiced_language():
+    from ideo import voice
+
+    assert i18n.t("voices_line", "fr", names="A, B") == "Voix citées : A, B"
+    assert i18n.t("voices_line", "xx", names="A") == "Quoted voices: A"
+    for lang in voice.EDGE_VOICES:
+        assert i18n.t("voices_line", lang, names="Zed").count("Zed") == 1
+        assert lang == "en" or i18n.t("voices_line", lang, names="Zed") != i18n.t("voices_line", "en", names="Zed")
