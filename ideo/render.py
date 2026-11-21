@@ -154,6 +154,19 @@ def _excerpt(say: str) -> str:
     return text + ("..." if len(words) > EXCERPT_WORDS else "")
 
 
+def _music_credit(job: Path) -> str | None:
+    from ideo import config, music
+
+    for path in sorted((job / "parts").glob("*/music.json")):
+        try:
+            info = common.load_json(path)
+        except (OSError, ValueError):
+            continue
+        if isinstance(info, dict) and info.get("track"):
+            return music.attribution(config.music_dir(), info["track"])
+    return None
+
+
 def write_sources(job: Path) -> Path:
     job = Path(job)
     plan = _plan(job)
@@ -168,6 +181,9 @@ def write_sources(job: Path) -> Path:
             url = f"https://www.youtube.com/watch?v={video_id}&t={seconds}s"
             lines.append(f"- Scène {i} ({scene['type']}) : {_excerpt(scene['say'])} {url}")
         lines.append("")
+    credit = _music_credit(job)
+    if credit:
+        lines += [credit, ""]
     path = job / "out" / "sources.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")

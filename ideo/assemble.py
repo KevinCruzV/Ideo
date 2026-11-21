@@ -7,7 +7,7 @@ import tempfile
 import wave
 from pathlib import Path
 
-from ideo import common, textmatch, voice
+from ideo import common, music, textmatch, voice
 
 RATE = 48000
 GAP_HOOK = 0.60
@@ -155,6 +155,25 @@ def _cut(source: Path, start: float, end: float, work: Path, log: Path) -> bytes
     return pcm
 
 
+def _music_current(out_dir: Path) -> bool:
+    path = out_dir / "music.json"
+    try:
+        stored = common.load_json(path) if path.exists() else None
+    except (OSError, ValueError):
+        return False
+    return isinstance(stored, dict) and stored.get("signature") == music.signature()
+
+
+def _mix_music(raw: Path, offsets: list, job: Path, out_dir: Path, work: Path, log: Path) -> dict:
+    rounded = [{"start": o["start"], "end": o["end"], "clip": o["clip"]} for o in offsets]
+    try:
+        return music.mix(raw, rounded, job, out_dir, work, log, _integrated)
+    except common.IdeoError:
+        raise
+    except Exception as err:
+        return {"signature": music.signature(), "track": None, "error": str(err)}
+
+
 def _inputs(out_dir: Path, names: list[str], job: Path) -> list[Path]:
     paths = [out_dir / f"{name}.wav" for name in names] + [job / "plan.json", job / "sfx.json"]
     return [p for p in paths if p.exists()]
@@ -194,7 +213,7 @@ def _assemble(job: Path, n: int) -> Path:
             raise common.IdeoError(f"{name}.wav est introuvable : lancez d'abord la voix de la partie {n}.")
     out_wav = out_dir / "part.wav"
     offsets_path = out_dir / "offsets.json"
-    if out_wav.exists() and offsets_path.exists():
+    if out_wav.exists() and offsets_path.exists() and _music_current(out_dir):
         newest = max(p.stat().st_mtime for p in _inputs(out_dir, names, job))
         if min(out_wav.stat().st_mtime, offsets_path.stat().st_mtime) >= newest:
             return out_wav
@@ -258,6 +277,7 @@ def _assemble(job: Path, n: int) -> Path:
             w.setsampwidth(2)
             w.setframerate(RATE)
             w.writeframes(b"".join(chunks))
+        music_info = _mix_music(raw, offsets, job, out_dir, work, log)
         tmp_out = work / "part.wav"
         common.run(
             [_ffmpeg(), "-y", "-i", str(raw), "-af", _loudnorm_filter(raw), "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le",
@@ -273,5 +293,6 @@ def _assemble(job: Path, n: int) -> Path:
         if entry["clip"]:
             entry["clip"] = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in entry["clip"].items()}
     common.save_json(offsets_path, offsets)
+    common.save_json(out_dir / "music.json", music_info)
     common.mark(job, f"assemble-{n:02d}", True, f"{len(offsets)} segments, {offsets[-1]['end']:.1f} s")
     return out_wav

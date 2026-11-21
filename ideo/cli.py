@@ -201,6 +201,12 @@ def _voice_notes(job: Path, part: int | None) -> list[str]:
             continue
         if note not in notes:
             notes.append(note)
+    for path in sorted((job / "parts").glob("*/music.json")):
+        if part is not None and path.parent.name != f"{part:02d}":
+            continue
+        info = common.load_json(path)
+        if info.get("missing") and "Musique : aucun morceau trouvé" not in notes:
+            notes.append("Musique : aucun morceau trouvé")
     return notes
 
 

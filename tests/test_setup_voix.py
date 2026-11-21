@@ -173,3 +173,9 @@ def test_prepare_line_ends_with_the_install_note(env, monkeypatch, capsys):
     (env.root / ".venv-voix2" / "bin").mkdir(parents=True, exist_ok=True)
     cli.main(["prepare", url])
     assert "Voix locale" not in capsys.readouterr().out
+
+
+def test_setup_skill_explains_where_to_put_the_music():
+    text = (common.REPO_ROOT / "skills" / "setup" / "SKILL.md").read_text(encoding="utf-8")
+    assert "~/Desktop/ideo/musique/" in text and "LICENCE.txt" in text and "music_level_db" in text
+    assert "Ne crée pas le dossier et ne télécharge aucun morceau" in text

@@ -223,3 +223,26 @@ def test_the_flag_wish_line_survives_the_review_off_switch(job_with_fixtures, ca
     cli.main(["check", str(job_with_fixtures), "--sans-relecture"])
     out = out_lines(capsys)
     assert any("le drapeau de Inde existe : écris « flag:in »" in x for x in out) and retours.wishes() == []
+
+
+def test_produce_says_once_when_no_music_is_found(produce_job, capsys):
+    job = produce_job[0]
+    assert cli.main(["produce", str(job)]) == 0
+    line = out_lines(capsys)[0]
+    assert line.count(" ; Musique : aucun morceau trouvé") == 1
+
+
+def test_produce_is_silent_about_music_when_it_is_disabled_or_found(produce_job, capsys, tmp_path):
+    job = produce_job[0]
+    (common._root() / "config.json").write_text('{"music": false}', encoding="utf-8")
+    cli.main(["produce", str(job)])
+    assert "Musique" not in out_lines(capsys)[0]
+    folder = tmp_path / "zik"
+    folder.mkdir()
+    from tests.test_music import tone_track
+
+    tone_track(folder / "a.wav", seconds=8.0)
+    (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder)}), encoding="utf-8")
+    (job / "parts" / "01" / "music.json").unlink(missing_ok=True)
+    cli.main(["produce", str(job)])
+    assert "Musique" not in out_lines(capsys)[0]

@@ -95,6 +95,27 @@ def record_produce(job, seconds: float | None) -> None:
     _save(data)
 
 
+def set_music(job, track: str) -> None:
+    data = load()
+    _entry(data, job)["music"] = track
+    _save(data)
+
+
+def recent_music(job, count: int = 3) -> list[str]:
+    data = load()
+    name = Path(str(job)).name
+    out: list[str] = []
+    for other in reversed(data["order"]):
+        if other == name:
+            continue
+        track = data["jobs"][other].get("music")
+        if isinstance(track, str) and track not in out:
+            out.append(track)
+        if len(out) >= count:
+            break
+    return out
+
+
 def new_wishes(job, wishes: list) -> list:
     data = load()
     entry = _entry(data, job)

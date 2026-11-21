@@ -7,6 +7,7 @@ from ideo import common
 
 DEFAULT_RATE = "+0%"
 DEFAULT_SEUIL = 5
+DEFAULT_MUSIC_LEVEL = -20
 KYUTAI_LANGS = ("fr", "en")
 ENGINES = ("kyutai", "edge")
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
@@ -63,7 +64,31 @@ def _load() -> dict:
     if isinstance(hook_padding, bool) or not isinstance(hook_padding, (int, float)) or not -2 <= hook_padding <= 2:
         raise common.IdeoError("config.json : « kyutai_hook_padding_bonus » doit être un nombre entre -2 et 2 "
                                "(positif = voix plus lente, pour l'accroche et la phrase de fin).")
+    music = data.get("music", True)
+    if not isinstance(music, bool):
+        raise common.IdeoError("config.json : « music » doit être true ou false.")
+    folder = data.get("music_dir")
+    if folder is not None and (not isinstance(folder, str) or not folder.strip()):
+        raise common.IdeoError("config.json : « music_dir » doit être le chemin d'un dossier de musique.")
+    level = data.get("music_level_db", DEFAULT_MUSIC_LEVEL)
+    if isinstance(level, bool) or not isinstance(level, (int, float)) or not -40 <= level <= -5:
+        raise common.IdeoError("config.json : « music_level_db » doit être un nombre entre -40 et -5 "
+                               "(niveau de la musique sous la voix, en dB).")
     return data
+
+
+def music_enabled() -> bool:
+    return _load().get("music", True)
+
+
+def music_dir() -> Path:
+    folder = _load().get("music_dir")
+    path = Path(folder).expanduser() if folder else common._root() / "musique"
+    return path if path.is_absolute() else common._root() / path
+
+
+def music_level_db() -> float:
+    return _load().get("music_level_db", DEFAULT_MUSIC_LEVEL)
 
 
 def apple_silicon() -> bool:

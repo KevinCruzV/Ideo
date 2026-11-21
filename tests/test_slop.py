@@ -25,7 +25,7 @@ NEUTRAL = "Le sommeil dure environ huit heures chaque nuit pour la plupart des g
 
 @pytest.mark.parametrize("text", [
     "Un test – avec demi-cadratin ici dans la phrase.", "Un test -- avec double trait ici dans la phrase.",
-    "Un test - avec trait isolé ici dans la phrase.", "Un test — avec cadratin ici dans la phrase."])
+    "Un test - avec trait isolé ici dans la phrase.", "Un test \u2014 avec cadratin ici dans la phrase."])
 def test_dashes(text):
     assert "ia-tiret" in codes_in(part_of(text))
 
@@ -104,7 +104,7 @@ def test_quotes_in_say_but_not_in_a_quote_scene():
 
 def test_quote_text_and_speaker_are_never_scanned():
     quote = part_of("Voici ce que dit le chercheur.", kinds={0: "quote"},
-                    props={0: {"text": "C'est incroyable – vraiment", "speaker": "Un expert — connu"}})
+                    props={0: {"text": "C'est incroyable – vraiment", "speaker": "Un expert \u2014 connu"}})
     assert codes_in(quote) == []
 
 
