@@ -1,4 +1,4 @@
-import { jitter, stepIndex } from "../paper/stopMotion";
+import { hash } from "../paper/motion";
 
 export type Pose = "question" | "surprise" | "montre" | "content";
 
@@ -29,14 +29,21 @@ export const POSE_SPECS: Record<Pose, PoseSpec> = {
   content: { headTilt: -6, lean: 0, eyeR: 7.5, pupilR: 3.4, look: [2, 1], mouth: "smile", arm: false },
 };
 
-const HOLD_STEPS = 5;
-
 export const idleTilt = (seed: string, frame: number): number => {
-  const beat = Math.floor(stepIndex(frame) / HOLD_STEPS);
-  return Math.round(jitter(`${seed}:tilt`, beat * 30, 2));
+  const phase = hash(`${seed}:tilt`) * Math.PI * 2;
+  return 2 * Math.sin((frame / 30) * 1.1 + phase) * Math.cos((frame / 30) * 0.37);
 };
 
-const unit = (seed: string, k: number): number => (jitter(`${seed}:blink:${k}`, 0, 1) + 1) / 2;
+export const breath = (frame: number): number => 1 + 0.012 * Math.sin((frame / 30) * Math.PI * 2 * 0.28);
+
+export const gaze = (seed: string, frame: number): [number, number] => {
+  const a = hash(`${seed}:gx`) * Math.PI * 2;
+  const b = hash(`${seed}:gy`) * Math.PI * 2;
+  const t = frame / 30;
+  return [1.4 * Math.sin(t * 0.7 + a) + 0.6 * Math.sin(t * 1.9 + b), 0.9 * Math.sin(t * 0.5 + b)];
+};
+
+const unit = (seed: string, k: number): number => hash(`${seed}:blink:${k}`);
 
 export const BLINK_FRAMES = 4;
 
@@ -59,13 +66,13 @@ export const isBlinking = (seed: string, frame: number, fps = 30): boolean => {
   return last !== undefined && frame - last < BLINK_FRAMES;
 };
 
-const HOP = [0.05, 0.025];
+export const HOP_FRAMES = 14;
 
-export const LAND_FRAMES = 5;
+export const LAND_FRAMES = 4;
 
 export const hopLift = (frame: number, landAt: number): number => {
   const local = frame - landAt;
-  if (local < 0) return 0;
-  const step = stepIndex(local);
-  return step < HOP.length ? HOP[step] : 0;
+  if (local < 0 || local >= HOP_FRAMES) return 0;
+  const t = local / HOP_FRAMES;
+  return 0.05 * Math.sin(t * Math.PI) * (1 - t * 0.5);
 };

@@ -1,8 +1,7 @@
 import React from "react";
-import { PaperStrip } from "../paper/PaperStrip";
+import { PaperStrip, stripHeight } from "../paper/PaperStrip";
+import { EntryOptions, restTilt } from "../paper/motion";
 import { PaperColor } from "../theme";
-
-const TILTS = [-2.2, 1.6, -1.2, 2, -1.8, 1.2];
 
 export type StripsProps = {
   lines: string[];
@@ -14,8 +13,14 @@ export type StripsProps = {
   seed: string;
   tilt?: number;
   gap?: number;
+  motion?: EntryOptions;
   style?: React.CSSProperties;
 };
+
+export const stripsGap = (size: number): number => Math.round(size * 0.16);
+
+export const stripsHeight = (count: number, size: number, gap = stripsGap(size)): number =>
+  count <= 0 ? 0 : count * stripHeight(size) + (count - 1) * gap;
 
 export const Strips: React.FC<StripsProps> = ({
   lines,
@@ -27,6 +32,7 @@ export const Strips: React.FC<StripsProps> = ({
   seed,
   tilt = 0,
   gap,
+  motion,
   style,
 }) => (
   <div
@@ -34,7 +40,7 @@ export const Strips: React.FC<StripsProps> = ({
       display: "flex",
       flexDirection: "column",
       alignItems: align,
-      gap: gap ?? Math.round(size * 0.14),
+      gap: gap ?? stripsGap(size),
       ...style,
     }}
   >
@@ -45,8 +51,9 @@ export const Strips: React.FC<StripsProps> = ({
         color={color}
         fontSize={size}
         enterAt={enterAt + i * stagger}
-        rotate={tilt + TILTS[(i + seed.length) % TILTS.length]}
+        rotate={tilt + restTilt(`${seed}-${i}`, 1.4)}
         seed={`${seed}-${i}`}
+        motion={motion}
       />
     ))}
   </div>

@@ -3,7 +3,7 @@ const PAD_EM = 0.6;
 const WIDE = /[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/;
 
 const charEm = (c: string): number => {
-  if (c === " ") return 0.26;
+  if (c === " " || c === "\u00a0") return 0.26;
   if (WIDE.test(c)) return 1;
   if ("iljfrt.,:;!'’|()".includes(c)) return 0.34;
   if ("mwMW".includes(c)) return 0.86;
@@ -67,16 +67,27 @@ const balance = (text: string, size: number, maxWidth: number, lines: string[]):
   return best;
 };
 
-export type FitOptions = { maxWidth: number; maxLines: number; max: number; min: number };
+export type FitOptions = { maxWidth: number; maxLines: number; max: number; min: number; prefer?: boolean };
 
-export const fitText = (text: string, { maxWidth, maxLines, max, min }: FitOptions): Fit => {
-  const clean = text.trim();
+export const glue = (text: string): string =>
+  text
+    .replace(/\s+([:;!?»%])/g, "\u00a0$1")
+    .replace(/«\s+/g, "«\u00a0")
+    .replace(/\s+·\s+/g, "\u00a0· ");
+
+const PREFER_FEWER = 0.74;
+
+export const fitText = (text: string, { maxWidth, maxLines, max, min, prefer = false }: FitOptions): Fit => {
+  const clean = glue(text.trim());
   if (!clean) return { size: max, lines: [] };
   const room = (size: number) => maxWidth - PAD_EM * size;
-  for (let size = max; size >= min; size -= 2) {
-    const lines = wrap(clean, size, maxWidth);
-    if (lines.length <= maxLines && lines.every((l) => textWidth(l, size) <= room(size))) {
-      return { size, lines: balance(clean, size, maxWidth, lines) };
+  for (let target = prefer ? 1 : maxLines; target <= maxLines; target++) {
+    const floor = target < maxLines ? Math.max(min, Math.round(max * PREFER_FEWER)) : min;
+    for (let size = max; size >= floor; size -= 2) {
+      const lines = wrap(clean, size, maxWidth);
+      if (lines.length <= target && lines.every((l) => textWidth(l, size) <= room(size))) {
+        return { size, lines: balance(clean, size, maxWidth, lines) };
+      }
     }
   }
   const size = min;

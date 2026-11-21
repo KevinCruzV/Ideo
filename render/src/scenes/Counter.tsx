@@ -1,17 +1,15 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { interpolate, useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
-import { stepFrame } from "../paper/stopMotion";
+import { Picto } from "../pictos/Picto";
 import { fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { num, str, suffixOf } from "./coerce";
 import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { Stage, STAGE_W } from "./Stage";
-import { Strips } from "./Strips";
+import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H } from "./Stage";
+import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
-
-const DISC = 620;
 
 const decimals = (n: number): number => {
   const s = String(n);
@@ -22,7 +20,7 @@ const decimals = (n: number): number => {
 export const formatCount = (value: number, places: number): string =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: places, maximumFractionDigits: places })
     .format(value)
-    .replace(/[  ]/g, " ");
+    .replace(/[  ]/g, " ");
 
 export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
@@ -33,20 +31,26 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const places = Math.max(decimals(start), decimals(end));
   const duration = Math.max(1, to - from);
   const runAt = enterFor("to", items, from, to);
-  const runFor = Math.max(6, Math.round((duration - runAt) * 0.55));
-  const progress = Math.min(1, Math.max(0, (stepFrame(frame) - runAt) / runFor));
-  const eased = 1 - Math.pow(1 - progress, 2);
+  const runFor = Math.max(18, Math.min(60, Math.round((duration - runAt) * 0.5)));
+  const progress = interpolate(frame - runAt, [0, runFor], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const eased = 1 - Math.pow(1 - progress, 3);
   const factor = Math.pow(10, places);
   const value = Math.round((start + (end - start) * eased) * factor) / factor;
   const shown = `${formatCount(value, places)}${suffix ? ` ${suffix}` : ""}`;
   const widest = `${formatCount(Math.abs(end) > Math.abs(start) ? end : start, places)}${suffix ? ` ${suffix}` : ""}`;
-  const numberFit = fitText(widest, { maxWidth: DISC - 40, maxLines: 1, max: 230, min: 60 });
-  const label = fitText(str(props.label), { maxWidth: 900, maxLines: 2, max: 76, min: 48 });
+  const label = fitText(str(props.label), { maxWidth: BOX_W, maxLines: 2, max: 82, min: 48, prefer: true });
+  const top = areaTop(props);
+  const labelH = stripsHeight(label.lines.length, label.size);
+  const disc = Math.min(660, STAGE_H - top - labelH - 60);
+  const numberFit = fitText(widest, { maxWidth: disc - 70, maxLines: 1, max: 250, min: 60 });
+  const total = disc + 50 + labelH;
+  const y0 = top + Math.max(0, (STAGE_H - top - total) / 2);
+  const numberIn = interpolate(frame - runAt, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const settle = interpolate(frame - runAt - runFor, [0, 4, 10], [1, 1.06, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   return (
     <Stage>
-      <PaperShape kind="square" color="cream" size={250} x={70} y={70} rotate={-10} seed="counter-back" />
-      <PaperShape kind="circle" color={accent} size={DISC} x={(STAGE_W - DISC) / 2 + 30} y={60} seed="counter-disc" wobble={0.5}>
+      <PaperShape kind="circle" color={accent} size={disc} x={BOX_CX - disc / 2} y={y0} seed="counter-disc" float={4} motion={{ dy: 0, spin: -8, from: 0.9 }}>
         <span
           style={{
             fontFamily: fonts.text,
@@ -56,12 +60,15 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
             color: onPaper[accent],
             fontVariantNumeric: "tabular-nums",
             whiteSpace: "nowrap",
+            opacity: numberIn,
+            transform: `translateY(${(1 - numberIn) * 24}px) scale(${settle})`,
           }}
         >
           {shown}
         </span>
       </PaperShape>
-      <div style={{ position: "absolute", left: 60, right: 60, top: 740, display: "flex", justifyContent: "center" }}>
+      <Picto name={props.picto} size={220} x={Math.max(BOX_L - 10, BOX_CX - disc / 2 - 60)} y={y0 - 30} rotate={-10} enterAt={3} />
+      <div style={{ position: "absolute", left: BOX_L, width: BOX_W, top: y0 + disc + 50, display: "flex", justifyContent: "center" }}>
         <Strips lines={label.lines} size={label.size} enterAt={enterFor("label", items, from, to)} seed="counter-label" />
       </div>
     </Stage>
