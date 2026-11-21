@@ -126,12 +126,29 @@ def sponsor_ranges(job: Path, info) -> tuple[list, list]:
     return hidden, hidden + _ranges(segments)
 
 
+def end_ranges(job: Path) -> set:
+    skip = read_json(job, "skip.json", {})
+    entries = skip.get("hidden") if isinstance(skip, dict) else []
+    out = set()
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, dict) and entry.get("end") is True:
+            try:
+                out.add((float(entry["s"]), float(entry["e"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+    return out
+
+
 def _sponsored(start: float, end: float, ranges: list) -> tuple[float, float] | None:
     return next(((s, e) for s, e in ranges if start < e and end > s), None)
 
 
-def _sponsor_error(where: str, what: str, hit: tuple[float, float]) -> str:
-    return f"{where} : {what} est dans un passage sponsorisé ({fmt_ts(hit[0])} à {fmt_ts(hit[1])}), choisis un autre passage."
+def _sponsor_error(where: str, what: str, hit: tuple[float, float], ends=()) -> str:
+    span = f"{fmt_ts(hit[0])} à {fmt_ts(hit[1])}"
+    if hit in ends:
+        return (f"{where} : {what} est dans la fin de la vidéo (remerciements, appel à s'abonner), "
+                f"ignorée ({span}), choisis un autre passage.")
+    return f"{where} : {what} est dans un passage sponsorisé ({span}), choisis un autre passage."
 
 
 def _sfx_by_ts(sfx: list) -> dict:
@@ -199,7 +216,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         if src_seconds is not None:
             hit = next(((a, b) for a, b in ctx["hidden"] if a <= src_seconds < int(b)), None)
             if hit:
-                errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit))
+                errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit, ctx["ends"]))
 
     if "sfx" in scene and kind == "quote":
         errors.append(f"{where} : « sfx » sur une scène « quote » ne serait pas joué, la citation joue déjà la vraie voix. Retire « sfx » ou mets-le sur une autre scène.")
@@ -221,7 +238,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
                 except (KeyError, TypeError, ValueError):
                     hit = None
                 if hit:
-                    errors.append(_sponsor_error(where, f"le son {scene['sfx']}", hit))
+                    errors.append(_sponsor_error(where, f"le son {scene['sfx']}", hit, ctx["ends"]))
                 part_state["clips"].append(("sfx", scene["sfx"], "", ""))
 
     if kind == "quote":
@@ -270,7 +287,7 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
         errors.append(f"{where} : la citation dure {round(clip)} s, {QUOTE_MAX_SECONDS:.0f} s au plus. Choisis une suite de mots plus courte dans le même passage.")
     hit = _sponsored(window[span[0]]["s"], window[span[1]]["e"], ctx["sponsor"])
     if hit:
-        errors.append(_sponsor_error(where, "la citation", hit))
+        errors.append(_sponsor_error(where, "la citation", hit, ctx["ends"]))
     part_state["seconds"] += clip
     part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text, speaker or "voix non identifiée"))
 
@@ -386,6 +403,7 @@ def check_plan(job: Path) -> list[str]:
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
         "hidden": hidden,
+        "ends": end_ranges(job),
         "sponsor": sponsor,
     }
     _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)

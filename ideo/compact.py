@@ -1,7 +1,8 @@
 import re
+import unicodedata
 from pathlib import Path
 
-from ideo import common, sfx as sfx_mod
+from ideo import common, sfx as sfx_mod, target
 
 PAUSE = 1.2
 MAX_WORDS = 60
@@ -11,19 +12,36 @@ SPONSOR_WORDS = (
     "sponsorisé par", "sponsorisée par", "code promo",
     "sponsored by", "today's sponsor", "this video is brought to you by", "thanks to our sponsor",
 )
+END_ZONE = 0.08
+END_PATTERNS = (
+    r"\babonn", r"\bcloche\b", r"\bpouce bleu\b", r"\bun like\b", r"\blikez\b", r"\bmerci d'avoir\b",
+    r"\bmerci de m'avoir\b", r"\bpatreon\b", r"\btipeee\b", r"\butip\b", r"\binstagram\b", r"\btiktok\b",
+    r"\bsubscribe\b", r"\bsubscribing\b", r"\bnotification bell\b", r"\bhit the bell\b",
+    r"\bthanks? for watching\b", r"\bthank you for watching\b",
+    r"\bsuscri", r"\bcampana\b", r"\bgracias por (?:ver|mirar)\b",
+    r"\babonniere", r"\babonniert\b", r"\bglocke\b", r"\bdanke fuers zuschauen\b", r"\bdanke furs zuschauen\b",
+    r"\biscriv", r"\bcampanella\b", r"\bgrazie per aver\b",
+    r"\binscrev", r"\bobrigado por assistir\b", r"\bsino de notificac",
+    r"\babonneer", r"\bbedankt voor het kijken\b",
+    r"\b(?:za)?subskryb", r"\bdzwonek\b", r"\bdzieki za ogladanie\b",
+    r"\babone ol", r"\bizlediginiz icin\b", r"\bkanala abone\b",
+)
+END_RE = re.compile("|".join(END_PATTERNS))
 SPONSOR_NEGATIONS = (
     "pas sponsoris", "non sponsoris", "jamais sponsoris", "aucun sponsor", "pas de sponsor", "pas de code promo",
     "not sponsored", "n't sponsored", "no sponsor", "not a sponsor",
 )
 
 
-def header(info: dict) -> list[str]:
+def header(info: dict, advice: str | None = None) -> list[str]:
     lines = [
         f"Titre : {info.get('title', '')}",
         f"Chaîne : {info.get('channel', '')}",
         f"Durée : {common.fmt_ts(info.get('duration') or 0)}",
         f"Langue : {info.get('language') or 'inconnue'}",
     ]
+    if advice:
+        lines.append(advice)
     chapters = info.get("chapters") or []
     if chapters:
         lines.append("Chapitres :")
@@ -58,6 +76,30 @@ def is_sponsor_text(text: str) -> bool:
     if any(phrase in low for phrase in SPONSOR_NEGATIONS):
         return False
     return any(phrase in low for phrase in SPONSOR_WORDS)
+
+
+def _plain(text: str) -> str:
+    low = re.sub(r"\s+(['’])", r"\1", text.lower()).replace("’", "'")
+    low = "".join(c for c in unicodedata.normalize("NFKD", low) if not unicodedata.combining(c))
+    low = re.sub(r"\s*-\s*", "-", low)
+    return " ".join(low.split())
+
+
+def is_end_text(text: str) -> bool:
+    plain = _plain(text)
+    return bool(END_RE.search(plain) or END_RE.search(plain.replace("-", " ")))
+
+
+def end_range(paras: list[dict], hidden: list[dict], duration: float) -> dict | None:
+    if duration <= 0:
+        return None
+    start = duration * (1 - END_ZONE)
+    for i, para in enumerate(paras):
+        if para["s"] < start or any(r["s"] <= para["s"] <= r["e"] for r in hidden):
+            continue
+        if is_end_text(para["text"]):
+            return {"s": para["s"], "e": paras[-1]["e"], "probable": False, "end": True}
+    return None
 
 
 def _inside(para: dict, segments: list[dict]) -> bool:
@@ -97,6 +139,10 @@ def hidden_ranges(paras: list[dict], info: dict) -> list[dict]:
 def build(words: list[dict], sfx: list[dict], info: dict) -> tuple[str, list[dict]]:
     paras = paragraphs(words, [m["s"] for m in sfx])
     hidden = hidden_ranges(paras, info)
+    duration = info.get("duration") or (words[-1]["e"] if words else 0)
+    ending = end_range(paras, hidden, duration)
+    if ending:
+        hidden.append(ending)
 
     def hidden_at(t: float):
         return next((r for r in hidden if r["s"] <= t <= r["e"]), None)
@@ -108,15 +154,26 @@ def build(words: list[dict], sfx: list[dict], info: dict) -> tuple[str, list[dic
         if r is not None:
             if id(r) not in done:
                 done.add(id(r))
-                label = "passage probablement sponsorisé" if r["probable"] else "passage sponsorisé"
-                body.append(f"[{label} {common.fmt_ts(r['s'])} à {common.fmt_ts(r['e'])}, ignoré]")
+                if r.get("end"):
+                    body.append("[fin de vidéo, ignorée]")
+                else:
+                    label = "passage probablement sponsorisé" if r["probable"] else "passage sponsorisé"
+                    body.append(f"[{label} {common.fmt_ts(r['s'])} à {common.fmt_ts(r['e'])}, ignoré]")
             continue
         if order == 0:
             body.append(f"[son {common.fmt_ts(item['s'])} {item['e'] - item['s']:.1f}s]")
         else:
             body.append(f"[{common.fmt_ts(item['s'])}] {item['text']}")
-    text = "\n".join(header(info)) + "\n\n" + "\n".join(body) + "\n"
-    return text, [{"s": round(r["s"], 2), "e": round(r["e"], 2), "probable": r["probable"]} for r in hidden]
+    advice = None
+    if duration:
+        ranges = [(r["s"], r["e"]) for r in hidden]
+        ranges += [(s["s"], s["e"]) for s in info.get("skip") or [] if isinstance(s, dict) and "s" in s and "e" in s]
+        advice = target.line(duration, ranges, info.get("language") or "fr")
+    text = "\n".join(header(info, advice)) + "\n\n" + "\n".join(body) + "\n"
+    out = [{"s": round(r["s"], 2), "e": round(r["e"], 2), "probable": r["probable"]} for r in hidden]
+    if ending:
+        out[-1]["end"] = True
+    return text, out
 
 
 def prepare_transcript(job: Path) -> dict:

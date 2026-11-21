@@ -122,3 +122,52 @@ def test_sponsor_wording_in_both_languages():
 ])
 def test_weak_or_negated_wording_is_not_a_sponsor(text):
     assert not compact.is_sponsor_text(text)
+
+
+LONG_INFO = {"title": "T", "channel": "C", "duration": 1000, "language": "fr"}
+BODY = (para_words(0, "Le ciel est bleu parce que la lumière se diffuse dans l'air")
+        + para_words(500, "La conclusion est que la physique explique les couleurs")
+        + para_words(930, "Cette partie reste dans la vidéo et parle de physique")
+        + para_words(960, "Merci d 'avoir regardé, abonne -toi et active la cloche")
+        + para_words(975, "Retrouve -moi sur Instagram et sur Patreon, à bientôt"))
+
+
+def test_end_of_video_with_strong_keywords_is_replaced():
+    text, hidden = compact.build(BODY, [], LONG_INFO)
+    assert "[fin de vidéo, ignorée]" in text
+    assert "Merci" not in text and "Instagram" not in text and "[15:30] Cette partie" in text
+    assert hidden[-1]["end"] is True and hidden[-1]["s"] == 960.0
+
+
+def test_end_zone_needs_a_strong_keyword():
+    words = BODY[:-22]
+    words = words + para_words(960, "Voilà la dernière idée, une jolie conclusion sur la lumière")
+    text, hidden = compact.build(words, [], LONG_INFO)
+    assert "[fin de vidéo" not in text and "end" not in str(hidden)
+
+
+def test_keywords_before_the_last_eight_percent_are_kept():
+    words = para_words(100, "Abonne -toi à la chaîne, mais ce n'est pas la fin") + BODY[:-22]
+    words = sorted(words, key=lambda w: w["s"])
+    text, hidden = compact.build(words, [], LONG_INFO)
+    assert "Abonne" in text and "[fin de vidéo" not in text
+
+
+@pytest.mark.parametrize("phrase", [
+    "Please like and subscribe to the channel", "Thanks for watching, see you soon",
+    "Suscríbete y activa la campana", "Abonniere den Kanal und lass ein Like da",
+    "Iscriviti al canale e segui su Instagram", "Inscreva-se no canal", "Abonneer je op het kanaal",
+    "Zasubskrybuj kanał", "Kanala abone ol",
+])
+def test_end_keywords_in_the_supported_languages(phrase):
+    assert compact.is_end_text(phrase)
+
+
+def test_end_keywords_are_whole_words():
+    assert not compact.is_end_text("This is likely to be unlike the rest")
+    assert not compact.is_end_text("Le ciel est bleu à cause de la diffusion")
+
+
+def test_header_has_the_advised_duration():
+    text = compact.build(BODY, [], LONG_INFO)[0]
+    assert "Durée conseillée : 120 à 180 s (environ 312 à 468 mots de say)." in text.split("\n\n")[0]

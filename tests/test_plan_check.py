@@ -473,3 +473,22 @@ def test_sfx_on_a_quote_scene_is_refused(job_with_fixtures):
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
     assert any("« sfx »" in e and "quote" in e and "Retire" in e for e in errors), errors
+
+
+def set_end_skip(job, s, e):
+    (job / "skip.json").write_text(json.dumps({
+        "hidden": [{"s": s, "e": e, "probable": False, "end": True}], "segments": [],
+    }), encoding="utf-8")
+
+
+def test_src_in_the_end_of_the_video_is_an_error(job_with_fixtures):
+    set_end_skip(job_with_fixtures, 14.0, 20.0)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors == ["Partie 1, scène 2 : « src » 0:15 est dans la fin de la vidéo (remerciements, appel à s'abonner), "
+                      "ignorée (0:14 à 0:20), choisis un autre passage."]
+
+
+def test_quote_in_the_end_of_the_video_is_an_error(job_with_fixtures):
+    set_end_skip(job_with_fixtures, 20.0, 40.0)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any(e.startswith("Partie 1, scène 5 : la citation est dans la fin de la vidéo") for e in errors)

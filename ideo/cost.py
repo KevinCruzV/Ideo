@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ideo import common, plan_check
+from ideo import common, plan_check, target
 
 REPO = Path(__file__).resolve().parent.parent
 SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md")
@@ -98,6 +98,11 @@ def line(job: Path) -> str:
     if e["long"]:
         text += ", contenu long : une vidéo de 5 min ou plusieurs parties"
     return text
+
+
+def advice(job: Path) -> str:
+    text = target.for_job(job)
+    return f" {text}" if text else ""
 
 
 def reading(job: Path) -> dict:

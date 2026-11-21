@@ -62,12 +62,13 @@ def run(cmd: str, arg: str, part: int | None) -> tuple[list[str], int]:
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
-                f"Coût estimé : {cost.line(job)}"], 0
+                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}"], 0
     job = pipeline.resolve_job(arg)
     if cmd == "cost":
         if not pipeline.prepared(job):
             raise common.IdeoError(f"{job.name} n'est pas préparé : lance d'abord prepare <url>.")
-        return [f"OK cost : {cost.line(job)}. Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)})"], 0
+        return [f"OK cost : {cost.line(job)}.{cost.advice(job)} Transcription : {job / 'transcript_compact.md'} "
+                f"({cost.reading_note(job)})"], 0
     if cmd == "check":
         errors = plan_check.check_plan(job)
         if errors:
