@@ -53,6 +53,26 @@ export const PICTOS = [
   "barrel",
   "gear",
   "people",
+  "lungs",
+  "stomach",
+  "spine",
+  "bone",
+  "muscle",
+  "tooth",
+  "blood",
+  "pill",
+  "syringe",
+  "virus",
+  "bed",
+  "pillow",
+  "moon",
+  "thermometer",
+  "scale-weight",
+  "apple",
+  "dumbbell",
+  "running-shoe",
+  "stethoscope",
+  "hospital",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -573,6 +593,185 @@ const DRAW: Record<PictoName, Draw> = {
     ...bust(k, 76, 60, 0.95, "yellow", "ink"),
     ...bust(k, 50, 52, 1.25, "red", "ink"),
     k.rect(4, 84, 92, 8, "ink"),
+  ],
+  lungs: (k) => [
+    k.poly([[45, 30], [30, 32], [17, 50], [14, 76], [24, 88], [44, 82], [46, 50]], "red"),
+    k.poly([[55, 30], [70, 32], [83, 50], [86, 76], [76, 88], [56, 82], [54, 50]], "red"),
+    k.rect(46.5, 8, 7, 34, "ink"),
+    k.bar(50, 40, 36, 52, 5, "ink"),
+    k.bar(50, 40, 64, 52, 5, "ink"),
+    k.bar(26, 56, 34, 70, 3, "cream"),
+    k.bar(74, 56, 66, 70, 3, "cream"),
+  ],
+  stomach: (k) => [
+    k.poly([[38, 8], [48, 8], [50, 28], [68, 28], [84, 42], [84, 64], [68, 82], [46, 86], [30, 78], [30, 64], [46, 60], [54, 50], [42, 40], [36, 24]], "red"),
+    k.bar(56, 44, 74, 50, 3.5, "cream"),
+    k.bar(48, 70, 70, 66, 3.5, "cream"),
+    k.rect(64, 82, 9, 12, "red", -20),
+  ],
+  spine: (k) => [
+    ...[0, 1, 2, 3, 4, 5].flatMap((i) => {
+      const y = 10 + i * 14;
+      const x = 50 + 6 * Math.sin(i * 0.9);
+      return [k.rect(x - 15, y, 30, 10, "blue"), k.rect(x - 9, y + 10, 18, 4, "ink")];
+    }),
+    ...[0, 2, 4].map((i) => k.rect(50 + 6 * Math.sin(i * 0.9) - 22, 12 + i * 14, 6, 6, "yellow")),
+  ],
+  bone: (k) => [
+    k.circle(50, 50, 42, "blue"),
+    k.bar(32, 68, 68, 32, 13, "cream"),
+    k.circle(26, 66, 8.5, "cream"),
+    k.circle(34, 74, 8.5, "cream"),
+    k.circle(66, 26, 8.5, "cream"),
+    k.circle(74, 34, 8.5, "cream"),
+  ],
+  muscle: (k) => [
+    k.rect(18, 46, 26, 46, "red", -6),
+    k.poly([[18, 52], [40, 30], [60, 22], [70, 32], [50, 46], [40, 60]], "red"),
+    k.circle(46, 40, 16, "red"),
+    k.circle(70, 22, 13, "yellow"),
+    k.bar(38, 36, 52, 32, 3, "cream"),
+  ],
+  tooth: (k) => [
+    k.circle(50, 50, 42, "blue"),
+    k.poly([[26, 26], [40, 20], [50, 26], [60, 20], [74, 26], [76, 46], [68, 58], [64, 82], [56, 84], [52, 62], [48, 62], [44, 84], [36, 82], [32, 58], [24, 46]], "cream"),
+    k.circle(38, 34, 4, "yellow"),
+  ],
+  blood: (k) => [
+    k.poly([[50, 6], [72, 44], [28, 44]], "red"),
+    k.circle(50, 60, 28, "red"),
+    k.rect(46, 46, 8, 28, "cream"),
+    k.rect(36, 56, 28, 8, "cream"),
+  ],
+  pill: (k) => [
+    k.circle(72, 74, 14, "yellow"),
+    k.bar(70, 66, 76, 82, 2.6, "cream"),
+    k.rect(20, 34, 30, 26, "red", -40, 46, 46),
+    k.rect(50, 34, 30, 26, "cream", -40, 46, 46),
+    k.circle(28, 58, 13, "red"),
+    k.circle(64, 30, 13, "cream"),
+  ],
+  syringe: (k) => [
+    k.rect(30, 38, 40, 20, "cream", -40, 50, 50),
+    k.rect(30, 42, 24, 12, "blue", -40, 50, 50),
+    k.rect(70, 44, 18, 8, "ink", -40, 50, 50),
+    k.rect(86, 38, 5, 20, "ink", -40, 50, 50),
+    k.rect(18, 46, 12, 4, "ink", -40, 50, 50),
+    k.rect(26, 40, 4, 16, "ink", -40, 50, 50),
+  ],
+  virus: (k) => [
+    ...Array.from({ length: 8 }, (_, i) => {
+      const a = (i / 8) * Math.PI * 2;
+      return k.bar(50 + 26 * Math.cos(a), 50 + 26 * Math.sin(a), 50 + 40 * Math.cos(a), 50 + 40 * Math.sin(a), 5, "ink");
+    }),
+    ...Array.from({ length: 8 }, (_, i) => {
+      const a = (i / 8) * Math.PI * 2;
+      return k.circle(50 + 42 * Math.cos(a), 50 + 42 * Math.sin(a), 6, "yellow");
+    }),
+    k.circle(50, 50, 28, "red"),
+    k.circle(42, 44, 6, "cream"),
+    k.circle(60, 58, 4, "cream"),
+  ],
+  bed: (k) => [
+    k.rect(8, 32, 10, 58, "red"),
+    k.rect(82, 52, 10, 38, "red"),
+    k.rect(10, 60, 80, 16, "cream"),
+    k.rect(36, 50, 54, 18, "blue"),
+    k.rect(18, 46, 24, 16, "cream", -6),
+    k.rect(8, 76, 84, 8, "red"),
+  ],
+  pillow: (k) => [
+    k.poly([[10, 32], [50, 26], [90, 32], [94, 52], [90, 74], [50, 80], [10, 74], [6, 52]], "blue"),
+    k.poly([[10, 32], [22, 34], [14, 44]], "cream"),
+    k.poly([[90, 32], [78, 34], [86, 44]], "cream"),
+    k.poly([[10, 74], [22, 72], [14, 62]], "cream"),
+    k.poly([[90, 74], [78, 72], [86, 62]], "cream"),
+    k.poly([[32, 50], [50, 44], [68, 50], [50, 60]], "cream"),
+  ],
+
+  moon: (k) => [
+    k.poly(
+      [
+        ...Array.from({ length: 18 }, (_, i) => {
+          const a = ((70 + (220 * i) / 17) * Math.PI) / 180;
+          return [50 + 36 * Math.cos(a), 52 + 36 * Math.sin(a)] as [number, number];
+        }),
+        ...Array.from({ length: 18 }, (_, i) => {
+          const a = ((250 - (180 * i) / 17) * Math.PI) / 180;
+          return [64 + 28 * Math.cos(a), 46 + 28 * Math.sin(a)] as [number, number];
+        }),
+      ],
+      "yellow",
+    ),
+    k.star(80, 70, 8, 3.4, 5, "blue"),
+    k.star(76, 18, 6, 2.6, 5, "blue"),
+  ],
+  thermometer: (k) => [
+    k.rect(40, 6, 20, 70, "cream"),
+    k.circle(50, 78, 16, "red"),
+    k.rect(45.5, 30, 9, 48, "red"),
+    ...[16, 26, 36, 46, 56].map((y) => k.rect(60, y, 10, 3.5, "ink")),
+  ],
+  "scale-weight": (k) => [
+    k.rect(12, 18, 76, 72, "blue"),
+    k.rect(30, 26, 40, 22, "cream"),
+    k.bar(50, 46, 60, 30, 3.4, "red"),
+    k.rect(22, 70, 22, 12, "ink"),
+    k.rect(56, 70, 22, 12, "ink"),
+  ],
+  apple: (k) => [
+    k.circle(38, 56, 26, "red"),
+    k.circle(62, 56, 26, "red"),
+    k.circle(50, 70, 22, "red"),
+    k.rect(47, 14, 6, 22, "ink", 12),
+    k.oval(64, 20, 13, 6, "yellow", -24),
+    k.circle(36, 48, 6, "cream"),
+  ],
+  dumbbell: (k) => [
+    k.rect(18, 46, 64, 8, "ink"),
+    k.rect(10, 30, 12, 40, "blue"),
+    k.rect(22, 34, 8, 32, "blue"),
+    k.rect(78, 30, 12, 40, "blue"),
+    k.rect(70, 34, 8, 32, "blue"),
+  ],
+  "running-shoe": (k) => [
+    k.poly([[10, 64], [14, 40], [30, 36], [44, 48], [70, 54], [90, 64], [88, 74], [10, 74]], "red"),
+    k.rect(8, 72, 84, 10, "cream"),
+    k.bar(30, 44, 38, 52, 3, "cream"),
+    k.bar(36, 42, 44, 50, 3, "cream"),
+    k.bar(60, 64, 82, 66, 4, "yellow"),
+    k.rect(10, 38, 8, 26, "ink"),
+  ],
+  stethoscope: (k) => [
+    k.bar(28, 10, 32, 46, 6, "ink"),
+    k.bar(64, 10, 60, 46, 6, "ink"),
+    k.poly(
+      [
+        ...Array.from({ length: 13 }, (_, i) => {
+          const a = (i / 12) * Math.PI;
+          return [46 + 17 * Math.cos(a), 46 + 22 * Math.sin(a)] as [number, number];
+        }),
+        ...Array.from({ length: 13 }, (_, i) => {
+          const a = Math.PI - (i / 12) * Math.PI;
+          return [46 + 11 * Math.cos(a), 46 + 16 * Math.sin(a)] as [number, number];
+        }),
+      ],
+      "ink",
+    ),
+    k.circle(28, 8, 5, "red"),
+    k.circle(64, 8, 5, "red"),
+    k.bar(46, 66, 66, 80, 6, "ink"),
+    k.circle(72, 82, 13, "blue"),
+    k.circle(72, 82, 6, "cream"),
+  ],
+
+  hospital: (k) => [
+    k.rect(14, 36, 72, 56, "blue"),
+    k.rect(30, 14, 40, 28, "cream"),
+    k.rect(45, 18, 10, 20, "red"),
+    k.rect(38, 23, 24, 10, "red"),
+    ...[22, 62].flatMap((x) => [k.rect(x, 48, 14, 12, "cream"), k.rect(x, 66, 14, 12, "cream")]),
+    k.rect(42, 70, 16, 22, "ink"),
   ],
 };
 
