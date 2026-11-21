@@ -109,3 +109,17 @@ def test_assembled_part_reaches_minus_14_lufs(job_with_voice_fixtures):
 
 def test_gap_between_segments_is_280_ms():
     assert assemble.SILENCE_GAP == 0.28
+
+
+def test_reach_target_lifts_a_quiet_part_to_minus_14(tmp_path):
+    from tests.conftest import write_sine_wav
+
+    path = tmp_path / "p.wav"
+    write_sine_wav(path, seconds=2.0)
+    import subprocess
+
+    quiet = tmp_path / "q.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", "volume=-22dB", str(quiet)], check=True)
+    assert measured_lufs(quiet) < -30
+    assemble.reach_target(quiet, tmp_path, tmp_path / "log")
+    assert measured_lufs(quiet) == pytest.approx(-14.0, abs=0.5)

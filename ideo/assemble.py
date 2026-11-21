@@ -36,6 +36,29 @@ def _measure(raw: Path) -> dict | None:
     return values if all(math.isfinite(v) for v in values.values()) else None
 
 
+def _integrated(path: Path) -> float | None:
+    result = subprocess.run(
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(path), "-af", "ebur128", "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    found = re.findall(r"I:\s+(-?[\d.]+) LUFS", result.stderr)
+    return float(found[-1]) if found else None
+
+
+def reach_target(path: Path, work: Path, log: Path, tolerance: float = 0.2) -> None:
+    loudness = _integrated(path)
+    if loudness is None or abs(loudness - TARGET_LUFS) <= tolerance:
+        return
+    out = work / "gain.wav"
+    gain = TARGET_LUFS - loudness
+    common.run(
+        [_ffmpeg(), "-y", "-i", str(path), "-af", f"volume={gain:.2f}dB,alimiter=limit=0.841:level=disabled",
+         "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le", str(out)],
+        log,
+    )
+    shutil.copyfile(out, path)
+
+
 def _loudnorm_filter(raw: Path) -> str:
     values = _measure(raw)
     if values is None:
@@ -228,6 +251,7 @@ def _assemble(job: Path, n: int) -> Path:
              str(tmp_out)],
             log,
         )
+        reach_target(tmp_out, work, log)
         shutil.copyfile(tmp_out, out_wav)
 
     for entry in offsets:
