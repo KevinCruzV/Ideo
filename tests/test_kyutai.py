@@ -334,3 +334,14 @@ def test_changing_the_lexicon_redoes_only_the_affected_segments(kyutai, job_with
     assert len(kyutai.calls) == 2 and [r["id"] for r in kyutai.calls[1]["requests"]] == ["seg_00_hook"]
     voice.voice_part(job_with_plan, 1, backend=backend)
     assert len(kyutai.calls) == 2
+
+
+def test_existing_segments_without_a_score_get_one_without_resynthesis(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch)
+    prosody_path = job_with_plan / "parts" / "01" / "voice-prosody.json"
+    data = common.load_json(prosody_path)
+    del data["seg_03"]
+    common.save_json(prosody_path, data)
+    kyutai.calls.clear()
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    assert kyutai.calls == [] and common.load_json(prosody_path)["seg_03"] == 3.0

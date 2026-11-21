@@ -328,5 +328,21 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     except Exception as err:
         common.mark(job, step, False, str(err))
         raise common.IdeoError(f"la voix a échoué : {err}") from err
+    if local and (out_dir / "voice-info.json").exists():
+        _backfill_prosody(out_dir, [name for name, _ in items])
     common.mark(job, step, True, f"{len(paths)} segments")
     return paths
+
+
+def _backfill_prosody(out_dir: Path, names: list[str]) -> None:
+    path = out_dir / "voice-prosody.json"
+    known = common.load_json(path) if path.exists() else {}
+    missing = {}
+    for name in names:
+        wav = out_dir / f"{name}.wav"
+        if name not in known and wav.exists():
+            score = prosody.score(wav)
+            if score is not None:
+                missing[name] = score
+    if missing:
+        _write_json_merged(path, missing)
