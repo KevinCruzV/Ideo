@@ -23,11 +23,11 @@ def test_leading_and_trailing_silence_are_trimmed_keeping_30_ms():
     assert mapping(1.5) == pytest.approx(1.03, abs=0.015)
 
 
-def test_long_inner_silence_becomes_300_ms():
+def test_long_inner_silence_becomes_350_ms():
     pcm = np.concatenate([tone(0.5), quiet(1.0), tone(0.5)])
     out, mapping = pacing.tighten(pcm)
-    assert len(out) / RATE == pytest.approx(1.3, abs=0.03)
-    assert mapping(1.5) == pytest.approx(0.5 + 0.30, abs=0.02)
+    assert len(out) / RATE == pytest.approx(1.35, abs=0.03)
+    assert mapping(1.5) == pytest.approx(0.5 + 0.35, abs=0.02)
     assert mapping(0.25) == pytest.approx(0.25, abs=0.01)
 
 

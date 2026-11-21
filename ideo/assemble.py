@@ -10,7 +10,7 @@ from pathlib import Path
 from ideo import common, textmatch, voice
 
 RATE = 48000
-SILENCE_GAP = 0.28
+SILENCE_GAP = 0.35
 CLIP_PAD = 0.25
 FADE = 0.08
 QUOTE_WINDOW = 90.0
