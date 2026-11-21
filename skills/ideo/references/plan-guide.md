@@ -22,7 +22,7 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 
 La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 - Scène 1 : le point de départ, avec sa date ou son lieu.
-- Ensuite, des actes. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile. Sinon, découpe toi-même en 2 à 4 actes. Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`.
+- Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes. Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène.
 - Chaque `say` part de la scène d'avant : dis ce qui relie les deux (la cause, la conséquence, l'opposition, le temps passé). Exemples de liens : "Résultat", "Mais dix ans plus tard", "C'est là que", "Face à ça", "Le problème". Si on peut mélanger deux scènes sans que ça se voie, il manque le lien.
 - Quand un événement a une date ou un lieu dans la source, le spectateur doit le voir : mets-le dans `kicker` (section 5), et dis l'année dans `say` quand elle aide à suivre.
 - Dernière scène : la réponse à la question de l'accroche, en une phrase claire. Pas une ouverture vague.
@@ -54,9 +54,9 @@ Mauvaises accroches :
 
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Un `say` = 2 ou 3 phrases courtes, 18 à 30 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
-- Nombres : écris en chiffres les années et les nombres entiers simples ("en 2001", "3 000 personnes", "110 milliards"). Écris en lettres les fractions, les nombres à virgule et les rangs ("un tiers", "un virgule trois milliard", "le cinquante et unième").
+- Nombres : écris en chiffres les années et les nombres entiers simples ("en 2001", "3 000 personnes", "110 milliards"). Écris les mêmes nombres de la même façon à l'écran ("3 000", avec l'espace). Écris en lettres les fractions, les nombres à virgule et les rangs ("un tiers", "un virgule trois milliard", "le cinquante et unième").
 - Sujets graves (morts, attentat, guerre, maladie) : ton sobre. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.
-- Dans `say` seulement : pas de parenthèses, pas d'abréviations ("nanomètres", pas "nm"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
+- Dans `say` seulement : pas de parenthèses, pas d'abréviations d'unités ("nanomètres", pas "nm") ; les sigles connus se gardent ("OTAN", "BRICS", "ONU"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
 - Pas d'énumération lue à voix haute. Trois éléments au plus, chacun dans sa phrase.
 - En français, tutoie le spectateur.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
@@ -149,7 +149,7 @@ Pour que la vidéo n'ait pas l'air générée :
 - `key-title` : 1 fois par acte au plus. `mascot` : 4 fois au plus par vidéo, jamais deux de suite.
 - Au moins une scène sur deux montre un dessin : un `picto`, un `object-state`, un `versus`, un `shape-diagram`, un `timeline` ou la `mascot`. Choisis le `picto` qui montre la chose dont parle la scène, pas un symbole vague.
 - Dès qu'il y a deux camps, deux époques ou un avant et un après : `versus` ou `object-state`. Dès qu'il y a trois dates ou plus : `timeline`. Dès qu'il y a deux nombres à comparer : `shape-diagram` avec `unit`.
-- Une `quote` toutes les 8 à 10 scènes si la source contient des extraits (journal, discours, interview).
+- Une `quote` toutes les 8 à 10 scènes si la source contient des extraits nets (journal, discours, interview). Si elle n'en a qu'un, un seul suffit ; si elle n'en a pas, aucun.
 - Varie les débuts de `say` : pas trois scènes de suite qui commencent par le même mot.
 
 ## 9. Exemple complet
