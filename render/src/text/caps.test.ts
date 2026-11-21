@@ -36,6 +36,8 @@ const CAPS: Record<string, Cap> = {
   "quote.speaker": { cap: 32, fit: { maxWidth: BOX_W - 100, maxLines: 1, max: 54, min: 44 } },
   "object-state.states": { cap: 36, fit: { maxWidth: BOX_W, maxLines: 1, max: 72, min: 40 } },
   "versus.side": { cap: 24, fit: { maxWidth: (BOX_W - 56) / 2 - 10, maxLines: 2, max: 80, min: 48 } },
+  "body.marks.label": { cap: 28, fit: { maxWidth: BOX_W * 0.46, maxLines: 3, max: 52, min: 44 } },
+  "map.places.label": { cap: 24, fit: { maxWidth: 680, maxLines: 1, max: 52, min: 44 } },
   kicker: { cap: 28, fit: { maxWidth: BOX_W * 0.9, maxLines: 1, max: 38, min: 28 }, upper: true },
 };
 

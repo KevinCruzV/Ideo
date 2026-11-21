@@ -2,7 +2,7 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "durationInFrames": 2100,
+  "durationInFrames": 2200,
   "lang": "fr",
   "audio": null,
   "watermark": "Ideo",
@@ -695,6 +695,54 @@
       "from": 1900,
       "to": 2000,
       "props": {
+        "pose": "lying-stomach",
+        "setting": "bed",
+        "tone": "bad",
+        "kicker": "Révolution des œillets à Lis",
+        "marks": [
+          {
+            "part": "neck",
+            "label": "Cou tordu toute la nuit dura"
+          },
+          {
+            "part": "lungs",
+            "label": "Poumons écrasés sous le poid"
+          },
+          {
+            "part": "back",
+            "label": "Dos cambré jusqu'au réveil o"
+          },
+          {
+            "part": "knees",
+            "label": "Genoux pliés sur le matelas"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 1904
+        },
+        {
+          "el": "marks.1",
+          "at": 1914
+        },
+        {
+          "el": "marks.2",
+          "at": 1924
+        },
+        {
+          "el": "marks.3",
+          "at": 1934
+        }
+      ],
+      "type": "body"
+    },
+    {
+      "kind": "scene",
+      "from": 2000,
+      "to": 2100,
+      "props": {
         "bubble": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change",
         "pose": "surprise",
         "kicker": "Révolution des œillets à Lis"
@@ -702,15 +750,15 @@
       "items": [
         {
           "el": "bubble",
-          "at": 1906
+          "at": 2006
         }
       ],
       "type": "mascot"
     },
     {
       "kind": "outro",
-      "from": 2000,
-      "to": 2100,
+      "from": 2100,
+      "to": 2200,
       "props": {
         "text": "Abonne-toi pour la partie 2 : Les États-Unis et l'Union soviétique se"
       },
@@ -2586,6 +2634,95 @@
       ],
       "from": 2077,
       "to": 2100
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 2102,
+          "to": 2107
+        },
+        {
+          "w": "États-Unis",
+          "from": 2107,
+          "to": 2112
+        },
+        {
+          "w": "face",
+          "from": 2112,
+          "to": 2117
+        },
+        {
+          "w": "à",
+          "from": 2117,
+          "to": 2122
+        }
+      ],
+      "from": 2102,
+      "to": 2127
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 2127,
+          "to": 2132
+        },
+        {
+          "w": "soviétique",
+          "from": 2132,
+          "to": 2137
+        },
+        {
+          "w": ":",
+          "from": 2137,
+          "to": 2142
+        },
+        {
+          "w": "ça",
+          "from": 2142,
+          "to": 2147
+        }
+      ],
+      "from": 2127,
+      "to": 2152
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 2152,
+          "to": 2157
+        },
+        {
+          "w": "tout",
+          "from": 2157,
+          "to": 2162
+        },
+        {
+          "w": "pour",
+          "from": 2162,
+          "to": 2167
+        },
+        {
+          "w": "l'Égypte",
+          "from": 2167,
+          "to": 2172
+        }
+      ],
+      "from": 2152,
+      "to": 2177
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 2177,
+          "to": 2182
+        }
+      ],
+      "from": 2177,
+      "to": 2200
     }
   ]
 }

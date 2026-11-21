@@ -71,7 +71,7 @@ export const MapScene: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const edge = cutEdge(`map-${focus}`, 0.6);
   const sheet = entry(frame, -3, { dy: 50, spin: -3, from: 0.95 });
 
-  const labelSize = Math.max(LABEL_MIN, Math.min(LABEL_MAX, ...places.map((p) => (p.label ? fitText(p.label, { maxWidth: 420, maxLines: 1, max: LABEL_MAX, min: LABEL_MIN }).size : LABEL_MAX))));
+  const labelSize = Math.max(LABEL_MIN, Math.min(LABEL_MAX, ...places.map((p) => (p.label ? fitText(p.label, { maxWidth: 680, maxLines: 1, max: LABEL_MAX, min: LABEL_MIN }).size : LABEL_MAX))));
   const placed: Box[] = places.map((p) => {
     const c = COUNTRIES[p.code];
     const [px, py] = toPx(c.cx, c.cy);
