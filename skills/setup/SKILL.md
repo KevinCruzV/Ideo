@@ -15,6 +15,7 @@ Le dépôt est dans `~/Desktop/ideo`. Lance chaque commande avec l'outil Bash, d
 6. Dépendances Python : `cd ~/Desktop/ideo && .venv/bin/python -m pip install -q -r requirements.txt`
 7. Dépendances Remotion : `cd ~/Desktop/ideo && command pnpm --dir render install`
 8. Modèle de transcription (une seule fois, environ 500 Mo) : `cd ~/Desktop/ideo && HF_HUB_DISABLE_PROGRESS_BARS=1 .venv/bin/python -c "from ideo.transcribe import load_model; load_model('small'); print('OK modèle')"`
-9. Autotest : `cd ~/Desktop/ideo && .venv/bin/python -m pytest -q`. Attendu : aucune ligne `failed`. Sinon montre à l'utilisateur les noms des tests en échec.
+9. Voix locale (Mac Apple Silicon seulement, facultatif mais recommandé : voix plus naturelle, gratuite, sans internet ensuite). Dis d'abord à l'utilisateur : "Je vais installer la voix locale : environ 4,5 Go à télécharger, 10 minutes environ selon ta connexion. Sans elle, ideo utilise la voix en ligne." S'il refuse, passe à l'étape suivante. Sinon : `cd ~/Desktop/ideo && .venv/bin/python -m ideo setup-voix` (lance-la en arrière-plan et attends la fin). Elle crée `.venv-voix2`, installe `moshi_mlx`, télécharge le modèle et la voix, puis vérifie en synthétisant une phrase. Elle ne refait rien si tout est déjà prêt. Si elle répond `ERREUR setup-voix`, donne le message à l'utilisateur : la voix en ligne sera utilisée, et il peut relancer plus tard.
+10. Autotest : `cd ~/Desktop/ideo && .venv/bin/python -m pytest -q`. Attendu : aucune ligne `failed`. Sinon montre à l'utilisateur les noms des tests en échec.
 
 Fin : dis "ideo est prêt. Donne-moi une URL YouTube pour faire une vidéo."

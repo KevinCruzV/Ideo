@@ -158,3 +158,45 @@ def test_prepare_line_after_a_failed_entretien(tmp_path, monkeypatch, capsys):
     history.entretien_failed("dépôt modifié")
     cli.main(["prepare", url])
     assert out_lines(capsys)[0].endswith(" Dernier entretien : échec, dépôt modifié.")
+
+
+def test_produce_says_when_the_local_voice_is_not_installed(produce_job, monkeypatch, capsys):
+    from ideo import config
+
+    job = produce_job[0]
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    assert cli.main(["produce", str(job)]) == 0
+    line = out_lines(capsys)[0]
+    assert " ; Voix : voix en ligne, la voix locale n'est pas installée" in line
+    assert line.index("Contrôle :") < line.index("Voix :")
+
+
+def test_produce_says_nothing_about_the_voice_when_all_is_normal(produce_job, capsys):
+    job = produce_job[0]
+    cli.main(["produce", str(job)])
+    assert "Voix :" not in out_lines(capsys)[0]
+
+
+def test_produce_says_when_it_fell_back_to_the_online_voice(produce_job, monkeypatch, capsys):
+    from ideo import voice
+
+    job = produce_job[0]
+    real = voice.voice_part
+
+    def with_fallback(j, n, backend=None):
+        paths = real(j, n, backend)
+        common.save_json(j / "parts" / f"{n:02d}" / "voice-info.json",
+                         {"engine": "edge", "fallback": "La commande a échoué (code 1)", "local_missing": False})
+        return paths
+
+    monkeypatch.setattr(voice, "voice_part", with_fallback)
+    cli.main(["produce", str(job)])
+    assert " ; Voix : repli sur la voix en ligne, La commande a échoué (code 1)" in out_lines(capsys)[0]
+
+
+def test_produce_never_installs_the_local_voice(produce_job, monkeypatch, capsys):
+    from ideo import config, setup_voix
+
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    monkeypatch.setattr(setup_voix, "run", lambda: (_ for _ in ()).throw(AssertionError("installation lancée")))
+    assert cli.main(["produce", str(produce_job[0])]) == 0

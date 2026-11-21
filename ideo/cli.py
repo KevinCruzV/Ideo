@@ -4,12 +4,12 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, entretien, history, learn, pipeline, plan_check, qc, retours, review
+from ideo import codes, common, cost, entretien, history, learn, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] "
-         "| entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien")
+         "| setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "setup-voix")
 
 
 class UsageError(Exception):
@@ -53,6 +53,10 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if len(rest) != 1:
             raise UsageError(USAGE)
         return cmd, rest[0], None, opts
+    if cmd == "setup-voix":
+        if rest:
+            raise UsageError(USAGE)
+        return cmd, "", None, opts
     if cmd == "entretien":
         if not rest:
             return cmd, "", None, opts
@@ -85,11 +89,13 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return _learn(arg, opts), 0
     if cmd == "entretien":
         return _entretien(arg, opts), 0
+    if cmd == "setup-voix":
+        return [f"OK setup-voix : {setup_voix.run()}"], 0
     if cmd == "prepare":
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
-                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{_notice_tail()}"], 0
+                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_notice_tail()}"], 0
     job = pipeline.resolve_job(arg)
     if cmd == "cost":
         if not pipeline.prepared(job):
@@ -163,12 +169,31 @@ def _learn_from_run(job: Path, pairs: list) -> list[str]:
     return [f"Leçon automatique : {lesson}" for lesson in (_safely(learn.auto_lessons) or [])]
 
 
+def _voice_notes(job: Path, part: int | None) -> list[str]:
+    notes = []
+    for path in sorted((job / "parts").glob("*/voice-info.json")):
+        if part is not None and path.parent.name != f"{part:02d}":
+            continue
+        info = common.load_json(path)
+        if info.get("fallback"):
+            note = f"Voix : repli sur la voix en ligne, {info['fallback']}"
+        elif info.get("local_missing"):
+            note = "Voix : voix en ligne, la voix locale n'est pas installée"
+        else:
+            continue
+        if note not in notes:
+            notes.append(note)
+    return notes
+
+
 def _after_produce(job: Path, part: int | None) -> list[str]:
+    voice_notes = _safely(_voice_notes, job, part) or []
     try:
         pairs = qc.run_coded(job, part)
         pieces = [qc.summary(job, [text for _, text in pairs])]
     except Exception as err:
-        return [f"Contrôle : indisponible ({type(err).__name__} : {err})"]
+        return [f"Contrôle : indisponible ({type(err).__name__} : {err})"] + voice_notes
+    pieces += voice_notes
     pieces += _safely(_learn_from_run, job, pairs) or []
     note = _safely(entretien.notice)
     if note:
@@ -201,7 +226,7 @@ def _learn(arg: str, opts: dict) -> list[str]:
 
 def _log_for(cmd: str, arg: str) -> tuple[Path, Path | None]:
     job = None
-    if cmd in ("learn", "entretien"):
+    if cmd in ("learn", "entretien", "setup-voix"):
         return common.JOBS / "cli.log", None
     try:
         job = common.job_dir(arg) if cmd == "prepare" else pipeline.resolve_job(arg)
