@@ -14,6 +14,7 @@ ERROR_PATTERNS = (
     ("source-sponsorisee", r"passage sponsorisé"),
     ("nom-de-chaine", r"nom de la chaîne YouTube|« speaker » doit nommer"),
     ("tiret-cadratin", r"tiret cadratin"),
+    ("break-invalide", r"« break »"),
     ("sfx-invalide", r"« sfx »|le son \S+ n'est pas dans sfx\.json|le son source"),
     ("src-invalide", r"« src »|minutage invalide"),
     ("plan-trop-court", r"trop courte"),
@@ -63,12 +64,14 @@ LESSONS = {
     "tiret-cadratin": "N'écris aucun tiret cadratin : utilise une virgule, deux-points ou un point.",
     "src-invalide": "Écris chaque src en mm:ss, recopié d'un paragraphe de la transcription.",
     "sfx-invalide": "Prends un sfx dans sfx.json, jamais sur une scène quote.",
+    "sans-pause-d-acte": "Dans une vidéo de plus de 10 scènes, mets \"break\": true sur la première scène de chaque nouvel acte.",
+    "break-invalide": "Écris break comme un booléen, true ou false, jamais comme un texte.",
     "wishes-invalides": "Garde wishes à 5 textes de 40 caractères au plus.",
     "plan-invalide": "Relis le message de check et corrige exactement ce qu'il demande avant de relancer.",
 }
 CODE_ONLY = frozenset({
     "silence-long", "scene-figee", "volume", "video-duree-differente", "video-absente", "timeline-absente",
-    "sous-titre-mal-decoupe",
+    "sous-titre-mal-decoupe", "voix-infidele",
 })
 
 

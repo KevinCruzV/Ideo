@@ -188,6 +188,9 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
 
+    if "break" in scene and not isinstance(scene["break"], bool):
+        errors.append(f"{where} : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le.")
+
     items = scene.get("items", [])
     if not isinstance(items, list):
         errors.append(f"{where} : « items » doit être une liste d'objets {{\"el\": ..., \"on\": ...}}.")

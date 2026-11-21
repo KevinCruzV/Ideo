@@ -11,7 +11,7 @@ import numpy as np
 from ideo import align, common, config, fidelity, i18n, pacing, transcribe
 
 TICKS = 1e7
-KYUTAI_LANGS = ("fr", "en")
+KYUTAI_LANGS = config.KYUTAI_LANGS
 KEEP_THRESHOLD = 0.90
 ALERT_THRESHOLD = 0.80
 MAX_REDOS = 3
@@ -137,7 +137,7 @@ def get_backend(log: Path | None = None) -> VoiceBackend:
 
 
 def choose_backend(lang: str, log: Path | None = None) -> VoiceBackend:
-    if lang in KYUTAI_LANGS and config.engine() == "kyutai":
+    if lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed():
         return KyutaiBackend(log)
     return get_backend(log)
 
@@ -272,7 +272,8 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
                 wav = out_dir / f"{name}.wav"
                 common.save_json(out_dir / f"{name}.words.json", finish_segment(wav, text, heard_by_name[name]))
             engine = "kyutai" if getattr(backend, "local", False) else "edge"
-            common.save_json(out_dir / "voice-info.json", {"engine": engine, "fallback": fallback})
+            common.save_json(out_dir / "voice-info.json", {"engine": engine, "fallback": fallback,
+                                                           "local_missing": config.local_voice_missing(lang)})
             if scores:
                 _write_json_merged(out_dir / "voice-quality.json", scores)
     except common.IdeoError as err:

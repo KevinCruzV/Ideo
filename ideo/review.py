@@ -14,6 +14,7 @@ LONG_SAY = 30
 BARE_WORDS = 3
 MAX_VERSUS = 3
 GROUPED_MIN_WORDS = 18
+BREAK_MIN_SCENES = 10
 PERCENT = re.compile(r"%|pour cent|percent|prozent|por ciento|per cento|procent|yuzde")
 SHORT_SAY = 8
 MAX_MASCOTS = 4
@@ -163,6 +164,9 @@ def _part_findings(part: dict, n: int, out: list) -> None:
             out.append((3, *_line("meme-type-suite", f"{where}, scènes {a} et {b}", f"deux scènes de suite du même type « {scenes[a - 1].get('type')} »",
                                  "Change le type d'une des deux pour varier le visuel")))
             break
+    if count > BREAK_MIN_SCENES and not any(s.get("break") is True for s in scenes):
+        out.append((3, *_line("sans-pause-d-acte", where, f"{count} scènes sans aucune pause d'acte",
+                              "Ajoute « \"break\": true » sur la première scène de chaque nouvel acte pour marquer une pause")))
     versus = sum(1 for s in scenes if s.get("type") == "versus")
     if versus > MAX_VERSUS:
         out.append((3, *_line("trop-de-versus", where, f"{versus} scènes « versus »", f"Garde-en {MAX_VERSUS} au plus, remplace les autres")))

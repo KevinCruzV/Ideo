@@ -11,6 +11,8 @@ from tests.conftest import write_sine_wav
 @pytest.fixture
 def kyutai(monkeypatch, tmp_path):
     monkeypatch.setattr(config, "kyutai_available", lambda: True)
+    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
     py = tmp_path / "py"
     py.write_text("", encoding="utf-8")
     monkeypatch.setattr(config, "KYUTAI_PYTHON", py)
@@ -148,7 +150,7 @@ def test_other_languages_use_edge(kyutai, job_with_plan, monkeypatch, fake_backe
     monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
     voice.voice_part(job_with_plan, 1)
     assert kyutai.calls == []
-    assert common.load_json(job_with_plan / "parts" / "01" / "voice-info.json") == {"engine": "edge", "fallback": None}
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-info.json") == {"engine": "edge", "fallback": None, "local_missing": False}
 
 
 def test_kyutai_serves_french_and_english(kyutai, job_with_plan, monkeypatch):
@@ -180,3 +182,12 @@ def test_hash_follows_engine_voice_and_padding(kyutai, job_with_plan):
     assert pipeline.part_hash(plan, part) != base
     cfg.write_text('{}', encoding="utf-8")
     assert pipeline.part_hash(plan, part) == base
+
+
+def test_missing_local_voice_is_recorded_for_the_online_voice(job_with_plan, monkeypatch, fake_backend, fake_whisper):
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
+    voice.voice_part(job_with_plan, 1)
+    info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
+    assert info == {"engine": "edge", "fallback": None, "local_missing": True}
+    assert len(fake_backend.calls) == 7

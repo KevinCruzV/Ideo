@@ -136,15 +136,50 @@ def test_kyutai_defaults_and_keys(home):
     assert config.kyutai_voice() == "autre/voix.wav" and config.kyutai_padding_bonus() == -1
 
 
-def test_availability_needs_the_environment_and_apple_silicon(monkeypatch, tmp_path):
+def make_env(root):
+    (root / "bin").mkdir(parents=True)
+    (root / "bin" / "python").write_text("", encoding="utf-8")
+    (root / "lib" / "python3.12" / "site-packages" / "moshi_mlx").mkdir(parents=True)
+
+
+def test_installed_needs_interpreter_package_and_no_install_in_progress(monkeypatch, tmp_path):
+    env = tmp_path / ".venv-voix2"
+    monkeypatch.undo()
+    monkeypatch.setattr(config, "KYUTAI_PYTHON", env / "bin" / "python")
+    assert config.kyutai_installed() is False
+    (env / "bin").mkdir(parents=True)
+    (env / "bin" / "python").write_text("", encoding="utf-8")
+    assert config.kyutai_installed() is False
+    (env / "lib" / "python3.12" / "site-packages" / "moshi_mlx").mkdir(parents=True)
+    assert config.kyutai_installed() is True
+    config.install_lock().write_text("", encoding="utf-8")
+    assert config.kyutai_installed() is False
+
+
+def test_available_also_needs_apple_silicon(monkeypatch, tmp_path):
     import platform
 
+    env = tmp_path / ".venv-voix2"
+    make_env(env)
     monkeypatch.undo()
-    monkeypatch.setattr(config, "KYUTAI_PYTHON", tmp_path / "bin" / "python")
+    monkeypatch.setattr(config, "KYUTAI_PYTHON", env / "bin" / "python")
     monkeypatch.setattr(platform, "machine", lambda: "arm64")
-    assert config.kyutai_available() is False
-    (tmp_path / "bin").mkdir()
-    (tmp_path / "bin" / "python").write_text("", encoding="utf-8")
     assert config.kyutai_available() is True
     monkeypatch.setattr(platform, "machine", lambda: "x86_64")
     assert config.kyutai_available() is False
+
+
+def test_local_voice_missing(monkeypatch, home):
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
+    assert config.local_voice_missing("fr") is True and config.local_voice_missing("en") is True
+    assert config.local_voice_missing("de") is False
+    write(home, {"engine": "edge"})
+    assert config.local_voice_missing("fr") is False
+    write(home, {"engine": "kyutai"})
+    assert config.local_voice_missing("fr") is True
+    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
+    assert config.local_voice_missing("fr") is False
+    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
+    monkeypatch.setattr(config, "apple_silicon", lambda: False)
+    assert config.local_voice_missing("fr") is False

@@ -18,6 +18,8 @@ def isolated_home(tmp_path_factory, monkeypatch):
 
     monkeypatch.setenv("IDEO_HOME", str(tmp_path_factory.mktemp("ideo-home")))
     monkeypatch.setattr(config, "kyutai_available", lambda: False)
+    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
+    monkeypatch.setattr(config, "apple_silicon", lambda: False)
 
 
 @pytest.fixture

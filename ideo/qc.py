@@ -13,6 +13,7 @@ IDLE_SECONDS = 6.0
 VIDEO_TOLERANCE = 0.5
 CLIP_WINDOW = 0.3
 HARD_MAX = 300
+FAITHFUL = 0.80
 LEADING = ("'", "’", "-")
 WORD = re.compile(r"\w", re.UNICODE)
 
@@ -108,6 +109,12 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
     if loudness is not None and abs(loudness - assemble.TARGET_LUFS) > LUFS_TOLERANCE:
         alerts.append(("volume", f"{where} : volume {f"{loudness:.1f}".replace(".", ",")} LUFS, la cible est {assemble.TARGET_LUFS:.0f} LUFS. "
                       "Relance l'assemblage audio."))
+    quality = out_dir / "voice-quality.json"
+    scores = common.load_json(quality) if quality.exists() else {}
+    for name, score in sorted(scores.items()) if isinstance(scores, dict) else []:
+        if isinstance(score, (int, float)) and score < FAITHFUL:
+            alerts.append(("voix-infidele", f"{where}, segment {name} : la voix s'écarte du texte (ressemblance "
+                           f"{f'{score:.2f}'.replace('.', ',')}). Relance la voix de cette partie ou reformule le texte."))
     alerts += _scene_alerts(where, timeline, offsets)
     alerts += _caption_alerts(where, timeline)
     total = timeline["durationInFrames"] / timeline["fps"]

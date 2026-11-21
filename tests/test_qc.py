@@ -182,3 +182,26 @@ def test_alerts_carry_stable_codes(made):
     assert {"video-absente", "scene-figee", "sous-titre-mal-decoupe"} <= codes
     assert [t for _, t in pairs] == qc.run(job)
     assert all(c == c.lower() and " " not in c for c in codes)
+
+
+def test_unfaithful_voice_alert(made):
+    job, _ = made
+    common.save_json(job / "parts" / "01" / "voice-quality.json", {"seg_01": 0.95, "seg_02": 0.7, "seg_03": 0.8})
+    pairs = [(c, t) for c, t in qc.run_coded(job) if c == "voix-infidele"]
+    assert len(pairs) == 1 and "seg_02" in pairs[0][1] and "0,70" in pairs[0][1] and pairs[0][1].startswith("Partie 1")
+
+
+def test_no_voice_quality_file_means_no_voice_alert(made):
+    job, _ = made
+    assert not [c for c, _ in qc.run_coded(job) if c == "voix-infidele"]
+
+
+def test_voice_alert_is_a_code_originated_defect():
+    from ideo import codes
+
+    assert "voix-infidele" in codes.CODE_ONLY
+
+
+def test_deliberate_act_pause_is_not_a_silence_alert(made):
+    job, _ = made
+    assert not [c for c, _ in qc.run_coded(job) if c == "silence-long"]

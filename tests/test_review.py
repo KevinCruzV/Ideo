@@ -268,3 +268,15 @@ def test_grouped_items_advice_names_the_last_sentence(job):
     early = scene(say=LONG_SAY_TEXT, items=[{"el": "text", "on": "premier"}])
     line = only(plan_of(early), job, "groupés au début")[0]
     assert "dernière phrase" in line
+
+
+def test_long_video_without_any_act_pause(job):
+    plan = plan_of(*[scene() for _ in range(11)])
+    found = [c for c, _ in review.coded(plan, job, 200) if c == "sans-pause-d-acte"]
+    assert found
+    line = only(plan, job, "pause d'acte", seconds=200)[0]
+    assert '"break": true' in line
+    marked = plan_of(*[scene() for _ in range(11)])
+    marked["parts"][0]["scenes"][5]["break"] = True
+    assert "sans-pause-d-acte" not in [c for c, _ in review.coded(marked, job, 200)]
+    assert "sans-pause-d-acte" not in [c for c, _ in review.coded(plan_of(*[scene() for _ in range(10)]), job, 200)]

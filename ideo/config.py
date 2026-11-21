@@ -1,11 +1,13 @@
 import json
 import platform
 import re
+from pathlib import Path
 
 from ideo import common
 
 DEFAULT_RATE = "+0%"
 DEFAULT_SEUIL = 5
+KYUTAI_LANGS = ("fr", "en")
 ENGINES = ("kyutai", "edge")
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
 DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
@@ -54,8 +56,33 @@ def _load() -> dict:
     return data
 
 
+def apple_silicon() -> bool:
+    return platform.machine() == "arm64"
+
+
+def kyutai_env() -> Path:
+    return Path(KYUTAI_PYTHON).parent.parent
+
+
+def install_lock() -> Path:
+    env = kyutai_env()
+    return env.with_name(env.name + ".installing")
+
+
+def kyutai_installed() -> bool:
+    if not Path(KYUTAI_PYTHON).exists() or install_lock().exists():
+        return False
+    return any(kyutai_env().glob("lib/python*/site-packages/moshi_mlx"))
+
+
 def kyutai_available() -> bool:
-    return KYUTAI_PYTHON.exists() and platform.machine() == "arm64"
+    return apple_silicon() and kyutai_installed()
+
+
+def local_voice_missing(lang: str) -> bool:
+    if lang not in KYUTAI_LANGS or not apple_silicon() or kyutai_installed():
+        return False
+    return _load().get("engine") != "edge"
 
 
 def engine() -> str:

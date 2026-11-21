@@ -148,3 +148,13 @@ def test_wish_must_be_a_short_non_empty_text(job_with_fixtures):
 def test_wish_with_em_dash_is_refused(job_with_fixtures):
     errors = plan_with(job_with_fixtures, lambda p: p.update(wishes=["a " + chr(0x2014) + " b"]))
     assert errors and "tiret cadratin" in errors[0]
+
+
+def test_break_must_be_a_boolean(job_with_fixtures):
+    assert plan_with(job_with_fixtures, lambda p: p["parts"][0]["scenes"][1].update({"break": True})) == []
+    assert plan_with(job_with_fixtures, lambda p: p["parts"][0]["scenes"][1].update({"break": False})) == []
+    errors = plan_with(job_with_fixtures, lambda p: p["parts"][0]["scenes"][1].update({"break": "oui"}))
+    assert errors == ["Partie 1, scène 2 : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le."]
+    from ideo import codes
+
+    assert codes.error_code(errors[0]) == "break-invalide"
