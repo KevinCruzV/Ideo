@@ -1,3 +1,6 @@
+import json
+import math
+import re
 import shutil
 import subprocess
 import tempfile
@@ -7,12 +10,39 @@ from pathlib import Path
 from ideo import common, textmatch, voice
 
 RATE = 48000
-SILENCE_GAP = 0.12
+SILENCE_GAP = 0.28
 CLIP_PAD = 0.25
 FADE = 0.08
 QUOTE_WINDOW = 90.0
 QUOTE_MARGIN = 0.15
+TARGET_LUFS = -14.0
 LOUDNORM = "loudnorm=I=-14:TP=-1.5:LRA=11"
+MEASURED = ("input_i", "input_tp", "input_lra", "input_thresh", "target_offset")
+
+
+def _measure(raw: Path) -> dict | None:
+    result = subprocess.run(
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(raw), "-af", LOUDNORM + ":print_format=json", "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    match = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", result.stderr)
+    if not match:
+        return None
+    try:
+        data = json.loads(match.group(0))
+        values = {k: float(data[k]) for k in MEASURED}
+    except (ValueError, KeyError):
+        return None
+    return values if all(math.isfinite(v) for v in values.values()) else None
+
+
+def _loudnorm_filter(raw: Path) -> str:
+    values = _measure(raw)
+    if values is None:
+        return LOUDNORM
+    return (f"{LOUDNORM}:measured_I={values['input_i']}:measured_TP={values['input_tp']}"
+            f":measured_LRA={values['input_lra']}:measured_thresh={values['input_thresh']}"
+            f":offset={values['target_offset']}:linear=true")
 
 
 def _ffmpeg() -> str:
@@ -194,7 +224,7 @@ def _assemble(job: Path, n: int) -> Path:
             w.writeframes(b"".join(chunks))
         tmp_out = work / "part.wav"
         common.run(
-            [_ffmpeg(), "-y", "-i", str(raw), "-af", LOUDNORM, "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le",
+            [_ffmpeg(), "-y", "-i", str(raw), "-af", _loudnorm_filter(raw), "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le",
              str(tmp_out)],
             log,
         )
