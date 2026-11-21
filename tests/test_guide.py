@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from ideo import plan_check
+from ideo import plan_check, scene_schema
 
 REPO = Path(__file__).resolve().parent.parent
 GUIDE = REPO / "skills" / "ideo" / "references" / "plan-guide.md"
@@ -80,6 +80,9 @@ def test_guide_per_type_examples_cover_the_twelve_types():
     scenes = [json.loads(line) for line in block.splitlines()]
     assert sorted(s["type"] for s in scenes) == sorted(plan_check.SCENE_TYPES)
     for scene in scenes:
+        assert scene_schema.check_props(scene["type"], scene["props"], "x") == []
+        for item in scene.get("items", []):
+            assert scene_schema.check_el(scene["type"], scene["props"], item["el"], "x") == []
         words = scene["say"].split()
         for item in scene.get("items", []):
             assert plan_check.find_span(words, item["on"]) is not None, item

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from ideo import scene_schema
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, closest_passage, find_span, normalize
 
@@ -71,6 +72,28 @@ def _check_dash(texts, where: str, errors: list[str]) -> None:
             return
 
 
+def _publisher_names(info) -> list[tuple[str, str]]:
+    if not isinstance(info, dict):
+        return []
+    names = []
+    for key, label in (("channel", "le nom de la chaîne YouTube"), ("title", "le titre de la vidéo source")):
+        value = info.get(key)
+        plain = _plain(value)
+        if plain and (len(plain.split()) >= 2 or len(plain) >= 5):
+            names.append((value, label))
+    return names
+
+
+def _check_publisher(fields, where: str, ctx: dict, errors: list[str]) -> None:
+    for field, text in fields:
+        if not isinstance(text, str):
+            continue
+        for name, label in ctx["names"]:
+            if find_span(text.split(), name) is not None:
+                errors.append(f"{where} : « {field} » contient {label} (« {name} »). Reformule sans le reprendre : on ne nomme ni la chaîne ni la vidéo source.")
+                return
+
+
 def _sfx_by_ts(sfx: list) -> dict:
     out = {}
     for entry in sfx:
@@ -101,6 +124,11 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         errors.append(f"{where} : « props » doit être un objet JSON.")
         props = {}
     _check_dash(_strings(props), where, errors)
+    known = isinstance(kind, str) and kind in SCENE_TYPES
+    if known:
+        errors.extend(scene_schema.check_props(kind, props, where))
+    shown = {k: v for k, v in props.items() if not (kind == "quote" and k == "speaker")}
+    _check_publisher([("say", say)] + [("props", t) for t in _strings(shown)], where, ctx, errors)
 
     items = scene.get("items", [])
     if not isinstance(items, list):
@@ -110,6 +138,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         if not isinstance(item, dict) or not isinstance(item.get("on"), str) or not item["on"].strip():
             errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide qui apparaît dans « say ».")
             continue
+        if known:
+            errors.extend(scene_schema.check_el(kind, props, item.get("el"), where))
         if say is not None and find_span(say.split(), item["on"]) is None:
             errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
 
@@ -151,7 +181,8 @@ def _plain(value) -> str:
 def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> None:
     speaker = props.get("speaker")
     speaker = speaker.strip() if isinstance(speaker, str) else ""
-    if speaker and _plain(speaker) in ctx["publisher"]:
+    named = any(find_span(speaker.split(), name) is not None for name, _ in ctx["names"])
+    if speaker and (named or _plain(speaker) in ctx["publisher"]):
         errors.append(f"{where} : « speaker » doit nommer la personne ou le média qu'on entend, pas la chaîne YouTube. Laisse-le vide si la transcription ne le dit pas.")
     text = props.get("text")
     if not isinstance(text, str) or not text.strip():
@@ -192,6 +223,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         _check_dash([hook], where, errors)
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
+    _check_publisher([("title", part.get("title")), ("hook", hook)], where, ctx, errors)
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
@@ -268,11 +300,13 @@ def check_plan(job: Path) -> list[str]:
     publisher = {_plain(info.get(k)) for k in ("channel", "title")} if isinstance(info, dict) else set()
     ctx = {
         "publisher": publisher - {""},
+        "names": _publisher_names(info),
         "lang": lang if isinstance(lang, str) else (job_lang or "fr"),
         "duration": float(duration) if isinstance(duration, (int, float)) else None,
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
     }
+    _check_publisher([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
     results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
     clips_by_part = [clips for clips, _ in results]
     seconds = [sec for _, sec in results]

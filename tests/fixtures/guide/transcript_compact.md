@@ -1,4 +1,4 @@
-Titre : Pourquoi le ciel est bleu ?
+Titre : La couleur du ciel, expliquée simplement
 Chaîne : Chaîne exemple
 Durée : 3:49
 Langue : fr

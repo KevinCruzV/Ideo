@@ -7,7 +7,7 @@ from ideo import cli, common, compact, fetch, pipeline, render, transcribe, voic
 
 INFO = {
     "id": "abcdefghijk",
-    "title": "Pourquoi on oublie",
+    "title": "Mémoire et oubli",
     "channel": "Chaîne Test",
     "webpage_url": "https://www.youtube.com/watch?v=abcdefghijk",
     "duration": 120,

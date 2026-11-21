@@ -174,7 +174,7 @@ def test_hyphenated_item_matches_say(job_with_fixtures):
     plan = load(job_with_fixtures)
     scene = plan["parts"][0]["scenes"][1]
     scene["say"] += " Dis-moi si tu vois."
-    scene["items"].append({"el": "x", "on": "moi"})
+    scene["items"].append({"el": "labels.1", "on": "moi"})
     write(job_with_fixtures, plan)
     assert plan_check.check_plan(job_with_fixtures) == []
 
@@ -258,10 +258,10 @@ def test_single_part_is_never_a_merge_error(job_with_fixtures):
     assert not any("tient en une seule" in e for e in plan_check.check_plan(job_with_fixtures))
 
 
-@pytest.mark.parametrize("speaker", ["Chaîne Test", "chaine  test", "Pourquoi on oublie !"])
+@pytest.mark.parametrize("speaker", ["Chaîne Test", "chaine  test", "Mémoire et oubli !", "Ici Chaîne Test"])
 def test_quote_speaker_cannot_be_the_channel_or_title(job_with_fixtures, speaker):
     (job_with_fixtures / "info.json").write_text(json.dumps(
-        {"duration": 120, "channel": "Chaîne Test", "title": "Pourquoi on oublie"}), encoding="utf-8")
+        {"duration": 120, "channel": "Chaîne Test", "title": "Mémoire et oubli"}), encoding="utf-8")
     plan = load(job_with_fixtures)
     plan["parts"][0]["scenes"][4]["props"]["speaker"] = speaker
     write(job_with_fixtures, plan)
@@ -283,3 +283,28 @@ def test_plan_md_shows_quote_speaker(job_with_fixtures):
     assert plan_check.check_plan(job_with_fixtures) == []
     md = (job_with_fixtures / "plan.md").read_text(encoding="utf-8")
     assert "citation à 0:26 (Ebbinghaus) :" in md
+
+
+def set_info(job, **info):
+    (job / "info.json").write_text(json.dumps({"duration": 120, **info}), encoding="utf-8")
+
+
+@pytest.mark.parametrize("mutate,where,field", [
+    (lambda p: p.update(series_title="Le meilleur de Chaîne Test"), "Plan", "series_title"),
+    (lambda p: p["parts"][0].update(title="Chaîne Test explique"), "Partie 1", "title"),
+    (lambda p: p["parts"][0].update(hook="Dis-moi pourquoi Mémoire et oubli marche ?"), "Partie 1", "hook"),
+    (lambda p: p["parts"][0]["scenes"][0].update(say=p["parts"][0]["scenes"][0]["say"] + " Merci chaine test."), "Partie 1, scène 1", "say"),
+    (lambda p: p["parts"][0]["scenes"][2]["props"]["chips"].append("CHAÎNE-TEST"), "Partie 1, scène 3", "props"),
+])
+def test_channel_or_title_blocked_in_every_string(job_with_fixtures, mutate, where, field):
+    set_info(job_with_fixtures, channel="Chaîne Test", title="Mémoire et oubli")
+    plan = load(job_with_fixtures)
+    mutate(plan)
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any(e.startswith(f"{where} : « {field} » contient") and "Reformule" in e for e in errors), errors
+
+
+def test_short_channel_name_is_not_blocked(job_with_fixtures):
+    set_info(job_with_fixtures, channel="Le", title="Lune")
+    assert plan_check.check_plan(job_with_fixtures) == []

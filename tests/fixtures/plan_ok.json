@@ -12,7 +12,7 @@
           "type": "key-title",
           "say": "Aujourd'hui nous allons comprendre pourquoi notre mémoire laisse filer presque tout ce que nous venons de lire ou d'apprendre en quelques jours seulement.",
           "props": {
-            "title": "Pourquoi on oublie"
+            "text": "Pourquoi on oublie"
           },
           "src": "0:02"
         },

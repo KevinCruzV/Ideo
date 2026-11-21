@@ -16,7 +16,7 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée estimée = mots de `hook` et de tous les `say` divisés par 2,6 (2,8 en anglais), plus 3 s de fin, plus la durée des extraits audio. Elle doit être entre 45 et 300 s.
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
 - N'écris que ce que dit la source. Aucun fait, chiffre, nom ou date ajouté.
-- N'écris nulle part dans le plan le nom de la chaîne ni celui de la personne qui a fait la vidéo. La ligne `Chaîne :` sert seulement à savoir qui ne pas créditer.
+- N'écris nulle part dans le plan le nom de la chaîne, celui de la personne qui a fait la vidéo, ni le titre de la vidéo (lignes `Chaîne :` et `Titre :`). Reformule le sujet avec tes mots.
 
 ## 3. L'accroche (`hook`)
 
@@ -48,7 +48,7 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 
 ## 5. Les 12 types de scène
 
-Recopie les noms de props exactement : `check` ne les vérifie pas, et un nom faux affiche "…" à l'écran. Les listes trop longues sont coupées au maximum indiqué. Les textes à l'écran peuvent contenir des chiffres. Courts : 2 à 6 mots par étiquette.
+Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Courts : 2 à 6 mots par étiquette.
 
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|
@@ -272,6 +272,10 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `l'accroche « hook »` | écris une accroche (section 3) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
 | `type inconnu` | prends un des 12 types de la section 5 |
+| `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |
+| `« props.X » doit être` | donne à cette prop le format indiqué (nombre, liste, valeur permise) |
+| `« el » ... invalide` | prends un des chemins acceptés que l'erreur liste |
+| `contient le nom de la chaîne` ou `le titre de la vidéo source` | reformule ce champ sans ce nom ni ce titre |
 | `« props » doit être un objet` | écris `props` entre accolades |
 | `tiret cadratin` | remplace-le par une virgule, deux-points ou un point |
 | `n'est pas dans le texte de « say »` | recopie dans `on` un mot exact du `say` de cette scène |
