@@ -36,6 +36,16 @@ def kyutai(monkeypatch, tmp_path):
 
     monkeypatch.setattr(common, "run", fake_run)
     fake_run.calls = calls
+    fake_run.pitch = {}
+    taken = {}
+
+    def fake_score(wav):
+        name = Path(wav).stem
+        taken[name] = taken.get(name, 0) + 1
+        values = fake_run.pitch.get(name, [3.0])
+        return values[min(taken[name] - 1, len(values) - 1)]
+
+    monkeypatch.setattr(voice.prosody, "score", fake_score)
     return fake_run
 
 
@@ -200,3 +210,127 @@ def test_all_segments_to_redo_share_one_call_per_pass(kyutai, job_with_plan, mon
     ids = [[r["id"] for r in call["requests"]] for call in kyutai.calls]
     assert len(ids) == 3 and len(ids[0]) == 7
     assert ids[1] == ["seg_01", "seg_03", "seg_04"] and ids[2] == ["seg_03"]
+
+
+def run_part(kyutai, job, monkeypatch, scores=None, pitch=None):
+    texts, seen = faithful(monkeypatch, scores)
+    texts.update(script_words(job))
+    kyutai.pitch.update(pitch or {})
+    voice.voice_part(job, 1, backend=voice.KyutaiBackend(job / "logs" / "v.log"))
+    return [[r["id"] for r in c["requests"]] for c in kyutai.calls], seen
+
+
+def test_flat_segment_is_redone_with_a_higher_temperature(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [1.5, 2.6]})
+    assert len(ids) == 2 and ids[1] == ["seg_02"]
+    assert "--temp" not in kyutai.calls[0]["cmd"]
+    assert kyutai.calls[1]["cmd"][kyutai.calls[1]["cmd"].index("--temp") + 1] == "0.75"
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-prosody.json")["seg_02"] == 2.6
+
+
+def test_temperature_rises_pass_after_pass(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [1.0, 1.1, 1.2, 1.3]})
+    temps = [c["cmd"][c["cmd"].index("--temp") + 1] for c in kyutai.calls[1:]]
+    assert temps == ["0.75", "0.9", "1"]
+
+
+def test_hook_and_outro_need_2_4(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_00_hook": [2.2, 2.5], "seg_99_outro": [2.3, 2.45], "seg_01": [2.2]})
+    assert len(ids) == 2 and sorted(ids[1]) == ["seg_00_hook", "seg_99_outro"]
+
+
+def test_lively_enough_segment_is_not_redone(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [2.0], "seg_00_hook": [2.4]})
+    assert len(ids) == 1
+
+
+def test_unscored_segment_is_not_considered_flat(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [None]})
+    assert len(ids) == 1
+
+
+def test_flat_and_unfaithful_share_the_same_grouped_pass(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, scores={"seg_01": [0.4, 1.0]}, pitch={"seg_03": [1.0, 2.5]})
+    assert len(ids) == 2 and sorted(ids[1]) == ["seg_01", "seg_03"]
+
+
+def test_among_faithful_takes_the_liveliest_wins(kyutai, job_with_plan, monkeypatch):
+    ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_02": [1.2, 1.9, 1.5, 1.4]})
+    assert len(ids) == 4
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-prosody.json")["seg_02"] == 1.9
+
+
+def test_an_unfaithful_take_never_beats_a_faithful_one(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch, scores={"seg_02": [1.0, 0.4, 0.4, 0.4]}, pitch={"seg_02": [1.2, 3.5, 3.5, 3.5]})
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-prosody.json")["seg_02"] == 1.2
+    assert common.load_json(job_with_plan / "parts" / "01" / "voice-quality.json")["seg_02"] == 1.0
+
+
+def test_best_take_helpers():
+    take = lambda f, p: {"fidelity": f, "prosody": p}
+    assert voice.best_take([take(0.95, 1.0), take(0.92, 2.5), take(0.5, 4.0)]) == take(0.92, 2.5)
+    assert voice.best_take([take(0.5, 4.0), take(0.7, 1.0)]) == take(0.7, 1.0)
+    assert voice.needs_redo("seg_01", take(0.95, 1.9)) and not voice.needs_redo("seg_01", take(0.95, 2.0))
+    assert voice.needs_redo("seg_99_outro", take(0.95, 2.39)) and not voice.needs_redo("seg_99_outro", take(0.95, 2.4))
+    assert not voice.needs_redo("seg_01", take(0.95, None)) and voice.needs_redo("seg_01", take(0.5, 3.0))
+
+
+def test_log_reports_the_median_intonation(kyutai, job_with_plan, monkeypatch):
+    run_part(kyutai, job_with_plan, monkeypatch)
+    assert "intonation médiane : 3.0" in (job_with_plan / "logs" / "voice-01.log").read_text(encoding="utf-8")
+
+
+def test_lexicon_respells_only_the_text_sent_to_the_engine(kyutai, job_with_plan, monkeypatch):
+    path = common._root() / "skills" / "ideo" / "references" / "prononciation.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('{"fr": {"face": "fasse", "mémoire": "mémoire"}}', encoding="utf-8")
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["parts"][0]["hook"] = "Face à face, tu oublies ?"
+    common.save_json(job_with_plan / "plan.json", plan)
+    texts, _ = faithful(monkeypatch)
+    spoken_texts = {}
+
+    def fake_heard(wav, lang, log=None):
+        name = Path(wav).stem
+        return [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(spoken_texts[name].split())]
+
+    monkeypatch.setattr(voice, "retranscribe", fake_heard)
+    spoken_texts.update(script_words(job_with_plan))
+    spoken_texts["seg_00_hook"] = "Fasse à fasse, tu oublies ?"
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    sent = kyutai.calls[0]["requests"][0]["turns"][0]
+    assert sent == "Fasse à fasse, tu oublies ?"
+    words = common.load_json(job_with_plan / "parts" / "01" / "seg_00_hook.words.json")
+    assert [w["w"] for w in words] == ["Face", "à", "face,", "tu", "oublies?"]
+    assert words[0]["e"] > words[0]["s"] and words[2]["s"] > words[1]["s"]
+    quality = common.load_json(job_with_plan / "parts" / "01" / "voice-quality.json")
+    assert quality["seg_00_hook"] == 1.0
+
+
+def test_changing_the_lexicon_redoes_only_the_affected_segments(kyutai, job_with_plan, monkeypatch):
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["parts"][0]["hook"] = "Face à face, tu oublies ?"
+    common.save_json(job_with_plan / "plan.json", plan)
+    texts, seen = faithful(monkeypatch)
+    texts.update(script_words(job_with_plan))
+    texts["seg_00_hook"] = "Face à face, tu oublies ?"
+
+    def heard(wav, lang, log=None):
+        name = Path(wav).stem
+        return [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(
+            (lexicon_text(name)).split())]
+
+    from ideo import lexicon
+
+    def lexicon_text(name):
+        return lexicon.apply(texts[name], "fr")
+
+    monkeypatch.setattr(voice, "retranscribe", heard)
+    backend = voice.KyutaiBackend(job_with_plan / "logs" / "v.log")
+    voice.voice_part(job_with_plan, 1, backend=backend)
+    assert len(kyutai.calls) == 1
+    lexicon.add("face", "fasse")
+    voice.voice_part(job_with_plan, 1, backend=backend)
+    assert len(kyutai.calls) == 2 and [r["id"] for r in kyutai.calls[1]["requests"]] == ["seg_00_hook"]
+    voice.voice_part(job_with_plan, 1, backend=backend)
+    assert len(kyutai.calls) == 2

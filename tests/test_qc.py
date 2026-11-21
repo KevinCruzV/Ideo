@@ -205,3 +205,78 @@ def test_voice_alert_is_a_code_originated_defect():
 def test_deliberate_act_pause_is_not_a_silence_alert(made):
     job, _ = made
     assert not [c for c, _ in qc.run_coded(job) if c == "silence-long"]
+
+
+def prosody_file(job, scores):
+    common.save_json(job / "parts" / "01" / "voice-prosody.json", scores)
+
+
+def plate_alerts(job):
+    return [t for c, t in qc.run_coded(job) if c == "voix-plate"]
+
+
+def lively(**over):
+    base = {n: 2.6 for n in ("seg_00_hook", "seg_01", "seg_02", "seg_03", "seg_04", "seg_05", "seg_99_outro")}
+    base.update(over)
+    return base
+
+
+def test_lively_voice_gives_no_alert(made):
+    job, _ = made
+    prosody_file(job, lively())
+    assert plate_alerts(job) == []
+
+
+def test_more_than_a_quarter_flat_gives_the_alert(made):
+    job, _ = made
+    prosody_file(job, lively(seg_01=1.5, seg_02=1.6))
+    found = plate_alerts(job)
+    assert len(found) == 1 and found[0].startswith("Partie 1 : voix plate")
+    assert "2 segments sur 7" in found[0]
+
+
+def test_exactly_a_quarter_is_tolerated(made):
+    job, _ = made
+    scores = {f"seg_{i:02d}": 2.5 for i in range(1, 9)}
+    scores.update({"seg_00_hook": 2.5, "seg_01": 1.5, "seg_02": 1.5})
+    prosody_file(job, scores)
+    assert plate_alerts(job) == []
+
+
+def test_flat_hook_or_outro_gives_the_alert_alone(made):
+    job, _ = made
+    for name in ("seg_00_hook", "seg_99_outro"):
+        prosody_file(job, lively(**{name: 1.9}))
+        found = plate_alerts(job)
+        assert len(found) == 1 and "accroche" in found[0] + " accroche" and name in found[0]
+    prosody_file(job, lively(seg_00_hook=2.2, seg_99_outro=2.2))
+    assert plate_alerts(job) == []
+
+
+def test_alert_gives_median_and_the_three_flattest(made):
+    job, _ = made
+    prosody_file(job, lively(seg_01=1.5, seg_02=1.6, seg_03=1.7, seg_04=1.9))
+    text = plate_alerts(job)[0]
+    assert "score médian" in text and "seg_01 (1,50)" in text and "seg_02 (1,60)" in text and "seg_03 (1,70)" in text
+    assert "seg_04" not in text
+
+
+def test_qc_md_always_reports_the_intonation_when_measured(made):
+    job, _ = made
+    prosody_file(job, lively(seg_02=1.9))
+    qc.run(job)
+    body = (job / "out" / "qc.md").read_text(encoding="utf-8")
+    assert "## Intonation" in body and "Partie 1 : score médian 2,60" in body and "seg_02 (1,90)" in body
+
+
+def test_no_measure_no_section_and_no_alert(made):
+    job, _ = made
+    qc.run(job)
+    assert "## Intonation" not in (job / "out" / "qc.md").read_text(encoding="utf-8")
+    assert plate_alerts(job) == []
+
+
+def test_flat_voice_is_a_code_originated_defect():
+    from ideo import codes
+
+    assert "voix-plate" in codes.CODE_ONLY

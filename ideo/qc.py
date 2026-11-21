@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ideo import assemble, common, plan_check, render, target
+from ideo import assemble, common, plan_check, prosody, render, target
 
 SILENCE_SECONDS = 1.2
 SILENCE_DB = -35
@@ -14,6 +14,8 @@ VIDEO_TOLERANCE = 0.5
 CLIP_WINDOW = 0.3
 HARD_MAX = 300
 FAITHFUL = 0.80
+FLAT_SHARE = 0.25
+BOUNDARY_SEGMENTS = ("seg_00_hook", "seg_99_outro")
 LEADING = ("'", "’", "-")
 WORD = re.compile(r"\w", re.UNICODE)
 
@@ -91,6 +93,37 @@ def _caption_alerts(where: str, timeline: dict) -> list[tuple[str, str]]:
     return alerts
 
 
+def _pitch_scores(out_dir: Path) -> dict:
+    path = out_dir / "voice-prosody.json"
+    try:
+        data = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(v, (int, float)) and not isinstance(v, bool)} if isinstance(data, dict) else {}
+
+
+def _comma(value: float) -> str:
+    return f"{value:.2f}".replace(".", ",")
+
+
+def _flattest(scores: dict) -> str:
+    return ", ".join(f"{name} ({_comma(score)})" for name, score in sorted(scores.items(), key=lambda p: p[1])[:3])
+
+
+def _pitch_alerts(where: str, out_dir: Path) -> list[tuple[str, str]]:
+    scores = _pitch_scores(out_dir)
+    if not scores:
+        return []
+    flat = [n for n, s in scores.items() if s < prosody.FLAT]
+    edges = [n for n in BOUNDARY_SEGMENTS if n in scores and scores[n] < prosody.FLAT]
+    if len(flat) <= len(scores) * FLAT_SHARE and not edges:
+        return []
+    why = (f"{len(flat)} segments sur {len(scores)} sous {_comma(prosody.FLAT)}" if len(flat) > len(scores) * FLAT_SHARE
+           else f"l'accroche ou la fin est plate ({', '.join(edges)})")
+    return [("voix-plate", f"{where} : voix plate, {why}, score médian {_comma(prosody.median(list(scores.values())))}, "
+                           f"les plus plats : {_flattest(scores)}. Relance la voix de cette partie ou reformule ces phrases.")]
+
+
 def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
     where = f"Partie {n}"
     out_dir = job / "parts" / f"{n:02d}"
@@ -115,6 +148,7 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
         if isinstance(score, (int, float)) and score < FAITHFUL:
             alerts.append(("voix-infidele", f"{where}, segment {name} : la voix s'écarte du texte (ressemblance "
                            f"{f'{score:.2f}'.replace('.', ',')}). Relance la voix de cette partie ou reformule le texte."))
+    alerts += _pitch_alerts(where, out_dir)
     alerts += _scene_alerts(where, timeline, offsets)
     alerts += _caption_alerts(where, timeline)
     total = timeline["durationInFrames"] / timeline["fps"]
@@ -148,6 +182,15 @@ def run_coded(job: Path, only: int | None = None) -> list[tuple[str, str]]:
     out.mkdir(parents=True, exist_ok=True)
     body = [f"# Contrôle de {job.name}", ""]
     body += [f"- {a}" for _, a in alerts] or ["Aucune alerte."]
+    pitch = []
+    for part in plan["parts"]:
+        if only is None or part["n"] == only:
+            scores = _pitch_scores(job / "parts" / f"{part['n']:02d}")
+            if scores:
+                pitch.append(f"- Partie {part['n']} : score médian {_comma(prosody.median(list(scores.values())))}, "
+                             f"les plus plats : {_flattest(scores)}")
+    if pitch:
+        body += ["", "## Intonation", ""] + pitch
     (out / "qc.md").write_text("\n".join(body) + "\n", encoding="utf-8")
     return alerts
 
