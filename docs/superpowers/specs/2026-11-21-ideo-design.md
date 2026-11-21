@@ -367,3 +367,20 @@ Détail **[Proposition]** :
   paragraphes dits par une autre voix que la voix principale (`[autre voix]`). Claude sait alors où commence et
   finit un extrait, et le relecteur voit dans `plan.md` quelles citations restent sans voix identifiée.
   À évaluer pendant la campagne de tests.
+
+## 16. Après la v1 : voir la vidéo sans dépenser de crédits
+
+**[Kevin]** L'analyse locale de l'image se fait après la v1.
+
+Ordre prévu **[Proposition]**, chaque point avec son propre plan :
+1. **Analyse locale, zéro crédit** : changements de plan (part d'images par rapport à quelqu'un qui parle),
+   lecture du texte affiché à l'écran (bandeaux de nom des journaux télévisés, pour créditer les voix citées),
+   détection des changements de voix (section 15). Le résultat est ajouté à la transcription compacte sous
+   forme de repères courts.
+2. **Scène `archive`** : un extrait vidéo de la source dans un cadre en papier, avec le son d'origine. Demande
+   de télécharger aussi la vidéo. Kevin valide la liste des extraits avant le rendu.
+3. **Regard ciblé** (seulement si l'analyse locale ne suffit pas) : montrer à Claude les quelques images des
+   moments retenus comme extraits, pas toute la vidéo.
+
+Tout regarder image par image est écarté : cela multiplierait la consommation de crédits par 5 à 30
+(estimation à mesurer).
