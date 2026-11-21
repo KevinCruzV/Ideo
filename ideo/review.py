@@ -2,7 +2,7 @@ import math
 import re
 from pathlib import Path
 
-from ideo import plan_check, target, textmatch
+from ideo import countries, plan_check, scene_schema, target, textmatch
 from ideo.common import load_json
 
 LIMIT = 8
@@ -13,6 +13,9 @@ LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
 LONG_SAY = 30
 BARE_WORDS = 3
 MAX_VERSUS = 3
+CROWDED = {"timeline": ("marks", 5, ("marks.at", "marks.label")), "stack-list": ("items", 5, ("items",)),
+           "icon-grid": ("cells", 7, ("cells.label",)), "shape-diagram": ("values", 6, ("labels",))}
+CROWDED_RATIO = 0.5
 GROUPED_MIN_WORDS = 18
 BREAK_MIN_SCENES = 10
 PERCENT = re.compile(r"%|pour cent|percent|prozent|por ciento|per cento|procent|yuzde")
@@ -90,6 +93,50 @@ def _has_drawing(scene: dict) -> bool:
         isinstance(c, dict) and c.get("picto") for c in cells)
 
 
+def _texts_of(props: dict, path: str) -> list[str]:
+    return [str(v) for _, v in scene_schema._capped(props, path) if isinstance(v, (str, int, float)) and not isinstance(v, bool)]
+
+
+def _crowded(scene: dict) -> bool:
+    rule = CROWDED.get(scene.get("type"))
+    props = scene.get("props")
+    if not rule or not isinstance(props, dict):
+        return False
+    field, minimum, paths = rule
+    values = props.get(field)
+    if not isinstance(values, list) or len(values) < minimum:
+        return False
+    caps = scene_schema.TEXT_CAPS[scene["type"]]
+    ratios = [scene_schema.screen_length(t.strip()) / caps[path] for path in paths for t in _texts_of(props, path)]
+    return bool(ratios) and sum(ratios) / len(ratios) > CROWDED_RATIO
+
+
+def _flag_codes(props: dict) -> set:
+    values = [props.get(k) for k in ("picto", "left_picto", "right_picto")]
+    cells = props.get("cells")
+    values += [c.get("picto") for c in cells if isinstance(c, dict)] if isinstance(cells, list) else []
+    return {v[len("flag:"):] for v in values if isinstance(v, str) and v.startswith("flag:")}
+
+
+def _country_labels(scene: dict) -> list[str]:
+    props = scene.get("props") or {}
+    kind = scene.get("type")
+    if kind == "versus":
+        return [props.get(k) for k in ("left", "right")]
+    return _list_texts(scene) if kind in ("icon-grid", "fact-chips", "stack-list") else []
+
+
+def _missing_flags(scene: dict) -> list[tuple[str, str]]:
+    props = scene.get("props") or {}
+    have = _flag_codes(props) if isinstance(props, dict) else set()
+    missing = []
+    for label in _country_labels(scene):
+        code = countries.code_of(label)
+        if code and code not in have and (label, code) not in missing:
+            missing.append((label, code))
+    return missing
+
+
 def _grouped_early(scene: dict) -> bool:
     say = _say(scene)
     words = say.split()
@@ -143,6 +190,17 @@ def _part_findings(part: dict, n: int, out: list) -> None:
         if kind == "counter" and not props.get("unit") and PERCENT.search(say.lower()):
             out.append((2, *_line("compteur-sans-unite", _scene_where(n, i), "compteur sans unité alors que le « say » parle de pourcentage",
                                   "Ajoute « unit » (par exemple « % ») sur le compteur")))
+        missing = _missing_flags(scene)
+        if missing:
+            names = ", ".join(f"« {label} » (flag:{code})" for label, code in missing)
+            where_to = {"versus": "dans « left_picto » ou « right_picto »", "icon-grid": "dans le « picto » de la cellule"}.get(
+                kind, "dans le « picto » de la scène")
+            out.append((2, *_line("pays-sans-drapeau", _scene_where(n, i), f"nom de pays sans son drapeau : {names}",
+                                  f"Ajoute le drapeau {where_to}")))
+        if _crowded(scene):
+            out.append((2, *_line("scene-trop-chargee", _scene_where(n, i),
+                                  f"scène « {kind} » chargée de textes longs",
+                                  "Coupe en deux scènes : le rendu devrait sinon réduire le texte sous la taille lisible sur téléphone")))
         if _grouped_early(scene):
             out.append((2, *_line("items-groupes-debut", _scene_where(n, i),
                                   "éléments groupés au début : tous les « items » sont ancrés dans la première moitié du « say », la fin de la scène reste figée",

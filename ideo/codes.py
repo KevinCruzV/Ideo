@@ -4,6 +4,7 @@ ERROR_PATTERNS = (
     ("wishes-invalides", r"« wishes"),
     ("type-inconnu", r"type inconnu"),
     ("texte-trop-long", r"caractères, \d+ au plus"),
+    ("drapeau-inconnu", r"n'est pas un drapeau connu"),
     ("props-invalides", r"prop inconnue|prop « \w+ » manquante|« props\.[\w.]+ » doit être|« props\.labels »|« props\.accent »"),
     ("el-invalide", r"« el » « |« items » doit|chaque élément de « items »"),
     ("items-desordre", r"est dit avant l'item"),
@@ -66,6 +67,9 @@ LESSONS = {
     "sfx-invalide": "Prends un sfx dans sfx.json, jamais sur une scène quote.",
     "sans-pause-d-acte": "Dans une vidéo de plus de 10 scènes, mets \"break\": true sur la première scène de chaque nouvel acte.",
     "break-invalide": "Écris break comme un booléen, true ou false, jamais comme un texte.",
+    "pays-sans-drapeau": "Mets flag:<code> sur chaque nom de pays affiché seul, par exemple flag:cn pour la Chine, dans une icon-grid, un versus ou une liste.",
+    "scene-trop-chargee": "Coupe en deux scènes une liste de 5 éléments ou plus aux textes longs : le texte doit rester lisible sur téléphone.",
+    "drapeau-inconnu": "Écris flag: suivi du code de pays à deux lettres en minuscules, par exemple flag:fr.",
     "wishes-invalides": "Garde wishes à 5 textes de 40 caractères au plus.",
     "plan-invalide": "Relis le message de check et corrige exactement ce qu'il demande avant de relancer.",
 }

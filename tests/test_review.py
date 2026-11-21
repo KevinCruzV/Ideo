@@ -280,3 +280,77 @@ def test_long_video_without_any_act_pause(job):
     marked["parts"][0]["scenes"][5]["break"] = True
     assert "sans-pause-d-acte" not in [c for c, _ in review.coded(marked, job, 200)]
     assert "sans-pause-d-acte" not in [c for c, _ in review.coded(plan_of(*[scene() for _ in range(10)]), job, 200)]
+
+
+def codes_of(plan, job, seconds=120):
+    return [c for c, _ in review.coded(plan, job, seconds)]
+
+
+def test_country_name_without_its_flag(job):
+    grid = plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Chine", "picto": "globe"}, {"label": "Inde", "shape": "circle"}]}))
+    found = [t for c, t in review.coded(grid, job, 120) if c == "pays-sans-drapeau"]
+    assert len(found) == 1 and "Partie 1, scène 1" in found[0]
+    assert "flag:cn" in found[0] and "flag:in" in found[0] and found[0].startswith("RELIRE : ")
+
+
+def test_country_with_its_flag_is_fine(job):
+    grid = plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Chine", "picto": "flag:cn"}, {"label": "Inde", "picto": "flag:in"}]}))
+    assert "pays-sans-drapeau" not in codes_of(grid, job)
+    one = plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Chine", "picto": "flag:cn"}, {"label": "Inde", "picto": "globe"}]}))
+    found = [t for c, t in review.coded(one, job, 120) if c == "pays-sans-drapeau"]
+    assert len(found) == 1 and "flag:in" in found[0] and "flag:cn" not in found[0]
+
+
+def test_versus_sides_chips_and_stack_items(job):
+    versus = plan_of(scene(kind="versus", props={"left": "États-Unis", "right": "URSS"}))
+    text = [t for c, t in review.coded(versus, job, 120) if c == "pays-sans-drapeau"][0]
+    assert "flag:us" in text and "flag:su" in text and "left_picto" in text
+    assert "pays-sans-drapeau" not in codes_of(plan_of(scene(kind="versus", props={
+        "left": "États-Unis", "right": "URSS", "left_picto": "flag:us", "right_picto": "flag:su"})), job)
+    assert "pays-sans-drapeau" in codes_of(plan_of(scene(kind="fact-chips", props={"chips": ["Chine", "x 12"]})), job)
+    assert "pays-sans-drapeau" in codes_of(plan_of(scene(kind="stack-list", props={"items": ["Brazil", "Inde 2e"]})), job)
+
+
+def test_scene_picto_flag_counts_for_lists(job):
+    ok = plan_of(scene(kind="stack-list", props={"items": ["Chine", "autre chose"], "picto": "flag:cn"}))
+    assert "pays-sans-drapeau" not in codes_of(ok, job)
+
+
+def test_not_a_bare_country_name_is_not_flagged(job):
+    plan = plan_of(scene(kind="fact-chips", props={"chips": ["Chine 18 %", "La Chine", "Paris"]}))
+    assert "pays-sans-drapeau" not in codes_of(plan, job)
+    assert "pays-sans-drapeau" not in codes_of(plan_of(scene(kind="stamp", props={"text": "Chine"})), job)
+
+
+def test_overloaded_scenes(job):
+    long = "Un texte assez long pour dépasser"
+    marks = [{"at": "1991", "label": "Une très longue étiquette de repère ici"}] * 5
+    assert "scene-trop-chargee" in codes_of(plan_of(scene(kind="timeline", props={"marks": marks})), job)
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="timeline", props={"marks": marks[:4]})), job)
+    short = [{"at": "1991", "label": "Court"}] * 5
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="timeline", props={"marks": short})), job)
+    items = ["Un élément de liste vraiment très long pour tester la charge"] * 5
+    assert "scene-trop-chargee" in codes_of(plan_of(scene(kind="stack-list", props={"items": items})), job)
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="stack-list", props={"items": items[:4]})), job)
+    cells = [{"label": "Un libellé long"}] * 7
+    assert "scene-trop-chargee" in codes_of(plan_of(scene(kind="icon-grid", props={"cells": cells})), job)
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="icon-grid", props={"cells": cells[:6]})), job)
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Court"}] * 8})), job)
+    values = {"values": [1, 2, 3, 4, 5, 6], "labels": ["Un libellé long"] * 6}
+    assert "scene-trop-chargee" in codes_of(plan_of(scene(kind="shape-diagram", props=values)), job)
+    assert "scene-trop-chargee" not in codes_of(plan_of(scene(kind="shape-diagram", props={**values, "values": [1, 2, 3, 4, 5], "labels": values["labels"][:5]})), job)
+    assert long
+
+
+def test_overloaded_advice_says_to_split(job):
+    items = ["Un élément de liste vraiment très long pour tester la charge"] * 5
+    line = [t for c, t in review.coded(plan_of(scene(kind="stack-list", props={"items": items})), job, 120)
+            if c == "scene-trop-chargee"][0]
+    assert line.startswith("RELIRE : Partie 1, scène 1 :") and "deux scènes" in line and "téléphone" in line
+
+
+def test_new_lessons_exist():
+    from ideo import codes
+
+    assert "flag:" in codes.LESSONS["pays-sans-drapeau"] and "scene-trop-chargee" in codes.LESSONS
+    assert codes.error_code("S : « props.picto » : « flag:xx » n'est pas un drapeau connu. Écris") == "drapeau-inconnu"
