@@ -34,7 +34,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
       })}
       <ChapterLabel chapter={timeline.chapter} />
       <Watermark text={timeline.watermark} />
-      <Progress chapter={timeline.chapter} />
+      <Progress chapter={timeline.chapter} segments={timeline.segments} />
       <Captions groups={timeline.captions} accents={accents} />
     </AbsoluteFill>
   );

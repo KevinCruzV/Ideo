@@ -4,6 +4,9 @@ import { colors, fonts, layout } from "../theme";
 import { jitter } from "../paper/stopMotion";
 import { Chapter } from "../types";
 
+export const chapterText = (chapter: Chapter): string =>
+  chapter.total === 1 ? chapter.title : `${chapter.label} ${chapter.part} · ${chapter.title}`;
+
 export const ChapterLabel: React.FC<{ chapter: Chapter }> = ({ chapter }) => {
   const frame = useCurrentFrame();
   return (
@@ -22,7 +25,7 @@ export const ChapterLabel: React.FC<{ chapter: Chapter }> = ({ chapter }) => {
         transformOrigin: "left top",
       }}
     >
-      {`${chapter.label} ${chapter.part} · ${chapter.title}`}
+      {chapterText(chapter)}
     </div>
   );
 };
