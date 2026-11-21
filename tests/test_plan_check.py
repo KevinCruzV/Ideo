@@ -108,7 +108,7 @@ def expected_estimate(job, says):
     first = next(i for i, w in enumerate(words) if w["w"] == "Nous" and words[i + 1]["w"] == "oublions")
     clip = words[first + len(quote) - 1]["e"] - words[first]["s"]
     hook = len(plan["parts"][0]["hook"].split())
-    return round((hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.41 * (1 + len(says)) + clip + 2.5 + 3.0)
+    return round((hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.66 + 0.56 * len(says) + clip + 2.5 + 3.0)
 
 
 def test_part_too_short_reports_estimate(job_with_fixtures):
@@ -492,3 +492,11 @@ def test_quote_in_the_end_of_the_video_is_an_error(job_with_fixtures):
     set_end_skip(job_with_fixtures, 20.0, 40.0)
     errors = plan_check.check_plan(job_with_fixtures)
     assert any(e.startswith("Partie 1, scène 5 : la citation est dans la fin de la vidéo") for e in errors)
+
+
+def test_pause_seconds_follow_the_position_of_each_gap():
+    assert plan_check.pause_seconds([{}]) == pytest.approx(0.66 + 0.56)
+    assert plan_check.pause_seconds([{}, {}, {}]) == pytest.approx(0.66 + 2 * 0.56 + 0.56)
+    assert plan_check.pause_seconds([{}, {"break": True}, {}]) == pytest.approx(0.66 + 0.96 + 0.56 + 0.56)
+    assert plan_check.pause_seconds([{"break": True}, {}]) == pytest.approx(0.96 + 0.56 + 0.56)
+    assert plan_check.pause_seconds([{"break": "oui"}, {}]) == pytest.approx(0.66 + 0.56 + 0.56)

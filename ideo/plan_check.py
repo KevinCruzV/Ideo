@@ -19,7 +19,19 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
-SEGMENT_GAP = 0.41
+TRIM = 0.06
+GAP_HOOK = 0.60 + TRIM
+GAP_SCENE = 0.50 + TRIM
+GAP_BREAK = 0.90 + TRIM
+
+
+def pause_seconds(scenes: list) -> float:
+    def broken(scene) -> bool:
+        return isinstance(scene, dict) and scene.get("break") is True
+
+    total = GAP_BREAK if broken(scenes[0]) else GAP_HOOK
+    total += sum(GAP_BREAK if broken(s) else GAP_SCENE for s in scenes[1:])
+    return total + GAP_SCENE
 
 
 def estimate_seconds(text: str, lang: str) -> float:
@@ -175,7 +187,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     if say is None:
         part_state["usable"] = False
     else:
-        part_state["seconds"] += estimate_seconds(say, ctx["lang"]) + SEGMENT_GAP
+        part_state["seconds"] += estimate_seconds(say, ctx["lang"])
         _check_dash([say], where, errors)
     props = scene.get("props", {})
     if not isinstance(props, dict):
@@ -310,7 +322,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         errors.append(f"{where} : l'accroche « hook » est manquante ou vide. Écris une phrase d'accroche qui donne envie de regarder.")
         state["usable"] = False
     else:
-        state["seconds"] += estimate_seconds(hook, ctx["lang"]) + SEGMENT_GAP
+        state["seconds"] += estimate_seconds(hook, ctx["lang"])
         _check_dash([hook], where, errors)
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
@@ -328,6 +340,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         errors.append(f"{where} : {len(scenes)} scènes, {MAX_SCENES} au plus par vidéo. Retire ou fusionne {len(scenes) - MAX_SCENES} scène(s), ou découpe en plusieurs parties.")
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
+    state["seconds"] += pause_seconds(scenes)
     if not state["usable"]:
         return state["clips"], None
     total = round(state["seconds"])
