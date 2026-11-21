@@ -24,8 +24,8 @@ export type PoseSpec = {
 
 export const POSE_SPECS: Record<Pose, PoseSpec> = {
   question: { headTilt: 8, lean: 0, eyeR: 7.5, pupilR: 3.4, look: [2.3, -2.8], mouth: "flat", arm: false },
-  surprise: { headTilt: -3, lean: -7, eyeR: 9, pupilR: 3, look: [0.4, -0.6], mouth: "open", arm: false },
-  montre: { headTilt: 4, lean: 3, eyeR: 7.5, pupilR: 3.4, look: [3.4, 0.4], mouth: "smile", arm: true },
+  surprise: { headTilt: -3, lean: -4, eyeR: 9, pupilR: 3, look: [0.4, -0.6], mouth: "open", arm: false },
+  montre: { headTilt: 4, lean: 2, eyeR: 7.5, pupilR: 3.4, look: [3.4, 0.4], mouth: "smile", arm: true },
   content: { headTilt: -6, lean: 0, eyeR: 7.5, pupilR: 3.4, look: [2, 1], mouth: "smile", arm: false },
 };
 
@@ -59,7 +59,7 @@ export const isBlinking = (seed: string, frame: number, fps = 30): boolean => {
   return last !== undefined && frame - last < BLINK_FRAMES;
 };
 
-const HOP = [0.07, 0.035];
+const HOP = [0.05, 0.025];
 
 export const LAND_FRAMES = 5;
 

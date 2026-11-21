@@ -7,14 +7,14 @@ import { Watermark } from "./chrome/Watermark";
 import { AccentContext } from "./scenes/accent";
 import { cleanItems } from "./scenes/coerce";
 import { resolveScene } from "./scenes/registry";
-import { accentForIndex, colors } from "./theme";
+import { colors, segmentAccent } from "./theme";
 import { Timeline } from "./types";
 
 export const Short: React.FC<Timeline> = (timeline) => {
   const accents = timeline.segments.map((segment, i) => ({
     from: segment.from,
     to: segment.to,
-    accent: accentForIndex(i),
+    accent: segmentAccent(i, segment.kind === "scene" ? segment.type : undefined),
   }));
   return (
     <AbsoluteFill style={{ background: colors.background }}>

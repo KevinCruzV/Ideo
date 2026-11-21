@@ -5,11 +5,11 @@ import { idleTilt, isBlinking, Mouth, Pose, POSE_SPECS } from "./pose";
 
 const SHADE = "rgba(0,0,0,.22)";
 
-export const VIEW = { x: -58, y: -72, w: 142, h: 152 } as const;
+export const VIEW = { x: -92, y: -72, w: 184, h: 176 } as const;
 export const HEAD_CENTER = { x: 0, y: -31, r: 33 } as const;
 const HEAD_VIEW = { x: -37, y: -68, w: 76, h: 76 } as const;
-const FEET_Y = 76;
-const NECK_Y = -3;
+export const CUT_Y = 36;
+const SHOULDERS = "M-36 -6 L37 -7 Q51 -5 55 8 L68 104 L-66 104 L-53 8 Q-49 -4 -36 -6 Z";
 
 const shadeOffset = (px: number, unitsPerPx: number): [number, number] => {
   const dx = Math.max(2, px * 0.008);
@@ -70,10 +70,12 @@ export type CharacterProps = {
 
 export const characterWidth = (size: number): number => (size * VIEW.w) / VIEW.h;
 
+export const sizeForHead = (headPx: number): number => (headPx * VIEW.h) / (HEAD_CENTER.r * 2);
+
 export const Character: React.FC<CharacterProps> = ({
   size,
   pose = "question",
-  body = "cream",
+  body = "blue",
   seed = "mascot",
   lift = 0,
   style,
@@ -92,17 +94,17 @@ export const Character: React.FC<CharacterProps> = ({
       viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
       style={{ position: "absolute", overflow: "visible", transform: `translateY(${-lift * size}px)`, ...style }}
     >
-      <g transform={`rotate(${spec.lean} 0 ${FEET_Y})`}>
+      <g transform={`rotate(${spec.lean} 0 ${CUT_Y})`}>
+        <g transform="rotate(3 0 40)">
+          <path d={SHOULDERS} fill={SHADE} transform={`translate(${shade[0]} ${shade[1]})`} />
+          <path d={SHOULDERS} fill={fill} />
+        </g>
         {spec.arm ? (
-          <g transform="translate(14 28) rotate(-24)">
+          <g transform="translate(44 10) rotate(-34)">
             <path d={ARM} fill={SHADE} transform={`translate(${shade[0]} ${shade[1]})`} />
             <path d={ARM} fill={fill} />
           </g>
         ) : null}
-        <g transform="rotate(3)">
-          <rect x={-22 + shade[0]} y={NECK_Y + shade[1]} width={44} height={FEET_Y - NECK_Y} fill={SHADE} />
-          <rect x={-22} y={NECK_Y} width={44} height={FEET_Y - NECK_Y} fill={fill} />
-        </g>
         <Face pose={pose} blink={blink} tilt={tilt} shade={shade} />
       </g>
     </svg>

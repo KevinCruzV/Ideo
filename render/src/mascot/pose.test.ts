@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BLINK_FRAMES, blinkStarts, hopLift, idleTilt, isBlinking, poseOf } from "./pose";
-import { characterWidth } from "./Character";
+import { characterWidth, sizeForHead, VIEW } from "./Character";
 
 describe("pose", () => {
   test("une pose inconnue retombe sur question", () => {
@@ -72,7 +72,8 @@ describe("vie au repos", () => {
     expect(lifts.slice(5)).toEqual([0, 0, 0]);
   });
 
-  test("la largeur suit la taille", () => {
-    expect(characterWidth(152)).toBe(142);
+  test("la largeur suit la taille et la tête donne l'échelle", () => {
+    expect(characterWidth(VIEW.h)).toBe(VIEW.w);
+    expect(sizeForHead(66)).toBe(VIEW.h);
   });
 });

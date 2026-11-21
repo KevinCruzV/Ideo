@@ -46,6 +46,11 @@ export const accentForIndex = (index: number): AccentColor => {
   return accentCycle[i % accentCycle.length];
 };
 
+export const segmentAccent = (index: number, sceneType?: string): AccentColor => {
+  const accent = accentForIndex(index);
+  return sceneType === "mascot" && accent === "blue" ? "red" : accent;
+};
+
 export type AccentSpan = { from: number; to: number; accent: AccentColor };
 
 export const accentAt = (spans: AccentSpan[], frame: number): AccentColor => {

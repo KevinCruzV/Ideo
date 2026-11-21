@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { accentAt, accentForIndex } from "./theme";
+import { accentAt, accentForIndex, segmentAccent } from "./theme";
 
 describe("accent", () => {
   test("rotation rouge, jaune, bleu par index de segment", () => {
@@ -15,5 +15,14 @@ describe("accent", () => {
     expect(accentAt(spans, 5)).toBe("red");
     expect(accentAt(spans, 12)).toBe("yellow");
     expect(accentAt(spans, 99)).toBe("red");
+  });
+
+  test("une scène mascotte ne prend jamais le bleu, réservé au buste", () => {
+    expect(segmentAccent(2, "mascot")).toBe("red");
+    expect(segmentAccent(5, "mascot")).toBe("red");
+    expect(segmentAccent(1, "mascot")).toBe("yellow");
+    expect(segmentAccent(0, "mascot")).toBe("red");
+    expect(segmentAccent(2, "key-title")).toBe("blue");
+    expect(segmentAccent(2)).toBe("blue");
   });
 });

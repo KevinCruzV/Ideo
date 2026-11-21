@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
-import { Character } from "../mascot/Character";
+import { Character, CUT_Y, sizeForHead, VIEW } from "../mascot/Character";
 import { hopLift, LAND_FRAMES, poseOf } from "../mascot/pose";
 import { enterScale, jitter } from "../paper/stopMotion";
 import { colors, fonts, layout, onPaper, shadowFilter } from "../theme";
@@ -11,13 +11,16 @@ import type { SceneProps } from "./registry";
 import { Stage, STAGE_H } from "./Stage";
 import { enterFor } from "./timing";
 
-export const CHARACTER_SIZE = 600;
-const CHARACTER_LEFT = 40;
-const CHARACTER_BOTTOM = 16;
-const BUBBLE_LEFT = 400;
+const HEAD_PX = 300;
+const HEAD_X = 270;
+export const CHARACTER_SIZE = sizeForHead(HEAD_PX);
+const UNIT = CHARACTER_SIZE / VIEW.h;
+const CHARACTER_LEFT = HEAD_X + VIEW.x * UNIT;
+const CHARACTER_TOP = STAGE_H - (CUT_Y - VIEW.y) * UNIT;
+const BUBBLE_LEFT = 410;
 const BUBBLE_W = layout.width - layout.marginSide - BUBBLE_LEFT;
 const BUBBLE_PAD_X = 30;
-const TAIL_TIP_Y = 520;
+const TAIL_TIP_Y = 600;
 const bubbleClip = "polygon(1% 3%, 99% 0, 100% 96%, 2% 100%)";
 const tailClip = "polygon(22% 0, 100% 0, 0 100%)";
 
@@ -40,9 +43,9 @@ export const Mascot: React.FC<SceneProps> = ({ props, items, from, to }) => {
       <Character
         size={CHARACTER_SIZE}
         pose={pose}
-        body="ink"
+        body="blue"
         lift={lift}
-        style={{ left: CHARACTER_LEFT, top: STAGE_H - CHARACTER_SIZE - CHARACTER_BOTTOM }}
+        style={{ left: CHARACTER_LEFT, top: CHARACTER_TOP }}
       />
       <div
         style={{
