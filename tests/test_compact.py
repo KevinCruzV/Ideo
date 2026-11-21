@@ -170,7 +170,7 @@ def test_end_keywords_are_whole_words():
 
 def test_header_has_the_advised_duration():
     text = compact.build(BODY, [], LONG_INFO)[0]
-    assert "Durée conseillée : 120 à 180 s (environ 408 à 612 mots de say)." in text.split("\n\n")[0]
+    assert "Durée conseillée : 120 à 180 s (environ 360 à 540 mots de say)." in text.split("\n\n")[0]
 
 
 def prepared_job(tmp_path, monkeypatch):
