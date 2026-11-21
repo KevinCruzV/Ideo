@@ -38,7 +38,7 @@ SCHEMA = {
     "person-card": {"required": {"name": TEXT}, "optional": {"role": TEXT}, "el": ("avatar", "name", "role")},
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},
     "stack-list": {"required": {"items": text_list(5)}, "optional": {}, "el": ("items.<i>",)},
-    "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT}, "el": ("to", "label")},
+    "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT, "unit": TEXT}, "el": ("to", "label")},
     "timeline": {
         "required": {"marks": object_list(5, {"at": LABEL, "label": TEXT}, ("at",))},
         "optional": {"start": LABEL, "end": LABEL},
@@ -75,7 +75,7 @@ TEXT_CAPS = {
     "person-card": {"name": 48, "role": 100},
     "fact-chips": {"chips": 28},
     "stack-list": {"items": 60},
-    "counter": {"label": 60},
+    "counter": {"label": 60, "unit": 4},
     "timeline": {"marks.at": 12, "marks.label": 48, "start": 30, "end": 30},
     "icon-grid": {"cells.label": 16},
     "stamp": {"text": 48},

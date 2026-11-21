@@ -112,3 +112,10 @@ def test_45_scenes_are_not_refused_for_the_count(job_with_fixtures):
         plan["parts"][0]["scenes"] = [plan["parts"][0]["scenes"][0]] * 45
 
     assert not any("scènes," in e and "au plus" in e for e in plan_with(job_with_fixtures, mutate))
+
+
+def test_counter_unit_cap_4():
+    assert scene_schema.check_props("counter", {"to": 20, "unit": "%"}, "x") == []
+    errors = scene_schema.check_props("counter", {"to": 20, "unit": "milli"}, "x")
+    assert len(errors) == 1 and "unit" in errors[0] and "4" in errors[0]
+    assert scene_schema.check_props("counter", {"to": 20, "unit": ""}, "x")

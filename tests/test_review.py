@@ -203,3 +203,68 @@ def test_reset_clears_the_pass_counter(job):
     assert review.relire(job, plan, 120) == []
     review.reset(job)
     assert review.passes(job) == 0 and review.relire(job, plan, 120)
+
+
+def test_codes_are_stable_and_messages_unchanged(job):
+    plan = plan_of(scene(kind="shape-diagram", props={"values": [1, 2], "shape": "bar"}, say="court"), kicker=False)
+    pairs = review.coded(plan, job, 120)
+    codes = [c for c, _ in pairs]
+    assert "barres-sans-unite" in codes and "say-trop-court" in codes and "sans-kicker" in codes
+    assert all(t.startswith("RELIRE : ") for _, t in pairs)
+    assert [t for _, t in pairs] == review.findings(plan, job, 120)
+    assert all(c == c.lower() and " " not in c for c in codes)
+
+
+def test_three_word_names_are_bare_too(job):
+    grid = plan_of(scene(kind="icon-grid", props={"cells": [{"label": l, "shape": "circle"} for l in
+                                                           ["Russie", "Inde", "Chine", "Afrique du Sud"]]}))
+    assert only(grid, job, "noms nus")
+    assert only(plan_of(scene(kind="stack-list", props={"items": ["Afrique du Sud", "Corée du Nord"]})), job, "noms nus")
+    assert not only(plan_of(scene(kind="stack-list", props={"items": ["Les États Unis d'Amérique", "Un long nom"]})), job, "noms nus")
+
+
+def test_icon_grid_without_any_picto_is_flagged_even_with_long_labels(job):
+    long_labels = plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Les grandes puissances du monde"},
+                                                                    {"label": "Les petits pays en développement"}]}))
+    assert only(long_labels, job, "noms nus") or only(long_labels, job, "sans dessin")
+    drawn = plan_of(scene(kind="icon-grid", props={"cells": [{"label": "Les grandes puissances du monde", "picto": "globe"},
+                                                              {"label": "Les petits pays en développement"}]}))
+    assert not only(drawn, job, "noms nus")
+
+
+def test_more_than_three_versus_scenes(job):
+    many = plan_of(*[scene(kind="versus" if i % 2 else "stamp", props={"left": "a", "right": "b"} if i % 2 else {"text": "t"})
+                     for i in range(10)])
+    found = [c for c, _ in review.coded(many, job, 120) if c == "trop-de-versus"]
+    assert found
+    few = plan_of(*[scene(kind="versus" if i % 3 == 1 else "stamp", props={"left": "a", "right": "b"} if i % 3 == 1 else {"text": "t"})
+                    for i in range(9)])
+    assert "trop-de-versus" not in [c for c, _ in review.coded(few, job, 120)]
+
+
+def test_counter_without_unit_when_say_talks_percent(job):
+    for say in ["La part atteint vingt pour cent de la richesse mondiale totale.", "La part atteint 20 % de la richesse mondiale totale."]:
+        assert only(plan_of(scene(kind="counter", say=say, props={"to": 20})), job, "compteur sans unité"), say
+    assert not only(plan_of(scene(kind="counter", say="La part atteint 20 % de la richesse mondiale totale.",
+                                  props={"to": 20, "unit": "%"})), job, "compteur sans unité")
+    assert not only(plan_of(scene(kind="counter", say="La population atteint cinq millions d'habitants.", props={"to": 5})),
+                    job, "compteur sans unité")
+
+
+LONG_SAY_TEXT = "Le premier pays signe un accord puis le second pays refuse de signer et ensuite les marchés réagissent très fort partout dans le monde entier"
+
+
+def test_items_grouped_in_the_first_half(job):
+    early = scene(say=LONG_SAY_TEXT, props={"text": "T"}, items=[{"el": "text", "on": "premier"}, {"el": "text", "on": "accord"}])
+    assert only(plan_of(early), job, "groupés au début")
+    spread = scene(say=LONG_SAY_TEXT, props={"text": "T"}, items=[{"el": "text", "on": "premier"}, {"el": "text", "on": "monde"}])
+    assert not only(plan_of(spread), job, "groupés au début")
+    short = scene(say="Un accord est signé.", items=[{"el": "text", "on": "accord"}])
+    assert not only(plan_of(short), job, "groupés au début")
+    assert not only(plan_of(scene(say=LONG_SAY_TEXT)), job, "groupés au début")
+
+
+def test_grouped_items_advice_names_the_last_sentence(job):
+    early = scene(say=LONG_SAY_TEXT, items=[{"el": "text", "on": "premier"}])
+    line = only(plan_of(early), job, "groupés au début")[0]
+    assert "dernière phrase" in line

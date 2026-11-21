@@ -192,3 +192,18 @@ def test_quote_captions_use_the_text_of_the_plan(job_with_offsets):
     in_quote = [g for g in tl["captions"] if clip["start"] * 30 <= g["from"] < clip["end"] * 30]
     assert [w["w"] for g in in_quote for w in g["words"]] == text.split()
     assert all(1 <= len(g["words"]) <= 4 for g in tl["captions"])
+
+
+def test_object_state_first_item_keeps_its_own_word(job_with_offsets):
+    from ideo import common as c
+
+    plan = c.load_json(job_with_offsets / "plan.json")
+    scene = plan["parts"][0]["scenes"][3]
+    scene["type"] = "object-state"
+    scene["props"] = {"object": "door", "states": ["fermée", "ouverte"]}
+    scene["items"] = [{"el": "states.1", "on": "simples"}]
+    c.save_json(job_with_offsets / "plan.json", plan)
+    tl = build(job_with_offsets)
+    seg = tl["segments"][4]
+    assert seg["type"] == "object-state"
+    assert seg["items"][0]["at"] > seg["from"] + 9

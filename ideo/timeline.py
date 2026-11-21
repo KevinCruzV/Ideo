@@ -10,6 +10,7 @@ HEIGHT = 1920
 PAUSE = 0.5
 MAX_GROUP = 4
 FIRST_ITEM_FRAMES = 9
+UNCAPPED = frozenset({"object-state"})
 FINAL_PUNCT = (".", "!", "?", "…", ";", ":")
 APOSTROPHES = re.compile("['’‘ʼ`´]")
 
@@ -161,7 +162,7 @@ def _build(job: Path, n: int, total: int) -> Path:
             for item in scene.get("items", []):
                 at = anchor_frame(seg_words, item["on"], entry["start"], seg_dur, scene["say"])
                 at = min(max(at, begin), max(finish - 1, begin))
-                if not items:
+                if not items and scene["type"] not in UNCAPPED:
                     at = min(at, begin + FIRST_ITEM_FRAMES)
                 items.append({"el": item["el"], "at": at})
             segments.append({"kind": "scene", "type": scene["type"], "from": begin, "to": finish,
