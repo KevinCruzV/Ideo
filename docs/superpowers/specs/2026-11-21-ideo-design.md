@@ -348,3 +348,22 @@ Détail **[Proposition]** :
   chiffre inventé (R-17, R-36).
 - Elle suit la langue du short (section 8) : en anglais, "Tell me why...", "Why...?", etc.
 - Ordre d'une partie : accroche -> explication -> fin "abonne-toi pour la partie suivante" (section 13).
+
+## 15. Crédit des extraits cités
+
+**[Kevin]** Quand un extrait audio est cité, on crédite celui qu'on entend (une personne, un journal, une
+émission), pas la chaîne YouTube qui a publié la vidéo. Aucun nom de chaîne ou de créateur n'apparaît dans ce
+que produit ideo.
+
+Détail **[Proposition]** :
+- Le crédit affiché sur une citation (`speaker`) vient de ce que dit la transcription autour de l'extrait. Si
+  elle ne dit pas qui parle, pas de crédit : jamais un crédit inventé, jamais la chaîne.
+- Le vérificateur refuse un `speaker` égal au nom de la chaîne ou au titre de la vidéo.
+- Le fichier de description liste les "voix citées" et ne mentionne plus la chaîne. `sources.md` (fichier privé)
+  garde les liens minutés.
+- **À faire après la v1 : repérer les extraits insérés dans la vidéo.** Beaucoup de vidéos intègrent des
+  passages venus d'ailleurs (journal télévisé, interview, discours). Piste sans crédits : une détection locale
+  des changements de voix (regroupement par empreinte vocale), qui marque dans la transcription compacte les
+  paragraphes dits par une autre voix que la voix principale (`[autre voix]`). Claude sait alors où commence et
+  finit un extrait, et le relecteur voit dans `plan.md` quelles citations restent sans voix identifiée.
+  À évaluer pendant la campagne de tests.
