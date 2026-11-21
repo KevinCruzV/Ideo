@@ -170,4 +170,40 @@ def test_end_keywords_are_whole_words():
 
 def test_header_has_the_advised_duration():
     text = compact.build(BODY, [], LONG_INFO)[0]
-    assert "Durée conseillée : 120 à 180 s (environ 312 à 468 mots de say)." in text.split("\n\n")[0]
+    assert "Durée conseillée : 120 à 180 s (environ 408 à 612 mots de say)." in text.split("\n\n")[0]
+
+
+def prepared_job(tmp_path, monkeypatch):
+    from ideo import common
+
+    job = tmp_path / "job"
+    job.mkdir()
+    common.save_json(job / "words.json", BODY)
+    common.save_json(job / "info.json", {"title": "T", "channel": "C", "duration": 1000})
+    (job / "lang.txt").write_text("fr", encoding="utf-8")
+    monkeypatch.setattr(compact.sfx_mod, "rms_db_per_second", lambda path: [])
+    monkeypatch.setattr(compact.sfx_mod, "find_sfx", lambda rms, words: [])
+    return job
+
+
+def test_transcript_cache_is_reused_at_the_same_version(tmp_path, monkeypatch):
+    job = prepared_job(tmp_path, monkeypatch)
+    compact.prepare_transcript(job)
+    (job / "transcript_compact.md").write_text("édité", encoding="utf-8")
+    compact.prepare_transcript(job)
+    assert (job / "transcript_compact.md").read_text(encoding="utf-8") == "édité"
+
+
+def test_transcript_is_rebuilt_when_the_cache_version_is_old(tmp_path, monkeypatch):
+    from ideo import common
+
+    job = prepared_job(tmp_path, monkeypatch)
+    compact.prepare_transcript(job)
+    skip = common.load_json(job / "skip.json")
+    assert skip["version"] == compact.TRANSCRIPT_VERSION
+    del skip["version"]
+    common.save_json(job / "skip.json", skip)
+    (job / "transcript_compact.md").write_text("ancien format", encoding="utf-8")
+    compact.prepare_transcript(job)
+    text = (job / "transcript_compact.md").read_text(encoding="utf-8")
+    assert "Durée conseillée" in text and "[fin de vidéo, ignorée]" in text

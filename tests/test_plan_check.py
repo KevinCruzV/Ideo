@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from ideo import plan_check
+from ideo import plan_check, speed
 
 EM = chr(0x2014)
 
@@ -108,7 +108,7 @@ def expected_estimate(job, says):
     first = next(i for i, w in enumerate(words) if w["w"] == "Nous" and words[i + 1]["w"] == "oublions")
     clip = words[first + len(quote) - 1]["e"] - words[first]["s"]
     hook = len(plan["parts"][0]["hook"].split())
-    return round((hook + sum(len(s.split()) for s in says)) / (2.6 * 1.4) + 0.34 * (1 + len(says)) + clip + 2.5 + 3.0)
+    return round((hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.41 * (1 + len(says)) + clip + 2.5 + 3.0)
 
 
 def test_part_too_short_reports_estimate(job_with_fixtures):
@@ -209,9 +209,9 @@ def test_unreadable_plan_json_is_an_error(job_with_fixtures):
 
 
 def test_estimate_seconds():
-    assert plan_check.estimate_seconds("un deux trois quatre cinq", "fr") == pytest.approx(5 / (2.6 * 1.4))
-    assert plan_check.estimate_seconds("un deux trois quatre cinq", "en") == pytest.approx(5 / (2.8 * 1.4))
-    assert plan_check.estimate_seconds("un deux", "es") == pytest.approx(2 / (2.6 * 1.4))
+    assert plan_check.estimate_seconds("un deux trois quatre cinq", "fr") == pytest.approx(5 / speed.rate('fr'))
+    assert plan_check.estimate_seconds("un deux trois quatre cinq", "en") == pytest.approx(5 / speed.rate('en'))
+    assert plan_check.estimate_seconds("un deux", "es") == pytest.approx(2 / speed.rate('es'))
 
 
 def test_missing_plan_json_is_an_error_not_a_traceback(job_with_fixtures):

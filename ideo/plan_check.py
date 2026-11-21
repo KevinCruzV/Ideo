@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ideo import scene_schema, voice
+from ideo import scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, anchor_text, closest_passage, find_span, normalize
 
@@ -19,12 +19,11 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
-SPEECH_FACTOR = 1.4
-SEGMENT_GAP = 0.34
+SEGMENT_GAP = 0.41
 
 
 def estimate_seconds(text: str, lang: str) -> float:
-    return len(text.split()) / (RATES.get(lang, 2.6) * SPEECH_FACTOR)
+    return len(text.split()) / speed.rate(lang)
 
 
 def read_json(job: Path, name: str, default):

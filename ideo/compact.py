@@ -5,6 +5,7 @@ from pathlib import Path
 from ideo import common, sfx as sfx_mod, target
 
 PAUSE = 1.2
+TRANSCRIPT_VERSION = 2
 MAX_WORDS = 60
 SPONSOR_SPAN = 60.0
 SPONSOR_GAP = 2.0
@@ -184,7 +185,9 @@ def prepare_transcript(job: Path) -> dict:
     lang = (job / "lang.txt").read_text(encoding="utf-8").strip()
     words = common.load_json(job / "words.json")
     step = common.read_status(job)["steps"].get("transcript")
-    if step and step["ok"] and out.exists() and sfx_path.exists() and skip_path.exists():
+    cached = common.load_json(skip_path) if skip_path.exists() else {}
+    current = isinstance(cached, dict) and cached.get("version") == TRANSCRIPT_VERSION
+    if step and step["ok"] and out.exists() and sfx_path.exists() and current:
         markers = common.load_json(sfx_path)
         text = out.read_text(encoding="utf-8")
     else:
@@ -194,7 +197,7 @@ def prepare_transcript(job: Path) -> dict:
         text, hidden = build(words, markers, info)
         segments = [s for s in info.get("skip") or [] if isinstance(s, dict)]
         common.save_json(sfx_path, markers)
-        common.save_json(skip_path, {"hidden": hidden, "segments": segments})
+        common.save_json(skip_path, {"version": TRANSCRIPT_VERSION, "hidden": hidden, "segments": segments})
         out.write_text(text, encoding="utf-8")
         common.mark(job, "transcript", True, f"{len(words)} mots, {len(markers)} repères de sons")
     paragraphs_count = sum(1 for line in text.splitlines() if re.match(r"^\[\d", line))

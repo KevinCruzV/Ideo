@@ -1,10 +1,8 @@
 from pathlib import Path
 
-from ideo import plan_check
+from ideo import plan_check, speed
 
 TABLE = ((240, (45, 100)), (600, (90, 150)), (float("inf"), (120, 180)))
-RATES = plan_check.RATES
-DEFAULT_RATE = 2.6
 HARD_MAX = 300
 
 
@@ -28,7 +26,7 @@ def bounds(useful: float) -> tuple[int, int]:
 
 
 def words(low: int, high: int, lang: str) -> tuple[int, int]:
-    rate = RATES.get(lang, DEFAULT_RATE)
+    rate = speed.rate(lang)
     return round(low * rate), round(high * rate)
 
 
