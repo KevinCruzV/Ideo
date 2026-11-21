@@ -116,3 +116,11 @@ def test_real_transcription_of_synthetic_speech(tmp_path):
     words = transcribe.transcribe(job, min_words=3)
     text = " ".join(w["w"] for w in words).lower()
     assert "fox" in text and (job / "lang.txt").read_text().strip() == "en"
+
+
+def test_whisper_words_forces_language(monkeypatch):
+    calls = []
+    install_fake_model(monkeypatch, 3, calls)
+    words, language = transcribe.whisper_words(np.zeros(16000, dtype=np.float32), language="es")
+    assert len(words) == 3 and language == "fr"
+    assert calls[1][2]["language"] == "es"

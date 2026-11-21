@@ -13,6 +13,20 @@ def read_pcm(wav_path) -> np.ndarray:
         return np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32) / 32768.0
 
 
+def whisper_words(pcm: np.ndarray, model: str = "small", language: str | None = None) -> tuple[list[dict], str]:
+    from faster_whisper import WhisperModel
+
+    whisper = WhisperModel(model, device="cpu", compute_type="int8")
+    options = {"language": language} if language else {}
+    segments, info = whisper.transcribe(pcm, word_timestamps=True, vad_filter=True, **options)
+    words = [
+        {"w": word.word.strip(), "s": round(word.start, 2), "e": round(word.end, 2)}
+        for seg in segments
+        for word in (seg.words or [])
+    ]
+    return words, info.language
+
+
 def transcribe(job: Path, model: str = "small", min_words: int = MIN_WORDS) -> list[dict]:
     job = Path(job)
     words_path = job / "words.json"
@@ -21,15 +35,7 @@ def transcribe(job: Path, model: str = "small", min_words: int = MIN_WORDS) -> l
     if step and step["ok"] and words_path.exists() and lang_path.exists():
         return common.load_json(words_path)
     try:
-        from faster_whisper import WhisperModel
-
-        whisper = WhisperModel(model, device="cpu", compute_type="int8")
-        segments, info = whisper.transcribe(read_pcm(job / "source.wav"), word_timestamps=True, vad_filter=True)
-        words = [
-            {"w": word.word.strip(), "s": round(word.start, 2), "e": round(word.end, 2)}
-            for seg in segments
-            for word in (seg.words or [])
-        ]
+        words, language = whisper_words(read_pcm(job / "source.wav"), model)
         if len(words) < min_words:
             raise common.IdeoError(
                 f"pas assez de parole : {len(words)} mots détectés, il en faut au moins {min_words}"
@@ -41,6 +47,6 @@ def transcribe(job: Path, model: str = "small", min_words: int = MIN_WORDS) -> l
         common.mark(job, "transcribe", False, str(err))
         raise common.IdeoError(f"la transcription a échoué : {err}") from err
     common.save_json(words_path, words)
-    lang_path.write_text(info.language, encoding="utf-8")
-    common.mark(job, "transcribe", True, f"{len(words)} mots, langue {info.language}")
+    lang_path.write_text(language, encoding="utf-8")
+    common.mark(job, "transcribe", True, f"{len(words)} mots, langue {language}")
     return words
