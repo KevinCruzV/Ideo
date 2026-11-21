@@ -10,7 +10,9 @@ from pathlib import Path
 from ideo import common, textmatch, voice
 
 RATE = 48000
-SILENCE_GAP = 0.35
+GAP_HOOK = 0.60
+GAP_SCENE = 0.50
+GAP_BREAK = 0.90
 CLIP_PAD = 0.25
 FADE = 0.08
 QUOTE_WINDOW = 90.0
@@ -158,6 +160,15 @@ def _inputs(out_dir: Path, names: list[str], job: Path) -> list[Path]:
     return [p for p in paths if p.exists()]
 
 
+def _gap(names: list[str], index: int, scenes: dict, after_clip: bool) -> float:
+    scene = scenes.get(names[index])
+    if scene and scene.get("break") is True:
+        return GAP_BREAK - CLIP_PAD if after_clip else GAP_BREAK
+    if after_clip:
+        return 0.0
+    return GAP_HOOK if names[index - 1] == "seg_00_hook" else GAP_SCENE
+
+
 def assemble_part(job: Path, n: int) -> Path:
     job = Path(job)
     step = f"assemble-{n:02d}"
@@ -204,9 +215,11 @@ def _assemble(job: Path, n: int) -> Path:
         source_len = None
         after_clip = False
         for index, name in enumerate(names):
-            if index and not after_clip:
-                chunks.append(_silence(SILENCE_GAP))
-                cursor += SILENCE_GAP
+            if index:
+                gap = _gap(names, index, scenes, after_clip)
+                if gap > 0:
+                    chunks.append(_silence(gap))
+                    cursor += gap
             pcm = _read_wav(out_dir / f"{name}.wav")
             entry = {"seg": name, "start": cursor, "end": cursor + _seconds(pcm), "clip": None}
             chunks.append(pcm)

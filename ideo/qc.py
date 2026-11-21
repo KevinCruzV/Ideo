@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ideo import assemble, common, plan_check, render, target
 
-SILENCE_SECONDS = 0.6
+SILENCE_SECONDS = 1.2
 SILENCE_DB = -35
 LUFS_TOLERANCE = 1.0
 FIRST_ITEM_SECONDS = 0.5

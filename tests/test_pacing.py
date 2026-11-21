@@ -23,16 +23,16 @@ def test_leading_and_trailing_silence_are_trimmed_keeping_30_ms():
     assert mapping(1.5) == pytest.approx(1.03, abs=0.015)
 
 
-def test_long_inner_silence_becomes_350_ms():
+def test_long_inner_silence_becomes_500_ms():
     pcm = np.concatenate([tone(0.5), quiet(1.0), tone(0.5)])
     out, mapping = pacing.tighten(pcm)
-    assert len(out) / RATE == pytest.approx(1.35, abs=0.03)
-    assert mapping(1.5) == pytest.approx(0.5 + 0.35, abs=0.02)
+    assert len(out) / RATE == pytest.approx(1.5, abs=0.03)
+    assert mapping(1.5) == pytest.approx(0.5 + 0.50, abs=0.02)
     assert mapping(0.25) == pytest.approx(0.25, abs=0.01)
 
 
 def test_short_inner_silence_is_kept():
-    pcm = np.concatenate([tone(0.5), quiet(0.35), tone(0.5)])
+    pcm = np.concatenate([tone(0.5), quiet(0.55), tone(0.5)])
     out, _ = pacing.tighten(pcm)
     assert len(out) == len(pcm)
 
@@ -55,4 +55,4 @@ def test_apply_maps_word_times():
     _, mapping = pacing.tighten(pcm)
     words = pacing.remap([{"w": "a", "s": 0.6, "e": 0.9}, {"w": "b", "s": 2.1, "e": 2.4}], mapping)
     assert words[0]["s"] == pytest.approx(0.13, abs=0.02)
-    assert words[1]["s"] == pytest.approx(0.93, abs=0.05)
+    assert words[1]["s"] == pytest.approx(1.13, abs=0.05)

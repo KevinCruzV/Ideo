@@ -6,8 +6,8 @@ RATE = 48000
 FRAME = 480
 THRESHOLD_DB = -32.0
 KEEP_EDGE = 0.03
-LONG_PAUSE = 0.40
-PAUSE = 0.35
+LONG_PAUSE = 0.60
+PAUSE = 0.50
 
 
 def _loud(pcm: np.ndarray) -> np.ndarray:
