@@ -1,10 +1,15 @@
 import json
+import platform
 import re
 
 from ideo import common
 
 DEFAULT_RATE = "+0%"
 DEFAULT_SEUIL = 5
+ENGINES = ("kyutai", "edge")
+KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
+DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
+DEFAULT_PADDING_BONUS = 0.5
 RATE = re.compile(r"^[+-]\d{1,3}%$")
 
 
@@ -35,7 +40,37 @@ def _load() -> dict:
     seuil = data.get("entretien_seuil", DEFAULT_SEUIL)
     if isinstance(seuil, bool) or not isinstance(seuil, int) or seuil < 1:
         raise common.IdeoError("config.json : « entretien_seuil » doit être un nombre entier d'au moins 1.")
+    engine = data.get("engine")
+    if engine is not None and engine not in ENGINES:
+        raise common.IdeoError("config.json : « engine » doit valoir « kyutai » ou « edge ».")
+    voice = data.get("kyutai_voice", DEFAULT_KYUTAI_VOICE)
+    if not isinstance(voice, str) or not voice.strip():
+        raise common.IdeoError("config.json : « kyutai_voice » doit être le nom d'une voix, par exemple "
+                               "« unmute-prod-website/developpeuse-3.wav ».")
+    bonus = data.get("kyutai_padding_bonus", DEFAULT_PADDING_BONUS)
+    if isinstance(bonus, bool) or not isinstance(bonus, (int, float)) or not -2 <= bonus <= 2:
+        raise common.IdeoError("config.json : « kyutai_padding_bonus » doit être un nombre entre -2 et 2 "
+                               "(positif = voix plus lente).")
     return data
+
+
+def kyutai_available() -> bool:
+    return KYUTAI_PYTHON.exists() and platform.machine() == "arm64"
+
+
+def engine() -> str:
+    chosen = _load().get("engine")
+    if chosen:
+        return chosen
+    return "kyutai" if kyutai_available() else "edge"
+
+
+def kyutai_voice() -> str:
+    return _load().get("kyutai_voice", DEFAULT_KYUTAI_VOICE)
+
+
+def kyutai_padding_bonus() -> float:
+    return _load().get("kyutai_padding_bonus", DEFAULT_PADDING_BONUS)
 
 
 def entretien_auto() -> bool:

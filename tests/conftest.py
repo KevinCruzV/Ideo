@@ -14,7 +14,10 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 @pytest.fixture(autouse=True)
 def isolated_home(tmp_path_factory, monkeypatch):
+    from ideo import config
+
     monkeypatch.setenv("IDEO_HOME", str(tmp_path_factory.mktemp("ideo-home")))
+    monkeypatch.setattr(config, "kyutai_available", lambda: False)
 
 
 @pytest.fixture

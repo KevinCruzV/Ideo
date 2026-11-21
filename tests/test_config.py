@@ -102,3 +102,49 @@ def test_entretien_keys_wrong_types(home, content):
     write(home, content)
     with pytest.raises(common.IdeoError, match="config.json"):
         config.entretien_auto()
+
+
+def test_engine_defaults_to_kyutai_only_when_available(monkeypatch):
+    monkeypatch.setattr(config, "kyutai_available", lambda: True)
+    assert config.engine() == "kyutai"
+    monkeypatch.setattr(config, "kyutai_available", lambda: False)
+    assert config.engine() == "edge"
+
+
+def test_engine_key_overrides_the_default(home, monkeypatch):
+    monkeypatch.setattr(config, "kyutai_available", lambda: False)
+    write(home, {"engine": "kyutai"})
+    assert config.engine() == "kyutai"
+    monkeypatch.setattr(config, "kyutai_available", lambda: True)
+    write(home, {"engine": "edge"})
+    assert config.engine() == "edge"
+
+
+@pytest.mark.parametrize("content", [{"engine": "autre"}, {"engine": 3}, {"kyutai_voice": ""}, {"kyutai_voice": 3},
+                                     {"kyutai_padding_bonus": "1"}, {"kyutai_padding_bonus": 3}, {"kyutai_padding_bonus": -2.5},
+                                     {"kyutai_padding_bonus": True}])
+def test_voice_engine_keys_wrong_values(home, content):
+    write(home, content)
+    with pytest.raises(common.IdeoError, match="config.json"):
+        config.engine()
+
+
+def test_kyutai_defaults_and_keys(home):
+    assert config.kyutai_voice() == "unmute-prod-website/developpeuse-3.wav"
+    assert config.kyutai_padding_bonus() == 0.5
+    write(home, {"kyutai_voice": "autre/voix.wav", "kyutai_padding_bonus": -1})
+    assert config.kyutai_voice() == "autre/voix.wav" and config.kyutai_padding_bonus() == -1
+
+
+def test_availability_needs_the_environment_and_apple_silicon(monkeypatch, tmp_path):
+    import platform
+
+    monkeypatch.undo()
+    monkeypatch.setattr(config, "KYUTAI_PYTHON", tmp_path / "bin" / "python")
+    monkeypatch.setattr(platform, "machine", lambda: "arm64")
+    assert config.kyutai_available() is False
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "bin" / "python").write_text("", encoding="utf-8")
+    assert config.kyutai_available() is True
+    monkeypatch.setattr(platform, "machine", lambda: "x86_64")
+    assert config.kyutai_available() is False
