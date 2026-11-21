@@ -8,7 +8,7 @@ from ideo import common, config
 
 MODEL_REPO = "kyutai/tts-1.6b-en_fr"
 VOICE_REPO = "kyutai/tts-voices"
-DOWNLOAD_GB = 4.5
+DOWNLOAD_GB = 4.3
 SAMPLE = "Bonjour, ceci est un test de la voix locale."
 DOWNLOAD_CODE = """
 import json, sys
