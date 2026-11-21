@@ -52,10 +52,10 @@ describe("clignement", () => {
 });
 
 describe("vie au repos", () => {
-  test("la tête oscille en douceur dans deux degrés", () => {
+  test("la tête oscille en douceur dans trois degrés", () => {
     const tilts = Array.from({ length: 300 }, (_, f) => idleTilt("mascot", f));
-    tilts.forEach((t) => expect(Math.abs(t)).toBeLessThanOrEqual(2));
-    tilts.slice(1).forEach((t, i) => expect(Math.abs(t - tilts[i])).toBeLessThan(0.2));
+    tilts.forEach((t) => expect(Math.abs(t)).toBeLessThanOrEqual(3));
+    tilts.slice(1).forEach((t, i) => expect(Math.abs(t - tilts[i])).toBeLessThan(0.3));
     expect(Math.max(...tilts) - Math.min(...tilts)).toBeGreaterThan(1);
   });
 
@@ -63,8 +63,8 @@ describe("vie au repos", () => {
     Array.from({ length: 300 }, (_, f) => f).forEach((f) => {
       expect(Math.abs(breath(f) - 1)).toBeLessThanOrEqual(0.012);
       const [x, y] = gaze("mascot", f);
-      expect(Math.abs(x)).toBeLessThanOrEqual(2);
-      expect(Math.abs(y)).toBeLessThanOrEqual(1);
+      expect(Math.abs(x)).toBeLessThanOrEqual(3);
+      expect(Math.abs(y)).toBeLessThanOrEqual(1.5);
     });
   });
 

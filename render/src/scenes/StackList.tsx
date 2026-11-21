@@ -1,15 +1,14 @@
 import React from "react";
 import { PaperShape } from "../paper/PaperShape";
-import { stripHeight } from "../paper/PaperStrip";
 import { Picto } from "../pictos/Picto";
 import { pictoName } from "../pictos/library";
 import { fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { strList } from "./coerce";
 import { commonFit } from "./FactChips";
-import { textWidth } from "../text/fit";
+import { areaFor, FitBox, largestFitting } from "./FitBox";
 import type { SceneProps } from "./registry";
-import { areaTop, BOX_CX, BOX_W, Stage, STAGE_H } from "./Stage";
+import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
 
@@ -21,60 +20,40 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const entries = strList(props.items, 5);
   const shown = entries.length > 0 ? entries : ["…"];
   const hasPicto = pictoName(props.picto) !== null;
-  const top = areaTop(props);
-  const avail = STAGE_H - top - 20;
-  const layoutFor = (max: number, picto: number) => {
-    const badge = Math.min(shown.length <= 3 ? 104 : 88, Math.round(max * 1.4));
-    const fits = commonFit(shown, BOX_W - badge - BADGE_GAP, 2, max, Math.min(44, max));
-    const rowGap = shown.length <= 3 ? 46 : 30;
-    const rowH = fits.map((f) => Math.max(badge, stripsHeight(f.lines.length, f.size, 8)));
-    const rowsH = rowH.reduce((a, b) => a + b, 0) + rowGap * (fits.length - 1);
-    return { badge, fits, rowGap, rowH, picto, total: rowsH + (picto ? picto + 50 : 0) };
-  };
-  let max = shown.length <= 3 ? 96 : 72;
-  let picto = hasPicto ? PICTO : 0;
-  let plan = layoutFor(max, picto);
-  while (plan.total > avail && (max > 44 || picto > 150)) {
-    if (max > 60) max -= 4;
-    else if (picto > 150) picto -= 30;
-    else max -= 4;
-    plan = layoutFor(max, picto);
-  }
-  const { badge, fits, rowGap, rowH, total } = plan;
-  const y0 = top + Math.max(0, (STAGE_H - top - total) / 2);
-  const widest = Math.max(...fits.map((f) => Math.max(...f.lines.map((l) => textWidth(l, f.size) + f.size * 0.6), 0)));
-  const blockW = Math.min(BOX_W, badge + BADGE_GAP + widest);
+  const dense = shown.join(" ").length > 120;
+  const badge = dense ? 62 : shown.length <= 3 ? 104 : 80;
+  const badgeGap = dense ? 18 : BADGE_GAP;
+  const rowGap = shown.length <= 3 ? 46 : 22;
+  const area = areaFor(areaTop(props) + 10, BOX_L, BOX_W);
+  const picto = hasPicto ? (dense ? 130 : PICTO) : 0;
+  const fitAt = (max: number) => commonFit(shown, BOX_W - badge - badgeGap, 3, max, Math.min(44, max));
+  const heightAt = (max: number) =>
+    (picto ? picto + 40 : 0) + fitAt(max).reduce((sum, f) => sum + Math.max(badge, stripsHeight(f.lines.length, f.size, 8)), 0) + rowGap * (shown.length - 1);
+  const max = largestFitting(shown.length <= 3 ? 96 : 80, 44, (m) => heightAt(m) <= area.height);
+  const fits = fitAt(max);
 
   return (
     <Stage>
-      {hasPicto ? <Picto name={props.picto} size={picto} x={BOX_CX - picto / 2} y={y0} rotate={5} /> : null}
-      <div
-        style={{
-          position: "absolute",
-          left: BOX_CX - blockW / 2,
-          top: y0 + (hasPicto ? picto + 50 : 0),
-          display: "flex",
-          flexDirection: "column",
-          gap: rowGap,
-        }}
-      >
-        {fits.map((fit, i) => {
-          const at = enterFor(`items.${i}`, items, from, to);
-          const textH = stripsHeight(fit.lines.length, fit.size, 8);
-          return (
-            <div key={`stack-${i}`} style={{ display: "flex", alignItems: "center", gap: BADGE_GAP, minHeight: rowH[i] }}>
-              <div style={{ position: "relative", width: badge, height: badge, flex: "none" }}>
-                <PaperShape kind="square" color={accent} size={badge} rotate={i % 2 === 0 ? -5 : 4} enterAt={i * 2 - 3} seed={`stack-badge-${i}`} float={2}>
-                  <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: badge * 0.6, lineHeight: 1, color: onPaper[accent] }}>{i + 1}</span>
-                </PaperShape>
-              </div>
-              <div style={{ height: textH, display: "flex", alignItems: "center", minWidth: stripHeight(fit.size) }}>
-                <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`stack-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <FitBox area={area} maxScale={1.2}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40 }}>
+          {hasPicto ? <Picto name={props.picto} size={picto} rotate={5} /> : null}
+          <div style={{ display: "flex", flexDirection: "column", gap: rowGap }}>
+            {fits.map((fit, i) => {
+              const at = enterFor(`items.${i}`, items, from, to);
+              return (
+                <div key={`stack-${i}`} style={{ display: "flex", alignItems: "center", gap: badgeGap, minHeight: badge }}>
+                  <div style={{ position: "relative", width: badge, height: badge, flex: "none" }}>
+                    <PaperShape kind="square" color={accent} size={badge} rotate={i % 2 === 0 ? -5 : 4} enterAt={i * 2 - 3} seed={`stack-badge-${i}`} float={2}>
+                      <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: badge * 0.6, lineHeight: 1, color: onPaper[accent] }}>{i + 1}</span>
+                    </PaperShape>
+                  </div>
+                  <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`stack-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };

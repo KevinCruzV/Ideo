@@ -21,7 +21,7 @@ export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const at = enterFor("text", items, from, to);
   const local = frame - at;
   const top = areaTop(props);
-  const sheetH = Math.min(760, STAGE_H - top - 40);
+  const sheetH = Math.min(760, STAGE_H - top - 70);
   const sheetY = top + (STAGE_H - top - sheetH) / 2;
   const slam = local < 0 ? 0 : spring({ frame: local, fps: 30, config: { damping: 11, stiffness: 260, mass: 0.6 } });
   const scale = local < 0 ? 1.5 : 1.5 - 0.5 * slam;

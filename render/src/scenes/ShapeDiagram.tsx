@@ -8,7 +8,8 @@ import { formatCount } from "./Counter";
 import { list, num, str, strList } from "./coerce";
 import { fitText, textWidth } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H } from "./Stage";
+import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaFor, FitBox } from "./FitBox";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
 
@@ -54,22 +55,23 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
   const top = areaTop(props);
   const slot0 = (mode === "bar" ? Math.min(BOX_W / n, 330) : BOX_W / n) - 16;
   const fitsIn = (width: number) => (l: string) => {
-    const f = fitText(l, { maxWidth: width, maxLines: 2, max: 56, min: 30, prefer: true });
+    const f = fitText(l, { maxWidth: width, maxLines: 2, max: 56, min: 44, prefer: true });
     return f.lines.every((line) => !line.includes("…") && textWidth(line, f.size) + f.size * 0.6 <= width);
   };
-  const twoRows = perShape && n > 1 && !labels.every(fitsIn(slot0));
-  const labelW = twoRows ? Math.min(BOX_W / 2, slot0 * 2 + 16) - 16 : slot0;
+  const slotSpan = slot0 + 16;
+  const labelRows = !perShape || n === 1 ? 1 : [1, 2, 3].find((r) => r >= n || labels.every(fitsIn(Math.min(BOX_W, slotSpan * r) - 16))) ?? 3;
+  const labelW = Math.min(BOX_W, slotSpan * labelRows) - 16;
   const labelFits = perShape
     ? (() => {
-        const fits = labels.map((l) => fitText(l, { maxWidth: labelW, maxLines: 2, max: 56, min: 30, prefer: true }));
+        const fits = labels.map((l) => fitText(l, { maxWidth: labelW, maxLines: 2, max: 56, min: 44, prefer: true }));
         const size = Math.min(...fits.map((f) => f.size));
-        return labels.map((l) => fitText(l, { maxWidth: labelW, maxLines: 2, max: size, min: Math.min(size, 30), prefer: true }));
+        return labels.map((l) => fitText(l, { maxWidth: labelW, maxLines: 2, max: size, min: Math.min(size, 44), prefer: true }));
       })()
     : [];
   const rowH = perShape ? Math.max(...labelFits.map((f) => stripsHeight(f.lines.length, f.size, 6))) : 0;
   const sharedFit = !perShape && labels.length > 0 ? fitText(labels.join(" · "), { maxWidth: BOX_W, maxLines: 2, max: 56, min: 38 }) : null;
   const labelH = perShape
-    ? rowH * (twoRows ? 2 : 1) + (twoRows ? 12 : 0)
+    ? rowH * labelRows + 12 * (labelRows - 1)
     : sharedFit
       ? stripsHeight(sharedFit.lines.length, sharedFit.size, 6)
       : 0;
@@ -81,7 +83,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
   const valueH = showValues ? valueSize * 1.3 + 18 : 0;
   const baseGap = 34;
   const avail = STAGE_H - top - 40;
-  const chartH = Math.min(mode === "bar" ? 600 : 420, avail - labelH - valueH - baseGap - 20);
+  const chartH = Math.max(260, Math.min(mode === "bar" ? 620 : 420, avail - labelH - valueH - baseGap - 20));
 
   const slotW = mode === "bar" ? Math.min(BOX_W / n, 330) : BOX_W / n;
   const rowLeft = BOX_CX - (slotW * n) / 2;
@@ -97,12 +99,16 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
   const labelCenters = placed.map((p) => p.cx);
   const drawnH = mode === "bar" ? chartH : Math.max(...heights);
   const blockH = valueH + drawnH + 14 + baseGap + labelH;
-  const baseline = top + 20 + Math.max(0, (avail - blockH) / 2) + valueH + drawnH;
+  const baseline = valueH + drawnH;
+  const blockTop = 0;
   const kind: ShapeKind = mode === "bar" ? "square" : mode;
   const baseIn = interpolate(frame, [-4, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   return (
     <Stage>
+      <FitBox area={areaFor(top + 10, BOX_L, BOX_W)} maxScale={1.3}>
+        <div style={{ position: "relative", width: Math.min(BOX_W, slotW * n + 40), height: blockH }}>
+          <div style={{ position: "absolute", left: -Math.max(BOX_L, rowLeft - 20), top: -blockTop, width: STAGE_W, height: blockH }}>
       <div
         style={{
           position: "absolute",
@@ -194,7 +200,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
               key={`label-${i}`}
               style={{
                 position: "absolute",
-                top: baseline + 14 + baseGap + (twoRows && i % 2 === 1 ? rowH + 12 : 0),
+                top: baseline + 14 + baseGap + (i % labelRows) * (rowH + 12),
                 left: labelCenters[i] - (labelW + 16) / 2,
                 width: labelW + 16,
                 display: "flex",
@@ -218,6 +224,9 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
               </div>
             )
           : null}
+          </div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };

@@ -31,7 +31,7 @@ export const POSE_SPECS: Record<Pose, PoseSpec> = {
 
 export const idleTilt = (seed: string, frame: number): number => {
   const phase = hash(`${seed}:tilt`) * Math.PI * 2;
-  return 2 * Math.sin((frame / 30) * 1.1 + phase) * Math.cos((frame / 30) * 0.37);
+  return 3 * Math.sin((frame / 30) * 1.1 + phase) * Math.cos((frame / 30) * 0.37);
 };
 
 export const breath = (frame: number): number => 1 + 0.012 * Math.sin((frame / 30) * Math.PI * 2 * 0.28);
@@ -40,7 +40,8 @@ export const gaze = (seed: string, frame: number): [number, number] => {
   const a = hash(`${seed}:gx`) * Math.PI * 2;
   const b = hash(`${seed}:gy`) * Math.PI * 2;
   const t = frame / 30;
-  return [1.4 * Math.sin(t * 0.7 + a) + 0.6 * Math.sin(t * 1.9 + b), 0.9 * Math.sin(t * 0.5 + b)];
+  const away = Math.max(0, Math.sin(t * 0.55 + a)) ** 3;
+  return [1.2 * Math.sin(t * 0.7 + a) + 1.6 * away, 0.8 * Math.sin(t * 0.5 + b) - 0.6 * away];
 };
 
 const unit = (seed: string, k: number): number => hash(`${seed}:blink:${k}`);

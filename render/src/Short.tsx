@@ -32,7 +32,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
           <Sequence key={`${segment.kind}-${i}`} from={segment.from} durationInFrames={duration} layout="none">
             <AccentContext.Provider value={accents[i].accent}>
               <SceneFrame props={props} duration={duration} last={i === count - 1}>
-                <Scene props={props} items={earlyItems(cleanItems(segment.items), segment.from)} from={segment.from} to={segment.to} />
+                <Scene props={props} items={segment.type === "object-state" ? cleanItems(segment.items) : earlyItems(cleanItems(segment.items), segment.from)} from={segment.from} to={segment.to} />
               </SceneFrame>
             </AccentContext.Provider>
           </Sequence>

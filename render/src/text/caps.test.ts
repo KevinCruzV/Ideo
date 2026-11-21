@@ -13,7 +13,7 @@ const BOX_W = layout.contentRight - layout.contentLeft;
 const BUBBLE_W = layout.contentRight - 360 - 68 + 36;
 const ICON_W = BOX_W / 3 - 24;
 const CHIP_ROOM = BOX_W - 46 - 28;
-const LABEL_W = layout.contentRight - (layout.contentLeft + 74 + 76);
+const LABEL_W = BOX_W - 160;
 
 type Cap = { cap: number; fit: FitOptions; upper?: boolean };
 
@@ -21,36 +21,36 @@ const CAPS: Record<string, Cap> = {
   "key-title.accent": { cap: 40, fit: { maxWidth: BOX_W, maxLines: 2, max: 176, min: 64 } },
   "mascot.bubble": { cap: 80, fit: { maxWidth: BUBBLE_W, maxLines: 4, max: 74, min: 44 } },
   "fact-chips.chips": { cap: 28, fit: { maxWidth: CHIP_ROOM, maxLines: 2, max: 104, min: 44 } },
-  "stack-list.items": { cap: 60, fit: { maxWidth: BOX_W - 104 - 30, maxLines: 2, max: 96, min: 44 } },
-  "icon-grid.cells.label": { cap: 16, fit: { maxWidth: ICON_W, maxLines: 2, max: 48, min: 34 } },
-  "shape-diagram.labels": { cap: 14, fit: { maxWidth: BOX_W / 4 - 16, maxLines: 2, max: 56, min: 30 } },
+  "stack-list.items": { cap: 60, fit: { maxWidth: BOX_W - 104 - 30, maxLines: 3, max: 96, min: 56 } },
+  "icon-grid.cells.label": { cap: 16, fit: { maxWidth: ICON_W, maxLines: 3, max: 52, min: 36 } },
+  "shape-diagram.labels": { cap: 14, fit: { maxWidth: BOX_W / 2 - 16, maxLines: 2, max: 56, min: 44 } },
   "stamp.text": { cap: 48, fit: { maxWidth: BOX_W - 20 - 200, maxLines: 3, max: 136, min: 56 }, upper: true },
   "person-card.name": { cap: 48, fit: { maxWidth: BOX_W, maxLines: 2, max: 110, min: 60 } },
-  "person-card.role": { cap: 100, fit: { maxWidth: BOX_W - 40, maxLines: 3, max: 62, min: 40 } },
-  "counter.label": { cap: 60, fit: { maxWidth: BOX_W, maxLines: 2, max: 82, min: 48 } },
-  "timeline.marks.at": { cap: 12, fit: { maxWidth: LABEL_W, maxLines: 2, max: 56, min: 44 } },
-  "timeline.marks.label": { cap: 48, fit: { maxWidth: LABEL_W, maxLines: 2, max: 56, min: 44 } },
-  "timeline.start": { cap: 30, fit: { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 36 } },
-  "timeline.end": { cap: 30, fit: { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 36 } },
-  "quote.text": { cap: 200, fit: { maxWidth: BOX_W, maxLines: 6, max: 80, min: 44 } },
-  "quote.speaker": { cap: 32, fit: { maxWidth: BOX_W - 100, maxLines: 1, max: 54, min: 40 } },
+  "person-card.role": { cap: 100, fit: { maxWidth: BOX_W - 40, maxLines: 4, max: 62, min: 44 } },
+  "counter.label": { cap: 60, fit: { maxWidth: BOX_W, maxLines: 3, max: 82, min: 56 } },
+  "timeline.marks.at": { cap: 12, fit: { maxWidth: LABEL_W, maxLines: 1, max: 56, min: 44 } },
+  "timeline.marks.label": { cap: 48, fit: { maxWidth: LABEL_W, maxLines: 2, max: 72, min: 48 } },
+  "timeline.start": { cap: 30, fit: { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 44 } },
+  "timeline.end": { cap: 30, fit: { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 44 } },
+  "quote.text": { cap: 200, fit: { maxWidth: BOX_W, maxLines: 8, max: 80, min: 56 } },
+  "quote.speaker": { cap: 32, fit: { maxWidth: BOX_W - 100, maxLines: 1, max: 54, min: 44 } },
   "object-state.states": { cap: 36, fit: { maxWidth: BOX_W, maxLines: 1, max: 72, min: 40 } },
-  "versus.side": { cap: 24, fit: { maxWidth: (BOX_W - 56) / 2 - 10, maxLines: 2, max: 76, min: 40 } },
+  "versus.side": { cap: 24, fit: { maxWidth: (BOX_W - 56) / 2 - 10, maxLines: 2, max: 80, min: 48 } },
   kicker: { cap: 28, fit: { maxWidth: BOX_W * 0.9, maxLines: 1, max: 38, min: 28 }, upper: true },
 };
 
 const SPLIT_CAPS: Record<string, { cap: number; head: FitOptions; key: FitOptions; tail: FitOptions }> = {
   hook: {
     cap: 60,
-    head: { maxWidth: BOX_W - 20, maxLines: 2, max: 92, min: 52 },
+    head: { maxWidth: BOX_W - 20, maxLines: 3, max: 92, min: 56 },
     key: { maxWidth: BOX_W - 20, maxLines: 1, max: 170, min: 64 },
-    tail: { maxWidth: BOX_W - 20, maxLines: 3, max: 84, min: 48 },
+    tail: { maxWidth: BOX_W - 20, maxLines: 4, max: 84, min: 56 },
   },
   "key-title.text": {
     cap: 90,
-    head: { maxWidth: BOX_W, maxLines: 3, max: 100, min: 52 },
+    head: { maxWidth: BOX_W, maxLines: 4, max: 100, min: 56 },
     key: { maxWidth: BOX_W, maxLines: 2, max: 176, min: 64 },
-    tail: { maxWidth: BOX_W, maxLines: 3, max: 100, min: 52 },
+    tail: { maxWidth: BOX_W, maxLines: 4, max: 100, min: 56 },
   },
 };
 

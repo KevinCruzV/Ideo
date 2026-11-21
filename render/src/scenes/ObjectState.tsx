@@ -8,7 +8,8 @@ import { useAccent } from "./accent";
 import { str, strList } from "./coerce";
 import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { areaTop, BOX_CX, Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaFor, FitBox } from "./FitBox";
 import { stateIndex, stateTimes } from "./timing";
 
 type ObjectKind = "screen" | "board" | "jar" | "door" | "scale";
@@ -254,11 +255,6 @@ const EXTENT: Record<ObjectKind, [number, number]> = {
   scale: [150, 984],
 };
 
-export const objectOffset = (kind: ObjectKind, top: number): number => {
-  const [minY, maxY] = EXTENT[kind];
-  return top + Math.max(0, (STAGE_H - top - (maxY - minY)) / 2) - minY;
-};
-
 export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
@@ -273,7 +269,11 @@ export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) =>
     kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : <Screen look={look} board={kind === "board"} />;
   return (
     <Stage>
-      <div style={{ position: "absolute", left: 0, top: objectOffset(kind, areaTop(props)), width: STAGE_W, height: STAGE_H }}>{body}</div>
+      <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
+        <div style={{ position: "relative", width: BOX_W, height: EXTENT[kind][1] - EXTENT[kind][0] }}>
+          <div style={{ position: "absolute", left: -BOX_L, top: -EXTENT[kind][0], width: STAGE_W, height: STAGE_H }}>{body}</div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };

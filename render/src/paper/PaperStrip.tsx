@@ -41,7 +41,7 @@ export const PaperStrip: React.FC<PaperStripProps> = ({
   fontSize = 64,
   rotate,
   seed,
-  float = 2.5,
+  float = 3.5,
   motion,
   weight = 800,
   family = fonts.text,
@@ -52,7 +52,7 @@ export const PaperStrip: React.FC<PaperStripProps> = ({
   const key = seed ?? text;
   const tilt = rotate ?? restTilt(key, 1.6);
   const e = entry(frame, enterAt, { dy: fontSize * 0.45, spin: tilt > 0 ? 4 : -4, ...motion });
-  const d = drift(key, frame, float, 0.25);
+  const d = drift(key, frame, float, 0.6);
 
   return (
     <div

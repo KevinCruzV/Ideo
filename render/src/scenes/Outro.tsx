@@ -9,6 +9,7 @@ import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_R, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
+import { FitBox } from "./FitBox";
 
 export const splitOutro = (text: string): { head: string; tail: string } => {
   const cut = text.indexOf(":");
@@ -32,7 +33,7 @@ export const Outro: React.FC<SceneProps> = ({ props }) => {
   const tailFit = fitText(tail, { maxWidth: BOX_W - 30, maxLines: 2, max: 136, min: 60 });
   const top = areaTop(props);
   const textH = stripsHeight(headFit.lines.length, headFit.size) + 26 + tailFit.lines.length * (stripHeight(tailFit.size) + 14);
-  const room = STAGE_H - top - VISIBLE - 40;
+  const room = STAGE_H - top - VISIBLE - 50;
   const y0 = top + Math.max(0, (room - textH) / 2);
   const rise = spring({ frame: frame - 10, fps: 30, config: { damping: 12, stiffness: 120 } });
   const wave = 0.012 * Math.sin((frame / 30) * 5);
@@ -40,7 +41,8 @@ export const Outro: React.FC<SceneProps> = ({ props }) => {
   return (
     <Stage>
       <Backdrop color={accent} size={620} cx={BOX_R + 60} cy={y0 + textH * 0.55} seed="outro-disk" turn={10} />
-      <div style={{ position: "absolute", left: BOX_L, width: BOX_W, top: y0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 26 }}>
+      <FitBox area={{ left: BOX_L, top: top + 10, width: BOX_W, height: room }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 26, width: BOX_W }}>
         <Strips lines={headFit.lines} size={headFit.size} enterAt={2} align="flex-start" seed="outro-head" motion={{ dx: -60, dy: 0 }} />
         {tailFit.lines.map((line, i) => (
           <PaperStrip
@@ -56,6 +58,7 @@ export const Outro: React.FC<SceneProps> = ({ props }) => {
           />
         ))}
       </div>
+      </FitBox>
       <div style={{ position: "absolute", left: 0, top: 0, width: STAGE_W, height: STAGE_H, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, transform: `translateY(${(1 - rise) * 260}px)` }}>
           <Character

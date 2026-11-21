@@ -39,7 +39,7 @@ export const layout = {
   stageBottom: 1300,
   captionTop: 1336,
   captionBottom: 1480,
-  progressTop: 1514,
+  progressTop: 1546,
   progressHeight: 12,
 } as const;
 

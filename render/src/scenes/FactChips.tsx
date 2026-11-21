@@ -5,9 +5,10 @@ import { Picto } from "../pictos/Picto";
 import { pictoName } from "../pictos/library";
 import { useAccent } from "./accent";
 import { strList } from "./coerce";
-import { fitText, textWidth } from "../text/fit";
+import { areaFor, FitBox, largestFitting } from "./FitBox";
+import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { areaTop, BOX_CX, BOX_W, Stage, STAGE_H } from "./Stage";
+import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
 
@@ -26,57 +27,37 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const chips = strList(props.chips, 6);
   const shown = chips.length > 0 ? chips : ["…"];
   const hasPicto = pictoName(props.picto) !== null;
-  const top = areaTop(props);
   const textW = BOX_W - DOT - DOT_GAP;
-  const avail = STAGE_H - top - 20;
-  const layoutFor = (max: number, picto: number) => {
-    const fits = commonFit(shown, textW, 2, max, Math.min(44, max), true);
-    const rowGap = shown.length <= 3 ? 44 : 30;
-    const rowsH = fits.reduce((sum, f) => sum + stripsHeight(f.lines.length, f.size, 8), 0) + rowGap * (fits.length - 1);
-    return { fits, rowGap, picto, total: rowsH + (picto ? picto + 50 : 0) };
-  };
-  let max = shown.length <= 3 ? 104 : shown.length <= 4 ? 84 : 66;
-  let picto = hasPicto ? PICTO : 0;
-  let plan = layoutFor(max, picto);
-  while (plan.total > avail && (max > 44 || picto > 160)) {
-    if (max > 60) max -= 4;
-    else if (picto > 160) picto -= 30;
-    else max -= 4;
-    plan = layoutFor(max, picto);
-  }
-  const { fits, rowGap, total } = plan;
-  const y0 = top + Math.max(0, (STAGE_H - top - total) / 2);
-  const widest = Math.max(...fits.map((f) => Math.max(...f.lines.map((l) => textWidth(l, f.size) + f.size * 0.6), 0)));
-  const blockW = Math.min(BOX_W, DOT + DOT_GAP + widest);
-  const left = BOX_CX - blockW / 2;
+  const rowGap = shown.length <= 3 ? 44 : 28;
+  const area = areaFor(areaTop(props) + 10, BOX_L, BOX_W);
+  const picto = hasPicto ? (shown.length > 4 ? 170 : PICTO) : 0;
+  const fitAt = (max: number) => commonFit(shown, textW, 2, max, Math.min(44, max), true);
+  const heightAt = (max: number) =>
+    (picto ? picto + 40 : 0) + fitAt(max).reduce((sum, f) => sum + stripsHeight(f.lines.length, f.size, 8), 0) + rowGap * (shown.length - 1);
+  const max = largestFitting(shown.length <= 3 ? 104 : shown.length <= 4 ? 88 : 76, 44, (m) => heightAt(m) <= area.height);
+  const fits = fitAt(max);
 
   return (
     <Stage>
-      {hasPicto ? <Picto name={props.picto} size={picto} x={BOX_CX - picto / 2} y={y0} rotate={-4} /> : null}
-      <div
-        style={{
-          position: "absolute",
-          left,
-          top: y0 + (hasPicto ? picto + 50 : 0),
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: rowGap,
-        }}
-      >
-        {fits.map((fit, i) => {
-          const at = enterFor(`chips.${i}`, items, from, to);
-          const lineH = stripHeight(fit.size);
-          return (
-            <div key={`chip-${i}`} style={{ position: "relative", display: "flex", alignItems: "flex-start" }}>
-              <div style={{ position: "relative", width: DOT, height: lineH, marginRight: DOT_GAP, flex: "none" }}>
-                <PaperShape kind="circle" color={accent} size={DOT} y={(lineH - DOT) / 2} enterAt={i * 2 - 3} seed={`chip-dot-${i}`} float={1.5} />
-              </div>
-              <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`chip-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
-            </div>
-          );
-        })}
-      </div>
+      <FitBox area={area} maxScale={1.25}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40 }}>
+          {hasPicto ? <Picto name={props.picto} size={picto} rotate={-4} /> : null}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: rowGap }}>
+            {fits.map((fit, i) => {
+              const at = enterFor(`chips.${i}`, items, from, to);
+              const lineH = stripHeight(fit.size);
+              return (
+                <div key={`chip-${i}`} style={{ position: "relative", display: "flex", alignItems: "flex-start" }}>
+                  <div style={{ position: "relative", width: DOT, height: lineH, marginRight: DOT_GAP, flex: "none" }}>
+                    <PaperShape kind="circle" color={accent} size={DOT} y={(lineH - DOT) / 2} enterAt={i * 2 - 3} seed={`chip-dot-${i}`} float={1.5} />
+                  </div>
+                  <Strips lines={fit.lines} size={fit.size} enterAt={at} align="flex-start" seed={`chip-${i}`} gap={8} motion={{ dx: -40, dy: 0 }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };
