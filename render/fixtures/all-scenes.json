@@ -1,1140 +1,1416 @@
 {
- "fps": 30,
- "width": 1080,
- "height": 1920,
- "durationInFrames": 1260,
- "lang": "fr",
- "audio": null,
- "watermark": "Ideo",
- "chapter": {
-  "part": 1,
-  "total": 1,
-  "title": "L'oubli",
-  "label": "Partie"
- },
- "segments": [
-  {
-   "kind": "hook",
-   "from": 0,
-   "to": 90,
-   "props": {
-    "text": "Dis-moi pourquoi tu oublies ce que tu viens de lire ?"
-   },
-   "items": []
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 1700,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": {
+    "part": 1,
+    "total": 1,
+    "title": "Qui domine vraiment le monde ?",
+    "label": "Partie"
   },
-  {
-   "kind": "scene",
-   "type": "key-title",
-   "from": 90,
-   "to": 180,
-   "props": {
-    "text": "La courbe de l'oubli",
-    "accent": "l'oubli"
-   },
-   "items": [
+  "segments": [
     {
-     "el": "text",
-     "at": 96
+      "kind": "hook",
+      "from": 0,
+      "to": 100,
+      "props": {
+        "text": "Dis-moi qui va dominer le monde ?",
+        "accent": "dominer"
+      },
+      "items": []
     },
     {
-     "el": "accent",
-     "at": 120
+      "kind": "scene",
+      "from": 100,
+      "to": 200,
+      "props": {
+        "text": "Les États-Unis face à l'Égypte",
+        "accent": "États-Unis",
+        "kicker": "1956 · Suez",
+        "picto": "ship"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 104
+        },
+        {
+          "el": "accent",
+          "at": 120
+        }
+      ],
+      "type": "key-title"
+    },
+    {
+      "kind": "scene",
+      "from": 200,
+      "to": 300,
+      "props": {
+        "name": "Hermann Ebbinghaus",
+        "role": "Psychologue allemand, 1885",
+        "kicker": "Berlin"
+      },
+      "items": [
+        {
+          "el": "avatar",
+          "at": 202
+        },
+        {
+          "el": "name",
+          "at": 208
+        },
+        {
+          "el": "role",
+          "at": 230
+        }
+      ],
+      "type": "person-card"
+    },
+    {
+      "kind": "scene",
+      "from": 300,
+      "to": 400,
+      "props": {
+        "shape": "bar",
+        "values": [
+          5,
+          110
+        ],
+        "labels": [
+          "2000",
+          "2023"
+        ],
+        "unit": "Md$",
+        "kicker": "Exportations"
+      },
+      "items": [
+        {
+          "el": "values.0",
+          "at": 306
+        },
+        {
+          "el": "labels.0",
+          "at": 306
+        },
+        {
+          "el": "values.1",
+          "at": 340
+        },
+        {
+          "el": "labels.1",
+          "at": 340
+        }
+      ],
+      "type": "shape-diagram"
+    },
+    {
+      "kind": "scene",
+      "from": 400,
+      "to": 500,
+      "props": {
+        "shape": "bar",
+        "values": [
+          62,
+          18,
+          3,
+          1.5
+        ],
+        "labels": [
+          "Chine",
+          "Inde",
+          "Brésil",
+          "Égypte"
+        ],
+        "unit": "%"
+      },
+      "items": [
+        {
+          "el": "values.0",
+          "at": 404
+        },
+        {
+          "el": "values.1",
+          "at": 420
+        },
+        {
+          "el": "values.2",
+          "at": 436
+        },
+        {
+          "el": "values.3",
+          "at": 452
+        }
+      ],
+      "type": "shape-diagram"
+    },
+    {
+      "kind": "scene",
+      "from": 500,
+      "to": 600,
+      "props": {
+        "shape": "circle",
+        "values": [
+          1,
+          0.58,
+          0.34,
+          0.21
+        ],
+        "labels": [
+          "appris",
+          "20 min",
+          "1 jour",
+          "1 mois"
+        ]
+      },
+      "items": [
+        {
+          "el": "values.0",
+          "at": 504
+        },
+        {
+          "el": "values.1",
+          "at": 522
+        },
+        {
+          "el": "values.2",
+          "at": 542
+        },
+        {
+          "el": "values.3",
+          "at": 562
+        }
+      ],
+      "type": "shape-diagram"
+    },
+    {
+      "kind": "scene",
+      "from": 600,
+      "to": 700,
+      "props": {
+        "label": "personnes perdent la vie",
+        "from": 0,
+        "to": 3000,
+        "picto": "people"
+      },
+      "items": [
+        {
+          "el": "label",
+          "at": 606
+        },
+        {
+          "el": "to",
+          "at": 620
+        }
+      ],
+      "type": "counter"
+    },
+    {
+      "kind": "scene",
+      "from": 700,
+      "to": 800,
+      "props": {
+        "chips": [
+          "Les États-Unis",
+          "L'Égypte",
+          "Ça change tout"
+        ],
+        "picto": "globe",
+        "kicker": "Les acteurs"
+      },
+      "items": [
+        {
+          "el": "chips.0",
+          "at": 706
+        },
+        {
+          "el": "chips.1",
+          "at": 726
+        },
+        {
+          "el": "chips.2",
+          "at": 746
+        }
+      ],
+      "type": "fact-chips"
+    },
+    {
+      "kind": "scene",
+      "from": 800,
+      "to": 900,
+      "props": {
+        "items": [
+          "Relire juste avant d'oublier",
+          "Espacer les révisions",
+          "Se tester au lieu de relire"
+        ],
+        "picto": "brain"
+      },
+      "items": [
+        {
+          "el": "items.0",
+          "at": 806
+        },
+        {
+          "el": "items.1",
+          "at": 830
+        },
+        {
+          "el": "items.2",
+          "at": 854
+        }
+      ],
+      "type": "stack-list"
+    },
+    {
+      "kind": "scene",
+      "from": 900,
+      "to": 1000,
+      "props": {
+        "start": "1880",
+        "end": "2020",
+        "marks": [
+          {
+            "at": "1885",
+            "label": "Ebbinghaus publie"
+          },
+          {
+            "at": "1932",
+            "label": "Bartlett : on reconstruit"
+          },
+          {
+            "at": "1972",
+            "label": "Les niveaux de traitement"
+          }
+        ],
+        "picto": "calendar",
+        "kicker": "Un siècle"
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 906
+        },
+        {
+          "el": "marks.1",
+          "at": 930
+        },
+        {
+          "el": "marks.2",
+          "at": 954
+        }
+      ],
+      "type": "timeline"
+    },
+    {
+      "kind": "scene",
+      "from": 1000,
+      "to": 1100,
+      "props": {
+        "cells": [
+          {
+            "picto": "factory",
+            "label": "Industrie"
+          },
+          {
+            "picto": "bank",
+            "label": "Finance"
+          },
+          {
+            "picto": "tank",
+            "label": "Armée"
+          },
+          {
+            "picto": "chip",
+            "label": "Technologie"
+          }
+        ],
+        "kicker": "Quatre leviers"
+      },
+      "items": [
+        {
+          "el": "cells.0",
+          "at": 1004
+        },
+        {
+          "el": "cells.1",
+          "at": 1018
+        },
+        {
+          "el": "cells.2",
+          "at": 1032
+        },
+        {
+          "el": "cells.3",
+          "at": 1046
+        }
+      ],
+      "type": "icon-grid"
+    },
+    {
+      "kind": "scene",
+      "from": 1100,
+      "to": 1200,
+      "props": {
+        "text": "Les États-Unis font cavalier seul",
+        "picto": "flag"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 1124
+        }
+      ],
+      "type": "stamp"
+    },
+    {
+      "kind": "scene",
+      "from": 1200,
+      "to": 1300,
+      "props": {
+        "text": "L'histoire retiendra peut-être que c'est le jour de Noël que l'Union soviétique a disparu",
+        "speaker": "Mikhaïl Gorbatchev",
+        "picto": "newspaper"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 1206
+        },
+        {
+          "el": "speaker",
+          "at": 1260
+        }
+      ],
+      "type": "quote"
+    },
+    {
+      "kind": "scene",
+      "from": 1300,
+      "to": 1400,
+      "props": {
+        "object": "door",
+        "states": [
+          "Chine fermée",
+          "Chine ouverte au monde"
+        ]
+      },
+      "items": [
+        {
+          "el": "states.1",
+          "at": 1344
+        }
+      ],
+      "type": "object-state"
+    },
+    {
+      "kind": "scene",
+      "from": 1400,
+      "to": 1500,
+      "props": {
+        "left": "États-Unis",
+        "right": "Union soviétique",
+        "left_picto": "rocket",
+        "right_picto": "satellite",
+        "kicker": "Guerre froide"
+      },
+      "items": [
+        {
+          "el": "left",
+          "at": 1404
+        },
+        {
+          "el": "right",
+          "at": 1424
+        }
+      ],
+      "type": "versus"
+    },
+    {
+      "kind": "scene",
+      "from": 1500,
+      "to": 1600,
+      "props": {
+        "bubble": "Une guerre sans champ de bataille ?",
+        "pose": "question"
+      },
+      "items": [
+        {
+          "el": "bubble",
+          "at": 1508
+        }
+      ],
+      "type": "mascot"
+    },
+    {
+      "kind": "outro",
+      "from": 1600,
+      "to": 1700,
+      "props": {
+        "text": "Abonne-toi pour la prochaine vidéo"
+      },
+      "items": []
     }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "person-card",
-   "from": 180,
-   "to": 270,
-   "props": {
-    "name": "Hermann Ebbinghaus",
-    "role": "Psychologue allemand, 1885"
-   },
-   "items": [
+  ],
+  "captions": [
     {
-     "el": "avatar",
-     "at": 184
+      "words": [
+        {
+          "w": "Dis-moi",
+          "from": 2,
+          "to": 14
+        },
+        {
+          "w": "qui",
+          "from": 14,
+          "to": 26
+        },
+        {
+          "w": "va",
+          "from": 26,
+          "to": 37
+        },
+        {
+          "w": "dominer",
+          "from": 37,
+          "to": 49
+        }
+      ],
+      "from": 2,
+      "to": 49
     },
     {
-     "el": "name",
-     "at": 202
+      "words": [
+        {
+          "w": "le",
+          "from": 49,
+          "to": 61
+        },
+        {
+          "w": "monde",
+          "from": 61,
+          "to": 72
+        },
+        {
+          "w": "demain",
+          "from": 72,
+          "to": 84
+        },
+        {
+          "w": "?",
+          "from": 84,
+          "to": 96
+        }
+      ],
+      "from": 49,
+      "to": 96
     },
     {
-     "el": "role",
-     "at": 224
+      "words": [
+        {
+          "w": "En",
+          "from": 102,
+          "to": 111
+        },
+        {
+          "w": "1956,",
+          "from": 111,
+          "to": 121
+        },
+        {
+          "w": "les",
+          "from": 121,
+          "to": 130
+        },
+        {
+          "w": "États-Unis",
+          "from": 130,
+          "to": 140
+        }
+      ],
+      "from": 102,
+      "to": 140
+    },
+    {
+      "words": [
+        {
+          "w": "lâchent",
+          "from": 140,
+          "to": 149
+        },
+        {
+          "w": "leurs",
+          "from": 149,
+          "to": 158
+        },
+        {
+          "w": "alliés",
+          "from": 158,
+          "to": 168
+        },
+        {
+          "w": "face",
+          "from": 168,
+          "to": 177
+        }
+      ],
+      "from": 140,
+      "to": 177
+    },
+    {
+      "words": [
+        {
+          "w": "à",
+          "from": 177,
+          "to": 187
+        },
+        {
+          "w": "l'Égypte.",
+          "from": 187,
+          "to": 196
+        }
+      ],
+      "from": 177,
+      "to": 196
+    },
+    {
+      "words": [
+        {
+          "w": "Hermann",
+          "from": 202,
+          "to": 214
+        },
+        {
+          "w": "Ebbinghaus,",
+          "from": 214,
+          "to": 226
+        },
+        {
+          "w": "psychologue",
+          "from": 226,
+          "to": 237
+        },
+        {
+          "w": "allemand,",
+          "from": 237,
+          "to": 249
+        }
+      ],
+      "from": 202,
+      "to": 249
+    },
+    {
+      "words": [
+        {
+          "w": "teste",
+          "from": 249,
+          "to": 261
+        },
+        {
+          "w": "sa",
+          "from": 261,
+          "to": 272
+        },
+        {
+          "w": "propre",
+          "from": 272,
+          "to": 284
+        },
+        {
+          "w": "mémoire.",
+          "from": 284,
+          "to": 296
+        }
+      ],
+      "from": 249,
+      "to": 296
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 302,
+          "to": 314
+        },
+        {
+          "w": "exportations",
+          "from": 314,
+          "to": 326
+        },
+        {
+          "w": "passent",
+          "from": 326,
+          "to": 337
+        },
+        {
+          "w": "de",
+          "from": 337,
+          "to": 349
+        }
+      ],
+      "from": 302,
+      "to": 349
+    },
+    {
+      "words": [
+        {
+          "w": "5",
+          "from": 349,
+          "to": 361
+        },
+        {
+          "w": "à",
+          "from": 361,
+          "to": 372
+        },
+        {
+          "w": "110",
+          "from": 372,
+          "to": 384
+        },
+        {
+          "w": "milliards.",
+          "from": 384,
+          "to": 396
+        }
+      ],
+      "from": 349,
+      "to": 396
+    },
+    {
+      "words": [
+        {
+          "w": "Ça",
+          "from": 402,
+          "to": 410
+        },
+        {
+          "w": "change",
+          "from": 410,
+          "to": 418
+        },
+        {
+          "w": "tout",
+          "from": 418,
+          "to": 426
+        },
+        {
+          "w": ":",
+          "from": 426,
+          "to": 433
+        }
+      ],
+      "from": 402,
+      "to": 433
+    },
+    {
+      "words": [
+        {
+          "w": "la",
+          "from": 433,
+          "to": 441
+        },
+        {
+          "w": "Chine",
+          "from": 441,
+          "to": 449
+        },
+        {
+          "w": "écrase",
+          "from": 449,
+          "to": 457
+        },
+        {
+          "w": "l'Inde,",
+          "from": 457,
+          "to": 465
+        }
+      ],
+      "from": 433,
+      "to": 465
+    },
+    {
+      "words": [
+        {
+          "w": "le",
+          "from": 465,
+          "to": 472
+        },
+        {
+          "w": "Brésil",
+          "from": 472,
+          "to": 480
+        },
+        {
+          "w": "et",
+          "from": 480,
+          "to": 488
+        },
+        {
+          "w": "l'Égypte.",
+          "from": 488,
+          "to": 496
+        }
+      ],
+      "from": 465,
+      "to": 496
+    },
+    {
+      "words": [
+        {
+          "w": "Vingt",
+          "from": 502,
+          "to": 511
+        },
+        {
+          "w": "minutes",
+          "from": 511,
+          "to": 521
+        },
+        {
+          "w": "après,",
+          "from": 521,
+          "to": 530
+        },
+        {
+          "w": "il",
+          "from": 530,
+          "to": 540
+        }
+      ],
+      "from": 502,
+      "to": 540
+    },
+    {
+      "words": [
+        {
+          "w": "reste",
+          "from": 540,
+          "to": 549
+        },
+        {
+          "w": "la",
+          "from": 549,
+          "to": 558
+        },
+        {
+          "w": "moitié,",
+          "from": 558,
+          "to": 568
+        },
+        {
+          "w": "puis",
+          "from": 568,
+          "to": 577
+        }
+      ],
+      "from": 540,
+      "to": 577
+    },
+    {
+      "words": [
+        {
+          "w": "presque",
+          "from": 577,
+          "to": 587
+        },
+        {
+          "w": "rien.",
+          "from": 587,
+          "to": 596
+        }
+      ],
+      "from": 577,
+      "to": 596
+    },
+    {
+      "words": [
+        {
+          "w": "Au",
+          "from": 602,
+          "to": 614
+        },
+        {
+          "w": "total,",
+          "from": 614,
+          "to": 626
+        },
+        {
+          "w": "trois",
+          "from": 626,
+          "to": 637
+        },
+        {
+          "w": "mille",
+          "from": 637,
+          "to": 649
+        }
+      ],
+      "from": 602,
+      "to": 649
+    },
+    {
+      "words": [
+        {
+          "w": "personnes",
+          "from": 649,
+          "to": 661
+        },
+        {
+          "w": "perdent",
+          "from": 661,
+          "to": 672
+        },
+        {
+          "w": "la",
+          "from": 672,
+          "to": 684
+        },
+        {
+          "w": "vie.",
+          "from": 684,
+          "to": 696
+        }
+      ],
+      "from": 649,
+      "to": 696
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 702,
+          "to": 715
+        },
+        {
+          "w": "États-Unis,",
+          "from": 715,
+          "to": 729
+        },
+        {
+          "w": "l'Égypte,",
+          "from": 729,
+          "to": 742
+        },
+        {
+          "w": "et",
+          "from": 742,
+          "to": 756
+        }
+      ],
+      "from": 702,
+      "to": 756
+    },
+    {
+      "words": [
+        {
+          "w": "ça",
+          "from": 756,
+          "to": 769
+        },
+        {
+          "w": "change",
+          "from": 769,
+          "to": 783
+        },
+        {
+          "w": "tout.",
+          "from": 783,
+          "to": 796
+        }
+      ],
+      "from": 756,
+      "to": 796
+    },
+    {
+      "words": [
+        {
+          "w": "Relis",
+          "from": 802,
+          "to": 815
+        },
+        {
+          "w": "juste",
+          "from": 815,
+          "to": 829
+        },
+        {
+          "w": "avant",
+          "from": 829,
+          "to": 842
+        },
+        {
+          "w": "d'oublier,",
+          "from": 842,
+          "to": 856
+        }
+      ],
+      "from": 802,
+      "to": 856
+    },
+    {
+      "words": [
+        {
+          "w": "espace,",
+          "from": 856,
+          "to": 869
+        },
+        {
+          "w": "et",
+          "from": 869,
+          "to": 883
+        },
+        {
+          "w": "teste-toi.",
+          "from": 883,
+          "to": 896
+        }
+      ],
+      "from": 856,
+      "to": 896
+    },
+    {
+      "words": [
+        {
+          "w": "De",
+          "from": 902,
+          "to": 912
+        },
+        {
+          "w": "1885",
+          "from": 912,
+          "to": 923
+        },
+        {
+          "w": "à",
+          "from": 923,
+          "to": 933
+        },
+        {
+          "w": "aujourd'hui,",
+          "from": 933,
+          "to": 944
+        }
+      ],
+      "from": 902,
+      "to": 944
+    },
+    {
+      "words": [
+        {
+          "w": "la",
+          "from": 944,
+          "to": 954
+        },
+        {
+          "w": "mémoire",
+          "from": 954,
+          "to": 965
+        },
+        {
+          "w": "change",
+          "from": 965,
+          "to": 975
+        }
+      ],
+      "from": 944,
+      "to": 975
+    },
+    {
+      "words": [
+        {
+          "w": "de",
+          "from": 975,
+          "to": 986
+        },
+        {
+          "w": "visage.",
+          "from": 986,
+          "to": 996
+        }
+      ],
+      "from": 975,
+      "to": 996
+    },
+    {
+      "words": [
+        {
+          "w": "L'industrie,",
+          "from": 1002,
+          "to": 1015
+        },
+        {
+          "w": "la",
+          "from": 1015,
+          "to": 1029
+        },
+        {
+          "w": "finance,",
+          "from": 1029,
+          "to": 1042
+        },
+        {
+          "w": "l'armée",
+          "from": 1042,
+          "to": 1056
+        }
+      ],
+      "from": 1002,
+      "to": 1056
+    },
+    {
+      "words": [
+        {
+          "w": "et",
+          "from": 1056,
+          "to": 1069
+        },
+        {
+          "w": "la",
+          "from": 1069,
+          "to": 1083
+        },
+        {
+          "w": "technologie.",
+          "from": 1083,
+          "to": 1096
+        }
+      ],
+      "from": 1056,
+      "to": 1096
+    },
+    {
+      "words": [
+        {
+          "w": "En",
+          "from": 1102,
+          "to": 1115
+        },
+        {
+          "w": "Irak,",
+          "from": 1115,
+          "to": 1129
+        },
+        {
+          "w": "les",
+          "from": 1129,
+          "to": 1142
+        },
+        {
+          "w": "États-Unis",
+          "from": 1142,
+          "to": 1156
+        }
+      ],
+      "from": 1102,
+      "to": 1156
+    },
+    {
+      "words": [
+        {
+          "w": "font",
+          "from": 1156,
+          "to": 1169
+        },
+        {
+          "w": "cavalier",
+          "from": 1169,
+          "to": 1183
+        },
+        {
+          "w": "seul.",
+          "from": 1183,
+          "to": 1196
+        }
+      ],
+      "from": 1156,
+      "to": 1196
+    },
+    {
+      "words": [
+        {
+          "w": "L'histoire",
+          "from": 1202,
+          "to": 1209
+        },
+        {
+          "w": "retiendra",
+          "from": 1209,
+          "to": 1215
+        },
+        {
+          "w": "peut-être",
+          "from": 1215,
+          "to": 1222
+        },
+        {
+          "w": "que",
+          "from": 1222,
+          "to": 1229
+        }
+      ],
+      "from": 1202,
+      "to": 1229
+    },
+    {
+      "words": [
+        {
+          "w": "c'est",
+          "from": 1229,
+          "to": 1236
+        },
+        {
+          "w": "le",
+          "from": 1236,
+          "to": 1242
+        },
+        {
+          "w": "jour",
+          "from": 1242,
+          "to": 1249
+        },
+        {
+          "w": "de",
+          "from": 1249,
+          "to": 1256
+        }
+      ],
+      "from": 1229,
+      "to": 1256
+    },
+    {
+      "words": [
+        {
+          "w": "Noël",
+          "from": 1256,
+          "to": 1262
+        },
+        {
+          "w": "que",
+          "from": 1262,
+          "to": 1269
+        },
+        {
+          "w": "l'Union",
+          "from": 1269,
+          "to": 1276
+        },
+        {
+          "w": "soviétique",
+          "from": 1276,
+          "to": 1283
+        }
+      ],
+      "from": 1256,
+      "to": 1283
+    },
+    {
+      "words": [
+        {
+          "w": "a",
+          "from": 1283,
+          "to": 1289
+        },
+        {
+          "w": "disparu.",
+          "from": 1289,
+          "to": 1296
+        }
+      ],
+      "from": 1283,
+      "to": 1296
+    },
+    {
+      "words": [
+        {
+          "w": "La",
+          "from": 1302,
+          "to": 1315
+        },
+        {
+          "w": "Chine,",
+          "from": 1315,
+          "to": 1329
+        },
+        {
+          "w": "fermée,",
+          "from": 1329,
+          "to": 1342
+        },
+        {
+          "w": "s'ouvre",
+          "from": 1342,
+          "to": 1356
+        }
+      ],
+      "from": 1302,
+      "to": 1356
+    },
+    {
+      "words": [
+        {
+          "w": "soudain",
+          "from": 1356,
+          "to": 1369
+        },
+        {
+          "w": "au",
+          "from": 1369,
+          "to": 1383
+        },
+        {
+          "w": "monde.",
+          "from": 1383,
+          "to": 1396
+        }
+      ],
+      "from": 1356,
+      "to": 1396
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1402,
+          "to": 1421
+        },
+        {
+          "w": "États-Unis",
+          "from": 1421,
+          "to": 1440
+        },
+        {
+          "w": "contre",
+          "from": 1440,
+          "to": 1458
+        }
+      ],
+      "from": 1402,
+      "to": 1458
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1458,
+          "to": 1477
+        },
+        {
+          "w": "soviétique.",
+          "from": 1477,
+          "to": 1496
+        }
+      ],
+      "from": 1458,
+      "to": 1496
+    },
+    {
+      "words": [
+        {
+          "w": "Une",
+          "from": 1502,
+          "to": 1511
+        },
+        {
+          "w": "guerre",
+          "from": 1511,
+          "to": 1521
+        },
+        {
+          "w": "sans",
+          "from": 1521,
+          "to": 1530
+        },
+        {
+          "w": "champ",
+          "from": 1530,
+          "to": 1540
+        }
+      ],
+      "from": 1502,
+      "to": 1540
+    },
+    {
+      "words": [
+        {
+          "w": "de",
+          "from": 1540,
+          "to": 1549
+        },
+        {
+          "w": "bataille",
+          "from": 1549,
+          "to": 1558
+        },
+        {
+          "w": "?",
+          "from": 1558,
+          "to": 1568
+        },
+        {
+          "w": "Ça",
+          "from": 1568,
+          "to": 1577
+        }
+      ],
+      "from": 1540,
+      "to": 1577
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1577,
+          "to": 1587
+        },
+        {
+          "w": "tout.",
+          "from": 1587,
+          "to": 1596
+        }
+      ],
+      "from": 1577,
+      "to": 1596
+    },
+    {
+      "words": [
+        {
+          "w": "Abonne-toi",
+          "from": 1602,
+          "to": 1621
+        },
+        {
+          "w": "pour",
+          "from": 1621,
+          "to": 1640
+        },
+        {
+          "w": "la",
+          "from": 1640,
+          "to": 1658
+        }
+      ],
+      "from": 1602,
+      "to": 1658
+    },
+    {
+      "words": [
+        {
+          "w": "prochaine",
+          "from": 1658,
+          "to": 1677
+        },
+        {
+          "w": "vidéo.",
+          "from": 1677,
+          "to": 1696
+        }
+      ],
+      "from": 1658,
+      "to": 1696
     }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "shape-diagram",
-   "from": 270,
-   "to": 360,
-   "props": {
-    "shape": "circle",
-    "values": [
-     1,
-     0.58,
-     0.34,
-     0.21
-    ],
-    "labels": [
-     "appris",
-     "20 min",
-     "1 jour",
-     "1 mois"
-    ]
-   },
-   "items": [
-    {
-     "el": "values.0",
-     "at": 274
-    },
-    {
-     "el": "values.1",
-     "at": 292
-    },
-    {
-     "el": "values.2",
-     "at": 312
-    },
-    {
-     "el": "values.3",
-     "at": 332
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "counter",
-   "from": 360,
-   "to": 450,
-   "props": {
-    "label": "syllabes sans aucun sens",
-    "from": 0,
-    "to": 2300
-   },
-   "items": [
-    {
-     "el": "to",
-     "at": 366
-    },
-    {
-     "el": "label",
-     "at": 390
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "fact-chips",
-   "from": 450,
-   "to": 540,
-   "props": {
-    "chips": [
-     "Des syllabes sans aucun sens",
-     "Des listes de 13",
-     "Réciter sans erreur",
-     "Mesurer le temps gagné"
-    ]
-   },
-   "items": [
-    {
-     "el": "chips.0",
-     "at": 454
-    },
-    {
-     "el": "chips.1",
-     "at": 472
-    },
-    {
-     "el": "chips.2",
-     "at": 492
-    },
-    {
-     "el": "chips.3",
-     "at": 512
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "stack-list",
-   "from": 540,
-   "to": 630,
-   "props": {
-    "items": [
-     "Relire juste avant d'oublier",
-     "Espacer les révisions",
-     "Se tester au lieu de relire"
-    ]
-   },
-   "items": [
-    {
-     "el": "items.0",
-     "at": 546
-    },
-    {
-     "el": "items.1",
-     "at": 570
-    },
-    {
-     "el": "items.2",
-     "at": 594
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "timeline",
-   "from": 630,
-   "to": 720,
-   "props": {
-    "start": "1880",
-    "end": "2020",
-    "marks": [
-     {
-      "at": "1885",
-      "label": "Ebbinghaus publie"
-     },
-     {
-      "at": "1932",
-      "label": "Bartlett : on reconstruit"
-     },
-     {
-      "at": "1972",
-      "label": "Leitner et ses boîtes"
-     },
-     {
-      "at": "2015",
-      "label": "La courbe est répliquée"
-     }
-    ]
-   },
-   "items": [
-    {
-     "el": "marks.0",
-     "at": 634
-    },
-    {
-     "el": "marks.1",
-     "at": 652
-    },
-    {
-     "el": "marks.2",
-     "at": 672
-    },
-    {
-     "el": "marks.3",
-     "at": 692
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "icon-grid",
-   "from": 720,
-   "to": 810,
-   "props": {
-    "cells": [
-     {
-      "shape": "circle",
-      "label": "Le sommeil"
-     },
-     {
-      "shape": "square",
-      "label": "La répétition"
-     },
-     {
-      "shape": "triangle",
-      "label": "L'émotion"
-     },
-     {
-      "shape": "diamond",
-      "label": "Le sens"
-     }
-    ]
-   },
-   "items": [
-    {
-     "el": "cells.0",
-     "at": 724
-    },
-    {
-     "el": "cells.1",
-     "at": 742
-    },
-    {
-     "el": "cells.2",
-     "at": 762
-    },
-    {
-     "el": "cells.3",
-     "at": 782
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "stamp",
-   "from": 810,
-   "to": 900,
-   "props": {
-    "text": "Répliqué en 2015"
-   },
-   "items": [
-    {
-     "el": "text",
-     "at": 820
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "quote",
-   "from": 900,
-   "to": 990,
-   "props": {
-    "text": "Psychology has a long past, but only a short history.",
-    "speaker": "Hermann Ebbinghaus"
-   },
-   "items": [
-    {
-     "el": "text",
-     "at": 904
-    },
-    {
-     "el": "speaker",
-     "at": 950
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "object-state",
-   "from": 990,
-   "to": 1080,
-   "props": {
-    "object": "jar",
-    "states": [
-     "1re révision",
-     "2e révision",
-     "3e révision"
-    ]
-   },
-   "items": [
-    {
-     "el": "states.0",
-     "at": 990
-    },
-    {
-     "el": "states.1",
-     "at": 1018
-    },
-    {
-     "el": "states.2",
-     "at": 1046
-    }
-   ]
-  },
-  {
-   "kind": "scene",
-   "type": "mascot",
-   "from": 1080,
-   "to": 1170,
-   "props": {
-    "bubble": "Révise demain, pas ce soir. Ton cerveau te dira merci.",
-    "pose": "question"
-   },
-   "items": [
-    {
-     "el": "bubble",
-     "at": 1088
-    }
-   ]
-  },
-  {
-   "kind": "outro",
-   "from": 1170,
-   "to": 1260,
-   "props": {
-    "text": "Abonne-toi pour la prochaine vidéo"
-   },
-   "items": []
-  }
- ],
- "captions": [
-  {
-   "words": [
-    {
-     "w": "Dis-moi",
-     "from": 0,
-     "to": 8
-    },
-    {
-     "w": "pourquoi",
-     "from": 8,
-     "to": 16
-    },
-    {
-     "w": "tu",
-     "from": 16,
-     "to": 25
-    }
-   ],
-   "from": 0,
-   "to": 25
-  },
-  {
-   "words": [
-    {
-     "w": "oublies",
-     "from": 25,
-     "to": 33
-    },
-    {
-     "w": "ce",
-     "from": 33,
-     "to": 41
-    },
-    {
-     "w": "que",
-     "from": 41,
-     "to": 49
-    }
-   ],
-   "from": 25,
-   "to": 49
-  },
-  {
-   "words": [
-    {
-     "w": "tu",
-     "from": 49,
-     "to": 57
-    },
-    {
-     "w": "viens",
-     "from": 57,
-     "to": 65
-    },
-    {
-     "w": "de",
-     "from": 65,
-     "to": 74
-    }
-   ],
-   "from": 49,
-   "to": 74
-  },
-  {
-   "words": [
-    {
-     "w": "lire",
-     "from": 74,
-     "to": 82
-    },
-    {
-     "w": "?",
-     "from": 82,
-     "to": 90
-    }
-   ],
-   "from": 74,
-   "to": 90
-  },
-  {
-   "words": [
-    {
-     "w": "Ça",
-     "from": 90,
-     "to": 100
-    },
-    {
-     "w": "porte",
-     "from": 100,
-     "to": 110
-    },
-    {
-     "w": "un",
-     "from": 110,
-     "to": 120
-    }
-   ],
-   "from": 90,
-   "to": 120
-  },
-  {
-   "words": [
-    {
-     "w": "nom",
-     "from": 120,
-     "to": 130
-    },
-    {
-     "w": ":",
-     "from": 130,
-     "to": 140
-    },
-    {
-     "w": "la",
-     "from": 140,
-     "to": 150
-    }
-   ],
-   "from": 120,
-   "to": 150
-  },
-  {
-   "words": [
-    {
-     "w": "courbe",
-     "from": 150,
-     "to": 160
-    },
-    {
-     "w": "de",
-     "from": 160,
-     "to": 170
-    },
-    {
-     "w": "l'oubli.",
-     "from": 170,
-     "to": 180
-    }
-   ],
-   "from": 150,
-   "to": 180
-  },
-  {
-   "words": [
-    {
-     "w": "Un",
-     "from": 180,
-     "to": 193
-    },
-    {
-     "w": "psychologue",
-     "from": 193,
-     "to": 206
-    },
-    {
-     "w": "allemand",
-     "from": 206,
-     "to": 219
-    }
-   ],
-   "from": 180,
-   "to": 219
-  },
-  {
-   "words": [
-    {
-     "w": "l'a",
-     "from": 219,
-     "to": 231
-    },
-    {
-     "w": "mesurée",
-     "from": 231,
-     "to": 244
-    }
-   ],
-   "from": 219,
-   "to": 244
-  },
-  {
-   "words": [
-    {
-     "w": "sur",
-     "from": 244,
-     "to": 257
-    },
-    {
-     "w": "lui-même.",
-     "from": 257,
-     "to": 270
-    }
-   ],
-   "from": 244,
-   "to": 270
-  },
-  {
-   "words": [
-    {
-     "w": "Après",
-     "from": 270,
-     "to": 279
-    },
-    {
-     "w": "vingt",
-     "from": 279,
-     "to": 288
-    },
-    {
-     "w": "minutes",
-     "from": 288,
-     "to": 297
-    }
-   ],
-   "from": 270,
-   "to": 297
-  },
-  {
-   "words": [
-    {
-     "w": "il",
-     "from": 297,
-     "to": 306
-    },
-    {
-     "w": "reste",
-     "from": 306,
-     "to": 315
-    },
-    {
-     "w": "à",
-     "from": 315,
-     "to": 324
-    }
-   ],
-   "from": 297,
-   "to": 324
-  },
-  {
-   "words": [
-    {
-     "w": "peine",
-     "from": 324,
-     "to": 333
-    },
-    {
-     "w": "six",
-     "from": 333,
-     "to": 342
-    }
-   ],
-   "from": 324,
-   "to": 342
-  },
-  {
-   "words": [
-    {
-     "w": "sur",
-     "from": 342,
-     "to": 351
-    },
-    {
-     "w": "dix.",
-     "from": 351,
-     "to": 360
-    }
-   ],
-   "from": 342,
-   "to": 360
-  },
-  {
-   "words": [
-    {
-     "w": "Il",
-     "from": 360,
-     "to": 369
-    },
-    {
-     "w": "a",
-     "from": 369,
-     "to": 378
-    },
-    {
-     "w": "appris",
-     "from": 378,
-     "to": 387
-    }
-   ],
-   "from": 360,
-   "to": 387
-  },
-  {
-   "words": [
-    {
-     "w": "par",
-     "from": 387,
-     "to": 396
-    },
-    {
-     "w": "cœur",
-     "from": 396,
-     "to": 405
-    },
-    {
-     "w": "plus",
-     "from": 405,
-     "to": 414
-    }
-   ],
-   "from": 387,
-   "to": 414
-  },
-  {
-   "words": [
-    {
-     "w": "de",
-     "from": 414,
-     "to": 423
-    },
-    {
-     "w": "deux",
-     "from": 423,
-     "to": 432
-    }
-   ],
-   "from": 414,
-   "to": 432
-  },
-  {
-   "words": [
-    {
-     "w": "mille",
-     "from": 432,
-     "to": 441
-    },
-    {
-     "w": "syllabes.",
-     "from": 441,
-     "to": 450
-    }
-   ],
-   "from": 432,
-   "to": 450
-  },
-  {
-   "words": [
-    {
-     "w": "Des",
-     "from": 450,
-     "to": 463
-    },
-    {
-     "w": "listes",
-     "from": 463,
-     "to": 476
-    },
-    {
-     "w": "absurdes,",
-     "from": 476,
-     "to": 489
-    }
-   ],
-   "from": 450,
-   "to": 489
-  },
-  {
-   "words": [
-    {
-     "w": "récitées",
-     "from": 489,
-     "to": 501
-    },
-    {
-     "w": "jusqu'à",
-     "from": 501,
-     "to": 514
-    }
-   ],
-   "from": 489,
-   "to": 514
-  },
-  {
-   "words": [
-    {
-     "w": "zéro",
-     "from": 514,
-     "to": 527
-    },
-    {
-     "w": "faute.",
-     "from": 527,
-     "to": 540
-    }
-   ],
-   "from": 514,
-   "to": 540
-  },
-  {
-   "words": [
-    {
-     "w": "La",
-     "from": 540,
-     "to": 553
-    },
-    {
-     "w": "parade",
-     "from": 553,
-     "to": 566
-    },
-    {
-     "w": "tient",
-     "from": 566,
-     "to": 579
-    }
-   ],
-   "from": 540,
-   "to": 579
-  },
-  {
-   "words": [
-    {
-     "w": "en",
-     "from": 579,
-     "to": 591
-    },
-    {
-     "w": "trois",
-     "from": 591,
-     "to": 604
-    }
-   ],
-   "from": 579,
-   "to": 604
-  },
-  {
-   "words": [
-    {
-     "w": "gestes",
-     "from": 604,
-     "to": 617
-    },
-    {
-     "w": "simples.",
-     "from": 617,
-     "to": 630
-    }
-   ],
-   "from": 604,
-   "to": 630
-  },
-  {
-   "words": [
-    {
-     "w": "Cent",
-     "from": 630,
-     "to": 640
-    },
-    {
-     "w": "trente",
-     "from": 640,
-     "to": 650
-    },
-    {
-     "w": "ans",
-     "from": 650,
-     "to": 660
-    }
-   ],
-   "from": 630,
-   "to": 660
-  },
-  {
-   "words": [
-    {
-     "w": "plus",
-     "from": 660,
-     "to": 670
-    },
-    {
-     "w": "tard,",
-     "from": 670,
-     "to": 680
-    },
-    {
-     "w": "la",
-     "from": 680,
-     "to": 690
-    }
-   ],
-   "from": 660,
-   "to": 690
-  },
-  {
-   "words": [
-    {
-     "w": "courbe",
-     "from": 690,
-     "to": 700
-    },
-    {
-     "w": "tient",
-     "from": 700,
-     "to": 710
-    },
-    {
-     "w": "toujours.",
-     "from": 710,
-     "to": 720
-    }
-   ],
-   "from": 690,
-   "to": 720
-  },
-  {
-   "words": [
-    {
-     "w": "Quatre",
-     "from": 720,
-     "to": 738
-    },
-    {
-     "w": "choses",
-     "from": 738,
-     "to": 756
-    },
-    {
-     "w": "ralentissent",
-     "from": 756,
-     "to": 774
-    }
-   ],
-   "from": 720,
-   "to": 774
-  },
-  {
-   "words": [
-    {
-     "w": "la",
-     "from": 774,
-     "to": 792
-    },
-    {
-     "w": "chute.",
-     "from": 792,
-     "to": 810
-    }
-   ],
-   "from": 774,
-   "to": 810
-  },
-  {
-   "words": [
-    {
-     "w": "Et",
-     "from": 810,
-     "to": 828
-    },
-    {
-     "w": "c'est",
-     "from": 828,
-     "to": 846
-    },
-    {
-     "w": "vérifié,",
-     "from": 846,
-     "to": 864
-    }
-   ],
-   "from": 810,
-   "to": 864
-  },
-  {
-   "words": [
-    {
-     "w": "encore",
-     "from": 864,
-     "to": 882
-    },
-    {
-     "w": "aujourd'hui.",
-     "from": 882,
-     "to": 900
-    }
-   ],
-   "from": 864,
-   "to": 900
-  },
-  {
-   "words": [
-    {
-     "w": "Lui-même",
-     "from": 900,
-     "to": 922
-    },
-    {
-     "w": "le",
-     "from": 922,
-     "to": 945
-    }
-   ],
-   "from": 900,
-   "to": 945
-  },
-  {
-   "words": [
-    {
-     "w": "résumait",
-     "from": 945,
-     "to": 968
-    },
-    {
-     "w": "ainsi.",
-     "from": 968,
-     "to": 990
-    }
-   ],
-   "from": 945,
-   "to": 990
-  },
-  {
-   "words": [
-    {
-     "w": "Chaque",
-     "from": 990,
-     "to": 1001
-    },
-    {
-     "w": "révision",
-     "from": 1001,
-     "to": 1012
-    },
-    {
-     "w": "remplit",
-     "from": 1012,
-     "to": 1024
-    }
-   ],
-   "from": 990,
-   "to": 1024
-  },
-  {
-   "words": [
-    {
-     "w": "un",
-     "from": 1024,
-     "to": 1035
-    },
-    {
-     "w": "peu",
-     "from": 1035,
-     "to": 1046
-    },
-    {
-     "w": "plus",
-     "from": 1046,
-     "to": 1058
-    }
-   ],
-   "from": 1024,
-   "to": 1058
-  },
-  {
-   "words": [
-    {
-     "w": "le",
-     "from": 1058,
-     "to": 1069
-    },
-    {
-     "w": "bocal.",
-     "from": 1069,
-     "to": 1080
-    }
-   ],
-   "from": 1058,
-   "to": 1080
-  },
-  {
-   "words": [
-    {
-     "w": "Petit",
-     "from": 1080,
-     "to": 1091
-    },
-    {
-     "w": "conseil",
-     "from": 1091,
-     "to": 1102
-    },
-    {
-     "w": ":",
-     "from": 1102,
-     "to": 1114
-    }
-   ],
-   "from": 1080,
-   "to": 1114
-  },
-  {
-   "words": [
-    {
-     "w": "révise",
-     "from": 1114,
-     "to": 1125
-    },
-    {
-     "w": "demain,",
-     "from": 1125,
-     "to": 1136
-    },
-    {
-     "w": "pas",
-     "from": 1136,
-     "to": 1148
-    }
-   ],
-   "from": 1114,
-   "to": 1148
-  },
-  {
-   "words": [
-    {
-     "w": "ce",
-     "from": 1148,
-     "to": 1159
-    },
-    {
-     "w": "soir.",
-     "from": 1159,
-     "to": 1170
-    }
-   ],
-   "from": 1148,
-   "to": 1170
-  },
-  {
-   "words": [
-    {
-     "w": "Abonne-toi",
-     "from": 1170,
-     "to": 1188
-    },
-    {
-     "w": "pour",
-     "from": 1188,
-     "to": 1206
-    },
-    {
-     "w": "la",
-     "from": 1206,
-     "to": 1224
-    }
-   ],
-   "from": 1170,
-   "to": 1224
-  },
-  {
-   "words": [
-    {
-     "w": "prochaine",
-     "from": 1224,
-     "to": 1242
-    },
-    {
-     "w": "vidéo.",
-     "from": 1242,
-     "to": 1260
-    }
-   ],
-   "from": 1224,
-   "to": 1260
-  }
- ]
+  ]
 }
