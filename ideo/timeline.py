@@ -2,13 +2,14 @@ import math
 import re
 from pathlib import Path
 
-from ideo import common, i18n, textmatch, voice
+from ideo import align, common, i18n, textmatch, voice
 
 FPS = 30
 WIDTH = 1080
 HEIGHT = 1920
 PAUSE = 0.5
 MAX_GROUP = 4
+FIRST_ITEM_FRAMES = 9
 FINAL_PUNCT = (".", "!", "?", "…", ";", ":")
 APOSTROPHES = re.compile("['’‘ʼ`´]")
 
@@ -36,7 +37,8 @@ def _word_index(words: list[dict], anchor: str) -> int | None:
 
 def anchor_frame(seg_words: list[dict], anchor: str, seg_start: float, seg_dur: float, say: str,
                  fps: int = FPS) -> int:
-    index = _word_index(seg_words, anchor) if seg_words else None
+    anchor = textmatch.anchor_text(anchor) or ""
+    index = _word_index(seg_words, anchor) if seg_words and anchor else None
     if index is not None:
         return _frame(seg_start + seg_words[index]["s"], fps)
     pos = say.lower().find(anchor.lower())
@@ -145,7 +147,10 @@ def _build(job: Path, n: int, total: int) -> Path:
         clip = entry["clip"]
         if clip and clip["kind"] == "quote":
             inside = [w for w in source_words if w["s"] >= clip["src_start"] - 1e-6 and w["e"] <= clip["src_end"] + 1e-6]
-            captions.extend(caption_groups(_shift(inside, clip["start"] - clip["src_start"])))
+            relative = _shift(inside, -clip["src_start"])
+            written = align.align_words(align.script_words(scenes[name]["props"]["text"]), relative,
+                                        clip["end"] - clip["start"])
+            captions.extend(caption_groups(_shift(written, clip["start"])))
         if name == "seg_00_hook":
             segments.append({"kind": "hook", "from": begin, "to": finish, "props": {"text": texts[name]}, "items": []})
         elif name == "seg_99_outro":
@@ -155,7 +160,10 @@ def _build(job: Path, n: int, total: int) -> Path:
             items = []
             for item in scene.get("items", []):
                 at = anchor_frame(seg_words, item["on"], entry["start"], seg_dur, scene["say"])
-                items.append({"el": item["el"], "at": min(max(at, begin), max(finish - 1, begin))})
+                at = min(max(at, begin), max(finish - 1, begin))
+                if not items:
+                    at = min(at, begin + FIRST_ITEM_FRAMES)
+                items.append({"el": item["el"], "at": at})
             segments.append({"kind": "scene", "type": scene["type"], "from": begin, "to": finish,
                              "props": scene.get("props", {}), "items": items})
 

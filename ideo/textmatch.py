@@ -64,3 +64,15 @@ def closest_passage(words: list[dict], needle: str) -> str:
     last = hits[-1] if hits else chunk[-1][0]
     text = " ".join(w["w"] for w in words[first:last + 1])
     return f"[{fmt_ts(words[first]['s'])}] {text}"
+
+
+def anchor_text(value) -> str | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return str(int(value)) if value.is_integer() else str(value)
+    if isinstance(value, str) and value.strip():
+        return value
+    return None

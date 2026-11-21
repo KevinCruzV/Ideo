@@ -138,7 +138,7 @@ def test_timeline_captions_use_source_words_during_quote_and_none_during_sfx(job
     sfx_clip = offsets[3]["clip"]
     in_quote = [g for g in tl["captions"] if quote_clip["start"] * 30 <= g["from"] < quote_clip["end"] * 30]
     texts = [w["w"] for g in in_quote for w in g["words"]]
-    assert texts[0] == "Nous" and texts[-1] == "journée."
+    assert texts[0] == "Nous" and texts[-1] == "journée"
     assert not [g for g in tl["captions"] if sfx_clip["start"] * 30 <= g["from"] < sfx_clip["end"] * 30]
     first = tl["captions"][0]
     assert first["words"][0]["w"] == "Dis-moi" and first["from"] == 0
@@ -155,3 +155,40 @@ def test_timeline_without_offsets_is_french_error(job_with_voice_fixtures):
     with pytest.raises(common.IdeoError, match="offsets"):
         timeline.build_timeline(job_with_voice_fixtures, 1, 3)
     assert common.read_status(job_with_voice_fixtures)["steps"]["timeline-01"]["ok"] is False
+
+
+def test_first_item_of_a_scene_appears_within_nine_frames(job_with_offsets):
+    from ideo import common as c
+
+    plan = c.load_json(job_with_offsets / "plan.json")
+    plan["parts"][0]["scenes"][1]["items"] = [{"el": "values.3", "on": "oublie"}, {"el": "values.0", "on": "rien"}]
+    c.save_json(job_with_offsets / "plan.json", plan)
+    tl = build(job_with_offsets)
+    scene = tl["segments"][2]
+    assert scene["items"][0]["at"] <= scene["from"] + 9
+    assert scene["items"][0]["at"] <= scene["items"][1]["at"]
+
+
+def test_numeric_anchor_is_accepted():
+    words = [{"w": "En", "s": 0.0, "e": 0.2}, {"w": "1991", "s": 0.5, "e": 0.9}]
+    assert timeline.anchor_frame(words, 1991, 0.0, 2.0, "En 1991") == 15
+
+
+def test_captions_show_the_written_words(job_with_offsets):
+    tl = build(job_with_offsets)
+    shown = [w["w"] for g in tl["captions"] for w in g["words"]]
+    assert "Dis-moi" in shown and "d'apprendre" in " ".join(shown)
+    assert not any(w.startswith("'") or w == "-" for w in shown)
+
+
+def test_quote_captions_use_the_text_of_the_plan(job_with_offsets):
+    from ideo import common as c
+
+    plan = c.load_json(job_with_offsets / "plan.json")
+    text = plan["parts"][0]["scenes"][4]["props"]["text"]
+    tl = build(job_with_offsets)
+    offsets = c.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
+    clip = offsets[5]["clip"]
+    in_quote = [g for g in tl["captions"] if clip["start"] * 30 <= g["from"] < clip["end"] * 30]
+    assert [w["w"] for g in in_quote for w in g["words"]] == text.split()
+    assert all(1 <= len(g["words"]) <= 4 for g in tl["captions"])
