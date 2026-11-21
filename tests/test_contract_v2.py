@@ -119,3 +119,32 @@ def test_counter_unit_cap_4():
     errors = scene_schema.check_props("counter", {"to": 20, "unit": "milli"}, "x")
     assert len(errors) == 1 and "unit" in errors[0] and "4" in errors[0]
     assert scene_schema.check_props("counter", {"to": 20, "unit": ""}, "x")
+
+
+def test_wishes_absent_is_normal(job_with_fixtures):
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_valid_wishes(job_with_fixtures):
+    assert plan_with(job_with_fixtures, lambda p: p.update(wishes=["drapeau américain", "carte du monde"])) == []
+    assert plan_with(job_with_fixtures, lambda p: p.update(wishes=[])) == []
+    assert plan_with(job_with_fixtures, lambda p: p.update(wishes=["x" * 40] * 5)) == []
+
+
+def test_wishes_must_be_a_list_of_at_most_five(job_with_fixtures):
+    for bad in ("drapeau", ["a"] * 6, {"a": 1}):
+        errors = plan_with(job_with_fixtures, lambda p, b=bad: p.update(wishes=b))
+        assert len(errors) == 1 and errors[0].startswith("Plan : « wishes » doit être une liste de 0 à 5 textes")
+
+
+def test_wish_must_be_a_short_non_empty_text(job_with_fixtures):
+    errors = plan_with(job_with_fixtures, lambda p: p.update(wishes=["", 3, "x" * 41]))
+    assert len(errors) == 3
+    assert errors[0].startswith("Plan : « wishes.0 » doit être un texte non vide")
+    assert errors[1].startswith("Plan : « wishes.1 » doit être un texte non vide")
+    assert errors[2].startswith("Plan : « wishes.2 » fait 41 caractères, 40 au plus")
+
+
+def test_wish_with_em_dash_is_refused(job_with_fixtures):
+    errors = plan_with(job_with_fixtures, lambda p: p.update(wishes=["a " + chr(0x2014) + " b"]))
+    assert errors and "tiret cadratin" in errors[0]

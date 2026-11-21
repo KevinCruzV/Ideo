@@ -356,6 +356,28 @@ def _write_md(job: Path, plan: dict, clips_by_part: list, stats: dict) -> None:
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+MAX_WISHES = 5
+WISH_CAP = 40
+
+
+def _check_wishes(plan: dict, errors: list[str]) -> None:
+    if "wishes" not in plan:
+        return
+    wishes = plan["wishes"]
+    if not isinstance(wishes, list) or len(wishes) > MAX_WISHES:
+        errors.append(f"Plan : « wishes » doit être une liste de 0 à {MAX_WISHES} textes courts (les dessins qui t'ont manqué). "
+                      "Retire les souhaits en trop ou supprime le champ.")
+        return
+    for i, wish in enumerate(wishes):
+        if not isinstance(wish, str) or not wish.strip():
+            errors.append(f"Plan : « wishes.{i} » doit être un texte non vide. Écris le dessin voulu en quelques mots ou retire-le.")
+            continue
+        _check_dash([wish], "Plan", errors)
+        error = scene_schema.cap_error("Plan", f"wishes.{i}", wish, WISH_CAP)
+        if error:
+            errors.append(error)
+
+
 def _analyze(job: Path) -> tuple[list[str], dict | None]:
     job = Path(job)
     path = job / "plan.json"
@@ -384,6 +406,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
     if "series_title" in plan:
         _check_dash([plan["series_title"]] if isinstance(plan["series_title"], str) else [], "Plan", errors)
 
+    _check_wishes(plan, errors)
     parts = plan.get("parts")
     if not isinstance(parts, list):
         errors.append("Plan : « parts » doit être une liste de parties.")
@@ -423,7 +446,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
     if not errors:
         total = round(sum(seconds))
         count = sum(len(part["scenes"]) for part in parts)
-        stats = {"seconds": total, "scenes": count, "plan": plan}
+        stats = {"seconds": total, "scenes": count, "plan": plan, "lang": lang, "source": ctx["duration"]}
         _write_md(job, plan, clips_by_part, stats)
     return errors, stats
 

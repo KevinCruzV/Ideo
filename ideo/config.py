@@ -4,6 +4,7 @@ import re
 from ideo import common
 
 DEFAULT_RATE = "+0%"
+DEFAULT_SEUIL = 5
 RATE = re.compile(r"^[+-]\d{1,3}%$")
 
 
@@ -28,7 +29,21 @@ def _load() -> dict:
     rate = data.get("rate", DEFAULT_RATE)
     if not isinstance(rate, str) or not RATE.match(rate):
         raise common.IdeoError("config.json : « rate » doit être un texte comme « +0% » ou « -5% ».")
+    auto = data.get("entretien_auto", True)
+    if not isinstance(auto, bool):
+        raise common.IdeoError("config.json : « entretien_auto » doit être true ou false.")
+    seuil = data.get("entretien_seuil", DEFAULT_SEUIL)
+    if isinstance(seuil, bool) or not isinstance(seuil, int) or seuil < 1:
+        raise common.IdeoError("config.json : « entretien_seuil » doit être un nombre entier d'au moins 1.")
     return data
+
+
+def entretien_auto() -> bool:
+    return _load().get("entretien_auto", True)
+
+
+def entretien_seuil() -> int:
+    return _load().get("entretien_seuil", DEFAULT_SEUIL)
 
 
 def rate() -> str:

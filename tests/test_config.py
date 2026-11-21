@@ -82,3 +82,23 @@ def test_part_hash_changes_with_the_voice_and_the_rate(home, job_with_fixtures):
     assert pipeline.part_hash(plan, part) != before
     write(home, {"voices": {"fr": "fr-FR-DeniseNeural"}})
     assert pipeline.part_hash(plan, part) != before
+
+
+def test_entretien_defaults():
+    assert config.entretien_auto() is True
+    assert config.entretien_seuil() == 5
+
+
+def test_entretien_keys(home):
+    write(home, {"entretien_auto": False, "entretien_seuil": 3})
+    assert config.entretien_auto() is False and config.entretien_seuil() == 3
+
+
+@pytest.mark.parametrize("content", [
+    {"entretien_auto": "oui"}, {"entretien_auto": 1}, {"entretien_seuil": "5"}, {"entretien_seuil": 0},
+    {"entretien_seuil": True}, {"entretien_seuil": 2.5},
+])
+def test_entretien_keys_wrong_types(home, content):
+    write(home, content)
+    with pytest.raises(common.IdeoError, match="config.json"):
+        config.entretien_auto()
