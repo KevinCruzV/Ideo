@@ -501,3 +501,27 @@ def test_no_take_passing_keeps_the_best_ranked_and_flags_it(kyutai, job_with_pla
 def test_the_hook_is_never_redone_by_the_flatness_rule(kyutai, job_with_plan, monkeypatch):
     ids, _ = run_part(kyutai, job_with_plan, monkeypatch, pitch={"seg_00_hook": [1.0, 1.0, 1.0, 1.0]})
     assert len(ids) == 1
+
+
+def test_launcher_runs_with_the_seed_and_does_not_shadow_the_standard_library(tmp_path):
+    import subprocess
+    import sys
+
+    stubs = tmp_path / "stubs"
+    (stubs / "mlx").mkdir(parents=True)
+    (stubs / "moshi_mlx").mkdir()
+    (stubs / "mlx" / "__init__.py").write_text("", encoding="utf-8")
+    (stubs / "mlx" / "core.py").write_text(
+        "class random:\n    used = []\n    @staticmethod\n    def seed(value):\n        random.used.append(value)\n",
+        encoding="utf-8")
+    (stubs / "moshi_mlx" / "__init__.py").write_text("", encoding="utf-8")
+    (stubs / "moshi_mlx" / "run_tts.py").write_text(
+        "import sys, numbers\nimport mlx.core as mx\n"
+        "def main():\n    mx.random.seed(299792458)\n"
+        "    print(mx.random.used, sys.argv, numbers.__file__)\n",
+        encoding="utf-8")
+    result = subprocess.run([sys.executable, str(voice.LAUNCHER), "77", "a.jsonl", "--only-wav"], capture_output=True, text=True,
+                            env={"PYTHONPATH": str(stubs), "PATH": ""})
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.startswith("[77] ['run_tts', 'a.jsonl', '--only-wav']")
+    assert str(voice.LAUNCHER.parent) not in result.stdout.split("]", 2)[-1]

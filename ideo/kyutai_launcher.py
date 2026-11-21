@@ -1,4 +1,8 @@
+import os
 import sys
+
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path[:] = [p for p in sys.path if os.path.abspath(p or ".") != here]
 
 import mlx.core as mx
 
