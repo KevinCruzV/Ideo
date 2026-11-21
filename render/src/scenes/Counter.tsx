@@ -11,6 +11,7 @@ import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips } from "./Strips";
 import { areaFor, FitBox } from "./FitBox";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const decimals = (n: number): number => {
   const s = String(n);
@@ -26,6 +27,8 @@ export const formatCount = (value: number, places: number): string =>
 export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
+  const beat = useBeat();
+  const pulse = beat ? beat.wave : 0;
   const end = num(props.to) ?? num(props.from) ?? 0;
   const start = num(props.from) ?? 0;
   const suffix = suffixOf(props.to) || suffixOf(props.from);
@@ -51,7 +54,7 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
     <Stage>
       <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 50, width: BOX_W }}>
-          <div style={{ position: "relative", width: disc, height: disc }}>
+          <div style={{ position: "relative", width: disc, height: disc, transform: `scale(${1 + 0.11 * pulse}) rotate(${(beat && beat.index % 2 ? 3 : -3) * pulse}deg)` }}>
             <PaperShape kind="circle" color={accent} size={disc} seed="counter-disc" float={4} motion={{ dy: 0, spin: -8, from: 0.9 }}>
               <span
                 style={{

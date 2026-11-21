@@ -10,6 +10,7 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const DOT = 46;
 const DOT_GAP = 28;
@@ -23,6 +24,7 @@ export const commonFit = (texts: string[], maxWidth: number, maxLines: number, m
 
 export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
+  const beat = useBeat();
   const chips = strList(props.chips, 6);
   const shown = chips.length > 0 ? chips : ["…"];
   const hasPicto = hasVisual(props.picto);
@@ -46,7 +48,7 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
               const at = enterFor(`chips.${i}`, items, from, to);
               const lineH = stripHeight(fit.size);
               return (
-                <div key={`chip-${i}`} style={{ position: "relative", display: "flex", alignItems: "flex-start" }}>
+                <div key={`chip-${i}`} style={{ position: "relative", display: "flex", alignItems: "flex-start", transform: beat && beat.index % fits.length === i ? `translateX(${46 * beat.wave}px) scale(${1 + 0.08 * beat.wave}) rotate(${-1.5 * beat.wave}deg)` : undefined, transformOrigin: "0 50%" }}>
                   <div style={{ position: "relative", width: DOT, height: lineH, marginRight: DOT_GAP, flex: "none" }}>
                     <PaperShape kind="circle" color={accent} size={DOT} y={(lineH - DOT) / 2} enterAt={i * 2 - 3} seed={`chip-dot-${i}`} float={1.5} />
                   </div>

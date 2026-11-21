@@ -1,6 +1,7 @@
 import React from "react";
 import { PaperShape, ShapeKind } from "../paper/PaperShape";
 import { SUPPORT_AT } from "../paper/motion";
+import { useBeat } from "./beats";
 import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { list, str } from "./coerce";
@@ -45,6 +46,7 @@ export const cellMark = (label: string, index: number): string => {
 
 export const IconGrid: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
+  const beat = useBeat();
   const cells = list(props.cells, 9).map((c) => {
     const o = c && typeof c === "object" ? (c as Record<string, unknown>) : { label: c };
     return { picto: hasVisual(o.picto) ? (o.picto as string) : null, label: str(o.label) };
@@ -74,10 +76,10 @@ export const IconGrid: React.FC<SceneProps> = ({ props, items, from, to }) => {
             const fit = fits[i];
             const disc = art * 0.84;
             return (
-              <div key={`cell-${i}`} style={{ width: cellW, display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
+              <div key={`cell-${i}`} style={{ width: cellW, display: "flex", flexDirection: "column", alignItems: "center", gap: 24, transform: beat && beat.index % shown.length === i ? `translateY(${-30 * beat.wave}px) scale(${1 + 0.12 * beat.wave}) rotate(${(i % 2 ? 4 : -4) * beat.wave}deg)` : undefined }}>
                 <div style={{ position: "relative", width: art, height: art }}>
                   {cell.picto ? (
-                    <Picto name={cell.picto} size={art} enterAt={at} rotate={i % 2 ? 4 : -4} seed={`cell-picto-${i}`} />
+                    <Picto name={cell.picto} size={art} enterAt={at} rotate={i % 2 ? 4 : -4} seed={`cell-picto-${i}`} react={false} />
                   ) : (
                     <PaperShape kind="circle" color={accent} size={disc} x={(art - disc) / 2} y={(art - disc) / 2} rotate={i % 2 ? 4 : -4} enterAt={at} seed={`cell-${i}`}>
                       <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: disc * 0.52, lineHeight: 1, color: onPaper[accent], marginTop: disc * 0.04 }}>

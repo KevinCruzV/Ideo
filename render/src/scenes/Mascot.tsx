@@ -11,6 +11,7 @@ import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { BOX_R, Stage, STAGE_H, STAGE_W } from "./Stage";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const HEAD_PX = 300;
 const HEAD_X = 250;
@@ -39,7 +40,10 @@ export const Mascot: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const pop = local < 0 ? 0 : spring({ frame: local, fps: 30, config: { damping: 12, stiffness: 170, mass: 0.7 } });
   const scale = 0.9 + 0.1 * pop;
   const opacity = interpolate(local, [0, 4], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const lift = hopLift(frame, at + LAND_FRAMES);
+  const beat = useBeat(14);
+  const nod = beat ? 8 * Math.sin(beat.t * Math.PI * 2) * (1 - beat.t) : 0;
+  const glance: [number, number] = beat ? [beat.index % 2 ? -2.6 : 2.6, beat.index % 3 === 2 ? -1.4 : 0.6] : [0, 0];
+  const lift = hopLift(frame, at + LAND_FRAMES) + (beat ? 0.025 * beat.wave : 0);
   const d = drift("bubble", frame, 3, 0.4);
   const enterBody = spring({ frame: frame + 4, fps: 30, config: { damping: 14, stiffness: 120 } });
 
@@ -47,7 +51,7 @@ export const Mascot: React.FC<SceneProps> = ({ props, items, from, to }) => {
     <Stage>
       <div style={{ position: "absolute", left: 0, top: 0, width: STAGE_W, height: STAGE_H, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, transform: `translateY(${(1 - enterBody) * 160}px)` }}>
-          <Character size={CHARACTER_SIZE} pose={pose} body="blue" lift={lift} style={{ left: CHARACTER_LEFT, top: CHARACTER_TOP }} />
+          <Character size={CHARACTER_SIZE} pose={pose} body="blue" lift={lift} nod={nod} glance={glance} style={{ left: CHARACTER_LEFT, top: CHARACTER_TOP }} />
         </div>
       </div>
       <div

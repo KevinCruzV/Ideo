@@ -55,7 +55,7 @@ export const PersonCard: React.FC<SceneProps> = ({ props, items, from, to }) => 
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 26 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              {flag ? <Picto name={props.picto} size={Math.round(nameFit.size * 1.5)} rotate={-5} /> : null}
+              {flag ? <Picto name={props.picto} size={Math.round(nameFit.size * 1.5)} rotate={-5} react={false} /> : null}
               <Strips lines={nameFit.lines} size={nameFit.size} enterAt={nameAt} seed="pc-name" />
             </div>
             <Strips lines={roleFit.lines} size={roleFit.size} color="ink" enterAt={Math.max(nameAt + 6, enterFor("role", items, from, to))} seed="pc-role" gap={10} />

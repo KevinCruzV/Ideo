@@ -11,6 +11,7 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage";
 import { areaFor, FitBox } from "./FitBox";
 import { stateIndex, stateTimes } from "./timing";
+import { useBeat } from "./beats";
 
 type ObjectKind = "screen" | "board" | "jar" | "door" | "scale";
 
@@ -256,6 +257,7 @@ const EXTENT: Record<ObjectKind, [number, number]> = {
 };
 
 export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) => {
+  const beat = useBeat();
   const frame = useCurrentFrame();
   const accent = useAccent();
   const kind = objectKind(props.object);
@@ -270,7 +272,7 @@ export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) =>
   return (
     <Stage>
       <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
-        <div style={{ position: "relative", width: BOX_W, height: EXTENT[kind][1] - EXTENT[kind][0] }}>
+        <div style={{ position: "relative", width: BOX_W, height: EXTENT[kind][1] - EXTENT[kind][0], transform: beat ? `scale(${1 + 0.05 * beat.wave}) rotate(${(beat.index % 2 ? 1.5 : -1.5) * beat.wave}deg)` : undefined }}>
           <div style={{ position: "absolute", left: -BOX_L, top: -EXTENT[kind][0], width: STAGE_W, height: STAGE_H }}>{body}</div>
         </div>
       </FitBox>

@@ -10,12 +10,15 @@ import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { areaTop, BOX_CX, BOX_W, Stage, STAGE_H } from "./Stage";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const SHEET_W = BOX_W - 20;
 
 export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
+  const beat = useBeat();
+  const press = beat ? beat.wave : 0;
   const text = str(props.text, "…").toUpperCase();
   const fit = fitText(text, { maxWidth: SHEET_W - 200, maxLines: 3, max: 136, min: 56 });
   const at = enterFor("text", items, from, to);
@@ -26,7 +29,7 @@ export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const slam = local < 0 ? 0 : spring({ frame: local, fps: 30, config: { damping: 11, stiffness: 260, mass: 0.6 } });
   const scale = local < 0 ? 1.5 : 1.5 - 0.5 * slam;
   const opacity = interpolate(local, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const thump = local >= 0 && local < 10 ? Math.sin((local / 10) * Math.PI) * (1 - local / 10) * 10 : 0;
+  const thump = (local >= 0 && local < 10 ? Math.sin((local / 10) * Math.PI) * (1 - local / 10) * 10 : 0) + 7 * press;
   const ink = onPaper[accent];
   const lines = [0.22, 0.34, 0.46, 0.58, 0.7, 0.82];
 
@@ -46,7 +49,7 @@ export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
         <Picto name={props.picto} size={190} x={BOX_CX - SHEET_W / 2 - 20} y={sheetY - 50} rotate={-8} enterAt={4} />
       </div>
       <div style={{ position: "absolute", left: 0, right: 0, top: sheetY, height: sheetH, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ position: "relative", left: BOX_CX - 540, opacity, transform: `rotate(-7deg) scale(${scale})` }}>
+        <div style={{ position: "relative", left: BOX_CX - 540, opacity, transform: `rotate(${-7 + 2 * press}deg) scale(${scale * (1 - 0.06 * press)})` }}>
           <PaperBacking color={accent} seed="stamp-plate" amount={0.8} />
           <div style={{ position: "relative", padding: 24 }}>
             <div

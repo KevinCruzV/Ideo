@@ -10,6 +10,7 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const RAIL = 150;
 const LABEL_W = BOX_W - RAIL - 10;
@@ -22,6 +23,7 @@ const Rail: React.FC<{ height: number; children: React.ReactNode }> = ({ height,
 
 export const Timeline: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
+  const beat = useBeat();
   const marks: Mark[] = list(props.marks, 5).map((m) => {
     const o = m && typeof m === "object" ? (m as Record<string, unknown>) : { label: m };
     const at = str(o.at);
@@ -68,7 +70,7 @@ export const Timeline: React.FC<SceneProps> = ({ props, items, from, to }) => {
             const at = enterFor(`marks.${i}`, items, from, to);
             const fit = fits[i];
             return (
-              <div key={`mark-${i}`} style={{ display: "flex", alignItems: "flex-start" }}>
+              <div key={`mark-${i}`} style={{ display: "flex", alignItems: "flex-start", transform: beat && beat.index % Math.max(1, marks.length) === i ? `translateX(${46 * beat.wave}px) scale(${1 + 0.08 * beat.wave}) rotate(${-1.5 * beat.wave}deg)` : undefined, transformOrigin: "0 50%" }}>
                 <Rail height={Math.max(70, dateH(i) || stripHeight(fit.size))}>
                   <PaperShape kind="circle" color={accent} size={70} x={(RAIL - 70) / 2} y={(Math.max(70, dateH(i) || stripHeight(fit.size)) - 70) / 2} enterAt={at} seed={`tl-dot-${i}`} float={1.5} motion={{ dy: 0, spin: 0, from: 0.9 }} />
                 </Rail>

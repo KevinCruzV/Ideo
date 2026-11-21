@@ -12,6 +12,7 @@ import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage"
 import { areaFor, FitBox } from "./FitBox";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 type Mode = "circle" | "square" | "triangle" | "bar";
 
@@ -44,12 +45,14 @@ const grow = (frame: number, at: number): number =>
 export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
+  const beat = useBeat();
   const mode = modeOf(props.shape);
   const raw = list(props.values, 8).map((v) => num(v));
   const values = raw.length > 0 ? raw.map((v) => Math.max(0, v ?? 0)) : [1];
   const unit = str(props.unit).slice(0, 8);
   const labels = strList(props.labels, 8);
   const n = values.length;
+  const beatOrder = values.map((v, i) => [v, i] as const).sort((a, b) => b[0] - a[0]).map(([, i]) => i);
   const perShape = labels.length === n;
   const showValues = mode === "bar" || unit.length > 0;
   const top = areaTop(props);
@@ -122,6 +125,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
       </div>
       {placed.map((p, i) => {
         const at = enterFor(`values.${i}`, items, from, to);
+        const hit = beat && beatOrder[beat.index % n] === i ? beat.wave : 0;
         if (mode === "bar") {
           const g = grow(frame, at);
           const h = Math.max(0, p.h * g);
@@ -130,7 +134,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
           return (
             <React.Fragment key={`bar-${i}`}>
               {visible ? (
-                <div style={{ position: "absolute", left: p.x, top: baseline - h + 2, width: p.w, height: h }}>
+                <div style={{ position: "absolute", left: p.x, top: baseline - h + 2, width: p.w, height: h, transform: `scaleY(${1 + 0.1 * hit}) scaleX(${1 + 0.06 * hit})`, transformOrigin: "50% 100%" }}>
                   <PaperCut kind="square" color={accent} seed={`sd-bar-${i}`} />
                 </div>
               ) : null}
@@ -149,6 +153,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
                     color: colors.ink,
                     whiteSpace: "nowrap",
                     opacity: valueIn,
+                    transform: `translateY(${-0.1 * h * hit}px) scale(${1 + 0.22 * hit})`,
                   }}
                 >
                   {valueTexts[i]}
@@ -171,6 +176,7 @@ export const ShapeDiagram: React.FC<SceneProps> = ({ props, items, from, to }) =
               spin={0}
               origin="50% 100%"
               motion={{ dy: 0, spin: 0, from: 0.9 }}
+              style={{ scale: String(1 + 0.12 * hit) }}
             />
             {showValues && valueTexts[i] ? (
               <div

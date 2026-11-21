@@ -7,6 +7,7 @@ import { Progress } from "./chrome/Progress";
 import { Watermark } from "./chrome/Watermark";
 import { Wipe, WIPE_BEFORE, WIPE_FRAMES } from "./chrome/Wipe";
 import { AccentContext } from "./scenes/accent";
+import { BeatsContext, localBeats } from "./scenes/beats";
 import { cleanItems, earlyItems } from "./scenes/coerce";
 import { resolveScene } from "./scenes/registry";
 import { SceneFrame } from "./scenes/SceneFrame";
@@ -31,9 +32,11 @@ export const Short: React.FC<Timeline> = (timeline) => {
         return (
           <Sequence key={`${segment.kind}-${i}`} from={segment.from} durationInFrames={duration} layout="none">
             <AccentContext.Provider value={accents[i].accent}>
+              <BeatsContext.Provider value={localBeats(segment.beats, segment.from, segment.to)}>
               <SceneFrame props={props} duration={duration} last={i === count - 1}>
                 <Scene props={props} items={segment.type === "object-state" ? cleanItems(segment.items) : earlyItems(cleanItems(segment.items), segment.from)} from={segment.from} to={segment.to} />
               </SceneFrame>
+              </BeatsContext.Provider>
             </AccentContext.Provider>
           </Sequence>
         );

@@ -5,7 +5,10 @@ import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
 import { areaFor, FitBox } from "./FitBox";
-import { fitText, splitKey } from "../text/fit";
+import { fitText, splitKey, textWidth } from "../text/fit";
+import { useCurrentFrame } from "remotion";
+import { PaperCut } from "../paper/PaperShape";
+import { useBeat, useBeats } from "./beats";
 import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips } from "./Strips";
@@ -16,6 +19,13 @@ const PICTO = 300;
 
 export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
+  const frame = useCurrentFrame();
+  const beats = useBeats();
+  const beat = useBeat();
+  const evenBeats = beats.filter((b, i) => i % 2 === 0 && b <= frame);
+  const lastEven = evenBeats.length ? evenBeats[evenBeats.length - 1] : null;
+  const underline = lastEven === null ? 0 : 1 - Math.pow(1 - Math.min(1, (frame - lastEven) / 10), 3);
+  const keyPop = beat && beat.index % 2 === 1 ? beat.wave : 0;
   const text = str(props.text, "…");
   const { before, key, after } = splitKey(text, str(props.accent) || undefined);
   const head = fitText(before, { maxWidth: TEXT_W, maxLines: 4, max: 100, min: 56 });
@@ -24,6 +34,7 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const textAt = Math.min(enterFor("text", items, from, to), enterFor("accent", items, from, to));
   const accentAt = textAt + 5;
   const hasPicto = hasVisual(props.picto);
+  const underlineW = Math.max(0, ...word.lines.map((l) => textWidth(l, word.size) + word.size * 0.6)) * 0.9;
 
   return (
     <Stage>
@@ -44,8 +55,18 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
                   seed={`kt-key-${i}`}
                   float={3.5}
                   motion={{ dy: 0, dx: i % 2 === 0 ? -90 : 90, spin: -8 }}
+                  style={{ scale: String(1 + 0.08 * keyPop) }}
                 />
               ))}
+              {underline > 0 ? (
+                <div style={{ width: underlineW, height: 22, marginTop: -2, transform: `rotate(-1.5deg) scaleX(${underline})`, transformOrigin: "0 50%" }}>
+                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                    <PaperCut kind="strip" color="ink" seed="kt-underline" />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ height: 20 }} />
+              )}
             </div>
           ) : null}
           <Strips lines={tail.lines} size={tail.size} enterAt={accentAt + 4} seed="kt-tail" />

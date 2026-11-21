@@ -10,6 +10,7 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { areaFor, FitBox } from "./FitBox";
 import { tween } from "../paper/motion";
+import { useBeat } from "./beats";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
 
@@ -24,6 +25,9 @@ export const rivalOf = (accent: AccentColor): AccentColor => {
 export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
+  const beat = useBeat();
+  const badgePop = beat && beat.index % 2 === 0 ? beat.wave : 0;
+  const nudge = beat && beat.index % 2 === 1 ? beat.wave : 0;
   const rival = rivalOf(accent);
   const left = str(props.left, "…").slice(0, 24);
   const right = str(props.right, "…").slice(0, 24);
@@ -59,7 +63,7 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
                   width: PANEL_W,
                   height: total,
                   opacity: 0.42 + 0.58 * come,
-                  transform: `scale(${0.86 + 0.14 * come})`,
+                  transform: `translateX(${(s.key === "left" ? 22 : -22) * nudge}px) scale(${(0.86 + 0.14 * come) * (1 + 0.04 * nudge)})`,
                   transformOrigin: `${s.key === "left" ? "30%" : "70%"} 45%`,
                 }}
               >
@@ -78,7 +82,7 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
                 <div style={{ position: "absolute", left: PANEL_W / 2 - picto * 0.62, top: panelH / 2 - picto * 0.62 - 10, width: picto * 1.24, height: picto * 1.24 }}>
                   <PaperShape kind="circle" color="cream" size={picto * 1.24} enterAt={s.at + 2} seed={`vs-disc-${s.key}`} float={2} motion={{ dx: 0, dy: 0, spin: 0, from: 0.9 }} />
                   {hasVisual(s.name) ? (
-                    <Picto name={s.name} size={picto} x={picto * 0.12} y={picto * 0.12} enterAt={s.at + 4} rotate={s.tilt * 2} seed={`vs-picto-${s.key}`} motion={{ dx: s.dx * 0.3, dy: 0 }} />
+                    <Picto name={s.name} size={picto} x={picto * 0.12} y={picto * 0.12} enterAt={s.at + 4} rotate={s.tilt * 2} seed={`vs-picto-${s.key}`} motion={{ dx: s.dx * 0.3, dy: 0 }} react={false} />
                   ) : null}
                 </div>
                 <div style={{ position: "absolute", left: -10, width: PANEL_W + 20, top: panelH + 30, display: "flex", justifyContent: "center" }}>
@@ -95,7 +99,7 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
               width: 190,
               height: 190,
               opacity: vsOpacity,
-              transform: `scale(${0.9 + 0.1 * vs}) rotate(${-8 + (1 - vs) * 30}deg)`,
+              transform: `scale(${(0.9 + 0.1 * vs) * (1 + 0.28 * badgePop)}) rotate(${-8 + (1 - vs) * 30 + 14 * badgePop}deg)`,
             }}
           >
             <PaperShape kind="circle" color="ink" size={190} seed="vs-badge" float={2}>

@@ -65,6 +65,8 @@ export type CharacterProps = {
   body?: PaperColor;
   seed?: string;
   lift?: number;
+  nod?: number;
+  glance?: [number, number];
   style?: React.CSSProperties;
 };
 
@@ -78,15 +80,18 @@ export const Character: React.FC<CharacterProps> = ({
   body = "blue",
   seed = "mascot",
   lift = 0,
+  nod = 0,
+  glance = [0, 0],
   style,
 }) => {
   const frame = useCurrentFrame();
   const spec = POSE_SPECS[pose];
   const shade = shadeOffset(size, VIEW.h / size);
-  const tilt = spec.headTilt + idleTilt(seed, frame);
+  const tilt = spec.headTilt + idleTilt(seed, frame) + nod;
   const blink = isBlinking(seed, frame);
   const fill = colors[body];
-  const look = gaze(seed, frame);
+  const base = gaze(seed, frame);
+  const look: [number, number] = [base[0] + glance[0], base[1] + glance[1]];
   const chest = breath(frame);
 
   return (

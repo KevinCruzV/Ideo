@@ -2,6 +2,7 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { Cutter, Pt } from "../pictos/cut";
 import { breath, isBlinking } from "../mascot/pose";
+import { useBeat } from "./beats";
 import { AccentColor, colors, fonts, shade } from "../theme";
 import { HAIR_TONES, HIDES_HAIR_TOP, NEUTRAL_LOOK, PersonLook, SKIN_TONES } from "./personLook";
 
@@ -306,7 +307,10 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
   const frame = useCurrentFrame();
   const chest = breath(frame + 11);
   const blink = isBlinking(seed, frame);
-  const tilt = 1.8 * Math.sin((frame / 30) * 0.8);
+  const beat = useBeat(14);
+  const nod = beat ? 7 * Math.sin(beat.t * Math.PI * 2) * (1 - beat.t) : 0;
+  const tilt = 1.8 * Math.sin((frame / 30) * 0.8) + nod;
+  const shift = beat ? (beat.index % 2 ? -2.4 : 2.4) * beat.wave : 0;
   const parts = React.useMemo(() => build(look, accent), [look, accent]);
   const featureInk = look.skin === "dark" || look.skin === "brown" ? "#120e0a" : colors.ink;
   const faceFill = SKIN_TONES[look.skin];
@@ -342,8 +346,8 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
           </>
         ) : (
           <>
-            <circle cx={88.5} cy={45} r={3.3} fill={featureInk} />
-            <circle cx={111.5} cy={45} r={3.3} fill={featureInk} />
+            <circle cx={88.5 + shift} cy={45} r={3.3} fill={featureInk} />
+            <circle cx={111.5 + shift} cy={45} r={3.3} fill={featureInk} />
           </>
         )}
         {parts.facial.map((s, i) => (

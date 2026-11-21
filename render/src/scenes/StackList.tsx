@@ -10,12 +10,14 @@ import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
 const PICTO = 240;
 const BADGE_GAP = 30;
 
 export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
+  const beat = useBeat();
   const entries = strList(props.items, 5);
   const shown = entries.length > 0 ? entries : ["…"];
   const hasPicto = hasVisual(props.picto);
@@ -40,7 +42,7 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
             {fits.map((fit, i) => {
               const at = enterFor(`items.${i}`, items, from, to);
               return (
-                <div key={`stack-${i}`} style={{ display: "flex", alignItems: "center", gap: badgeGap, minHeight: badge }}>
+                <div key={`stack-${i}`} style={{ display: "flex", alignItems: "center", gap: badgeGap, minHeight: badge, transform: beat && beat.index % fits.length === i ? `translateX(${46 * beat.wave}px) scale(${1 + 0.08 * beat.wave}) rotate(${-1.5 * beat.wave}deg)` : undefined, transformOrigin: "0 50%" }}>
                   <div style={{ position: "relative", width: badge, height: badge, flex: "none" }}>
                     <PaperShape kind="square" color={accent} size={badge} rotate={i % 2 === 0 ? -5 : 4} enterAt={i * 2 - 3} seed={`stack-badge-${i}`} float={2}>
                       <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: badge * 0.6, lineHeight: 1, color: onPaper[accent] }}>{i + 1}</span>
