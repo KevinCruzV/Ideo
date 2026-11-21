@@ -117,7 +117,11 @@
           "props": {
             "kicker": "1871",
             "name": "Lord Rayleigh",
-            "role": "Physicien anglais"
+            "role": "Physicien anglais",
+            "picto": "flag:gb",
+            "facial": "beard",
+            "hair": "crown-bald",
+            "outfit": "suit"
           },
           "items": [
             {

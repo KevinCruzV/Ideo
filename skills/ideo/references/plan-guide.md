@@ -11,13 +11,13 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 ## 2. Choisir et construire
 
 - Une seule vidéo (une seule partie dans `parts`). Plusieurs parties seulement si le contenu utile dépasse nettement 5 minutes de voix off (environ 750 mots de `say`), ou si l'utilisateur demande des parties : 8 parties au maximum, chacune compréhensible seule.
-- Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook` et de tous les `say` divisés par 3,4 (3,6 en anglais), plus 0,4 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 45 et 300 s.
+- Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook` et de tous les `say` divisés par 3,0 (3,2 en anglais), plus 0,5 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 45 et 300 s.
 - Juge toi-même la longueur, avant d'écrire, en comptant les idées :
   1. Liste dans ta tête les idées sans lesquelles on ne comprend pas la réponse à l'accroche. En général 3 à 6.
   2. Chaque idée demande 3 à 4 scènes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
   3. Longueur = nombre d'idées x 25 s environ. 4 idées font une vidéo d'environ 100 s, 6 idées environ 150 s.
   4. Si le total dépasse 180 s, retire l'idée la moins utile plutôt que de raccourcir chaque scène. Si une idée ne tient pas en 3 scènes, donne-lui-en une de plus.
-- Repère : une scène dure 6 à 8 s (20 à 27 mots). 45 scènes au plus.
+- Repère : une scène dure 6 à 9 s (18 à 26 mots). 45 scènes au plus.
 - Une idée par scène. Garde moins d'idées, mais explique chacune jusqu'au bout et relie-la à la suivante. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
 
 La vidéo raconte UNE histoire, elle n'aligne pas des faits :
@@ -53,7 +53,7 @@ Mauvaises accroches :
 ## 4. Écrire pour la voix
 
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
-- Un `say` = 2 ou 3 phrases courtes, 18 à 30 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
+- Un `say` = 2 ou 3 phrases courtes, 16 à 28 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
 - Nombres : écris en chiffres les années et les nombres entiers simples ("en 2001", "3 000 personnes", "110 milliards"). Écris les mêmes nombres de la même façon à l'écran ("3 000", avec l'espace). Écris en lettres les fractions, les nombres à virgule et les rangs ("un tiers", "un virgule trois milliard", "le cinquante et unième").
 - Sujets graves (morts, attentat, guerre, maladie) : ton sobre. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.
 - Dans `say` seulement : pas de parenthèses, pas d'abréviations d'unités ("nanomètres", pas "nm") ; les sigles connus se gardent ("OTAN", "BRICS", "ONU"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
@@ -69,7 +69,7 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|
 | `key-title` | la phrase-clé d'une idée | `text`* [90 caractères], `accent` [40 caractères] (un mot ou une suite de mots recopiés de `text`, posés sur la bande de couleur) ; `kicker`, `picto` (voir sous le tableau) | `text`, `accent` |
-| `person-card` | qui a dit ou fait quoi | `name`* [48 caractères], `role` [100 caractères] ; `kicker` (voir sous le tableau) | `avatar`, `name`, `role` |
+| `person-card` | qui a dit ou fait quoi, avec son personnage en papier | `name`* [48 caractères], `role` [100 caractères], `picto` (le drapeau de son pays) ; apparence : `hair`, `hair_color`, `facial`, `hat`, `glasses`, `outfit`, `skin` (voir sous le tableau) ; `kicker` (voir sous le tableau) | `avatar`, `name`, `role` |
 | `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) [28 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `chips.0` à `chips.5` |
 | `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) [60 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `items.0` à `items.4` |
 | `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` [60 caractères] : ce qu'on compte ; `unit` [4 caractères] : l'unité écrite après le nombre ("%", "x", "km") ; `kicker`, `picto` (voir sous le tableau) | `to` (lance le compte), `label` |
@@ -85,6 +85,15 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 Deux props facultatives s'ajoutent aux types :
 - `kicker` [28 caractères], sur TOUS les types : une petite étiquette visible dès la première image de la scène. Mets-y la date, le lieu ou le nom de l'acte ("1991", "11 septembre 2001", "Irak, 2003", "Acte 2 : les BRICS"). Ce n'est pas un `el` : ne le mets pas dans `items`.
 - `picto`, sur `key-title`, `fact-chips`, `stack-list`, `counter`, `timeline`, `stamp` et `quote` : un dessin en papier découpé qui illustre la scène, visible dès la première image. Dans `icon-grid`, chaque cellule peut avoir son `picto` à la place de `shape`. Ce n'est pas un `el`.
+
+Personnages (`person-card`) : compose l'apparence de la personne avec ces props, toutes facultatives, d'après ce qui la rend reconnaissable. Ne mets que ce dont tu es sûr.
+- `hair` : `none`, `short`, `side`, `long`, `curly`, `wild`, `bun`, `crown-bald` ; `hair_color` : `black`, `brown`, `blond`, `red`, `grey`, `white`
+- `facial` : `none`, `moustache`, `beard`, `goatee`, `sideburns` ; `glasses` : `true` ou `false`
+- `hat` : `none`, `cap`, `kepi`, `bicorne`, `crown`, `helmet`, `top-hat`, `beret`, `turban`, `laurel`, `wig`
+- `outfit` : `suit`, `uniform`, `robe`, `lab-coat`, `casual`, `toga`, `armor`, `dress` ; `skin` : `light`, `tan`, `brown`, `dark`
+Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dès qu'une personne compte dans l'histoire, donne-lui une `person-card` avec son apparence.
+
+Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du code du pays à deux lettres en minuscules : `flag:us`, `flag:cn`, `flag:ru`, `flag:in`, `flag:br`, `flag:za`, `flag:fr`, `flag:gb`, `flag:de`, `flag:jp`. Aussi `flag:eu` (Union européenne), `flag:un` (ONU) et `flag:su` (Union soviétique). Dès qu'un pays est nommé à l'écran, montre son drapeau : une `icon-grid` de pays a un drapeau par cellule, un `versus` entre deux pays a un drapeau de chaque côté.
 
 Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `picto` approximatif. Note ce qui t'a manqué dans un champ `"wishes"` au premier niveau du plan, à côté de `"parts"` : une liste de 0 à 5 textes courts [40 caractères], par exemple `"wishes": ["drapeau américain", "carte du monde"]`. Ces dessins seront ajoutés plus tard.
 
@@ -208,7 +217,7 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
         {
           "type": "person-card",
           "say": "Ce phénomène porte le nom du physicien anglais Lord Rayleigh, qui l'a mis en équation au dix-neuvième siècle.",
-          "props": {"kicker": "1871", "name": "Lord Rayleigh", "role": "Physicien anglais"},
+          "props": {"kicker": "1871", "name": "Lord Rayleigh", "role": "Physicien anglais", "picto": "flag:gb", "facial": "beard", "hair": "crown-bald", "outfit": "suit"},
           "items": [
             {"el": "avatar", "on": "physicien"},
             {"el": "name", "on": "Lord Rayleigh"},
