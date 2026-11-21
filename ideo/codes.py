@@ -69,6 +69,8 @@ LESSONS = {
     "break-invalide": "Écris break comme un booléen, true ou false, jamais comme un texte.",
     "pays-sans-drapeau": "Mets flag:<code> sur chaque nom de pays affiché seul, par exemple flag:cn pour la Chine, dans une icon-grid, un versus ou une liste.",
     "scene-trop-chargee": "Coupe en deux scènes une liste de 5 éléments ou plus aux textes longs : le texte doit rester lisible sur téléphone.",
+    "pays-cites-sans-drapeaux": "Quand un say cite 3 pays ou plus, montre leurs drapeaux avec une icon-grid : une cellule par pays, picto flag:<code>.",
+    "drapeau-existe": "Avant de noter un drapeau dans wishes, cherche flag:<code> : les drapeaux de pays existent tous.",
     "drapeau-inconnu": "Écris flag: suivi du code de pays à deux lettres en minuscules, par exemple flag:fr.",
     "wishes-invalides": "Garde wishes à 5 textes de 40 caractères au plus.",
     "plan-invalide": "Relis le message de check et corrige exactement ce qu'il demande avant de relancer.",

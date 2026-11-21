@@ -4,7 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, entretien, history, learn, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, entretien, history, learn, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] "
@@ -111,11 +111,17 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         stats = result["stats"]
         plan = stats["plan"]
         _safely(history.note_plan, job, stats["lang"], stats["source"], stats["scenes"])
+        flag_pairs = []
         for wish in _safely(history.new_wishes, job, plan.get("wishes") or []) or []:
-            _safely(retours.add_wish, wish)
+            hit = countries.flag_wish(wish)
+            if hit:
+                flag_pairs.append(("drapeau-existe", f"RELIRE : Plan : le drapeau de {hit[1]} existe : écris « flag:{hit[0]} »"))
+            else:
+                _safely(retours.add_wish, wish)
         count = len(plan["parts"])
         what = "1 vidéo" if count == 1 else f"{count} parties"
         pairs = [] if opts.get("sans_relecture") else review.relire_coded(job, plan, stats["seconds"])
+        pairs = flag_pairs + pairs
         if pairs:
             _safely(history.add_relire, job, [c for c, _ in pairs])
         lines = [text for _, text in pairs]

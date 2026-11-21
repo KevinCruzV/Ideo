@@ -1,3 +1,4 @@
+import json
 import math
 import re
 from pathlib import Path
@@ -13,6 +14,7 @@ LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
 LONG_SAY = 30
 BARE_WORDS = 3
 MAX_VERSUS = 3
+MIN_CITED = 3
 CROWDED = {"timeline": ("marks", 5, ("marks.at", "marks.label")), "stack-list": ("items", 5, ("items",)),
            "icon-grid": ("cells", 7, ("cells.label",)), "shape-diagram": ("values", 6, ("labels",))}
 CROWDED_RATIO = 0.5
@@ -197,6 +199,13 @@ def _part_findings(part: dict, n: int, out: list) -> None:
                 kind, "dans le « picto » de la scène")
             out.append((2, *_line("pays-sans-drapeau", _scene_where(n, i), f"nom de pays sans son drapeau : {names}",
                                   f"Ajoute le drapeau {where_to}")))
+        cited = countries.mentions(say) if not _flag_codes(props) else []
+        if len(cited) >= MIN_CITED:
+            names = ", ".join(name for _, name in cited)
+            cells = ", ".join(json.dumps({"picto": f"flag:{code}", "label": name}, ensure_ascii=False) for code, name in cited[:9])
+            out.append((2, *_line("pays-cites-sans-drapeaux", _scene_where(n, i),
+                                  f"le texte cite {len(cited)} pays ({names}) sans montrer leurs drapeaux",
+                                  f"Fais une « icon-grid » avec une cellule par pays : {cells}")))
         if _crowded(scene):
             out.append((2, *_line("scene-trop-chargee", _scene_where(n, i),
                                   f"scène « {kind} » chargée de textes longs",

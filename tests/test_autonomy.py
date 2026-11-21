@@ -200,3 +200,26 @@ def test_produce_never_installs_the_local_voice(produce_job, monkeypatch, capsys
     monkeypatch.setattr(config, "apple_silicon", lambda: True)
     monkeypatch.setattr(setup_voix, "run", lambda: (_ for _ in ()).throw(AssertionError("installation lancée")))
     assert cli.main(["produce", str(produce_job[0])]) == 0
+
+
+def test_a_wish_for_an_existing_flag_becomes_a_relire_line_not_a_wish(job_with_fixtures, capsys):
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["wishes"] = ["drapeau de la Chine", "carte du monde"]
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert cli.main(["check", str(job_with_fixtures)]) == 0
+    out = out_lines(capsys)
+    assert "RELIRE : Plan : le drapeau de Chine existe : écris « flag:cn »" in out
+    assert retours.wishes() == [("carte du monde", 1)]
+    assert "drapeau-existe" in history.load()["jobs"][job_with_fixtures.name]["relire"]
+    assert f", {len([x for x in out if x.startswith('RELIRE')])} point" in out[0]
+    cli.main(["check", str(job_with_fixtures)])
+    assert "le drapeau de Chine existe" not in "\n".join(out_lines(capsys))
+
+
+def test_the_flag_wish_line_survives_the_review_off_switch(job_with_fixtures, capsys):
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["wishes"] = ["drapeau Inde"]
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    cli.main(["check", str(job_with_fixtures), "--sans-relecture"])
+    out = out_lines(capsys)
+    assert any("le drapeau de Inde existe : écris « flag:in »" in x for x in out) and retours.wishes() == []

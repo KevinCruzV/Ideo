@@ -102,5 +102,40 @@ def plain(text: str) -> str:
 LOOKUP = {plain(name): code for code, names in NAMES.items() for name in names}
 
 
+DISPLAY = {code: names[0] for code, names in NAMES.items()}
+KEYS = sorted(((key.split(), code) for key, code in LOOKUP.items()), key=lambda item: -len(item[0]))
+
+
+def _find(tokens: list[str], start: int = 0) -> list[tuple[int, str]]:
+    found, i = [], start
+    while i < len(tokens):
+        for words, code in KEYS:
+            if tokens[i:i + len(words)] == words:
+                found.append((i, code))
+                i += len(words) - 1
+                break
+        i += 1
+    return found
+
+
+def mentions(text: str) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for _, code in _find(plain(text).split()):
+        if code not in [c for c, _ in out]:
+            out.append((code, DISPLAY[code]))
+    return out
+
+
+def flag_wish(text: str) -> tuple[str, str] | None:
+    tokens = plain(text).split()
+    for i, token in enumerate(tokens):
+        if token in ("drapeau", "drapeaux"):
+            hits = _find(tokens, i + 1)
+            if hits:
+                code = hits[0][1]
+                return code, DISPLAY[code]
+    return None
+
+
 def code_of(label) -> str | None:
     return LOOKUP.get(plain(label)) if isinstance(label, str) else None

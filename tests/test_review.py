@@ -354,3 +354,37 @@ def test_new_lessons_exist():
 
     assert "flag:" in codes.LESSONS["pays-sans-drapeau"] and "scene-trop-chargee" in codes.LESSONS
     assert codes.error_code("S : « props.picto » : « flag:xx » n'est pas un drapeau connu. Écris") == "drapeau-inconnu"
+
+
+BRICS = "La Russie, l'Inde, la Chine et l'Afrique du Sud forment les BRICS en deux mille neuf pour peser ensemble."
+
+
+def test_say_citing_three_countries_without_flags(job):
+    plan = plan_of(scene(kind="timeline", say=BRICS, props={"marks": [{"at": "2009", "label": "BRICS créés"}]}))
+    found = [t for c, t in review.coded(plan, job, 120) if c == "pays-cites-sans-drapeaux"]
+    assert len(found) == 1
+    line = found[0]
+    assert line.startswith("RELIRE : Partie 1, scène 1 : le texte cite 4 pays (Russie, Inde, Chine, Afrique du Sud) sans montrer leurs drapeaux.")
+    assert "« icon-grid »" in line and '{"picto": "flag:ru", "label": "Russie"}' in line and '{"picto": "flag:za", "label": "Afrique du Sud"}' in line
+
+
+def test_two_countries_are_not_enough(job):
+    plan = plan_of(scene(say="La Russie et la Chine signent un accord important cette année là."))
+    assert "pays-cites-sans-drapeaux" not in codes_of(plan, job)
+
+
+def test_any_flag_in_the_scene_silences_it(job):
+    grid = plan_of(scene(kind="icon-grid", say=BRICS, props={"cells": [{"label": "Russie", "picto": "flag:ru"}, {"label": "x"}]}))
+    assert "pays-cites-sans-drapeaux" not in codes_of(grid, job)
+    versus = plan_of(scene(kind="versus", say=BRICS, props={"left": "a", "right": "b", "left_picto": "flag:us"}))
+    assert "pays-cites-sans-drapeaux" not in codes_of(versus, job)
+    chosen = plan_of(scene(say=BRICS, props={"text": "T", "picto": "flag:in"}))
+    assert "pays-cites-sans-drapeaux" not in codes_of(chosen, job)
+    other = plan_of(scene(say=BRICS, props={"text": "T", "picto": "globe"}))
+    assert "pays-cites-sans-drapeaux" in codes_of(other, job)
+
+
+def test_automatic_lesson_for_cited_countries():
+    from ideo import codes
+
+    assert "icon-grid" in codes.LESSONS["pays-cites-sans-drapeaux"] and "drapeau-existe" in codes.LESSONS

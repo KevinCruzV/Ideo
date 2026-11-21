@@ -31,3 +31,27 @@ def test_no_two_countries_share_a_name():
         for name in names:
             key = countries.plain(name)
             assert seen.setdefault(key, code) == code, name
+
+
+def test_mentions_in_order_with_articles_and_whole_words():
+    text = "la Russie, l'Inde, la Chine et l'Afrique du Sud forment les BRICS"
+    assert countries.mentions(text) == [("ru", "Russie"), ("in", "Inde"), ("cn", "Chine"), ("za", "Afrique du Sud")]
+    assert countries.mentions("les États-Unis et la Chine") == [("us", "États-Unis"), ("cn", "Chine")]
+    assert countries.mentions("L'Inde puis l'Inde encore") == [("in", "Inde")]
+    assert countries.mentions("Indonésie et Indes anglaises") == [("id", "Indonésie")]
+    assert countries.mentions("Russia, India and China") == [("ru", "Russie"), ("in", "Inde"), ("cn", "Chine")]
+
+
+def test_mentions_ignore_substrings_and_the_french_verb_eu():
+    assert countries.mentions("Il a eu une chinoise idée dans la Chinatown") == []
+    assert countries.mentions("") == []
+
+
+def test_flag_wish_needs_the_word_flag_followed_by_a_country():
+    assert countries.flag_wish("drapeau chinois") is None
+    assert countries.flag_wish("drapeau de la Chine") == ("cn", "Chine")
+    assert countries.flag_wish("Drapeau américain") is None
+    assert countries.flag_wish("drapeau des États-Unis") == ("us", "États-Unis")
+    assert countries.flag_wish("drapeaux Inde") == ("in", "Inde")
+    assert countries.flag_wish("carte de la Chine") is None
+    assert countries.flag_wish("Chine drapeau") is None
