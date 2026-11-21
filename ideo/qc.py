@@ -51,7 +51,7 @@ def _clip_windows(offsets: list) -> list[tuple[float, float]]:
     return [(o["clip"]["start"] - CLIP_WINDOW, o["clip"]["end"] + CLIP_WINDOW) for o in offsets if o.get("clip")]
 
 
-def _scene_alerts(where: str, timeline: dict, offsets: list) -> list[str]:
+def _scene_alerts(where: str, timeline: dict, offsets: list) -> list[tuple[str, str]]:
     fps = timeline["fps"]
     alerts = []
     number = 0
@@ -65,49 +65,49 @@ def _scene_alerts(where: str, timeline: dict, offsets: list) -> list[str]:
         if items:
             delay = (items[0]["at"] - seg["from"]) / fps
             if delay > FIRST_ITEM_SECONDS and not (props.get("kicker") or props.get("picto")):
-                alerts.append(f"{at} : le premier élément arrive {_sec(delay)} après le début, écran vide. "
-                              "Ancre le premier item sur un mot du début de « say » ou ajoute un « kicker » ou un « picto ».")
+                alerts.append(("premier-element-tardif", f"{at} : le premier élément arrive {_sec(delay)} après le début, écran vide. "
+                              "Ancre le premier item sur un mot du début de « say » ou ajoute un « kicker » ou un « picto »."))
         has_clip = index < len(offsets) and offsets[index].get("clip")
         if seg.get("type") == "quote" or has_clip:
             continue
         points = [seg["from"]] + sorted(i["at"] for i in items) + [seg["to"]]
         gap = max(b - a for a, b in zip(points, points[1:])) / fps
         if gap > IDLE_SECONDS:
-            alerts.append(f"{at} : rien n'apparaît pendant {_sec(gap)}. "
-                          "Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux.")
+            alerts.append(("scene-figee", f"{at} : rien n'apparaît pendant {_sec(gap)}. "
+                          "Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux."))
     return alerts
 
 
-def _caption_alerts(where: str, timeline: dict) -> list[str]:
+def _caption_alerts(where: str, timeline: dict) -> list[tuple[str, str]]:
     fps = timeline["fps"]
     alerts = []
     for group in timeline.get("captions", []):
         for word in group["words"]:
             text = word["w"]
             if text.startswith(LEADING) or not WORD.search(text):
-                alerts.append(f"{where}, à {_sec(word['from'] / fps)} : sous-titre « {text} » mal découpé (apostrophe, "
-                              "trait d'union isolé ou sans lettre). Relance la voix de cette partie.")
+                alerts.append(("sous-titre-mal-decoupe", f"{where}, à {_sec(word['from'] / fps)} : sous-titre « {text} » mal découpé (apostrophe, "
+                              "trait d'union isolé ou sans lettre). Relance la voix de cette partie."))
     return alerts
 
 
-def _part_alerts(job: Path, plan: dict, n: int) -> list[str]:
+def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
     where = f"Partie {n}"
     out_dir = job / "parts" / f"{n:02d}"
     timeline_path, wav, offsets_path = out_dir / "timeline.json", out_dir / "part.wav", out_dir / "offsets.json"
     if not (timeline_path.exists() and wav.exists()):
-        return [f"{where} : timeline ou audio absent. Relance produce pour cette partie."]
+        return [("timeline-absente", f"{where} : timeline ou audio absent. Relance produce pour cette partie.")]
     timeline = common.load_json(timeline_path)
     offsets = common.load_json(offsets_path) if offsets_path.exists() else []
     alerts = []
     windows = _clip_windows(offsets)
     for start, end in _silences(wav):
         if not any(start < b and end > a for a, b in windows):
-            alerts.append(f"{where}, à {_sec(start)} : silence de {_sec(end - start)} dans la voix. "
-                          "Raccourcis le texte autour ou relance la voix de cette partie.")
+            alerts.append(("silence-long", f"{where}, à {_sec(start)} : silence de {_sec(end - start)} dans la voix. "
+                          "Raccourcis le texte autour ou relance la voix de cette partie."))
     loudness = assemble._integrated(wav)
     if loudness is not None and abs(loudness - assemble.TARGET_LUFS) > LUFS_TOLERANCE:
-        alerts.append(f"{where} : volume {f"{loudness:.1f}".replace(".", ",")} LUFS, la cible est {assemble.TARGET_LUFS:.0f} LUFS. "
-                      "Relance l'assemblage audio.")
+        alerts.append(("volume", f"{where} : volume {f"{loudness:.1f}".replace(".", ",")} LUFS, la cible est {assemble.TARGET_LUFS:.0f} LUFS. "
+                      "Relance l'assemblage audio."))
     alerts += _scene_alerts(where, timeline, offsets)
     alerts += _caption_alerts(where, timeline)
     total = timeline["durationInFrames"] / timeline["fps"]
@@ -118,19 +118,19 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[str]:
             _, ranges = plan_check.sponsor_ranges(job, info)
             low, _ = target.bounds(target.useful_seconds(float(duration), ranges))
             if total < low or total > HARD_MAX:
-                alerts.append(f"{where} : durée finale {_sec(total)}, hors de la durée conseillée ({low} à {HARD_MAX} s). "
-                              "Ajuste le nombre ou la longueur des scènes si l'histoire le demande.")
+                alerts.append(("duree-hors-cible", f"{where} : durée finale {_sec(total)}, hors de la durée conseillée ({low} à {HARD_MAX} s). "
+                              "Ajuste le nombre ou la longueur des scènes si l'histoire le demande."))
     video = render.mp4_path(job, plan, n)
     if not video.exists() or video.stat().st_size == 0:
-        alerts.append(f"{where} : la vidéo {video.name} est absente ou vide. Relance produce.")
+        alerts.append(("video-absente", f"{where} : la vidéo {video.name} est absente ou vide. Relance produce."))
     else:
         length = _probe(video)
         if length is not None and abs(length - total) > VIDEO_TOLERANCE:
-            alerts.append(f"{where} : la vidéo dure {_sec(length)} au lieu de {_sec(total)}. Relance produce pour cette partie.")
+            alerts.append(("video-duree-differente", f"{where} : la vidéo dure {_sec(length)} au lieu de {_sec(total)}. Relance produce pour cette partie."))
     return alerts
 
 
-def run(job: Path, only: int | None = None) -> list[str]:
+def run_coded(job: Path, only: int | None = None) -> list[tuple[str, str]]:
     job = Path(job)
     plan = common.load_json(job / "plan.json")
     alerts = []
@@ -140,9 +140,13 @@ def run(job: Path, only: int | None = None) -> list[str]:
     out = job / "out"
     out.mkdir(parents=True, exist_ok=True)
     body = [f"# Contrôle de {job.name}", ""]
-    body += [f"- {a}" for a in alerts] or ["Aucune alerte."]
+    body += [f"- {a}" for _, a in alerts] or ["Aucune alerte."]
     (out / "qc.md").write_text("\n".join(body) + "\n", encoding="utf-8")
     return alerts
+
+
+def run(job: Path, only: int | None = None) -> list[str]:
+    return [text for _, text in run_coded(job, only)]
 
 
 def summary(job: Path, alerts: list[str]) -> str:

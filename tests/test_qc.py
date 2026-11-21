@@ -163,3 +163,22 @@ def test_qc_never_makes_produce_fail(produce_job, monkeypatch, capsys):
     monkeypatch.setattr(qc, "run", lambda job, only=None: (_ for _ in ()).throw(RuntimeError("boum")))
     assert cli.main(["produce", str(produce_job[0])]) == 0
     assert "Contrôle : indisponible" in capsys.readouterr().out
+
+
+def test_alerts_carry_stable_codes(made):
+    job, _ = made
+    plan = common.load_json(job / "plan.json")
+    render.mp4_path(job, plan, 1).unlink()
+
+    def idle(tl):
+        scene = tl["segments"][2]
+        scene["to"] = scene["from"] + 300
+        scene["items"] = [{"el": "values.0", "at": scene["from"] + 3}]
+        tl["captions"][0]["words"][0]["w"] = "'x"
+
+    edit_timeline(job, idle)
+    pairs = qc.run_coded(job)
+    codes = {c for c, _ in pairs}
+    assert {"video-absente", "scene-figee", "sous-titre-mal-decoupe"} <= codes
+    assert [t for _, t in pairs] == qc.run(job)
+    assert all(c == c.lower() and " " not in c for c in codes)
