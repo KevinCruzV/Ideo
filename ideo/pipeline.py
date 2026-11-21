@@ -10,7 +10,7 @@ PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json"
 AUDIO_FILES = ("source.wav", "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")
-PART_FILES = ("part.wav", "offsets.json", "timeline.json")
+PART_FILES = ("part.wav", "offsets.json", "timeline.json", "voice-info.json", "voice-quality.json")
 
 
 def resolve_job(arg: str) -> Path:
@@ -62,11 +62,16 @@ def voiced_scene(scene: dict) -> dict:
     return {k: v for k, v in scene.items() if k != "src"}
 
 
+def _voice_settings(lang: str) -> dict:
+    if lang in voice.KYUTAI_LANGS and config.engine() == "kyutai":
+        return {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
+    return {"engine": "edge", "voice": config.voice_for(lang), "rate": config.rate()}
+
+
 def part_hash(plan: dict, part: dict) -> str:
     content = {
         "lang": plan["lang"],
-        "voice": config.voice_for(plan["lang"]),
-        "rate": config.rate(),
+        "voice": _voice_settings(plan["lang"]),
         "total": len(plan["parts"]),
         "title": part["title"],
         "segments": voice.segments(plan, part),
