@@ -44,7 +44,7 @@ export const PaperStrip: React.FC<PaperStripProps> = ({
           fontWeight: 800,
           fontSize,
           lineHeight: 1.15,
-          padding: `${fontSize * 0.1}px ${fontSize * 0.3}px`,
+          padding: `${fontSize * 0.12}px ${fontSize * 0.3}px ${fontSize * 0.16}px`,
           clipPath: stripClip,
           whiteSpace: "nowrap",
         }}

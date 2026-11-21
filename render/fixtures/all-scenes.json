@@ -1,0 +1,1139 @@
+{
+ "fps": 30,
+ "width": 1080,
+ "height": 1920,
+ "durationInFrames": 1260,
+ "lang": "fr",
+ "audio": null,
+ "watermark": "Ideo",
+ "chapter": {
+  "part": 1,
+  "total": 4,
+  "title": "L'oubli",
+  "label": "Partie"
+ },
+ "segments": [
+  {
+   "kind": "hook",
+   "from": 0,
+   "to": 90,
+   "props": {
+    "text": "Dis-moi pourquoi tu oublies ce que tu viens de lire ?"
+   },
+   "items": []
+  },
+  {
+   "kind": "scene",
+   "type": "key-title",
+   "from": 90,
+   "to": 180,
+   "props": {
+    "text": "La courbe de l'oubli",
+    "accent": "l'oubli"
+   },
+   "items": [
+    {
+     "el": "text",
+     "at": 96
+    },
+    {
+     "el": "accent",
+     "at": 120
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "person-card",
+   "from": 180,
+   "to": 270,
+   "props": {
+    "name": "Hermann Ebbinghaus",
+    "role": "Psychologue allemand, 1885"
+   },
+   "items": [
+    {
+     "el": "avatar",
+     "at": 184
+    },
+    {
+     "el": "name",
+     "at": 202
+    },
+    {
+     "el": "role",
+     "at": 224
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "shape-diagram",
+   "from": 270,
+   "to": 360,
+   "props": {
+    "shape": "circle",
+    "values": [
+     1,
+     0.58,
+     0.34,
+     0.21
+    ],
+    "labels": [
+     "appris",
+     "20 min",
+     "1 jour",
+     "1 mois"
+    ]
+   },
+   "items": [
+    {
+     "el": "values.0",
+     "at": 274
+    },
+    {
+     "el": "values.1",
+     "at": 292
+    },
+    {
+     "el": "values.2",
+     "at": 312
+    },
+    {
+     "el": "values.3",
+     "at": 332
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "counter",
+   "from": 360,
+   "to": 450,
+   "props": {
+    "label": "syllabes sans aucun sens",
+    "from": 0,
+    "to": 2300
+   },
+   "items": [
+    {
+     "el": "to",
+     "at": 366
+    },
+    {
+     "el": "label",
+     "at": 390
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "fact-chips",
+   "from": 450,
+   "to": 540,
+   "props": {
+    "chips": [
+     "Des syllabes sans aucun sens",
+     "Des listes de 13",
+     "Réciter sans erreur",
+     "Mesurer le temps gagné"
+    ]
+   },
+   "items": [
+    {
+     "el": "chips.0",
+     "at": 454
+    },
+    {
+     "el": "chips.1",
+     "at": 472
+    },
+    {
+     "el": "chips.2",
+     "at": 492
+    },
+    {
+     "el": "chips.3",
+     "at": 512
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "stack-list",
+   "from": 540,
+   "to": 630,
+   "props": {
+    "items": [
+     "Relire juste avant d'oublier",
+     "Espacer les révisions",
+     "Se tester au lieu de relire"
+    ]
+   },
+   "items": [
+    {
+     "el": "items.0",
+     "at": 546
+    },
+    {
+     "el": "items.1",
+     "at": 570
+    },
+    {
+     "el": "items.2",
+     "at": 594
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "timeline",
+   "from": 630,
+   "to": 720,
+   "props": {
+    "start": "1880",
+    "end": "2020",
+    "marks": [
+     {
+      "at": "1885",
+      "label": "Ebbinghaus publie"
+     },
+     {
+      "at": "1932",
+      "label": "Bartlett : on reconstruit"
+     },
+     {
+      "at": "1972",
+      "label": "Leitner et ses boîtes"
+     },
+     {
+      "at": "2015",
+      "label": "La courbe est répliquée"
+     }
+    ]
+   },
+   "items": [
+    {
+     "el": "marks.0",
+     "at": 634
+    },
+    {
+     "el": "marks.1",
+     "at": 652
+    },
+    {
+     "el": "marks.2",
+     "at": 672
+    },
+    {
+     "el": "marks.3",
+     "at": 692
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "icon-grid",
+   "from": 720,
+   "to": 810,
+   "props": {
+    "cells": [
+     {
+      "shape": "circle",
+      "label": "Le sommeil"
+     },
+     {
+      "shape": "square",
+      "label": "La répétition"
+     },
+     {
+      "shape": "triangle",
+      "label": "L'émotion"
+     },
+     {
+      "shape": "diamond",
+      "label": "Le sens"
+     }
+    ]
+   },
+   "items": [
+    {
+     "el": "cells.0",
+     "at": 724
+    },
+    {
+     "el": "cells.1",
+     "at": 742
+    },
+    {
+     "el": "cells.2",
+     "at": 762
+    },
+    {
+     "el": "cells.3",
+     "at": 782
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "stamp",
+   "from": 810,
+   "to": 900,
+   "props": {
+    "text": "Répliqué en 2015"
+   },
+   "items": [
+    {
+     "el": "text",
+     "at": 820
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "quote",
+   "from": 900,
+   "to": 990,
+   "props": {
+    "text": "Psychology has a long past, but only a short history.",
+    "speaker": "Hermann Ebbinghaus"
+   },
+   "items": [
+    {
+     "el": "text",
+     "at": 904
+    },
+    {
+     "el": "speaker",
+     "at": 950
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "object-state",
+   "from": 990,
+   "to": 1080,
+   "props": {
+    "object": "jar",
+    "states": [
+     "1re révision",
+     "2e révision",
+     "3e révision"
+    ]
+   },
+   "items": [
+    {
+     "el": "states.0",
+     "at": 990
+    },
+    {
+     "el": "states.1",
+     "at": 1018
+    },
+    {
+     "el": "states.2",
+     "at": 1046
+    }
+   ]
+  },
+  {
+   "kind": "scene",
+   "type": "mascot",
+   "from": 1080,
+   "to": 1170,
+   "props": {
+    "bubble": "Révise demain, pas ce soir. Ton cerveau te dira merci."
+   },
+   "items": [
+    {
+     "el": "bubble",
+     "at": 1088
+    }
+   ]
+  },
+  {
+   "kind": "outro",
+   "from": 1170,
+   "to": 1260,
+   "props": {
+    "text": "Abonne-toi pour la partie 2 : pourquoi le sommeil aide"
+   },
+   "items": []
+  }
+ ],
+ "captions": [
+  {
+   "words": [
+    {
+     "w": "Dis-moi",
+     "from": 0,
+     "to": 8
+    },
+    {
+     "w": "pourquoi",
+     "from": 8,
+     "to": 16
+    },
+    {
+     "w": "tu",
+     "from": 16,
+     "to": 25
+    }
+   ],
+   "from": 0,
+   "to": 25
+  },
+  {
+   "words": [
+    {
+     "w": "oublies",
+     "from": 25,
+     "to": 33
+    },
+    {
+     "w": "ce",
+     "from": 33,
+     "to": 41
+    },
+    {
+     "w": "que",
+     "from": 41,
+     "to": 49
+    }
+   ],
+   "from": 25,
+   "to": 49
+  },
+  {
+   "words": [
+    {
+     "w": "tu",
+     "from": 49,
+     "to": 57
+    },
+    {
+     "w": "viens",
+     "from": 57,
+     "to": 65
+    },
+    {
+     "w": "de",
+     "from": 65,
+     "to": 74
+    }
+   ],
+   "from": 49,
+   "to": 74
+  },
+  {
+   "words": [
+    {
+     "w": "lire",
+     "from": 74,
+     "to": 82
+    },
+    {
+     "w": "?",
+     "from": 82,
+     "to": 90
+    }
+   ],
+   "from": 74,
+   "to": 90
+  },
+  {
+   "words": [
+    {
+     "w": "Ça",
+     "from": 90,
+     "to": 100
+    },
+    {
+     "w": "porte",
+     "from": 100,
+     "to": 110
+    },
+    {
+     "w": "un",
+     "from": 110,
+     "to": 120
+    }
+   ],
+   "from": 90,
+   "to": 120
+  },
+  {
+   "words": [
+    {
+     "w": "nom",
+     "from": 120,
+     "to": 130
+    },
+    {
+     "w": ":",
+     "from": 130,
+     "to": 140
+    },
+    {
+     "w": "la",
+     "from": 140,
+     "to": 150
+    }
+   ],
+   "from": 120,
+   "to": 150
+  },
+  {
+   "words": [
+    {
+     "w": "courbe",
+     "from": 150,
+     "to": 160
+    },
+    {
+     "w": "de",
+     "from": 160,
+     "to": 170
+    },
+    {
+     "w": "l'oubli.",
+     "from": 170,
+     "to": 180
+    }
+   ],
+   "from": 150,
+   "to": 180
+  },
+  {
+   "words": [
+    {
+     "w": "Un",
+     "from": 180,
+     "to": 193
+    },
+    {
+     "w": "psychologue",
+     "from": 193,
+     "to": 206
+    },
+    {
+     "w": "allemand",
+     "from": 206,
+     "to": 219
+    }
+   ],
+   "from": 180,
+   "to": 219
+  },
+  {
+   "words": [
+    {
+     "w": "l'a",
+     "from": 219,
+     "to": 231
+    },
+    {
+     "w": "mesurée",
+     "from": 231,
+     "to": 244
+    }
+   ],
+   "from": 219,
+   "to": 244
+  },
+  {
+   "words": [
+    {
+     "w": "sur",
+     "from": 244,
+     "to": 257
+    },
+    {
+     "w": "lui-même.",
+     "from": 257,
+     "to": 270
+    }
+   ],
+   "from": 244,
+   "to": 270
+  },
+  {
+   "words": [
+    {
+     "w": "Après",
+     "from": 270,
+     "to": 279
+    },
+    {
+     "w": "vingt",
+     "from": 279,
+     "to": 288
+    },
+    {
+     "w": "minutes",
+     "from": 288,
+     "to": 297
+    }
+   ],
+   "from": 270,
+   "to": 297
+  },
+  {
+   "words": [
+    {
+     "w": "il",
+     "from": 297,
+     "to": 306
+    },
+    {
+     "w": "reste",
+     "from": 306,
+     "to": 315
+    },
+    {
+     "w": "à",
+     "from": 315,
+     "to": 324
+    }
+   ],
+   "from": 297,
+   "to": 324
+  },
+  {
+   "words": [
+    {
+     "w": "peine",
+     "from": 324,
+     "to": 333
+    },
+    {
+     "w": "six",
+     "from": 333,
+     "to": 342
+    }
+   ],
+   "from": 324,
+   "to": 342
+  },
+  {
+   "words": [
+    {
+     "w": "sur",
+     "from": 342,
+     "to": 351
+    },
+    {
+     "w": "dix.",
+     "from": 351,
+     "to": 360
+    }
+   ],
+   "from": 342,
+   "to": 360
+  },
+  {
+   "words": [
+    {
+     "w": "Il",
+     "from": 360,
+     "to": 369
+    },
+    {
+     "w": "a",
+     "from": 369,
+     "to": 378
+    },
+    {
+     "w": "appris",
+     "from": 378,
+     "to": 387
+    }
+   ],
+   "from": 360,
+   "to": 387
+  },
+  {
+   "words": [
+    {
+     "w": "par",
+     "from": 387,
+     "to": 396
+    },
+    {
+     "w": "cœur",
+     "from": 396,
+     "to": 405
+    },
+    {
+     "w": "plus",
+     "from": 405,
+     "to": 414
+    }
+   ],
+   "from": 387,
+   "to": 414
+  },
+  {
+   "words": [
+    {
+     "w": "de",
+     "from": 414,
+     "to": 423
+    },
+    {
+     "w": "deux",
+     "from": 423,
+     "to": 432
+    }
+   ],
+   "from": 414,
+   "to": 432
+  },
+  {
+   "words": [
+    {
+     "w": "mille",
+     "from": 432,
+     "to": 441
+    },
+    {
+     "w": "syllabes.",
+     "from": 441,
+     "to": 450
+    }
+   ],
+   "from": 432,
+   "to": 450
+  },
+  {
+   "words": [
+    {
+     "w": "Des",
+     "from": 450,
+     "to": 463
+    },
+    {
+     "w": "listes",
+     "from": 463,
+     "to": 476
+    },
+    {
+     "w": "absurdes,",
+     "from": 476,
+     "to": 489
+    }
+   ],
+   "from": 450,
+   "to": 489
+  },
+  {
+   "words": [
+    {
+     "w": "récitées",
+     "from": 489,
+     "to": 501
+    },
+    {
+     "w": "jusqu'à",
+     "from": 501,
+     "to": 514
+    }
+   ],
+   "from": 489,
+   "to": 514
+  },
+  {
+   "words": [
+    {
+     "w": "zéro",
+     "from": 514,
+     "to": 527
+    },
+    {
+     "w": "faute.",
+     "from": 527,
+     "to": 540
+    }
+   ],
+   "from": 514,
+   "to": 540
+  },
+  {
+   "words": [
+    {
+     "w": "La",
+     "from": 540,
+     "to": 553
+    },
+    {
+     "w": "parade",
+     "from": 553,
+     "to": 566
+    },
+    {
+     "w": "tient",
+     "from": 566,
+     "to": 579
+    }
+   ],
+   "from": 540,
+   "to": 579
+  },
+  {
+   "words": [
+    {
+     "w": "en",
+     "from": 579,
+     "to": 591
+    },
+    {
+     "w": "trois",
+     "from": 591,
+     "to": 604
+    }
+   ],
+   "from": 579,
+   "to": 604
+  },
+  {
+   "words": [
+    {
+     "w": "gestes",
+     "from": 604,
+     "to": 617
+    },
+    {
+     "w": "simples.",
+     "from": 617,
+     "to": 630
+    }
+   ],
+   "from": 604,
+   "to": 630
+  },
+  {
+   "words": [
+    {
+     "w": "Cent",
+     "from": 630,
+     "to": 640
+    },
+    {
+     "w": "trente",
+     "from": 640,
+     "to": 650
+    },
+    {
+     "w": "ans",
+     "from": 650,
+     "to": 660
+    }
+   ],
+   "from": 630,
+   "to": 660
+  },
+  {
+   "words": [
+    {
+     "w": "plus",
+     "from": 660,
+     "to": 670
+    },
+    {
+     "w": "tard,",
+     "from": 670,
+     "to": 680
+    },
+    {
+     "w": "la",
+     "from": 680,
+     "to": 690
+    }
+   ],
+   "from": 660,
+   "to": 690
+  },
+  {
+   "words": [
+    {
+     "w": "courbe",
+     "from": 690,
+     "to": 700
+    },
+    {
+     "w": "tient",
+     "from": 700,
+     "to": 710
+    },
+    {
+     "w": "toujours.",
+     "from": 710,
+     "to": 720
+    }
+   ],
+   "from": 690,
+   "to": 720
+  },
+  {
+   "words": [
+    {
+     "w": "Quatre",
+     "from": 720,
+     "to": 738
+    },
+    {
+     "w": "choses",
+     "from": 738,
+     "to": 756
+    },
+    {
+     "w": "ralentissent",
+     "from": 756,
+     "to": 774
+    }
+   ],
+   "from": 720,
+   "to": 774
+  },
+  {
+   "words": [
+    {
+     "w": "la",
+     "from": 774,
+     "to": 792
+    },
+    {
+     "w": "chute.",
+     "from": 792,
+     "to": 810
+    }
+   ],
+   "from": 774,
+   "to": 810
+  },
+  {
+   "words": [
+    {
+     "w": "Et",
+     "from": 810,
+     "to": 828
+    },
+    {
+     "w": "c'est",
+     "from": 828,
+     "to": 846
+    },
+    {
+     "w": "vérifié,",
+     "from": 846,
+     "to": 864
+    }
+   ],
+   "from": 810,
+   "to": 864
+  },
+  {
+   "words": [
+    {
+     "w": "encore",
+     "from": 864,
+     "to": 882
+    },
+    {
+     "w": "aujourd'hui.",
+     "from": 882,
+     "to": 900
+    }
+   ],
+   "from": 864,
+   "to": 900
+  },
+  {
+   "words": [
+    {
+     "w": "Lui-même",
+     "from": 900,
+     "to": 922
+    },
+    {
+     "w": "le",
+     "from": 922,
+     "to": 945
+    }
+   ],
+   "from": 900,
+   "to": 945
+  },
+  {
+   "words": [
+    {
+     "w": "résumait",
+     "from": 945,
+     "to": 968
+    },
+    {
+     "w": "ainsi.",
+     "from": 968,
+     "to": 990
+    }
+   ],
+   "from": 945,
+   "to": 990
+  },
+  {
+   "words": [
+    {
+     "w": "Chaque",
+     "from": 990,
+     "to": 1001
+    },
+    {
+     "w": "révision",
+     "from": 1001,
+     "to": 1012
+    },
+    {
+     "w": "remplit",
+     "from": 1012,
+     "to": 1024
+    }
+   ],
+   "from": 990,
+   "to": 1024
+  },
+  {
+   "words": [
+    {
+     "w": "un",
+     "from": 1024,
+     "to": 1035
+    },
+    {
+     "w": "peu",
+     "from": 1035,
+     "to": 1046
+    },
+    {
+     "w": "plus",
+     "from": 1046,
+     "to": 1058
+    }
+   ],
+   "from": 1024,
+   "to": 1058
+  },
+  {
+   "words": [
+    {
+     "w": "le",
+     "from": 1058,
+     "to": 1069
+    },
+    {
+     "w": "bocal.",
+     "from": 1069,
+     "to": 1080
+    }
+   ],
+   "from": 1058,
+   "to": 1080
+  },
+  {
+   "words": [
+    {
+     "w": "Petit",
+     "from": 1080,
+     "to": 1091
+    },
+    {
+     "w": "conseil",
+     "from": 1091,
+     "to": 1102
+    },
+    {
+     "w": ":",
+     "from": 1102,
+     "to": 1114
+    }
+   ],
+   "from": 1080,
+   "to": 1114
+  },
+  {
+   "words": [
+    {
+     "w": "révise",
+     "from": 1114,
+     "to": 1125
+    },
+    {
+     "w": "demain,",
+     "from": 1125,
+     "to": 1136
+    },
+    {
+     "w": "pas",
+     "from": 1136,
+     "to": 1148
+    }
+   ],
+   "from": 1114,
+   "to": 1148
+  },
+  {
+   "words": [
+    {
+     "w": "ce",
+     "from": 1148,
+     "to": 1159
+    },
+    {
+     "w": "soir.",
+     "from": 1159,
+     "to": 1170
+    }
+   ],
+   "from": 1148,
+   "to": 1170
+  },
+  {
+   "words": [
+    {
+     "w": "Abonne-toi",
+     "from": 1170,
+     "to": 1188
+    },
+    {
+     "w": "pour",
+     "from": 1188,
+     "to": 1206
+    },
+    {
+     "w": "la",
+     "from": 1206,
+     "to": 1224
+    }
+   ],
+   "from": 1170,
+   "to": 1224
+  },
+  {
+   "words": [
+    {
+     "w": "partie",
+     "from": 1224,
+     "to": 1242
+    },
+    {
+     "w": "deux.",
+     "from": 1242,
+     "to": 1260
+    }
+   ],
+   "from": 1224,
+   "to": 1260
+  }
+ ]
+}

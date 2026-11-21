@@ -4,6 +4,8 @@ import { Captions } from "./chrome/Captions";
 import { ChapterLabel } from "./chrome/ChapterLabel";
 import { Progress } from "./chrome/Progress";
 import { Watermark } from "./chrome/Watermark";
+import { AccentContext } from "./scenes/accent";
+import { cleanItems } from "./scenes/coerce";
 import { resolveScene } from "./scenes/registry";
 import { accentForIndex, colors } from "./theme";
 import { Timeline } from "./types";
@@ -26,9 +28,16 @@ export const Short: React.FC<Timeline> = (timeline) => {
             durationInFrames={Math.max(1, segment.to - segment.from)}
             layout="none"
           >
-            <AbsoluteFill>
-              <Scene segment={segment} />
-            </AbsoluteFill>
+            <AccentContext.Provider value={accents[i].accent}>
+              <AbsoluteFill>
+                <Scene
+                  props={segment.props && typeof segment.props === "object" ? segment.props : {}}
+                  items={cleanItems(segment.items)}
+                  from={segment.from}
+                  to={segment.to}
+                />
+              </AbsoluteFill>
+            </AccentContext.Provider>
           </Sequence>
         );
       })}

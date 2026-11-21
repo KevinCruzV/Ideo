@@ -7,13 +7,14 @@ export const colors = {
   ink: "#1f1a14",
 } as const;
 
-export type PaperColor = "red" | "yellow" | "blue" | "cream";
+export type PaperColor = "red" | "yellow" | "blue" | "cream" | "ink";
 
 export const onPaper: Record<PaperColor, string> = {
   red: colors.cream,
   yellow: colors.ink,
   blue: colors.cream,
   cream: colors.ink,
+  ink: colors.cream,
 };
 
 export const fonts = {
@@ -32,6 +33,8 @@ export const layout = {
   captionBottom: 440,
   progressBottom: 250,
   progressHeight: 16,
+  stageTop: 190,
+  stageBottom: 1220,
 } as const;
 
 export type AccentColor = "red" | "yellow" | "blue";

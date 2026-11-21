@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { captionSize } from "./Captions";
 import { chapterText } from "./ChapterLabel";
 import { progressTicks } from "./Progress";
 
@@ -27,5 +28,12 @@ describe("chrome", () => {
   test("une série garde un trait par partie", () => {
     const ticks = progressTicks(series, segments, 179.5, 360);
     expect(ticks.map((t) => t.fill)).toEqual([1, 0.5, 0]);
+  });
+});
+
+describe("sous-titres", () => {
+  test("un groupe tient sur deux lignes", () => {
+    expect(captionSize(["Dis-moi", "pourquoi", "tu", "oublies"])).toBe(76);
+    expect(captionSize(["extraordinairement", "incompréhensiblement", "mémorisables"])).toBeLessThan(76);
   });
 });
