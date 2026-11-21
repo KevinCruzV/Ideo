@@ -35,7 +35,7 @@ export const FactChips: React.FC<SceneProps> = ({ props, items, from, to }) => {
     const rowsH = fits.reduce((sum, f) => sum + stripsHeight(f.lines.length, f.size, 8), 0) + rowGap * (fits.length - 1);
     return { fits, rowGap, picto, total: rowsH + (picto ? picto + 50 : 0) };
   };
-  let max = shown.length <= 3 ? 88 : shown.length <= 4 ? 76 : 62;
+  let max = shown.length <= 3 ? 104 : shown.length <= 4 ? 84 : 66;
   let picto = hasPicto ? PICTO : 0;
   let plan = layoutFor(max, picto);
   while (plan.total > avail && (max > 44 || picto > 160)) {

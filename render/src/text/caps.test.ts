@@ -20,8 +20,8 @@ type Cap = { cap: number; fit: FitOptions; upper?: boolean };
 const CAPS: Record<string, Cap> = {
   "key-title.accent": { cap: 40, fit: { maxWidth: BOX_W, maxLines: 2, max: 176, min: 64 } },
   "mascot.bubble": { cap: 80, fit: { maxWidth: BUBBLE_W, maxLines: 4, max: 74, min: 44 } },
-  "fact-chips.chips": { cap: 28, fit: { maxWidth: CHIP_ROOM, maxLines: 2, max: 88, min: 44 } },
-  "stack-list.items": { cap: 60, fit: { maxWidth: BOX_W - 104 - 30, maxLines: 2, max: 80, min: 44 } },
+  "fact-chips.chips": { cap: 28, fit: { maxWidth: CHIP_ROOM, maxLines: 2, max: 104, min: 44 } },
+  "stack-list.items": { cap: 60, fit: { maxWidth: BOX_W - 104 - 30, maxLines: 2, max: 96, min: 44 } },
   "icon-grid.cells.label": { cap: 16, fit: { maxWidth: ICON_W, maxLines: 2, max: 48, min: 34 } },
   "shape-diagram.labels": { cap: 14, fit: { maxWidth: BOX_W / 4 - 16, maxLines: 2, max: 56, min: 30 } },
   "stamp.text": { cap: 48, fit: { maxWidth: BOX_W - 20 - 200, maxLines: 3, max: 136, min: 56 }, upper: true },

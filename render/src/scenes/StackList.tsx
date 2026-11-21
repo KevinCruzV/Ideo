@@ -31,7 +31,7 @@ export const StackList: React.FC<SceneProps> = ({ props, items, from, to }) => {
     const rowsH = rowH.reduce((a, b) => a + b, 0) + rowGap * (fits.length - 1);
     return { badge, fits, rowGap, rowH, picto, total: rowsH + (picto ? picto + 50 : 0) };
   };
-  let max = shown.length <= 3 ? 80 : 66;
+  let max = shown.length <= 3 ? 96 : 72;
   let picto = hasPicto ? PICTO : 0;
   let plan = layoutFor(max, picto);
   while (plan.total > avail && (max > 44 || picto > 150)) {
