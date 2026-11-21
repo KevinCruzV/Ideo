@@ -12,6 +12,8 @@ ENGINES = ("kyutai", "edge")
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
 DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
 DEFAULT_PADDING_BONUS = 0.5
+DEFAULT_HOOK_TEMP = 0.9
+DEFAULT_HOOK_PADDING = 0.0
 RATE = re.compile(r"^[+-]\d{1,3}%$")
 
 
@@ -53,6 +55,14 @@ def _load() -> dict:
     if isinstance(bonus, bool) or not isinstance(bonus, (int, float)) or not -2 <= bonus <= 2:
         raise common.IdeoError("config.json : « kyutai_padding_bonus » doit être un nombre entre -2 et 2 "
                                "(positif = voix plus lente).")
+    hook_temp = data.get("kyutai_hook_temp", DEFAULT_HOOK_TEMP)
+    if isinstance(hook_temp, bool) or not isinstance(hook_temp, (int, float)) or not 0.1 <= hook_temp <= 1.5:
+        raise common.IdeoError("config.json : « kyutai_hook_temp » doit être un nombre entre 0,1 et 1,5 "
+                               "(température de l'accroche et de la phrase de fin).")
+    hook_padding = data.get("kyutai_hook_padding_bonus", DEFAULT_HOOK_PADDING)
+    if isinstance(hook_padding, bool) or not isinstance(hook_padding, (int, float)) or not -2 <= hook_padding <= 2:
+        raise common.IdeoError("config.json : « kyutai_hook_padding_bonus » doit être un nombre entre -2 et 2 "
+                               "(positif = voix plus lente, pour l'accroche et la phrase de fin).")
     return data
 
 
@@ -73,6 +83,14 @@ def kyutai_installed() -> bool:
     if not Path(KYUTAI_PYTHON).exists() or install_lock().exists():
         return False
     return any(kyutai_env().glob("lib/python*/site-packages/moshi_mlx"))
+
+
+def kyutai_hook_temp() -> float:
+    return _load().get("kyutai_hook_temp", DEFAULT_HOOK_TEMP)
+
+
+def kyutai_hook_padding_bonus() -> float:
+    return _load().get("kyutai_hook_padding_bonus", DEFAULT_HOOK_PADDING)
 
 
 def kyutai_available() -> bool:

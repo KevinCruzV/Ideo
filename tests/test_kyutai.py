@@ -25,7 +25,14 @@ def kyutai(monkeypatch, tmp_path):
         jsonl = Path(cmd[cmd.index("run_tts") + 1]) if "run_tts" in cmd else Path(cmd[3])
         out = Path(cmd[cmd.index("--out-folder") + 1])
         requests = [json.loads(line) for line in jsonl.read_text(encoding="utf-8").splitlines()]
-        calls.append({"cmd": [str(c) for c in cmd], "requests": requests})
+        entry = {"cmd": [str(c) for c in cmd], "requests": requests}
+        edge_only = all(r["id"] in voice.BOUNDARY_SEGMENTS for r in requests)
+        last = calls[-1] if calls else None
+        if edge_only and last and not last.get("edge_cmd") and any(r["id"] not in voice.BOUNDARY_SEGMENTS for r in last["requests"]):
+            last["requests"] = last["requests"] + requests
+            last["edge_cmd"] = entry["cmd"]
+        else:
+            calls.append(entry)
         if getattr(fake_run, "fail", None):
             raise common.IdeoError(fake_run.fail)
         out.mkdir(parents=True, exist_ok=True)
@@ -72,17 +79,30 @@ def faithful(monkeypatch, scores=None):
     return texts, seen
 
 
-def test_the_whole_part_is_synthesised_in_one_subprocess(kyutai, job_with_plan, monkeypatch):
+def test_the_part_is_synthesised_in_two_subprocesses_normal_then_hook_and_outro(kyutai, job_with_plan, monkeypatch):
     texts, _ = faithful(monkeypatch)
     texts.update(script_words(job_with_plan))
     backend = voice.KyutaiBackend(job_with_plan / "logs" / "voice-01.log")
     voice.voice_part(job_with_plan, 1, backend=backend)
     assert len(kyutai.calls) == 1
     call = kyutai.calls[0]
-    assert [r["id"] for r in call["requests"]] == list(texts)
-    assert all(r["voices"] == ["unmute-prod-website/developpeuse-3.wav"] and r["turns"] == [texts[r["id"]]]
+    assert sorted(r["id"] for r in call["requests"]) == sorted(texts)
+    expected = {name: (voice.hookvoice.shape(text, "fr") if name == "seg_00_hook" else text) for name, text in texts.items()}
+    assert all(r["voices"] == ["unmute-prod-website/developpeuse-3.wav"] and r["turns"] == [expected[r["id"]]]
                for r in call["requests"])
     assert "--only-wav" in call["cmd"] and call["cmd"][call["cmd"].index("--padding-bonus") + 1] == "0.5"
+    assert "--temp" not in call["cmd"]
+    edge = call["edge_cmd"]
+    assert edge[edge.index("--padding-bonus") + 1] == "0" and edge[edge.index("--temp") + 1] == "0.9"
+
+
+def test_hook_and_outro_settings_come_from_the_config(kyutai, job_with_plan, monkeypatch):
+    (common._root() / "config.json").write_text('{"kyutai_hook_temp": 1.1, "kyutai_hook_padding_bonus": -0.5}', encoding="utf-8")
+    texts, _ = faithful(monkeypatch)
+    texts.update(script_words(job_with_plan))
+    voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
+    edge = kyutai.calls[0]["edge_cmd"]
+    assert edge[edge.index("--padding-bonus") + 1] == "-0.5" and edge[edge.index("--temp") + 1] == "1.1"
 
 
 def test_wavs_are_48k_mono_and_words_match_the_script(kyutai, job_with_plan, monkeypatch):
@@ -296,10 +316,10 @@ def test_lexicon_respells_only_the_text_sent_to_the_engine(kyutai, job_with_plan
 
     monkeypatch.setattr(voice, "retranscribe", fake_heard)
     spoken_texts.update(script_words(job_with_plan))
-    spoken_texts["seg_00_hook"] = "Fasse à fasse, tu oublies ?"
+    spoken_texts["seg_00_hook"] = "Fasse à fasse, tu oublies ?!"
     voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
-    sent = kyutai.calls[0]["requests"][0]["turns"][0]
-    assert sent == "Fasse à fasse, tu oublies ?"
+    sent = {r["id"]: r["turns"][0] for r in kyutai.calls[0]["requests"]}["seg_00_hook"]
+    assert sent == "Fasse à fasse, tu oublies ?!"
     words = common.load_json(job_with_plan / "parts" / "01" / "seg_00_hook.words.json")
     assert [w["w"] for w in words] == ["Face", "à", "face,", "tu", "oublies?"]
     assert words[0]["e"] > words[0]["s"] and words[2]["s"] > words[1]["s"]
@@ -313,7 +333,7 @@ def test_changing_the_lexicon_redoes_only_the_affected_segments(kyutai, job_with
     common.save_json(job_with_plan / "plan.json", plan)
     texts, seen = faithful(monkeypatch)
     texts.update(script_words(job_with_plan))
-    texts["seg_00_hook"] = "Face à face, tu oublies ?"
+    texts["seg_00_hook"] = "Face à face, tu oublies ?!"
 
     def heard(wav, lang, log=None):
         name = Path(wav).stem

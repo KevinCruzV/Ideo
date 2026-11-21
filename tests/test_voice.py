@@ -29,7 +29,7 @@ def test_voice_part_texts_and_lang(job_with_plan, fake_backend, fake_whisper):
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
     plan = common.load_json(job_with_plan / "plan.json")
     part = plan["parts"][0]
-    assert fake_backend.calls[0][:2] == (part["hook"], "fr")
+    assert fake_backend.calls[0][:2] == (voice.hookvoice.shape(part["hook"], "fr"), "fr")
     assert fake_backend.calls[1][0] == part["scenes"][0]["say"]
     assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la prochaine !"
     assert all(lang == "fr" for _, lang in fake_whisper)

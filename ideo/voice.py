@@ -8,7 +8,7 @@ from typing import Protocol
 
 import numpy as np
 
-from ideo import align, common, config, fidelity, i18n, lexicon, numbers, pacing, prosody, transcribe
+from ideo import align, common, config, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
 
 TICKS = 1e7
 KYUTAI_LANGS = config.KYUTAI_LANGS
@@ -16,7 +16,8 @@ KEEP_THRESHOLD = 0.90
 ALERT_THRESHOLD = 0.80
 MAX_REDOS = 3
 REDO_TEMPS = (0.75, 0.9, 1.0)
-BOUNDARY_SEGMENTS = ("seg_00_hook", "seg_99_outro")
+HOOK = "seg_00_hook"
+BOUNDARY_SEGMENTS = (HOOK, "seg_99_outro")
 REASON_LENGTH = 90
 
 EDGE_VOICES = {
@@ -99,7 +100,8 @@ class KyutaiBackend:
     def __init__(self, log: Path | None = None):
         self.log = log
 
-    def synthesize_batch(self, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None) -> dict:
+    def synthesize_batch(self, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None,
+                         padding: float | None = None) -> dict:
         python = config.KYUTAI_PYTHON
         if not Path(python).exists():
             raise common.IdeoError("le moteur de voix local est introuvable : lance « python -m ideo setup-voix » "
@@ -114,7 +116,7 @@ class KyutaiBackend:
                                        for name, text in items) + "\n", encoding="utf-8")
             common.run(
                 [str(python), "-m", "moshi_mlx.run_tts", str(jsonl), "--out-folder", str(work / "out"), "--only-wav",
-                 "--padding-bonus", f"{config.kyutai_padding_bonus():g}"] + ([] if temp is None else ["--temp", f"{temp:g}"]),
+                 "--padding-bonus", f"{config.kyutai_padding_bonus() if padding is None else padding:g}"] + ([] if temp is None else ["--temp", f"{temp:g}"]),
                 log,
             )
             for name, _ in items:
@@ -155,7 +157,9 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
     return words
 
 
-def spoken_for(text: str, lang: str, local: bool) -> tuple[str, list | None]:
+def spoken_for(text: str, lang: str, local: bool, name: str = "") -> tuple[str, list | None]:
+    if name == HOOK:
+        text = hookvoice.shape(text, lang)
     normalized = numbers.normalize(text, lang)
     spoken = lexicon.apply(normalized.text, lang) if local else normalized.text
     return spoken, normalized.units
@@ -231,7 +235,7 @@ def stale(job: Path, n: int) -> list[str]:
     out_dir = job / "parts" / f"{n:02d}"
     return [name for name, text in segments(plan, part)
             if (out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()
-            and _stored(out_dir, name, text) != spoken_for(text, lang, local)[0]]
+            and _stored(out_dir, name, text) != spoken_for(text, lang, local, name)[0]]
 
 
 def _short(err: Exception) -> str:
@@ -247,7 +251,13 @@ def _log_line(log: Path, line: str) -> None:
 
 def _generate(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None) -> None:
     if hasattr(backend, "synthesize_batch"):
-        backend.synthesize_batch(items, lang, out_dir, temp=temp)
+        edges = [(n, t) for n, t in items if n in BOUNDARY_SEGMENTS]
+        rest = [(n, t) for n, t in items if n not in BOUNDARY_SEGMENTS]
+        if rest:
+            backend.synthesize_batch(rest, lang, out_dir, temp=temp)
+        if edges:
+            backend.synthesize_batch(edges, lang, out_dir, temp=max(temp or 0.0, config.kyutai_hook_temp()),
+                                     padding=config.kyutai_hook_padding_bonus())
         return
     for name, text in items:
         backend.synthesize(text, lang, out_dir / f"{name}.wav")
@@ -276,7 +286,7 @@ def needs_redo(name: str, take: dict) -> bool:
 
 
 def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, log: Path) -> tuple[dict, dict, dict, int]:
-    prepared = {name: spoken_for(text, lang, True) for name, text in items}
+    prepared = {name: spoken_for(text, lang, True, name) for name, text in items}
     spoken = {name: p[0] for name, p in prepared.items()}
     takes: dict = {name: [] for name, _ in items}
     redone = 0
@@ -330,7 +340,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     def done(name: str, text: str) -> bool:
         if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
             return False
-        return _stored(out_dir, name, text) == spoken_for(text, lang, local)[0]
+        return _stored(out_dir, name, text) == spoken_for(text, lang, local, name)[0]
 
     pending = [(name, text) for name, text in items if not done(name, text)]
     try:
@@ -349,14 +359,14 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
             if fallback or not getattr(backend, "local", False):
                 for name, text in pending:
                     wav = out_dir / f"{name}.wav"
-                    spoken, _ = spoken_for(text, lang, False)
+                    spoken, _ = spoken_for(text, lang, False, name)
                     heard = backend.synthesize(spoken, lang, wav)
                     heard_by_name[name] = heard if heard else retranscribe(wav, lang, log)
                     (out_dir / f"{name}.spoken.txt").write_text(spoken, encoding="utf-8")
             engine_is_local = getattr(backend, "local", False)
             for name, text in pending:
                 wav = out_dir / f"{name}.wav"
-                spoken, units = spoken_for(text, lang, engine_is_local)
+                spoken, units = spoken_for(text, lang, engine_is_local, name)
                 common.save_json(out_dir / f"{name}.words.json",
                                  finish_segment(wav, text, heard_by_name[name], spoken, units))
             engine = "kyutai" if getattr(backend, "local", False) else "edge"

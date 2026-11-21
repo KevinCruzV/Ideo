@@ -64,7 +64,11 @@ def voiced_scene(scene: dict) -> dict:
 
 def _voice_settings(lang: str) -> dict:
     if lang in voice.KYUTAI_LANGS and config.engine() == "kyutai":
-        return {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
+        settings = {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
+        hook = [config.kyutai_hook_temp(), config.kyutai_hook_padding_bonus()]
+        if hook != [config.DEFAULT_HOOK_TEMP, config.DEFAULT_HOOK_PADDING]:
+            settings["hook"] = hook
+        return settings
     return {"engine": "edge", "voice": config.voice_for(lang), "rate": config.rate()}
 
 

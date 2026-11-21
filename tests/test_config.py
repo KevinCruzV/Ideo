@@ -183,3 +183,18 @@ def test_local_voice_missing(monkeypatch, home):
     monkeypatch.setattr(config, "kyutai_installed", lambda: False)
     monkeypatch.setattr(config, "apple_silicon", lambda: False)
     assert config.local_voice_missing("fr") is False
+
+
+def test_hook_settings_defaults_and_keys(home):
+    assert config.kyutai_hook_temp() == 0.9 and config.kyutai_hook_padding_bonus() == 0
+    write(home, {"kyutai_hook_temp": 1.0, "kyutai_hook_padding_bonus": 0.5})
+    assert config.kyutai_hook_temp() == 1.0 and config.kyutai_hook_padding_bonus() == 0.5
+
+
+@pytest.mark.parametrize("content", [{"kyutai_hook_temp": 0}, {"kyutai_hook_temp": 2}, {"kyutai_hook_temp": "0.9"},
+                                     {"kyutai_hook_temp": True}, {"kyutai_hook_padding_bonus": 3},
+                                     {"kyutai_hook_padding_bonus": "0"}])
+def test_hook_settings_wrong_values(home, content):
+    write(home, content)
+    with pytest.raises(common.IdeoError, match="config.json"):
+        config.engine()
