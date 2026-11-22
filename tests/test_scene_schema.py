@@ -252,4 +252,4 @@ def test_person_props_are_the_ones_the_render_reads():
     source = (SCENES_DIR / "personLook.ts").read_text(encoding="utf-8")
     read = set(re.findall(r"props\.(\w+)", source))
     schema = scene_schema.SCHEMA["person-card"]
-    assert read == set(schema["optional"]) - {"role", "kicker", "picto"}
+    assert read == set(schema["optional"]) - {"role", "kicker", "picto", "photo"}
