@@ -183,6 +183,20 @@ def test_key_can_come_from_config_and_the_environment_wins(monkeypatch, server, 
     assert header(server.requests[-1], "xi-api-key") == KEY
 
 
+def test_key_can_come_from_dotenv_between_environment_and_config(monkeypatch, server, tmp_path):
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+    configure({"elevenlabs_api_key": "cle_du_fichier"})
+    (common._root() / ".env").write_text("ELEVENLABS_API_KEY=cle_du_dotenv\n", encoding="utf-8")
+    try:
+        eleven.ElevenLabsBackend().synthesize("x", "fr", tmp_path / "a.wav")
+        assert header(server.requests[-1], "xi-api-key") == "cle_du_dotenv"
+        monkeypatch.setenv("ELEVENLABS_API_KEY", KEY)
+        eleven.ElevenLabsBackend().synthesize("x", "fr", tmp_path / "a.wav")
+        assert header(server.requests[-1], "xi-api-key") == KEY
+    finally:
+        (common._root() / ".env").unlink()
+
+
 @pytest.mark.parametrize("status,fragment", [(401, "refusée"), (402, "quota"), (429, "quota"), (404, "introuvable"), (500, "500")])
 def test_http_errors_are_french_and_never_contain_the_key(server, tmp_path, status, fragment):
     configure({})

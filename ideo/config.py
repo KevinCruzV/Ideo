@@ -102,7 +102,12 @@ def music_enabled() -> bool:
 def eleven_key() -> str | None:
     import os
 
-    return (os.environ.get("ELEVENLABS_API_KEY") or "").strip() or _load().get("elevenlabs_api_key")
+    from dotenv import dotenv_values
+
+    env_file = common._root() / ".env"
+    from_dotenv = dotenv_values(env_file).get("ELEVENLABS_API_KEY") if env_file.exists() else None
+    return ((os.environ.get("ELEVENLABS_API_KEY") or "").strip() or (from_dotenv or "").strip()
+            or _load().get("elevenlabs_api_key"))
 
 
 def eleven_voice_id() -> str | None:
