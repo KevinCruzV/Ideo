@@ -21,6 +21,7 @@ PICTOS = (
     "mountain", "barrel", "gear", "people",
     "lungs", "stomach", "spine", "bone", "muscle", "tooth", "blood", "pill", "syringe", "virus", "bed", "pillow", "moon",
     "thermometer", "scale-weight", "apple", "dumbbell", "running-shoe", "stethoscope", "hospital",
+    "raised-bed", "stomach-sleeper", "knee-pillow", "snore", "pelvis-tilt", "numb-arm",
 )
 FLAGS = (
     "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
