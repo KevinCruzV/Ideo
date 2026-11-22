@@ -2,7 +2,9 @@ import math
 import re
 from pathlib import Path
 
-from ideo import align, common, i18n, textmatch, voice
+import shutil
+
+from ideo import align, common, i18n, photo, textmatch, voice
 
 FPS = 30
 WIDTH = 1080
@@ -145,6 +147,44 @@ def _shift(words: list[dict], offset: float) -> list[dict]:
     return [{"w": w["w"], "s": w["s"] + offset, "e": w["e"] + offset} for w in words]
 
 
+LOOK_KEYS = ("hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin")
+
+
+def _share_looks(scenes: dict) -> dict:
+    seen: dict = {}
+    out = {}
+    for name, scene in scenes.items():
+        if scene.get("type") != "person-card":
+            out[name] = scene
+            continue
+        props = dict(scene.get("props", {}))
+        who = textmatch.normalize(str(props.get("name", "")))
+        known = seen.setdefault(who, {k: props[k] for k in LOOK_KEYS if k in props})
+        for key, value in known.items():
+            props.setdefault(key, value)
+        out[name] = {**scene, "props": props}
+    return out
+
+
+def _stage_photo(job: Path, out_dir: Path) -> str | None:
+    source = photo.image_path(job)
+    if source is None:
+        return None
+    for stale in out_dir.glob("photo.*"):
+        stale.unlink()
+    shutil.copyfile(source, out_dir / source.name)
+    return source.name
+
+
+def _with_photo(scene: dict, staged: str | None) -> dict:
+    props = scene.get("props", {})
+    if scene.get("type") != "person-card" or props.get("photo") is not True:
+        return scene
+    if staged is None:
+        return {**scene, "props": {k: v for k, v in props.items() if k != "photo"}}
+    return {**scene, "props": {**props, "photo": staged}}
+
+
 def build_timeline(job: Path, n: int, total: int) -> Path:
     job = Path(job)
     step = f"timeline-{n:02d}"
@@ -185,6 +225,8 @@ def _build(job: Path, n: int, total: int) -> Path:
     starts[0] = 0
     ends = starts[1:] + [frames]
 
+    scenes = _share_looks(scenes)
+    staged = _stage_photo(job, out_dir)
     segments = []
     captions = []
     for entry, begin, finish in zip(offsets, starts, ends):
@@ -207,7 +249,7 @@ def _build(job: Path, n: int, total: int) -> Path:
         elif name == "seg_99_outro":
             segments.extend(_outro_segments(part, texts[name], seg_words, entry["start"], begin, finish))
         else:
-            scene = scenes[name]
+            scene = _with_photo(scenes[name], staged)
             items = []
             for item in scene.get("items", []):
                 at = anchor_frame(seg_words, item["on"], entry["start"], seg_dur, scene["say"])
@@ -235,6 +277,8 @@ def _build(job: Path, n: int, total: int) -> Path:
         "segments": segments,
         "captions": captions,
     }
+    if plan.get("mood") == "dark":
+        timeline["mood"] = "dark"
     path = out_dir / "timeline.json"
     common.save_json(path, timeline)
     return path

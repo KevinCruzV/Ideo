@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from ideo import cli, common, entretien, history, learn, retours
+from ideo import cli, common, entretien, history, learn, plan_check, retours
 from tests.test_cli import produce_job
 
 
@@ -54,6 +54,19 @@ def test_wishes_are_added_once_per_job_and_counted_across_jobs(job_with_fixtures
     common.save_json(other / "plan.json", plan)
     cli.main(["check", str(other)])
     assert retours.wishes()[0] == ("Drapeau américain", 2)
+
+
+def test_mood_accepts_dark_only_and_never_changes_the_voice_hash(job_with_fixtures):
+    from ideo import pipeline
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    before = pipeline.part_hash(plan, plan["parts"][0])
+    plan["mood"] = "dark"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    assert pipeline.part_hash(plan, plan["parts"][0]) == before
+    plan["mood"] = "gris"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert any("« mood »" in e for e in plan_check.check_plan(job_with_fixtures))
 
 
 def test_invalid_plan_does_not_record_wishes(job_with_fixtures):

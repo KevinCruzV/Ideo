@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ideo import scene_schema, speed, voice
+from ideo import photo, scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, anchor_text, closest_passage, copied_tokens, find_span, normalize, source_grams
 
@@ -178,6 +178,20 @@ def _sfx_by_ts(sfx: list) -> dict:
     return out
 
 
+def _photo_errors(props: dict, where: str, ctx: dict) -> list[str]:
+    found = ctx.get("photo")
+    if not found:
+        return [f"{where} : « photo » demande une photo libre de droits dans le job : lance « ideo photo <job> \"<nom>\" » "
+                "et garde « photo » seulement si la réponse n'est pas « aucune photo libre ». Sinon retire « photo »."]
+    if ctx.get("mood") == "dark":
+        return [f"{where} : pas de photo dans un fait divers (« mood »: \"dark\"). Retire « photo » ou « mood »."]
+    name = props.get("name")
+    wanted = set(_plain(found.get("person", "")).split())
+    if isinstance(name, str) and wanted and not wanted & set(_plain(name).split()):
+        return [f"{where} : la photo du job est celle de {found.get('person')}, pas de « {name} ». Retire « photo » sur cette carte."]
+    return []
+
+
 def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: dict) -> None:
     if not isinstance(scene, dict):
         errors.append(f"{where} : la scène doit être un objet JSON avec « type », « say » et « props ».")
@@ -200,6 +214,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     known = isinstance(kind, str) and kind in SCENE_TYPES
     if known:
         errors.extend(scene_schema.check_props(kind, props, where))
+    if kind == "person-card" and props.get("photo") is True:
+        errors.extend(_photo_errors(props, where, ctx))
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
     _check_copy(say, where, "say", ctx, errors, part_state)
@@ -410,6 +426,14 @@ def _write_md(job: Path, plan: dict, clips_by_part: list, stats: dict) -> None:
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+MOODS = ("dark",)
+
+
+def _check_mood(plan: dict, errors: list[str]) -> None:
+    if "mood" in plan and plan["mood"] not in MOODS:
+        errors.append("Plan : « mood » doit valoir \"dark\" (fait divers, horreur, catastrophe) ou être absent. Retire le champ pour les couleurs habituelles.")
+
+
 MAX_WISHES = 5
 WISH_CAP = 40
 
@@ -461,6 +485,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
         _check_dash([plan["series_title"]] if isinstance(plan["series_title"], str) else [], "Plan", errors)
 
     _check_wishes(plan, errors)
+    _check_mood(plan, errors)
     parts = plan.get("parts")
     if not isinstance(parts, list):
         errors.append("Plan : « parts » doit être une liste de parties.")
@@ -490,6 +515,8 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
         "ends": end_ranges(job),
         "sponsor": sponsor,
         "grams": source_grams(words, COPY_GRAM),
+        "photo": photo.stored(job),
+        "mood": plan.get("mood"),
     }
     _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
     results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]
