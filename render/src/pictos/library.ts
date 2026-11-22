@@ -73,6 +73,12 @@ export const PICTOS = [
   "running-shoe",
   "stethoscope",
   "hospital",
+  "raised-bed",
+  "stomach-sleeper",
+  "knee-pillow",
+  "snore",
+  "pelvis-tilt",
+  "numb-arm",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -95,6 +101,37 @@ const bust = (k: Cutter, cx: number, top: number, scale: number, body: Piece["c"
       body,
     ),
     k.circle(cx, top - 11 * scale, 10.5 * scale, head),
+  ];
+};
+
+const zed = (k: Cutter, x: number, y: number, size: number, c: Piece["c"]): Piece => {
+  const t = size * 0.28;
+  return k.poly(
+    [[x, y], [x + size, y], [x + size, y + t], [x + t, y + size - t], [x + size, y + size - t], [x + size, y + size], [x, y + size], [x, y + size - t], [x + size - t, y + t], [x, y + t]],
+    c,
+  );
+};
+
+const curvedArrow = (k: Cutter, cx: number, cy: number, r: number, from: number, to: number, thick: number, head: number, c: Piece["c"]): Piece[] => {
+  const steps = 14;
+  const at = (rad: number, i: number): [number, number] => {
+    const a = ((from + ((to - from) * i) / steps) * Math.PI) / 180;
+    return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
+  };
+  const outer = Array.from({ length: steps + 1 }, (_, i) => at(r + thick / 2, i));
+  const inner = Array.from({ length: steps + 1 }, (_, i) => at(r - thick / 2, steps - i));
+  const tip = ((to + (to > from ? 22 : -22)) * Math.PI) / 180;
+  const endA = (to * Math.PI) / 180;
+  return [
+    k.poly([...outer, ...inner], c),
+    k.poly(
+      [
+        [cx + (r + head) * Math.cos(endA), cy + (r + head) * Math.sin(endA)],
+        [cx + (r - head) * Math.cos(endA), cy + (r - head) * Math.sin(endA)],
+        [cx + r * Math.cos(tip), cy + r * Math.sin(tip)],
+      ],
+      c,
+    ),
   ];
 };
 
@@ -772,6 +809,66 @@ const DRAW: Record<PictoName, Draw> = {
     k.rect(38, 23, 24, 10, "red"),
     ...[22, 62].flatMap((x) => [k.rect(x, 48, 14, 12, "cream"), k.rect(x, 66, 14, 12, "cream")]),
     k.rect(42, 70, 16, 22, "ink"),
+  ],
+  "raised-bed": (k) => [
+    k.rect(6, 22, 9, 68, "red"),
+    k.rect(84, 58, 9, 32, "red"),
+    k.rect(6, 78, 88, 8, "red"),
+    k.poly([[15, 40], [34, 44], [46, 68], [84, 68], [84, 78], [15, 78]], "blue"),
+    k.poly([[17, 38], [32, 36], [42, 60], [28, 64]], "cream", -6),
+    k.arrow(62, 40, 62, 12, 7, 16, "yellow"),
+  ],
+  "stomach-sleeper": (k) => [
+    k.rect(6, 68, 88, 12, "blue"),
+    k.rect(6, 80, 88, 8, "red"),
+    k.rect(8, 50, 24, 20, "cream", -6),
+    k.poly([[34, 52], [64, 46], [92, 50], [92, 68], [34, 68]], "yellow"),
+    k.circle(22, 46, 12, "red"),
+    k.poly([[10, 42], [18, 32], [32, 38], [30, 48], [14, 50]], "ink"),
+    k.arrow(62, 8, 62, 40, 7, 16, "ink"),
+  ],
+  "knee-pillow": (k) => [
+    k.bar(12, 20, 74, 24, 14, "blue"),
+    k.bar(74, 24, 34, 40, 12, "blue"),
+    k.bar(12, 64, 74, 64, 14, "yellow"),
+    k.bar(74, 64, 34, 82, 12, "yellow"),
+    k.poly([[46, 32], [86, 32], [92, 46], [86, 58], [46, 58], [40, 46]], "red"),
+    k.bar(54, 45, 80, 45, 3.5, "cream"),
+  ],
+  snore: (k) => [
+    k.rect(4, 70, 52, 22, "blue"),
+    k.circle(32, 52, 26, "yellow"),
+    k.poly([[8, 44], [16, 24], [38, 22], [56, 36], [40, 34], [22, 40]], "ink"),
+    k.bar(26, 50, 40, 52, 3.5, "ink"),
+    k.oval(46, 64, 7, 5, "red", -14),
+    zed(k, 64, 50, 12, "blue"),
+    zed(k, 72, 30, 17, "red"),
+    zed(k, 82, 6, 20, "ink"),
+  ],
+  "pelvis-tilt": (k) => [
+    ...[0, 1, 2].map((i) => k.rect(26 + i * 4, 6 + i * 15, 20, 12, "blue", -8 * (i + 1), 36 + i * 4, 12 + i * 15)),
+    k.poly(
+      Array.from({ length: 19 }, (_, i) => {
+        const a = (i / 18) * Math.PI;
+        return [50 + 38 * Math.cos(a), 46 + 34 * Math.sin(a)] as [number, number];
+      }),
+      "yellow",
+      -26,
+      50,
+      46,
+    ),
+    k.circle(50, 60, 7, "cream"),
+    ...curvedArrow(k, 50, 40, 52, 36, 118, 7, 8, "red"),
+  ],
+  "numb-arm": (k) => [
+    k.poly([[8, 38], [34, 30], [58, 40], [58, 62], [34, 66], [8, 58]], "blue"),
+    k.bar(52, 50, 82, 50, 17, "yellow"),
+    k.circle(86, 50, 11, "yellow"),
+    ...[0, 1, 2, 3].map((i) => k.bar(86 + i * 0.1, 40 + i * 6.6, 98, 38 + i * 8, 3.4, "ink")),
+    k.star(30, 16, 8, 3.2, 4, "red"),
+    k.star(62, 22, 7, 3, 4, "red"),
+    k.star(46, 84, 9, 3.6, 4, "red"),
+    k.star(76, 78, 7, 3, 4, "red"),
   ],
 };
 
