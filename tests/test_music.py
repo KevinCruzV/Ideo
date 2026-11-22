@@ -388,7 +388,8 @@ def test_the_gap_between_voice_and_music_is_at_least_28_db_everywhere(job_with_v
     assert info["gap_corrected_db"] >= 0
 
 
-def test_min_gap_function_measures_the_worst_second():
+def test_min_gap_function_measures_the_worst_second(monkeypatch):
+    monkeypatch.setattr(music, "GAP_WINDOW", 1.0)
     voice = np.full(6 * RATE, 0.1, dtype=np.float32)
     stem = np.full(6 * RATE, 0.001, dtype=np.float32)
     stem[2 * RATE:3 * RATE] = 0.01

@@ -32,7 +32,7 @@ CREDITS = "credits.json"
 DOWNLOAD_SUFFIXES = (".mp3", ".wav", ".m4a", ".ogg")
 DOWNLOAD_MINUTES = 30
 MIN_GAP_DB = 28.0
-GAP_WINDOW = 1.0
+GAP_WINDOW = 3.0
 SPEECH_FLOOR_DB = -50.0
 PIXABAY = "https://pixabay.com/music/search/"
 
@@ -140,7 +140,7 @@ def min_gap(voice: np.ndarray, stem: np.ndarray, spans: list[tuple[float, float]
         a, b = int(start * RATE), int(end * RATE)
         for k in range(a, b, step):
             window = slice(k, min(k + step, b))
-            if window.stop - window.start < step // 2:
+            if window.stop - window.start < min(step // 2, RATE // 2) or (window.stop - window.start < step // 2 and k != a):
                 continue
             speech = _db(voice[window])
             if speech > SPEECH_FLOOR_DB:
