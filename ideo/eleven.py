@@ -13,6 +13,7 @@ API_BASE = "https://api.elevenlabs.io"
 TIMEOUT = 180
 RETRY_BELOW = 0.80
 MASK = "***"
+DEFAULT_TEST = "Bonjour, ceci est un essai de la voix choisie."
 SETUP_HELP = ("Mets ta clé dans la variable d'environnement ELEVENLABS_API_KEY ou dans config.json (« elevenlabs_api_key »), "
               "puis lance « python -m ideo voix-liste » pour choisir une voix.")
 
@@ -27,7 +28,7 @@ def _mask(text: str, key: str | None) -> str:
 def _require_key() -> str:
     key = config.eleven_key()
     if not key:
-        raise common.IdeoError("la clé ElevenLabs est absente. " + SETUP_HELP)
+        raise common.IdeoError("la clé ElevenLabs est absente (ELEVENLABS_API_KEY). " + SETUP_HELP)
     return key
 
 

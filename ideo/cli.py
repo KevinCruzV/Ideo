@@ -4,7 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, entretien, history, learn, lexicon, music, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
@@ -115,6 +115,15 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return _entretien(arg, opts), 0
     if cmd == "setup-voix":
         return [f"OK setup-voix : {setup_voix.run()}"], 0
+    if cmd == "voix-liste":
+        voices = eleven.list_voices()
+        return [f"OK voix-liste : {len(voices)} voix{'' if len(voices) < 2 else ''}"] + [
+            f"{v['name']} | {v['id']} | {v['detail']}" if v["detail"] else f"{v['name']} | {v['id']}" for v in voices], 0
+    if cmd == "voix-test":
+        phrase = arg.strip() or eleven.DEFAULT_TEST
+        target = common._root() / "voix-test.wav"
+        characters, seconds = eleven.try_phrase(phrase, target)
+        return [f"OK voix-test : {characters} caractères consommés, durée {seconds:.1f} s, fichier {target}"], 0
     if cmd == "musique" and opts.get("liste"):
         lines = music.listing()
         return [f"OK musique : {len(lines)} morceau{'x' if len(lines) > 1 else ''}"] + lines, 0
@@ -157,7 +166,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         points = ""
         if lines:
             points = f", {len(lines)} point{'s' if len(lines) > 1 else ''} à relire"
-        head = f"OK check : {what}, {stats['scenes']} scènes, environ {stats['seconds']} s{points}. Relecture : {job / 'plan.md'}"
+        head = f"OK check : {what}, {stats['scenes']} scènes, environ {stats['seconds']} s{points}{_eleven_chars(plan)}. Relecture : {job / 'plan.md'}"
         return [head] + lines, 0
     if cmd == "produce":
         outputs = pipeline.produce(job, part)
@@ -169,6 +178,17 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     if cmd == "status":
         return [f"OK status : {pipeline.status(job)}"], 0
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
+
+
+def _eleven_chars(plan: dict) -> str:
+    from ideo import config, voice
+
+    if config.engine() != "elevenlabs":
+        return ""
+    total = 0
+    for part in plan["parts"]:
+        total += sum(len(text) for _, text in voice.segments(plan, part))
+    return f", environ {total} caractères ElevenLabs"
 
 
 def _notice_tail() -> str:
@@ -206,18 +226,25 @@ def _learn_from_run(job: Path, pairs: list) -> list[str]:
 
 def _voice_notes(job: Path, part: int | None) -> list[str]:
     notes = []
+    characters = None
     for path in sorted((job / "parts").glob("*/voice-info.json")):
         if part is not None and path.parent.name != f"{part:02d}":
             continue
         info = common.load_json(path)
         if info.get("fallback"):
-            note = f"Voix : repli sur la voix en ligne, {info['fallback']}"
+            where = "locale" if info.get("engine") == "kyutai" else "en ligne"
+            note = f"Voix : repli sur la voix {where}, {info['fallback']}"
+        elif info.get("engine") == "elevenlabs":
+            characters = (characters or 0) + int(info.get("characters") or 0)
+            continue
         elif info.get("local_missing"):
             note = "Voix : voix en ligne, la voix locale n'est pas installée"
         else:
             continue
         if note not in notes:
             notes.append(note)
+    if characters is not None:
+        notes.insert(0, f"Voix : ElevenLabs, {characters} caractères")
     for path in sorted((job / "parts").glob("*/music.json")):
         if part is not None and path.parent.name != f"{part:02d}":
             continue
