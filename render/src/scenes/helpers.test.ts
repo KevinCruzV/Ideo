@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cleanItems, initials, str, strList, unitList } from "./coerce";
+import { cleanItems, initials, photoSource, str, strList, unitList } from "./coerce";
 import { fitText, splitKey, textWidth } from "../text/fit";
 import { splitOutro } from "./Outro";
 import { enterFor, stateIndex, stateTimes } from "./timing";
@@ -63,5 +63,16 @@ describe("outro", () => {
     expect(splitOutro("Abonne-toi pour la prochaine vidéo")).toEqual({ head: "Abonne-toi pour la", tail: "prochaine vidéo" });
     expect(splitOutro("Abonne-toi pour la partie 2 : le sommeil")).toEqual({ head: "Abonne-toi pour la partie 2", tail: "le sommeil" });
     expect(splitOutro("À suivre")).toEqual({ head: "À suivre", tail: "" });
+  });
+});
+
+describe("photoSource", () => {
+  test("accepte un nom de fichier image du job et rien d'autre", () => {
+    expect(photoSource("photo.jpg")).toBe("photo.jpg");
+    expect(photoSource("photo.png")).toBe("photo.png");
+    expect(photoSource(true)).toBeNull();
+    expect(photoSource("../secret.jpg")).toBeNull();
+    expect(photoSource("http://x/y.jpg")).toBeNull();
+    expect(photoSource("photo.gif")).toBeNull();
   });
 });

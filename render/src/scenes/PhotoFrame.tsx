@@ -8,9 +8,6 @@ export const PHOTO_W = 620;
 export const PHOTO_H = 760;
 const BORDER = 24;
 
-export const photoSource = (value: unknown): string | null =>
-  typeof value === "string" && /^[\w.-]+\.(jpe?g|png|webp)$/i.test(value) ? value : null;
-
 export const PhotoFrame: React.FC<{ src: string; seed: string }> = ({ src, seed }) => {
   const outer = cutEdge(`${seed}-outer`, 2.4);
   const inner = cutEdge(`${seed}-inner`, 1.5);
