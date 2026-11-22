@@ -79,6 +79,13 @@ export const PICTOS = [
   "snore",
   "pelvis-tilt",
   "numb-arm",
+  "blood-stain",
+  "chalk-outline",
+  "crime-tape",
+  "handcuffs",
+  "knife",
+  "coffin",
+  "tombstone",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -869,6 +876,74 @@ const DRAW: Record<PictoName, Draw> = {
     k.star(62, 22, 7, 3, 4, "red"),
     k.star(46, 84, 9, 3.6, 4, "red"),
     k.star(76, 78, 7, 3, 4, "red"),
+  ],
+  "blood-stain": (k) => [
+    k.circle(50, 50, 27, "red"),
+    k.circle(22, 34, 10, "red"),
+    k.circle(80, 28, 8, "red"),
+    k.circle(82, 70, 11, "red"),
+    k.circle(28, 78, 7, "red"),
+    k.poly([[42, 66], [58, 66], [56, 94], [44, 94]], "red"),
+    k.circle(50, 94, 6, "red"),
+    k.circle(40, 42, 6, "cream"),
+  ],
+  "chalk-outline": (k) => {
+    const outer: [number, number][] = [[42, 34], [18, 38], [8, 52], [15, 58], [30, 50], [38, 54], [36, 74], [27, 94], [40, 97], [50, 78], [60, 97], [73, 94], [64, 74], [62, 54], [70, 50], [85, 58], [92, 52], [82, 38], [58, 34]];
+    const inner = outer.map(([x, y]): [number, number] => [50 + (x - 50) * 0.66, 62 + (y - 62) * 0.66]);
+    return [
+      k.rect(2, 2, 96, 96, "ink"),
+      k.holed(k.poly(outer, "cream"), [inner]),
+      k.ring(50, 20, 13, 13, 4.5, "cream"),
+    ];
+  },
+  "crime-tape": (k) => {
+    const tape = (x1: number, y1: number, x2: number, y2: number) => {
+      const len = Math.hypot(x2 - x1, y2 - y1);
+      const n = Math.floor(len / 14);
+      return [
+        k.bar(x1, y1, x2, y2, 22, "yellow"),
+        ...Array.from({ length: n }, (_, i) => {
+          const t = (i + 0.5) / n;
+          const cx = x1 + (x2 - x1) * t;
+          const cy = y1 + (y2 - y1) * t;
+          return k.bar(cx - 5, cy - 9, cx + 5, cy + 9, 5.5, "ink");
+        }),
+      ];
+    };
+    return [...tape(2, 28, 98, 62), ...tape(2, 74, 98, 38)];
+  },
+  handcuffs: (k) => [
+    k.rect(14, 22, 20, 14, "yellow"),
+    k.rect(66, 22, 20, 14, "yellow"),
+    k.ring(24, 58, 21, 21, 10, "blue"),
+    k.ring(76, 58, 21, 21, 10, "blue"),
+    k.ring(50, 58, 8, 5, 3.4, "cream"),
+    k.rect(38, 56, 8, 5, "ink"),
+    k.rect(54, 56, 8, 5, "ink"),
+    k.circle(24, 36, 3, "ink"),
+    k.circle(76, 36, 3, "ink"),
+  ],
+  knife: (k) => [
+    k.poly([[2, 54], [22, 34], [66, 34], [66, 56], [34, 58]], "blue", -35),
+    k.rect(10, 38, 52, 4, "cream", -35),
+    k.rect(65, 28, 7, 34, "yellow", -35),
+    k.rect(72, 34, 28, 22, "ink", -35),
+    k.circle(30, 66, 6, "red"),
+    k.poly([[25, 68], [35, 68], [31, 90], [26, 84]], "red"),
+  ],
+  coffin: (k) => [
+    k.poly([[36, 4], [64, 4], [84, 34], [66, 96], [34, 96], [16, 34]], "red"),
+    k.poly([[41, 14], [59, 14], [74, 35], [60, 86], [40, 86], [26, 35]], "ink"),
+    k.rect(46, 26, 8, 46, "cream"),
+    k.rect(37, 36, 26, 8, "cream"),
+  ],
+  tombstone: (k) => [
+    k.arc(50, 42, 28, 180, 360, "blue", [[78, 42], [78, 90], [22, 90], [22, 42]]),
+    k.rect(46, 24, 8, 40, "cream"),
+    k.rect(37, 34, 26, 8, "cream"),
+    k.rect(4, 88, 92, 8, "ink"),
+    k.poly([[10, 88], [18, 80], [26, 88]], "yellow"),
+    k.poly([[74, 88], [82, 80], [90, 88]], "yellow"),
   ],
 };
 
