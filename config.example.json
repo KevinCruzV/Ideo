@@ -1,5 +1,4 @@
 {
   "engine": "elevenlabs",
-  "elevenlabs_api_key": "à remplir avec : .venv/bin/python -m ideo.cle",
   "elevenlabs_voice_id": "à remplir après : .venv/bin/python -m ideo voix-liste"
 }

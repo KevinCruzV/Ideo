@@ -24,7 +24,7 @@ Conseil : lance la session avec le modèle le moins cher (`/model haiku`), Sonne
 
 Sur un Mac Apple Silicon, ideo utilise une voix locale, gratuite et sans internet une fois installée (environ 4,5 Go). Si elle manque, le skill le dit et l'installe tout seul pendant qu'il écrit le plan ; en cas d'échec ou sur un autre Mac, il utilise une voix en ligne. Chaque phrase produite est réécoutée automatiquement et refaite si elle ne correspond pas au texte.
 
-Clé ElevenLabs : lance `.venv/bin/python -m ideo.cle`, colle la clé (elle ne s'affiche pas). Elle va dans `config.json`, ignoré par git, donc à refaire une fois sur chaque Mac après `git pull`. `config.example.json` montre les champs attendus.
+Clé ElevenLabs : lance `.venv/bin/python -m ideo.cle`, colle la clé (elle ne s'affiche pas). Elle va dans `.env` (variable `ELEVENLABS_API_KEY`), ignoré par git, donc à refaire une fois sur chaque Mac après `git pull`. `.env.example` et `config.example.json` montrent les champs attendus.
 
 Réglages facultatifs dans `config.json` à la racine (fichier ignoré par git) : `engine` (`kyutai` ou `edge`), `kyutai_voice`, `voices`, `rate`, `entretien_auto`, `entretien_seuil`.
 
