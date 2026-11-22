@@ -14,3 +14,8 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-22] Histoire, fait divers, horreur ou biographie : découpe en chapitres, chacun ouvert par une scène avec le nom du chapitre dans le kicker.
 - [2026-11-22] Une histoire ne se condense pas : garde tous les moments qui font le fil, jusqu’à 300 s ou en plusieurs parties s’il le faut.
 - [2026-11-22] Pas de scène quote quand la phrase est lue par le présentateur de la vidéo : seule la vraie voix de la personne citée compte.
+- [2026-11-22] Chaque person-card a son apparence : sexe (cheveux, tenue), âge, métier (policier en uniforme et képi, etc.). Deux personnes ne se ressemblent jamais.
+- [2026-11-22] Le dessin montre exactement l’objet dont parle la phrase : un SMS ou un message, c’est un téléphone, jamais un écran de télé.
+- [2026-11-22] Un même picto revient au plus 2 fois par vidéo : varie les dessins (pas trois balances de la justice).
+- [2026-11-22] Accroche d’histoire : phrase pleine et forte, « Il a fait croire à tout un pays qu’il était innocent », pas « au pays ».
+- [2026-11-22] Horreur, meurtre, fait divers : montre le danger avec les dessins sombres disponibles (sang, scène de crime), sans détail gore.
