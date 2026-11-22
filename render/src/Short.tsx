@@ -5,7 +5,7 @@ import { Captions } from "./chrome/Captions";
 import { ChapterLabel } from "./chrome/ChapterLabel";
 import { Progress } from "./chrome/Progress";
 import { Watermark } from "./chrome/Watermark";
-import { Wipe, WIPE_BEFORE, WIPE_FRAMES } from "./chrome/Wipe";
+import { Wipe, wipeKind, WIPE_BEFORE, WIPE_FRAMES } from "./chrome/Wipe";
 import { AccentContext } from "./scenes/accent";
 import { BeatsContext, localBeats } from "./scenes/beats";
 import { cleanItems, earlyItems } from "./scenes/coerce";
@@ -44,7 +44,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
       })}
       {timeline.segments.slice(1).map((segment, i) => (
         <Sequence key={`wipe-${i}`} from={segment.from - WIPE_BEFORE} durationInFrames={WIPE_FRAMES + 1} layout="none">
-          <Wipe color={accents[i + 1].accent} seed={`wipe-${i}`} />
+          <Wipe color={accents[i + 1].accent} seed={`wipe-${i}`} kind={wipeKind(i)} />
         </Sequence>
       ))}
       <ChapterLabel chapter={timeline.chapter} />
