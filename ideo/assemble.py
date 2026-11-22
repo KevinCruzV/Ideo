@@ -7,7 +7,7 @@ import tempfile
 import wave
 from pathlib import Path
 
-from ideo import common, music, textmatch, voice
+from ideo import common, music, textmatch, transitions, voice
 
 RATE = 48000
 GAP_HOOK = 0.60
@@ -169,13 +169,18 @@ def mix_current(job: Path, n: int) -> bool:
 
 
 def _mix_music(raw: Path, offsets: list, job: Path, out_dir: Path, work: Path, log: Path) -> dict:
-    rounded = [{"start": o["start"], "end": o["end"], "clip": o["clip"]} for o in offsets]
+    rounded = [{"start": round(o["start"], 4), "end": round(o["end"], 4), "clip": o["clip"]} for o in offsets]
     try:
-        return music.mix(raw, rounded, job, out_dir, work, log, _integrated)
+        info = music.mix(raw, rounded, job, out_dir, work, log, _integrated)
     except common.IdeoError:
         raise
     except Exception as err:
-        return {"signature": music.signature(), "track": None, "error": str(err)}
+        info = {"signature": music.signature(job), "track": None, "error": str(err)}
+    try:
+        info["transitions"] = transitions.mix(raw, rounded)
+    except Exception as err:
+        info["transitions"] = {"enabled": False, "count": 0, "error": str(err)}
+    return info
 
 
 def _inputs(out_dir: Path, names: list[str], job: Path) -> list[Path]:
