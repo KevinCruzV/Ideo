@@ -229,6 +229,9 @@ def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
         outro = i18n.t("outro_last", lang)
     segments = [("seg_00_hook", part["hook"])]
     segments += [(f"seg_{i:02d}", scene["say"]) for i, scene in enumerate(part["scenes"], start=1)]
+    question = part.get("question")
+    if isinstance(question, str) and question.strip():
+        outro = f"{question.strip()} {outro}"
     segments.append(("seg_99_outro", outro))
     return segments
 

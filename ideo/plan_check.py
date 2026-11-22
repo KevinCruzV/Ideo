@@ -324,14 +324,23 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     else:
         state["seconds"] += estimate_seconds(hook, ctx["lang"])
         _check_dash([hook], where, errors)
+    question = part.get("question")
+    if not isinstance(question, str) or not question.strip():
+        errors.append(f"{where} : la « question » au spectateur est manquante. Écris une question courte et engageante sur le sujet, "
+                      "posée juste avant l'appel à s'abonner, par exemple « Et toi, dans quelle position tu dors ? ».")
+    else:
+        state["seconds"] += estimate_seconds(question, ctx["lang"])
+        _check_dash([question], where, errors)
+        if not question.rstrip().endswith("?"):
+            errors.append(f"{where} : la « question » doit finir par un point d'interrogation, c'est une question posée au spectateur.")
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
-    for field in ("title", "hook"):
+    for field in ("title", "hook", "question"):
         if isinstance(part.get(field), str):
             error = scene_schema.cap_error(where, field, part[field], scene_schema.PART_CAPS[field])
             if error:
                 errors.append(error)
-    _check_channel([("title", part.get("title")), ("hook", hook)], where, ctx, errors)
+    _check_channel([("title", part.get("title")), ("hook", hook), ("question", question)], where, ctx, errors)
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")

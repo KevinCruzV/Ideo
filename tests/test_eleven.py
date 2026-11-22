@@ -107,7 +107,7 @@ def test_request_uses_the_documented_endpoint_headers_and_parameters(server, tmp
     assert header(request, "xi-api-key") == KEY and header(request, "Content-Type") == "application/json"
     body = request["body"]
     assert body["text"] == "Bonjour tout le monde." and body["model_id"] == "eleven_turbo_v2_5"
-    assert body["voice_settings"] == {"stability": 0.7, "similarity_boost": 0.8, "style": 0.0, "speed": 0.95, "use_speaker_boost": True}
+    assert body["voice_settings"] == {"stability": 0.7, "similarity_boost": 0.8, "style": 0.3, "speed": 0.95, "use_speaker_boost": True}
     assert body["previous_text"] == "Avant." and body["next_text"] == "Après." and "previous_request_ids" not in body
 
 
@@ -116,7 +116,7 @@ def test_defaults_are_a_calm_narration(server, tmp_path):
     eleven.ElevenLabsBackend().synthesize("Salut.", "fr", tmp_path / "a.wav")
     body = server.requests[0]["body"]
     assert body["model_id"] == "eleven_multilingual_v2"
-    assert body["voice_settings"]["stability"] == 0.65 and body["voice_settings"]["style"] == 0.0 and body["voice_settings"]["speed"] == 1.0
+    assert body["voice_settings"]["stability"] == 0.45 and body["voice_settings"]["style"] == 0.3 and body["voice_settings"]["speed"] == 1.0
 
 
 def test_continuity_uses_previous_request_ids_then_drops_previous_text(server, tmp_path):
@@ -160,10 +160,9 @@ def test_characters_are_counted(server, tmp_path):
     assert backend.characters == len("Bonjour.") + len("Au revoir.")
 
 
-def test_missing_voice_is_a_clear_error(server):
+def test_default_voice_is_used_when_none_is_chosen(server):
     (common._root() / "config.json").write_text('{"engine": "elevenlabs"}', encoding="utf-8")
-    with pytest.raises(common.IdeoError, match="voix-liste.*elevenlabs_voice_id"):
-        eleven.ElevenLabsBackend()
+    assert eleven.ElevenLabsBackend().voice == "cgSgspJ2msm6clMCkdW9"
 
 
 def test_missing_key_is_a_clear_error(monkeypatch, tmp_path):
@@ -291,7 +290,7 @@ def test_at_most_one_retry_and_only_under_080(eleven_job, server, monkeypatch):
     import shutil
 
     shutil.rmtree(eleven_job / "parts")
-    scores = iter([0.3, 0.2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    scores = iter([0.3, 0.2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: next(scores))
     voice.voice_part(eleven_job, 1)
@@ -471,6 +470,7 @@ def test_cost_and_check_estimate_the_characters(job_with_fixtures, server, capsy
     for step in ("fetch", "transcribe", "transcript"):
         common.mark(job_with_fixtures, step, True)
     (job_with_fixtures / "transcript_compact.md").write_text("x", encoding="utf-8")
+    (common._root() / "config.json").write_text('{"engine": "edge"}', encoding="utf-8")
     assert cost.eleven_note(job_with_fixtures) == ""
     configure({})
     note = cost.eleven_note(job_with_fixtures)

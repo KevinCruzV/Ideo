@@ -93,7 +93,7 @@ def build(job):
 def test_timeline_has_hook_first_outro_last_and_watermark(job_with_offsets):
     tl = build(job_with_offsets)
     assert tl["segments"][0]["kind"] == "hook" and tl["segments"][-1]["kind"] == "outro"
-    assert tl["watermark"] == "Ideo" and tl["width"] == 1080 and tl["height"] == 1920
+    assert tl["watermark"] == "@ideovideos" and tl["width"] == 1080 and tl["height"] == 1920
     assert tl["chapter"] == {"part": 1, "total": 3, "title": "L'oubli", "label": "Partie"}
     assert tl["fps"] == 30 and tl["lang"] == "fr" and tl["audio"] == "part.wav"
     assert common.read_status(job_with_offsets)["steps"]["timeline-01"]["ok"] is True
@@ -113,8 +113,11 @@ def test_timeline_segments_are_contiguous_and_cover_the_part(job_with_offsets):
     assert segs[-1]["to"] == tl["durationInFrames"]
     offsets = common.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
     assert tl["durationInFrames"] == math.ceil(round(offsets[-1]["end"] * 30, 6))
-    assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "outro"]
-    assert [s.get("type") for s in segs[1:-1]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
+    assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "hook", "outro"]
+    assert [s.get("type") for s in segs[1:-2]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
+    assert segs[-2]["props"]["text"] == "Et toi, tu relis tes cours ou tu les oublies ?"
+    assert segs[-1]["props"]["text"] == "Si ça t'a plu, abonne-toi pour la prochaine !"
+    assert segs[-2]["to"] - segs[-2]["from"] > segs[-1]["to"] - segs[-1]["from"]
     assert segs[0]["props"]["text"].startswith("Dis-moi")
     assert segs[-1]["props"]["text"] == "Si ça t'a plu, abonne-toi pour la prochaine !"
 

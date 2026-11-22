@@ -31,14 +31,14 @@ def test_voice_part_texts_and_lang(job_with_plan, fake_backend, fake_whisper):
     part = plan["parts"][0]
     assert fake_backend.calls[0][:2] == (voice.hookvoice.shape(part["hook"], "fr"), "fr")
     assert fake_backend.calls[1][0] == part["scenes"][0]["say"]
-    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la prochaine !"
+    assert fake_backend.calls[-1][0] == "Et toi, tu relis tes cours ou tu les oublies ? Si ça t'a plu, abonne-toi pour la prochaine !"
     assert all(lang == "fr" for _, lang in fake_whisper)
 
 
 def test_voice_part_outro_next(job_with_plan, fake_backend, fake_whisper):
     set_next_part(job_with_plan)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert fake_backend.calls[-1][0] == "Si ça t'a plu, abonne-toi pour la partie deux : Le sommeil !"
+    assert fake_backend.calls[-1][0] == "Et toi, tu relis tes cours ou tu les oublies ? Si ça t'a plu, abonne-toi pour la partie deux : Le sommeil !"
 
 
 def test_voice_part_outro_last_of_several_parts(job_with_plan, fake_backend, fake_whisper):
@@ -68,7 +68,7 @@ def test_voice_part_uses_plan_language(job_with_plan, fake_backend, fake_whisper
     common.save_json(job_with_plan / "plan.json", plan)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
     assert {c[1] for c in fake_backend.calls} == {"de"}
-    assert fake_backend.calls[-1][0] == i18n_last("de")
+    assert fake_backend.calls[-1][0] == "Et toi, tu relis tes cours ou tu les oublies ? " + i18n_last("de")
     assert all(lang == "de" for _, lang in fake_whisper)
 
 
@@ -311,3 +311,15 @@ def test_only_segments_whose_sent_text_changes_are_redone(job_with_plan, fake_ba
 def test_segments_without_numbers_have_nothing_stale(job_with_plan, fake_backend, fake_whisper):
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
     assert voice.stale(job_with_plan, 1) == []
+
+
+def test_question_is_said_in_one_breath_with_the_call_to_subscribe(job_with_plan):
+    plan = common.load_json(job_with_plan / "plan.json")
+    segments = voice.segments(plan, plan["parts"][0])
+    assert segments[-1] == ("seg_99_outro", "Et toi, tu relis tes cours ou tu les oublies ? Si ça t'a plu, abonne-toi pour la prochaine !")
+
+
+def test_old_plan_without_question_still_produces(job_with_plan):
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["parts"][0].pop("question")
+    assert voice.segments(plan, plan["parts"][0])[-1] == ("seg_99_outro", "Si ça t'a plu, abonne-toi pour la prochaine !")

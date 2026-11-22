@@ -17,6 +17,7 @@ def isolated_home(tmp_path_factory, monkeypatch):
     from ideo import config
 
     monkeypatch.setenv("IDEO_HOME", str(tmp_path_factory.mktemp("ideo-home")))
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
     monkeypatch.setattr(config, "kyutai_available", lambda: False)
     monkeypatch.setattr(config, "kyutai_installed", lambda: False)
     monkeypatch.setattr(config, "apple_silicon", lambda: False)
@@ -103,7 +104,7 @@ VOICE_WORDS = {
     "seg_03": ["Un", "chercheur", "allemand", "a", "mesuré", "ce", "phénomène."],
     "seg_04": ["Heureusement", "il", "existe", "des", "gestes", "simples."],
     "seg_05": ["Voici", "son", "résultat."],
-    "seg_99_outro": ["Abonne-toi", "pour", "la", "suite."],
+    "seg_99_outro": ["Et", "toi,", "tu", "relis", "tes", "cours", "ou", "tu", "les", "oublies\u00a0?", "Abonne-toi", "pour", "la", "suite."],
 }
 
 

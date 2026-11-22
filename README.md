@@ -22,11 +22,13 @@ Conseil : lance la session avec le modèle le moins cher (`/model haiku`), Sonne
 
 ## La voix
 
-Sur un Mac Apple Silicon, ideo utilise une voix locale, gratuite et sans internet une fois installée (environ 4,5 Go). Si elle manque, le skill le dit et l'installe tout seul pendant qu'il écrit le plan ; en cas d'échec ou sur un autre Mac, il utilise une voix en ligne. Chaque phrase produite est réécoutée automatiquement et refaite si elle ne correspond pas au texte.
+Avec une clé ElevenLabs, ideo utilise la voix ElevenLabs « Jessica » (réglages : stabilité 0,45, style 0,30, vitesse 1,0). Chaque vidéo consomme des caractères ElevenLabs, affichés par `prepare`, `cost`, `check` et `produce` : le compte gratuit en donne environ 10 000 par mois, soit 4 à 5 vidéos de 2 minutes. Si ElevenLabs échoue (quota, réseau), ideo passe sur la voix locale.
+
+Sans clé, sur un Mac Apple Silicon, ideo utilise une voix locale, gratuite et sans internet une fois installée (environ 4,5 Go). Si elle manque, le skill le dit et l'installe tout seul pendant qu'il écrit le plan ; en cas d'échec ou sur un autre Mac, il utilise une voix en ligne. Chaque phrase produite est réécoutée automatiquement et refaite si elle ne correspond pas au texte.
 
 Clé ElevenLabs : lance `.venv/bin/python -m ideo.cle`, colle la clé (elle ne s'affiche pas). Elle va dans `.env` (variable `ELEVENLABS_API_KEY`), ignoré par git, donc à refaire une fois sur chaque Mac après `git pull`. `.env.example` et `config.example.json` montrent les champs attendus.
 
-Réglages facultatifs dans `config.json` à la racine (fichier ignoré par git) : `engine` (`kyutai` ou `edge`), `kyutai_voice`, `voices`, `rate`, `entretien_auto`, `entretien_seuil`.
+Réglages facultatifs dans `config.json` à la racine (fichier ignoré par git) : `engine` (`elevenlabs`, `kyutai` ou `edge`), `elevenlabs_voice_id`, `elevenlabs_stability`, `elevenlabs_style`, `elevenlabs_speed`, `kyutai_voice`, `voices`, `rate`, `entretien_auto`, `entretien_seuil`.
 
 ## Le skill se relit, se contrôle et apprend
 

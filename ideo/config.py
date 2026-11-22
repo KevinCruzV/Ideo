@@ -11,7 +11,8 @@ DEFAULT_MUSIC_LEVEL = -30
 KYUTAI_LANGS = ("fr", "en")
 ENGINES = ("kyutai", "edge", "elevenlabs")
 DEFAULT_ELEVEN_MODEL = "eleven_multilingual_v2"
-ELEVEN_DEFAULTS = {"stability": 0.65, "similarity": 0.8, "style": 0.0, "speed": 1.0}
+DEFAULT_ELEVEN_VOICE = "cgSgspJ2msm6clMCkdW9"
+ELEVEN_DEFAULTS = {"stability": 0.45, "similarity": 0.8, "style": 0.3, "speed": 1.0}
 DEFAULT_TRANSITION_DB = -12
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
 DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
@@ -111,7 +112,7 @@ def eleven_key() -> str | None:
 
 
 def eleven_voice_id() -> str | None:
-    return _load().get("elevenlabs_voice_id")
+    return _load().get("elevenlabs_voice_id", DEFAULT_ELEVEN_VOICE)
 
 
 def eleven_model() -> str:
@@ -182,6 +183,8 @@ def engine() -> str:
     chosen = _load().get("engine")
     if chosen:
         return chosen
+    if eleven_key():
+        return "elevenlabs"
     return "kyutai" if kyutai_available() else "edge"
 
 

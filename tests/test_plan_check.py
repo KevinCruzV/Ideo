@@ -45,6 +45,9 @@ def test_invalid_plan_writes_no_plan_md(job_with_fixtures):
     (lambda p: p.update(version=2), "version"),
     (lambda p: p["parts"][0].update(n=3), "numéro"),
     (lambda p: p["parts"][0].update(hook=" "), "accroche"),
+    (lambda p: p["parts"][0].pop("question"), "question"),
+    (lambda p: p["parts"][0].update(question="Et toi, tu relis tes cours."), "point d'interrogation"),
+    (lambda p: p["parts"][0].update(question="Et toi " + EM + " tu relis ?"), "tiret cadratin"),
     (lambda p: p["parts"][0]["scenes"][1].update(src="99:00"), "durée de la vidéo"),
     (lambda p: p["parts"][0]["scenes"][1].update(src="abc"), "minutage invalide"),
     (lambda p: p["parts"][0]["scenes"][2].update(sfx="5:55"), "sfx.json"),
@@ -101,14 +104,15 @@ def test_src_is_required_on_every_scene(job_with_fixtures, index):
     assert any(e.startswith(f"Partie 1, sc\u00e8ne {index + 1} : ") and "src" in e and "mm:ss" in e for e in errors), errors
 
 
-def expected_estimate(job, says):
+def expected_estimate(job, says, exact=False):
     plan = load(job)
     words = json.loads((job / "words.json").read_text(encoding="utf-8"))
     quote = plan["parts"][0]["scenes"][4]["props"]["text"].split()
     first = next(i for i, w in enumerate(words) if w["w"] == "Nous" and words[i + 1]["w"] == "oublions")
     clip = words[first + len(quote) - 1]["e"] - words[first]["s"]
-    hook = len(plan["parts"][0]["hook"].split())
-    return round((hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.66 + 0.56 * len(says) + clip + 2.5 + 3.0)
+    hook = len(plan["parts"][0]["hook"].split()) + len(plan["parts"][0]["question"].split())
+    seconds = (hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.66 + 0.56 * len(says) + clip + 2.5 + 3.0
+    return seconds if exact else round(seconds)
 
 
 def test_part_too_short_reports_estimate(job_with_fixtures):
@@ -242,7 +246,7 @@ def test_several_parts_that_fit_one_video_are_rejected(job_with_fixtures):
     merge = [e for e in errors if "tient en une seule vid\u00e9o" in e]
     assert merge and merge[0].startswith("Plan : ")
     assert "Fusionne les parties en une seule." in merge[0]
-    total = 2 * (expected_estimate(job_with_fixtures, [s["say"] for s in plan["parts"][0]["scenes"]]))
+    total = round(2 * expected_estimate(job_with_fixtures, [s["say"] for s in plan["parts"][0]["scenes"]], exact=True))
     assert f"dur\u00e9e estim\u00e9e totale {total} s" in merge[0]
     assert not (job_with_fixtures / "plan.md").exists()
 
@@ -446,7 +450,7 @@ def test_non_latin_language_is_refused_by_check(job_with_fixtures, lang):
     assert any(f"« {lang} »" in e and "alphabet latin" in e for e in errors), errors
 
 
-@pytest.mark.parametrize("field,cap", [("hook", 60), ("title", 40)])
+@pytest.mark.parametrize("field,cap", [("hook", 60), ("title", 40), ("question", 60)])
 def test_hook_and_title_caps(job_with_fixtures, field, cap):
     plan = load(job_with_fixtures)
     plan["parts"][0][field] = "Dis-moi pourquoi " + "x" * (cap + 1 - 17)

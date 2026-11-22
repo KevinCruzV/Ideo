@@ -198,3 +198,11 @@ def test_hook_settings_wrong_values(home, content):
     write(home, content)
     with pytest.raises(common.IdeoError, match="config.json"):
         config.engine()
+
+
+def test_engine_defaults_to_elevenlabs_when_a_key_is_present(home, monkeypatch):
+    monkeypatch.setattr(config, "kyutai_available", lambda: True)
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_test")
+    assert config.engine() == "elevenlabs"
+    write(home, {"engine": "kyutai"})
+    assert config.engine() == "kyutai"

@@ -130,6 +130,17 @@ def caption_groups(words: list[dict], fps: int = FPS) -> list[dict]:
     return groups
 
 
+def _outro_segments(part: dict, text: str, seg_words: list[dict], start: float, begin: int, finish: int) -> list[dict]:
+    question = part.get("question").strip() if isinstance(part.get("question"), str) else ""
+    count = len(align.script_words(question)) if question and text.startswith(question) else 0
+    if 0 < count < len(seg_words):
+        cut = min(max(_frame(start + seg_words[count]["s"]), begin + 1), finish - 1)
+        if begin < cut < finish:
+            return [{"kind": "hook", "from": begin, "to": cut, "props": {"text": question}, "items": []},
+                    {"kind": "outro", "from": cut, "to": finish, "props": {"text": text[len(question):].strip()}}]
+    return [{"kind": "outro", "from": begin, "to": finish, "props": {"text": text}}]
+
+
 def _shift(words: list[dict], offset: float) -> list[dict]:
     return [{"w": w["w"], "s": w["s"] + offset, "e": w["e"] + offset} for w in words]
 
@@ -194,7 +205,7 @@ def _build(job: Path, n: int, total: int) -> Path:
         if name == "seg_00_hook":
             segments.append({"kind": "hook", "from": begin, "to": finish, "props": {"text": texts[name]}, "items": []})
         elif name == "seg_99_outro":
-            segments.append({"kind": "outro", "from": begin, "to": finish, "props": {"text": texts[name]}})
+            segments.extend(_outro_segments(part, texts[name], seg_words, entry["start"], begin, finish))
         else:
             scene = scenes[name]
             items = []
@@ -219,7 +230,7 @@ def _build(job: Path, n: int, total: int) -> Path:
         "durationInFrames": frames,
         "lang": lang,
         "audio": "part.wav",
-        "watermark": "Ideo",
+        "watermark": "@ideovideos",
         "chapter": {"part": n, "total": total, "title": part["title"], "label": i18n.t("part_label", lang)},
         "segments": segments,
         "captions": captions,
