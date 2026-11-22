@@ -11,7 +11,11 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-22] (sSm_FQ3lsg4) Fait divers, horreur, catastrophe : la direction artistique (couleurs, fonds, dessins) doit devenir sombre, pas les couleurs gaies habituelles.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Biographie ou histoire : il faut voir la tête de la personne principale, en grand et ressemblante, et la revoir au fil de l’histoire.
 - [ ] [2026-11-22] (sSm_FQ3lsg4) La citation utilisée est lue par le youtuber, pas par la personne citée : vérifier que la voix de l’extrait n’est pas celle du narrateur.
-  Essayé : empreinte de voix (hauteur médiane et spectre moyen par bandes) de l'extrait comparée à celle de toute la source. Sur les 8 sources du dépôt, des fenêtres de 8 s de la même voix s'écartent jusqu'à 1,8 du profil de leur source, et les voix de sources différentes à partir de 0,4 : les deux plages se chevauchent, et le dépôt n'a aucune vraie citation d'un autre locuteur pour fixer un seuil. Une alerte fausse refuserait de bons plans, donc rien n'est automatisé ; la règle reste dans le guide (section 7 : une quote n'est jamais le présentateur qui lit un texte).
+- [ ] [2026-11-22] (sSm_FQ3lsg4) Les person-cards se ressemblent toutes : il faut des personnages variés, hommes et femmes, et des tenues de métier (policier, pompier, médecin, juge, soldat…).
+- [ ] [2026-11-22] (sSm_FQ3lsg4) object-state screen ressemble à une télé : il faut un objet téléphone pour les SMS et messages.
+- [ ] [2026-11-22] (sSm_FQ3lsg4) Les transitions visuelles entre les scènes sont toujours les mêmes : il faut plusieurs effets de transition, variés.
+- [ ] [2026-11-22] (sSm_FQ3lsg4) Pour l’horreur et les faits divers, il manque des dessins sombres : sang, silhouette à la craie, ruban de scène de crime, menottes, couteau, cercueil.
+- [ ] [2026-11-22] (sSm_FQ3lsg4) Aucun contrôle ne signale un même picto répété : check devrait afficher RELIRE au-delà de 2 fois par vidéo.
 
 ## Défauts détectés
 
