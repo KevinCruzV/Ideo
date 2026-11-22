@@ -13,9 +13,9 @@ import { areaFor, FitBox } from "./FitBox";
 import { stateIndex, stateTimes } from "./timing";
 import { useBeat } from "./beats";
 
-type ObjectKind = "screen" | "board" | "jar" | "door" | "scale";
+type ObjectKind = "screen" | "board" | "jar" | "door" | "scale" | "phone";
 
-const KINDS: ObjectKind[] = ["screen", "board", "jar", "door", "scale"];
+const KINDS: ObjectKind[] = ["screen", "board", "jar", "door", "scale", "phone"];
 const ALIASES: Record<string, ObjectKind> = {
   ecran: "screen",
   écran: "screen",
@@ -24,6 +24,9 @@ const ALIASES: Record<string, ObjectKind> = {
   pot: "jar",
   porte: "door",
   balance: "scale",
+  telephone: "phone",
+  téléphone: "phone",
+  portable: "phone",
 };
 
 export const objectKind = (value: unknown): ObjectKind => {
@@ -248,12 +251,69 @@ const Scale: React.FC<{ look: Look }> = ({ look }) => {
   );
 };
 
+const PHONE_SHOWN = 4;
+
+const Phone: React.FC<{ look: Look; messages: string[] }> = ({ look, messages }) => {
+  const w = 560;
+  const h = 880;
+  const x = CX - w / 2;
+  const y = 40;
+  const first = Math.max(0, look.index - PHONE_SHOWN + 1);
+  const bubbleW = 380;
+  const slot = 150;
+  return (
+    <>
+      <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} radius="64px" seed="phone" float={1.5}>
+        <div style={{ position: "absolute", inset: 26, borderRadius: 44, background: colors.cream, overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 74, background: colors[look.accent] }} />
+          <div style={{ position: "absolute", left: "50%", top: 22, width: 120, height: 30, marginLeft: -60, borderRadius: 15, background: colors.ink }} />
+          {messages.slice(first, look.index + 1).map((text, n) => {
+            const i = first + n;
+            const mine = i % 2 === 1;
+            const fit = fitText(text, { maxWidth: bubbleW - 56, maxLines: 3, max: 40, min: 30 });
+            const at = i === 0 ? 0 : i === look.index ? look.changedAt : -20;
+            const t = ease(look.frame, at, 10);
+            return (
+              <div
+                key={`msg-${i}`}
+                style={{
+                  position: "absolute",
+                  top: 100 + n * slot,
+                  [mine ? "right" : "left"]: 22,
+                  width: bubbleW,
+                  padding: "16px 22px",
+                  boxSizing: "border-box",
+                  borderRadius: mine ? "34px 34px 8px 34px" : "34px 34px 34px 8px",
+                  background: mine ? colors[look.accent] : colors.ink,
+                  boxShadow: shadow,
+                  opacity: Math.min(1, t * 2),
+                  transform: `translateY(${(1 - t) * 40}px) scale(${0.9 + 0.1 * t})`,
+                  transformOrigin: mine ? "100% 100%" : "0% 100%",
+                }}
+              >
+                {fit.lines.map((line, j) => (
+                  <div key={`l-${j}`} style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: fit.size, lineHeight: 1.12, color: mine ? onPaper[look.accent] : colors.cream, whiteSpace: "nowrap" }}>
+                    {line}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </PaperShape>
+      <PaperShape kind="circle" color="cream" size={20} x={CX - 10} y={y + h - 22} />
+      <Pips look={look} top={y + h + 60} />
+    </>
+  );
+};
+
 const EXTENT: Record<ObjectKind, [number, number]> = {
   screen: [70, 854],
   board: [50, 854],
   jar: [50, 874],
   door: [50, 954],
   scale: [150, 984],
+  phone: [40, 1000],
 };
 
 export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) => {
@@ -268,7 +328,7 @@ export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) =>
   const prevIndex = index > 0 ? index - 1 : 0;
   const look: Look = { accent, index, count: shown.length, label: shown[index], changedAt: index > 0 ? times[index] : 0, frame, prevIndex };
   const body =
-    kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : <Screen look={look} board={kind === "board"} />;
+    kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : kind === "phone" ? <Phone look={look} messages={shown} /> : <Screen look={look} board={kind === "board"} />;
   return (
     <Stage>
       <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
