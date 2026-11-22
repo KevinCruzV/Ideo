@@ -6,12 +6,12 @@ Lis ce guide une seule fois, en entier, avant d'écrire.
 
 Tu lis la transcription compacte d'une vidéo YouTube et tu écris `plan.json` : une vidéo verticale courte qui réexplique les idées principales, avec une voix off et des formes en papier découpé. Chaque scène a un texte dit à voix haute (`say`), un visuel (`type` + `props`) et des éléments qui apparaissent sur des mots du texte (`items`). Tout le reste (voix, minutage, rendu) est fait par le code.
 
-Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription, et écris TOUS les textes (`title`, `hook`, `say`, textes des `props`) dans cette langue. Ce guide est en français, la vidéo peut être en anglais : dans ce cas tout est en anglais.
+Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription, et écris TOUS les textes (`title`, `hook`, `question`, `say`, textes des `props`) dans cette langue. Ce guide est en français, la vidéo peut être en anglais : dans ce cas tout est en anglais.
 
 ## 2. Choisir et construire
 
 - Une seule vidéo (une seule partie dans `parts`). Plusieurs parties seulement si le contenu utile dépasse nettement 5 minutes de voix off (environ 750 mots de `say`), ou si l'utilisateur demande des parties : 8 parties au maximum, chacune compréhensible seule.
-- Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook` et de tous les `say` divisés par 3,0 (3,2 en anglais), plus 0,5 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 45 et 300 s.
+- Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook`, de `question` et de tous les `say` divisés par 3,0 (3,2 en anglais), plus 0,5 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 45 et 300 s.
 - Juge toi-même la longueur, avant d'écrire, en comptant les idées :
   1. Liste dans ta tête les idées sans lesquelles on ne comprend pas la réponse à l'accroche. En général 3 à 6.
   2. Chaque idée demande 3 à 4 scènes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
@@ -50,6 +50,8 @@ Mauvaises accroches :
 - "Dis-moi pourquoi 97 % des gens se trompent ?" : chiffre inventé.
 - "Le secret incroyable que personne ne veut te dire !" : promesse vide, aucun sujet.
 - "Dans cette vidéo, nous allons parler de la lumière et de ses propriétés." : pas de question, trop long.
+
+Question au spectateur (`question`, obligatoire) : chaque partie finit par une question courte posée au spectateur, juste avant l'appel à s'abonner que le code ajoute. Elle porte sur le sujet et parle de lui, pour donner envie de répondre en commentaire. 60 caractères au plus, finit par « ? ». Exemples : "Et toi, dans quelle position tu dors ?", "Et toi, tu relis tes cours ou tu les oublies ?". Pas de question générale ("Ça t'a plu ?") ni de quiz dont la réponse est dans la vidéo.
 
 ## 4. Écrire pour la voix
 
@@ -197,6 +199,7 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
       "n": 1,
       "title": "Pourquoi le ciel est bleu",
       "hook": "Dis-moi pourquoi le ciel est bleu et pas violet ?",
+      "question": "Et toi, tu regardes souvent le ciel au coucher du soleil ?",
       "scenes": [
         {
           "type": "key-title",
@@ -338,6 +341,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `numéro « n »` | numérote les parties 1, 2, 3 dans l'ordre |
 | `« title » est manquant ou vide` ou `« say » est manquant ou vide` | remplis ce champ |
 | `l'accroche « hook »` | écris une accroche (section 3) |
+| `la « question » au spectateur` | ajoute `question` à la partie (section 3) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
 | `type inconnu` | prends un des 15 types de la section 5 |
 | `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |

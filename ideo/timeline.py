@@ -191,7 +191,7 @@ def _build(job: Path, n: int, total: int) -> Path:
             written = align.align_words(align.script_words(scenes[name]["props"]["text"]), relative,
                                         clip["end"] - clip["start"])
             captions.extend(caption_groups(_shift(written, clip["start"])))
-        if name == "seg_00_hook":
+        if name in ("seg_00_hook", "seg_98_question"):
             segments.append({"kind": "hook", "from": begin, "to": finish, "props": {"text": texts[name]}, "items": []})
         elif name == "seg_99_outro":
             segments.append({"kind": "outro", "from": begin, "to": finish, "props": {"text": texts[name]}})

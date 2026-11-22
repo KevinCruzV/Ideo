@@ -7,6 +7,7 @@
       "n": 1,
       "title": "Pourquoi le ciel est bleu",
       "hook": "Dis-moi pourquoi le ciel est bleu et pas violet ?",
+      "question": "Et toi, tu regardes souvent le ciel au coucher du soleil ?",
       "scenes": [
         {
           "type": "key-title",

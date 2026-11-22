@@ -173,7 +173,7 @@ def test_engine_failure_falls_back_to_edge_and_says_so(kyutai, job_with_plan, mo
     kyutai.fail = "La commande a échoué (code 1) : moshi"
     monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
     paths = voice.voice_part(job_with_plan, 1)
-    assert len(paths) == 7 and len(fake_backend.calls) == 7
+    assert len(paths) == 8 and len(fake_backend.calls) == 8
     info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
     assert info["engine"] == "edge" and "La commande a échoué" in info["fallback"] and "\n" not in info["fallback"]
 
@@ -232,7 +232,7 @@ def test_missing_local_voice_is_recorded_for_the_online_voice(job_with_plan, mon
     voice.voice_part(job_with_plan, 1)
     info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
     assert info == {"engine": "edge", "fallback": None, "local_missing": True}
-    assert len(fake_backend.calls) == 7
+    assert len(fake_backend.calls) == 8
 
 
 def test_all_segments_to_redo_share_one_call_per_pass(kyutai, job_with_plan, monkeypatch):
@@ -240,7 +240,7 @@ def test_all_segments_to_redo_share_one_call_per_pass(kyutai, job_with_plan, mon
     texts.update(script_words(job_with_plan))
     voice.voice_part(job_with_plan, 1, backend=voice.KyutaiBackend(job_with_plan / "logs" / "v.log"))
     ids = [[r["id"] for r in call["requests"]] for call in kyutai.calls]
-    assert len(ids) == 3 and len(ids[0]) == 7
+    assert len(ids) == 3 and len(ids[0]) == 8
     assert ids[1] == ["seg_01", "seg_03", "seg_04"] and ids[2] == ["seg_03"]
 
 

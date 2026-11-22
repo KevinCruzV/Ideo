@@ -16,7 +16,7 @@ def test_voice_part_creates_one_wav_per_segment(job_with_plan, fake_backend, fak
     paths = voice.voice_part(job_with_plan, 1, backend=fake_backend)
     names = [p.name for p in paths]
     assert names == ["seg_00_hook.wav", "seg_01.wav", "seg_02.wav", "seg_03.wav", "seg_04.wav", "seg_05.wav",
-                     "seg_99_outro.wav"]
+                     "seg_98_question.wav", "seg_99_outro.wav"]
     assert all(p.parent == job_with_plan / "parts" / "01" for p in paths)
     assert all(p.with_suffix(".words.json").exists() for p in paths)
     hook = common.load_json(paths[0].with_suffix(".words.json"))
@@ -51,15 +51,15 @@ def test_voice_part_skips_existing_segments(job_with_plan, fake_backend, fake_wh
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
     first = len(fake_backend.calls)
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert len(fake_backend.calls) == first == 7
-    assert len(fake_whisper) == 7
+    assert len(fake_backend.calls) == first == 8
+    assert len(fake_whisper) == 8
 
 
 def test_voice_part_regenerates_segment_missing_words(job_with_plan, fake_backend, fake_whisper):
     paths = voice.voice_part(job_with_plan, 1, backend=fake_backend)
     paths[2].with_suffix(".words.json").unlink()
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
-    assert len(fake_backend.calls) == 8
+    assert len(fake_backend.calls) == 9
 
 
 def test_voice_part_uses_plan_language(job_with_plan, fake_backend, fake_whisper):
@@ -311,3 +311,17 @@ def test_only_segments_whose_sent_text_changes_are_redone(job_with_plan, fake_ba
 def test_segments_without_numbers_have_nothing_stale(job_with_plan, fake_backend, fake_whisper):
     voice.voice_part(job_with_plan, 1, backend=fake_backend)
     assert voice.stale(job_with_plan, 1) == []
+
+
+def test_question_is_said_just_before_the_call_to_subscribe(job_with_plan):
+    plan = common.load_json(job_with_plan / "plan.json")
+    names = [name for name, _ in voice.segments(plan, plan["parts"][0])]
+    assert names[-2:] == ["seg_98_question", "seg_99_outro"]
+    assert dict(voice.segments(plan, plan["parts"][0]))["seg_98_question"] == plan["parts"][0]["question"]
+
+
+def test_old_plan_without_question_still_produces(job_with_plan):
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["parts"][0].pop("question")
+    names = [name for name, _ in voice.segments(plan, plan["parts"][0])]
+    assert "seg_98_question" not in names and names[-1] == "seg_99_outro"

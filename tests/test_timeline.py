@@ -113,8 +113,9 @@ def test_timeline_segments_are_contiguous_and_cover_the_part(job_with_offsets):
     assert segs[-1]["to"] == tl["durationInFrames"]
     offsets = common.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
     assert tl["durationInFrames"] == math.ceil(round(offsets[-1]["end"] * 30, 6))
-    assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "outro"]
-    assert [s.get("type") for s in segs[1:-1]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
+    assert [s["kind"] for s in segs] == ["hook", "scene", "scene", "scene", "scene", "scene", "hook", "outro"]
+    assert [s.get("type") for s in segs[1:-2]] == ["key-title", "shape-diagram", "fact-chips", "stack-list", "quote"]
+    assert segs[-2]["props"]["text"] == "Et toi, tu relis tes cours ou tu les oublies ?"
     assert segs[0]["props"]["text"].startswith("Dis-moi")
     assert segs[-1]["props"]["text"] == "Si ça t'a plu, abonne-toi pour la prochaine !"
 

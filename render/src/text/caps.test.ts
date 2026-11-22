@@ -48,6 +48,12 @@ const SPLIT_CAPS: Record<string, { cap: number; head: FitOptions; key: FitOption
     key: { maxWidth: BOX_W - 20, maxLines: 1, max: 170, min: 64 },
     tail: { maxWidth: BOX_W - 20, maxLines: 4, max: 84, min: 56 },
   },
+  question: {
+    cap: 60,
+    head: { maxWidth: BOX_W - 20, maxLines: 3, max: 92, min: 56 },
+    key: { maxWidth: BOX_W - 20, maxLines: 1, max: 170, min: 64 },
+    tail: { maxWidth: BOX_W - 20, maxLines: 4, max: 84, min: 56 },
+  },
   "key-title.text": {
     cap: 90,
     head: { maxWidth: BOX_W, maxLines: 4, max: 100, min: 56 },

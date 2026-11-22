@@ -140,7 +140,7 @@ for _kind, _schema in SCHEMA.items():
     if _kind in PICTO_KINDS:
         _schema["optional"]["picto"] = PICTO
 
-PART_CAPS = {"hook": 60, "title": 40}
+PART_CAPS = {"hook": 60, "title": 40, "question": 60}
 TEXT_CAPS = {
     "key-title": {"text": 90, "accent": 40},
     "person-card": {"name": 48, "role": 100},
