@@ -1,15 +1,14 @@
 ---
 name: ideo
 description: Transforme une vidéo YouTube en vidéo verticale courte qui l'explique (voix off et formes en papier découpé). À utiliser quand l'utilisateur donne une URL YouTube avec "short", "vidéo courte", "explique-moi cette vidéo" ou "ideo", ou demande "approfondis ce point" après une vidéo ideo.
-model: haiku
+model: sonnet
 ---
 
 # ideo
 
-Ce skill tourne sur Haiku, le modèle le moins cher. L'utilisateur n'intervient que pour donner ses retours après la vidéo : entre l'URL et la vidéo finie, ne lui demande que la musique (étape 5) : ni validation du plan, ni changement de modèle. Pose toutes tes questions avec l'outil AskUserQuestion, pour rester dans le même tour. Quand un travail demande un modèle plus capable, confie-le à un sous-agent avec l'outil Agent et le bon `model` :
-- Haiku (toi) : tout le reste.
-- Sonnet : le plan quand check échoue 3 fois de suite (étape 4), et l'entretien (étape 8).
-- Opus : seulement si le sous-agent Sonnet a échoué sur la même chose.
+Ce skill tourne sur Sonnet. L'utilisateur n'intervient que pour donner ses retours après la vidéo : entre l'URL et la vidéo finie, ne lui demande que la musique (étape 5) : ni validation du plan, ni changement de modèle. Pose toutes tes questions avec l'outil AskUserQuestion, pour rester dans le même tour. Quand un travail demande un modèle plus capable, confie-le à un sous-agent avec l'outil Agent et le bon `model` :
+- Sonnet (toi) : tout, y compris l'entretien (étape 8).
+- Opus : seulement quand check échoue 3 fois de suite (étape 4).
 
 Règles pour toute la tâche :
 - Lis le guide (`plan-guide.md`), les leçons (`lecons.md`) et `transcript_compact.md` UNE seule fois chacun : chaque ligne est lue une fois, jamais deux. Pour la transcription, c'est un seul Read, ou les Read par morceaux que donne la ligne `OK prepare` (étape 2). Ne les relis jamais. Seule exception : l'étape 2 de "Approfondis ce point".
@@ -31,7 +30,7 @@ Règles pour toute la tâche :
 3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide, y compris le filtre anti-slop de la section 4 (« Écrire sans tics d'IA »). Si un skill antislop est installé, ne le charge pas : ses règles utiles à la voix off sont déjà dans le guide, et `check` les vérifie.
 4. Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` (pas en arrière-plan).
    - Lignes `ERREUR check : ...` : corrige seulement ce qu'elles nomment, avec l'outil Edit sur `JOB/plan.json`, puis relance check. Si Edit refuse parce que le fichier a changé, lis `JOB/plan.json` une fois avec Read, puis refais l'Edit.
-   - Lance check 3 fois au plus de suite. Après le 3e échec, lance un sous-agent avec l'outil Agent, modèle `sonnet`, avec cette consigne : "Lis <chemin du guide>, puis JOB/transcript_compact.md une fois. Corrige JOB/plan.json avec Edit jusqu'à ce que `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` affiche OK, 3 lancements au plus. Réponds par la dernière ligne de check." S'il échoue encore, relance la même consigne avec le modèle `opus`. Si Opus échoue aussi, montre les lignes d'erreur à l'utilisateur et arrête-toi.
+   - Lance check 3 fois au plus de suite. Après le 3e échec, lance un sous-agent avec l'outil Agent, modèle `opus`, avec cette consigne : "Lis <chemin du guide>, puis JOB/transcript_compact.md une fois. Corrige JOB/plan.json avec Edit jusqu'à ce que `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` affiche OK, 3 lancements au plus. Réponds par la dernière ligne de check." S'il échoue aussi, montre les lignes d'erreur à l'utilisateur et arrête-toi.
    - Relecture : quand check réussit, il peut afficher des lignes `RELIRE : <endroit> : <constat>`. Ce ne sont pas des erreurs. Corrige chacune avec Edit sur `JOB/plan.json`, sauf si la correction rendrait le plan faux ou contraire à la source. Fais toutes les corrections, puis relance check. Si de nouvelles lignes `RELIRE` apparaissent (une correction peut en créer), corrige-les et relance check une dernière fois : deux passages de correction au plus. S'il reste des lignes `RELIRE` après le deuxième, continue sans les corriger. Ces passages ne comptent pas dans les 3 lancements. Quand tu allonges ou réécris un `say`, vérifie que ses `items` restent ancrés sur des mots qui existent encore, et que le dernier est dans la dernière phrase.
 5. Ligne `OK check : ...` : ne montre pas le plan et n'attends pas de validation. Fais choisir la musique, avec l'outil AskUserQuestion :
    - Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique --liste`. Propose 2 ou 3 types de musique adaptés au sujet et au ton (par exemple « funk groovy » pour un sujet léger, « cinématique » pour une histoire ou un sujet grave, « acoustique » pour la santé ou le quotidien, « électro légère » pour la technologie), plus les morceaux de la liste qui collent, plus « aucune ». Jamais de lofi.

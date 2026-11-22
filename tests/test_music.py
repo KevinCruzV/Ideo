@@ -123,7 +123,7 @@ def test_attribution_with_and_without_the_licence_file(library, tmp_path):
 
 
 def test_config_defaults_and_keys(home, tmp_path):
-    assert config.music_enabled() is False and config.music_level_db() == -30
+    assert config.music_enabled() is False and config.music_level_db() == -27
     assert config.music_dir() == home / "musique"
     write_config(home, {"music": True, "music_dir": str(tmp_path / "x"), "music_level_db": -25})
     assert config.music_enabled() is True and config.music_dir() == tmp_path / "x" and config.music_level_db() == -25
@@ -155,7 +155,7 @@ def test_music_is_mixed_at_minus_14_lufs_with_a_chosen_track(job_with_voice_fixt
     info = common.load_json(job / "parts" / "01" / "music.json")
     assert info["track"] in {t.name for t in music.tracks(library)}
     assert info["voice_lufs"] is not None and info["music_under_voice_lufs"] is not None
-    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 28
+    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 25
     assert history.load()["jobs"][job.name]["music"] == info["track"]
 
 
@@ -307,7 +307,7 @@ def test_the_music_is_very_discreet_by_default(job_with_voice_fixtures, library,
     music.write_choice(job, "alpha")
     assemble.assemble_part(job, 1)
     info = common.load_json(job / "parts" / "01" / "music.json")
-    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 28
+    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 25
     assert (music.PAUSE_RISE_DB, music.CLIP_DROP_DB) == (6.0, 4.0)
 
 
@@ -377,14 +377,14 @@ def dynamic_track(path, seconds=12.0):
     return Path(path)
 
 
-def test_the_gap_between_voice_and_music_is_at_least_28_db_everywhere(job_with_voice_fixtures, library, home):
+def test_the_gap_between_voice_and_music_is_at_least_25_db_everywhere(job_with_voice_fixtures, library, home):
     job = job_with_voice_fixtures
     dynamic_track(library / "dynamique.wav")
     write_config(home, {"music_dir": str(library)})
     music.write_choice(job, "dynamique")
     assemble.assemble_part(job, 1)
     info = common.load_json(job / "parts" / "01" / "music.json")
-    assert info["min_gap_db"] >= 27.9
+    assert info["min_gap_db"] >= 24.9
     assert info["gap_corrected_db"] >= 0
 
 
@@ -402,7 +402,7 @@ def test_every_default_mix_keeps_the_gap_in_the_record(job_with_voice_fixtures, 
     write_config(home, {"music_dir": str(library)})
     music.write_choice(job, "alpha")
     assemble.assemble_part(job, 1)
-    assert common.load_json(job / "parts" / "01" / "music.json")["min_gap_db"] >= 27.9
+    assert common.load_json(job / "parts" / "01" / "music.json")["min_gap_db"] >= 24.9
 
 
 def test_musique_lien_prints_only_the_pixabay_search_address(capsys):
