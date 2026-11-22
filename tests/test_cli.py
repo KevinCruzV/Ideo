@@ -212,7 +212,7 @@ def test_produce_invalidates_part_when_plan_changes(produce_job, capsys):
     edit_first_say(job, "Aujourd'hui nous allons voir pourquoi notre mémoire laisse filer presque tout ce que "
                         "nous venons de lire ou d'apprendre, en quelques jours à peine seulement.")
     assert cli.main(["produce", str(job)]) == 0
-    assert len(backend.calls) == first + 8
+    assert len(backend.calls) == first + 7
     assert renders == [1, 1]
     assert "quelques jours à peine" in backend.calls[first + 1][0]
 

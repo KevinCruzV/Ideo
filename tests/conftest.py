@@ -93,7 +93,6 @@ VOICE_DURATIONS = {
     "seg_03": 1.0,
     "seg_04": 1.0,
     "seg_05": 0.6,
-    "seg_98_question": 0.8,
     "seg_99_outro": 0.8,
 }
 
@@ -105,8 +104,7 @@ VOICE_WORDS = {
     "seg_03": ["Un", "chercheur", "allemand", "a", "mesuré", "ce", "phénomène."],
     "seg_04": ["Heureusement", "il", "existe", "des", "gestes", "simples."],
     "seg_05": ["Voici", "son", "résultat."],
-    "seg_98_question": ["Et", "toi,", "tu", "relis", "tes", "cours", "ou", "tu", "les", "oublies", "?"],
-    "seg_99_outro": ["Abonne-toi", "pour", "la", "suite."],
+    "seg_99_outro": ["Et", "toi,", "tu", "relis", "tes", "cours", "ou", "tu", "les", "oublies\u00a0?", "Abonne-toi", "pour", "la", "suite."],
 }
 
 

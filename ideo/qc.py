@@ -15,7 +15,7 @@ CLIP_WINDOW = 0.3
 HARD_MAX = 300
 FAITHFUL = 0.80
 FLAT_SHARE = 0.25
-BOUNDARY_SEGMENTS = ("seg_00_hook", "seg_98_question", "seg_99_outro")
+BOUNDARY_SEGMENTS = ("seg_00_hook", "seg_99_outro")
 LEADING = ("'", "’", "-")
 WORD = re.compile(r"\w", re.UNICODE)
 

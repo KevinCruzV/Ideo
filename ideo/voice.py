@@ -22,8 +22,7 @@ ALERT_THRESHOLD = 0.80
 MAX_REDOS = 3
 REDO_TEMPS = (0.75, 0.9, 1.0)
 HOOK = "seg_00_hook"
-QUESTION = "seg_98_question"
-BOUNDARY_SEGMENTS = (HOOK, QUESTION, "seg_99_outro")
+BOUNDARY_SEGMENTS = (HOOK, "seg_99_outro")
 REASON_LENGTH = 90
 
 EDGE_VOICES = {
@@ -230,8 +229,9 @@ def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
         outro = i18n.t("outro_last", lang)
     segments = [("seg_00_hook", part["hook"])]
     segments += [(f"seg_{i:02d}", scene["say"]) for i, scene in enumerate(part["scenes"], start=1)]
-    if isinstance(part.get("question"), str) and part["question"].strip():
-        segments.append((QUESTION, part["question"]))
+    question = part.get("question")
+    if isinstance(question, str) and question.strip():
+        outro = f"{question.strip()} {outro}"
     segments.append(("seg_99_outro", outro))
     return segments
 

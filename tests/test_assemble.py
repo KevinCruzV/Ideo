@@ -4,8 +4,8 @@ import pytest
 
 from ideo import assemble, common
 
-DURATIONS = [0.8, 1.0, 1.0, 1.0, 1.0, 0.6, 0.8, 0.8]
-NAMES = ["seg_00_hook", "seg_01", "seg_02", "seg_03", "seg_04", "seg_05", "seg_98_question", "seg_99_outro"]
+DURATIONS = [0.8, 1.0, 1.0, 1.0, 1.0, 0.6, 0.8]
+NAMES = ["seg_00_hook", "seg_01", "seg_02", "seg_03", "seg_04", "seg_05", "seg_99_outro"]
 
 
 def wav_info(path):
@@ -44,14 +44,14 @@ def test_assemble_inserts_quote_and_sfx_clips_and_writes_offsets(job_with_voice_
         assert o["end"] - o["start"] == pytest.approx(d, abs=0.05)
     starts = [o["start"] for o in offsets]
     assert starts[:4] == pytest.approx([0.0, 1.4, 2.9, 4.4], abs=0.05)
-    assert starts[4:] == pytest.approx([8.4, 9.9, 15.92, 17.22], abs=0.05)
+    assert starts[4:] == pytest.approx([8.4, 9.9, 15.92], abs=0.05)
     sfx = offsets[3]["clip"]
     assert sfx["kind"] == "sfx"
     assert sfx["start"] == pytest.approx(5.65, abs=0.05) and sfx["end"] - sfx["start"] == pytest.approx(2.5, abs=0.05)
     quote = offsets[5]["clip"]
     assert quote["kind"] == "quote"
     assert quote["start"] == pytest.approx(10.75, abs=0.05) and quote["end"] - quote["start"] == pytest.approx(4.92, abs=0.05)
-    assert [o["clip"] for i, o in enumerate(offsets) if i not in (3, 5)] == [None] * 6
+    assert [o["clip"] for i, o in enumerate(offsets) if i not in (3, 5)] == [None] * 5
     assert total == pytest.approx(offsets[-1]["end"], abs=0.05)
 
 

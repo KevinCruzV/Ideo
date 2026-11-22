@@ -116,7 +116,7 @@ def test_defaults_are_a_calm_narration(server, tmp_path):
     eleven.ElevenLabsBackend().synthesize("Salut.", "fr", tmp_path / "a.wav")
     body = server.requests[0]["body"]
     assert body["model_id"] == "eleven_multilingual_v2"
-    assert body["voice_settings"]["stability"] == 0.45 and body["voice_settings"]["style"] == 0.3 and body["voice_settings"]["speed"] == 0.95
+    assert body["voice_settings"]["stability"] == 0.45 and body["voice_settings"]["style"] == 0.3 and body["voice_settings"]["speed"] == 1.0
 
 
 def test_continuity_uses_previous_request_ids_then_drops_previous_text(server, tmp_path):
@@ -230,7 +230,7 @@ def tree_text(root):
 def test_voice_part_with_elevenlabs_writes_script_words_and_costs(eleven_job, server):
     job = eleven_job
     paths = voice.voice_part(job, 1)
-    assert len(paths) == 8 and len(server.requests) == 8
+    assert len(paths) == 7 and len(server.requests) == 7
     info = common.load_json(job / "parts" / "01" / "voice-info.json")
     plan = common.load_json(job / "plan.json")
     total = sum(len(t) for _, t in voice.segments(plan, plan["parts"][0]))
@@ -285,7 +285,7 @@ def test_at_most_one_retry_and_only_under_080(eleven_job, server, monkeypatch):
 
     monkeypatch.setattr(voice, "retranscribe", fake)
     voice.voice_part(eleven_job, 1)
-    assert len(server.requests) == 8
+    assert len(server.requests) == 7
     server.requests.clear()
     import shutil
 
@@ -294,7 +294,7 @@ def test_at_most_one_retry_and_only_under_080(eleven_job, server, monkeypatch):
 
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: next(scores))
     voice.voice_part(eleven_job, 1)
-    assert len(server.requests) == 9
+    assert len(server.requests) == 8
     quality = common.load_json(eleven_job / "parts" / "01" / "voice-quality.json")
     assert quality["seg_00_hook"] == 0.3
     info = common.load_json(eleven_job / "parts" / "01" / "voice-info.json")
@@ -306,7 +306,7 @@ def test_failure_falls_back_to_the_online_voice_and_says_so(eleven_job, server, 
     monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
     voice.voice_part(eleven_job, 1)
     info = common.load_json(eleven_job / "parts" / "01" / "voice-info.json")
-    assert info["engine"] == "edge" and "quota" in info["fallback"] and len(fake_backend.calls) == 8
+    assert info["engine"] == "edge" and "quota" in info["fallback"] and len(fake_backend.calls) == 7
     assert KEY not in tree_text(eleven_job)
 
 
@@ -436,7 +436,7 @@ def test_produce_line_carries_the_character_count(produce_job, server, monkeypat
     assert cli.main(["produce", str(job)]) == 0
     line = capsys.readouterr().out.strip().splitlines()[0]
     assert f" ; Voix : ElevenLabs, {total} caractères" in line and KEY not in line
-    assert len(server.requests) == 8
+    assert len(server.requests) == 7
 
 
 def test_produce_line_says_the_fallback(produce_job, server, monkeypatch, capsys):
