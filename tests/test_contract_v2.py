@@ -13,10 +13,13 @@ PICTOS_TEXT = ("globe, flag, pin, city, house, factory, bank, coin, chart-up, ch
 HEALTH_PICTOS = ("lungs, stomach, spine, bone, muscle, tooth, blood, pill, syringe, virus, bed, pillow, moon, thermometer, "
                  "scale-weight, apple, dumbbell, running-shoe, stethoscope, hospital")
 
+SLEEP_PICTOS = "raised-bed, stomach-sleeper, knee-pillow, snore, pelvis-tilt, numb-arm"
 
-def test_pictos_are_the_52_names_of_the_contract_plus_the_20_health_ones():
-    assert scene_schema.PICTOS == tuple(PICTOS_TEXT.split(", ")) + tuple(HEALTH_PICTOS.split(", "))
-    assert len(scene_schema.PICTOS) == 72 == len(set(scene_schema.PICTOS))
+
+def test_pictos_are_the_52_names_of_the_contract_plus_the_health_and_sleep_ones():
+    expected = tuple(PICTOS_TEXT.split(", ")) + tuple(HEALTH_PICTOS.split(", ")) + tuple(SLEEP_PICTOS.split(", "))
+    assert scene_schema.PICTOS == expected
+    assert len(scene_schema.PICTOS) == 78 == len(set(scene_schema.PICTOS))
 
 
 KICKER_KINDS = {
@@ -353,5 +356,5 @@ def test_new_scene_types_are_known_to_check(job_with_fixtures):
 
 
 def test_health_pictos_are_accepted():
-    for name in HEALTH_PICTOS.split(", "):
+    for name in HEALTH_PICTOS.split(", ") + SLEEP_PICTOS.split(", "):
         assert scene_schema.check_props("key-title", {"text": "T", "picto": name}, "x") == []
