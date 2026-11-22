@@ -3,6 +3,7 @@ import copy
 import pytest
 
 from ideo import common, review
+from ideo.scene_schema import JOBS, PICTOS
 
 
 def scene(kind="stamp", say="Une phrase de huit mots exactement, ni plus ni moins.", props=None, **extra):
@@ -34,7 +35,8 @@ def only(plan, job, fragment, seconds=120):
 def varied(n):
     kinds = ["stamp", "key-title", "quote", "counter", "person-card", "mascot", "stamp"]
     return [scene(kinds[i % 2 * 0 + i % 7] if False else ("stamp" if i % 2 == 0 else "person-card"),
-                  props={"text": "x"} if i % 2 == 0 else {"name": "x", "picto": "globe"}) for i in range(n)]
+                  props={"text": "x"} if i % 2 == 0 else {"name": f"x{i}", "job": JOBS[i % len(JOBS)], "picto": PICTOS[i % len(PICTOS)]})
+            for i in range(n)]
 
 
 def test_every_line_has_the_relire_format(job):
@@ -205,7 +207,7 @@ def test_review_stops_after_three_emissions_and_is_recorded(job):
 
 
 def test_clean_plan_has_no_findings_and_records_nothing(job):
-    ok = plan_of(*[scene(props={"text": "T", "picto": "globe"}, kind="stamp" if i % 2 else "quote",
+    ok = plan_of(*[scene(props={"text": "T", "picto": ["globe", "sun", "moon", "leaf"][i]}, kind="stamp" if i % 2 else "quote",
                          say="En 1991 le bloc de l'Est s'est effondré proprement." if i == 0 else
                          ["Alors le monde a changé de visage pour tous.", "Voici la suite de cette longue histoire commune."][i % 2])
                   for i in range(4)])
@@ -483,3 +485,53 @@ def test_new_findings_have_automatic_lessons():
     from ideo import codes
 
     assert "map" in codes.LESSONS["route-sans-carte"] and "body" in codes.LESSONS["corps-sans-dessin"]
+
+
+def card(name, **look):
+    return scene(kind="person-card", props={"name": name, **look})
+
+
+def test_person_card_without_any_appearance_prop(job):
+    plan = plan_of(card("A", job="police"), card("B"), scene(), card("C"))
+    found = [t for c, t in review.coded(plan, job, 120) if c == "personnage-sans-apparence"]
+    assert len(found) == 1 and "scènes 2, 4" in found[0] and found[0].startswith("RELIRE : ")
+
+
+def test_photo_card_needs_no_appearance(job):
+    plan = plan_of(scene(kind="person-card", props={"name": "A", "photo": True}))
+    assert "personnage-sans-apparence" not in codes_of(plan, job)
+
+
+def test_two_different_people_with_the_same_look(job):
+    plan = plan_of(card("A", job="police", gender="man"), scene(), card("B", gender="man", job="police"))
+    found = [t for c, t in review.coded(plan, job, 120) if c == "personnages-identiques"]
+    assert len(found) == 1 and "scènes 1 et 3" in found[0]
+
+
+def test_same_person_keeps_the_same_look_without_warning(job):
+    plan = plan_of(card("A", job="police"), scene(), card("a", job="police"))
+    assert "personnages-identiques" not in codes_of(plan, job)
+
+
+def test_different_looks_are_fine(job):
+    plan = plan_of(card("A", job="police", gender="man"), scene(), card("B", job="police", gender="woman"))
+    codes = codes_of(plan, job)
+    assert "personnages-identiques" not in codes and "personnage-sans-apparence" not in codes
+
+
+def test_same_picto_more_than_twice_in_a_video(job):
+    plan = plan_of(*[scene(props={"text": "x", "picto": "knife"}) if i % 2 == 0 else scene(kind="versus", props={"left": "a", "right": "b", "left_picto": "knife", "right_picto": "coffin"})
+                     for i in range(4)])
+    found = [t for c, t in review.coded(plan, job, 120) if c == "picto-repete"]
+    assert len(found) == 1 and "« knife » (4 fois)" in found[0]
+
+
+def test_picto_in_icon_grid_cells_counts_and_twice_is_fine(job):
+    cells = {"cells": [{"picto": "globe", "label": "a"}, {"picto": "globe", "label": "b"}]}
+    assert "picto-repete" not in codes_of(plan_of(scene(kind="icon-grid", props=cells)), job)
+    assert "picto-repete" in codes_of(plan_of(scene(kind="icon-grid", props=cells), scene(props={"text": "x", "picto": "globe"})), job)
+
+
+def test_flags_never_count_as_repeated_pictos(job):
+    plan = plan_of(*[scene(props={"text": "x", "picto": "flag:fr"}) for _ in range(4)])
+    assert "picto-repete" not in codes_of(plan, job)

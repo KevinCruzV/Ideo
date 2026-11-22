@@ -14,6 +14,8 @@ LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
 LONG_SAY = 30
 BARE_WORDS = 3
 MAX_VERSUS = 3
+MAX_SAME_PICTO = 2
+APPEARANCE = ("hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin", "gender", "age", "job")
 MIN_CITED = 3
 ROUTE_WORDS = frozenset({"route", "routes", "trajet", "trajets", "chemin", "chemins", "traverse", "traversent", "traversant",
                          "frontiere", "frontieres", "canal", "canaux"})
@@ -223,6 +225,39 @@ def _scene_list(indexes: list[int]) -> str:
     return ", ".join(str(i) for i in indexes)
 
 
+def _look(props: dict) -> tuple:
+    return tuple((k, str(props[k]).strip().lower()) for k in APPEARANCE if props.get(k) not in (None, "", False))
+
+
+def _unseen_cards(scenes: list) -> list[tuple[int, dict]]:
+    return [(i, s.get("props") or {}) for i, s in enumerate(scenes, 1)
+            if s.get("type") == "person-card" and isinstance(s.get("props"), dict) and s["props"].get("photo") is not True]
+
+
+def _same_look(cards: list[tuple[int, dict]]) -> tuple[int, int] | None:
+    seen: dict = {}
+    for i, props in cards:
+        look = _look(props)
+        if not look:
+            continue
+        name = str(props.get("name", "")).strip().lower()
+        for other, other_name in seen.get(look, []):
+            if other_name != name:
+                return other, i
+        seen.setdefault(look, []).append((i, name))
+    return None
+
+
+def _pictos_of(scene: dict) -> list[str]:
+    props = scene.get("props") or {}
+    if not isinstance(props, dict):
+        return []
+    found = [props.get(k) for k in ("picto", "left_picto", "right_picto")]
+    cells = props.get("cells")
+    found += [c.get("picto") for c in cells if isinstance(c, dict)] if isinstance(cells, list) else []
+    return [v for v in found if isinstance(v, str) and v and not v.startswith(scene_schema.FLAG_PREFIX)]
+
+
 def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
     for code, where, finding, todo in slop.findings(part, n, lang):
         out.append((3, *_line(code, where, finding, todo)))
@@ -270,6 +305,26 @@ def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
         if kind in ("fact-chips", "stack-list", "icon-grid") and _bare_names(scene):
             out.append((3, *_line("liste-nue", _scene_where(n, i), "une liste de noms nus, sans chiffre ni explication",
                                  "Ajoute un chiffre ou un détail à chaque entrée, ou remplace la scène par un dessin")))
+    cards = _unseen_cards(scenes)
+    bare = [i for i, props in cards if not _look(props)]
+    if bare:
+        out.append((2, *_line("personnage-sans-apparence", f"{where}, scène{'s' if len(bare) > 1 else ''} {_scene_list(bare)}",
+                              "« person-card » sans aucune prop d'apparence",
+                              "Ajoute gender, age, job ou hair, outfit, hat pour que le personnage ressemble à la personne")))
+    twins = _same_look(cards)
+    if twins:
+        out.append((2, *_line("personnages-identiques", f"{where}, scènes {twins[0]} et {twins[1]}",
+                              "deux personnes différentes ont exactement la même apparence",
+                              "Change gender, age, job, hair, hat ou outfit de l'une des deux")))
+    counts: dict = {}
+    for scene in scenes:
+        for name in _pictos_of(scene):
+            counts[name.strip().lower()] = counts.get(name.strip().lower(), 0) + 1
+    repeated = sorted(n for n, c in counts.items() if c > MAX_SAME_PICTO)
+    if repeated:
+        listing = ", ".join(f"« {n} » ({counts[n]} fois)" for n in repeated[:3])
+        out.append((3, *_line("picto-repete", where, f"un même picto revient plus de {MAX_SAME_PICTO} fois : {listing}",
+                              "Remplace les répétitions par d'autres pictos de la liste ou retire-les")))
     drawn = sum(1 for s in scenes if _has_drawing(s))
     if count and drawn * 2 < count:
         bare = sorted((i for i, s in enumerate(scenes, 1) if not _has_drawing(s)),
