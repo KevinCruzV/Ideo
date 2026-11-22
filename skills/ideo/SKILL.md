@@ -32,6 +32,12 @@ Règles pour toute la tâche :
 5. Ligne `OK check : ... Relecture : <chemin de plan.md>`. Elle donne le nombre de scènes et la durée estimée : dis-les à l'utilisateur. Dis-lui aussi, sans montrer le contenu :
    "Le plan est prêt : <chemin de plan.md>. Tu peux modifier `hook` et `say` dans `JOB/plan.json`, ou me demander une correction précise. Dis go pour lancer la vidéo."
    Attends sa réponse. S'il demande une correction : fais-la avec Edit sur `plan.json`, puis retourne à l'étape 4. S'il a modifié le fichier lui-même : retourne à l'étape 4.
+5 bis. Musique de fond, à chaque vidéo, après le go et avant `produce` :
+   - Propose 2 ou 3 types de musique adaptés au sujet et au ton de la vidéo (par exemple « funk groovy » pour un sujet léger, « cinématique » pour une histoire ou un sujet grave, « acoustique » pour la santé ou le quotidien, « électro légère » pour la technologie), plus « aucune ». Jamais de lofi. Pose la question avec l'outil AskUserQuestion s'il est disponible, sinon en une ligne.
+   - « aucune » : lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB aucune`.
+   - Un type : lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique-lien "<type en anglais>"`, donne le lien à l'utilisateur et dis : « Écoute, clique sur Téléchargement gratuit sur le morceau qui te plaît, puis dis-moi c'est bon. » À sa réponse, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB --dernier` et montre la ligne `OK musique : ...` (ou l'erreur, puis attends qu'il ait téléchargé).
+   - S'il donne un fichier ou un nom de morceau déjà utilisé, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB <nom ou chemin>`.
+   La musique est mixée très bas sous la voix : ne propose pas de la monter.
 6. Après son go, lance en arrière-plan :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo produce JOB`
    Attends la notification de fin. Si l'utilisateur demande où en est le rendu, lance `tail -n 3 JOB/logs/progress.log` et donne la réponse en une phrase.
