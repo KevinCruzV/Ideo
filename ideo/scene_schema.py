@@ -9,7 +9,7 @@ OPTIONAL_TEXT = "optional-text"
 PICTO = "picto"
 MAP_CODE = "map-code"
 BOOL = "bool"
-OBJECTS = ("screen", "board", "jar", "door", "scale")
+OBJECTS = ("screen", "board", "jar", "door", "scale", "phone")
 GRID_SHAPES = ("circle", "square", "triangle", "diamond", "arrow", "strip")
 DIAGRAM_SHAPES = ("circle", "square", "triangle", "bar")
 MASCOT_POSES = ("question", "surprise", "montre", "content")
@@ -22,6 +22,7 @@ PICTOS = (
     "lungs", "stomach", "spine", "bone", "muscle", "tooth", "blood", "pill", "syringe", "virus", "bed", "pillow", "moon",
     "thermometer", "scale-weight", "apple", "dumbbell", "running-shoe", "stethoscope", "hospital",
     "raised-bed", "stomach-sleeper", "knee-pillow", "snore", "pelvis-tilt", "numb-arm",
+    "blood-stain", "chalk-outline", "crime-tape", "handcuffs", "knife", "coffin", "tombstone",
 )
 FLAGS = (
     "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
@@ -70,6 +71,9 @@ FACIALS = ("none", "moustache", "beard", "goatee", "sideburns")
 HATS = ("none", "cap", "kepi", "bicorne", "crown", "helmet", "top-hat", "beret", "turban", "laurel", "wig")
 OUTFITS = ("suit", "uniform", "robe", "lab-coat", "casual", "toga", "armor", "dress")
 SKINS = ("light", "tan", "brown", "dark")
+GENDERS = ("woman", "man")
+AGES = ("child", "adult", "old")
+JOBS = ("police", "firefighter", "doctor", "judge", "soldier", "worker", "journalist", "lawyer")
 KICKER_CAP = 28
 
 
@@ -94,7 +98,8 @@ SCHEMA = {
     "person-card": {
         "required": {"name": TEXT},
         "optional": {"role": TEXT, "hair": HAIRS, "hair_color": HAIR_COLORS, "facial": FACIALS, "hat": HATS,
-                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS, "photo": BOOL},
+                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS, "gender": GENDERS, "age": AGES, "job": JOBS,
+                     "photo": BOOL},
         "el": ("avatar", "name", "role"),
     },
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},

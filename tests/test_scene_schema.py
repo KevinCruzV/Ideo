@@ -76,7 +76,7 @@ def test_guide_table_lists_schema_props(kind):
     ("counter", {"to": "2300 mots"}, "« props.to » doit être un nombre"),
     ("fact-chips", {"chips": ["a"] * 7}, "« props.chips » doit être une liste de 1 à 6 textes"),
     ("fact-chips", {"chips": []}, "liste de 1 à 6 textes"),
-    ("object-state", {"object": "fridge", "states": ["a"]}, "une de ces valeurs : screen, board, jar, door, scale"),
+    ("object-state", {"object": "fridge", "states": ["a"]}, "une de ces valeurs : screen, board, jar, door, scale, phone"),
     ("icon-grid", {"cells": [{"shape": "star", "label": "a"}]}, "objets avec « shape », « label »"),
     ("icon-grid", {"cells": [{"label": "a", "icon": "x"}]}, "objets avec"),
     ("timeline", {"marks": [{"label": "a"}]}, "« props.marks »"),
@@ -242,7 +242,7 @@ def test_flags_are_the_ones_the_render_knows():
 
 @pytest.mark.parametrize("name,expected", [
     ("HAIRS", "HAIRS"), ("HAIR_COLORS", "HAIR_COLORS"), ("FACIALS", "FACIALS"), ("HATS", "HATS"), ("OUTFITS", "OUTFITS"),
-    ("SKINS", "SKINS"),
+    ("SKINS", "SKINS"), ("GENDERS", "GENDERS"), ("AGES", "AGES"), ("JOBS", "JOBS"),
 ])
 def test_person_values_are_the_ones_the_render_draws(name, expected):
     assert ts_list("scenes/personLook.ts", name) == getattr(scene_schema, expected)
@@ -253,3 +253,18 @@ def test_person_props_are_the_ones_the_render_reads():
     read = set(re.findall(r"props\.(\w+)", source))
     schema = scene_schema.SCHEMA["person-card"]
     assert read == set(schema["optional"]) - {"role", "kicker", "picto", "photo"}
+
+
+def test_phone_object_is_known_and_drawn():
+    assert scene_schema.check_props("object-state", {"object": "phone", "states": ["Tu es où ?", "Là"]}, "x") == []
+    source = (SCENES_DIR / "ObjectState.tsx").read_text(encoding="utf-8")
+    kinds = re.search(r"const KINDS: ObjectKind\[\] = \[(.*?)\]", source).group(1)
+    assert tuple(re.findall(r'"(\w+)"', kinds)) == scene_schema.OBJECTS
+
+
+def test_person_card_accepts_gender_age_and_job_and_rejects_others():
+    ok = {"name": "N", "gender": "woman", "age": "old", "job": "judge"}
+    assert scene_schema.check_props("person-card", ok, "x") == []
+    for key, bad in (("gender", "ogre"), ("age", "ancient"), ("job", "mage")):
+        errors = scene_schema.check_props("person-card", {"name": "N", key: bad}, "x")
+        assert len(errors) == 1 and f"props.{key}" in errors[0]
