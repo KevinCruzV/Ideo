@@ -23,7 +23,7 @@ export const rotateLying = ([x, y]: P): P => [200 + (y - 160), 160 - (x - 200)];
 const LABEL_MAX = 52;
 const LABEL_MIN = 44;
 
-export const TONE_COLORS: Record<BodyTone, string> = { good: colors.blue, bad: colors.red, neutral: colors.yellow };
+export const toneColor = (tone: BodyTone): string => ({ good: colors.blue, bad: colors.red, neutral: colors.yellow })[tone];
 
 type Mark = { part: BodyPart; label: string };
 
@@ -92,7 +92,7 @@ export const BodyScene: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const pose = bodyPose(props.pose);
   const setting = bodySetting(props.setting);
   const tone = bodyTone(props.tone);
-  const color = TONE_COLORS[tone];
+  const color = toneColor(tone);
   const rig = rigOf(pose);
   const marks = marksOf(props.marks);
   const top = areaTop(props);

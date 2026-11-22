@@ -16,6 +16,7 @@ export type Segment = {
 export type Chapter = { part: number; total: number; title: string; label: string };
 
 export type Timeline = {
+  mood?: "dark";
   fps: number;
   width: number;
   height: number;

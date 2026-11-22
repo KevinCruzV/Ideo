@@ -8,6 +8,10 @@ THRESHOLD_DB = -32.0
 KEEP_EDGE = 0.03
 LONG_PAUSE = 0.60
 PAUSE = 0.50
+SENTENCE_GAP = 0.30
+SENTENCE_END = (".", "!", "?", "…")
+CLOSERS = "»”\"')]"
+MIN_LETTERS = 3
 
 
 def _loud(pcm: np.ndarray) -> np.ndarray:
@@ -78,3 +82,31 @@ def tighten(pcm: np.ndarray) -> tuple[np.ndarray, Callable[[float], float]]:
 
 def remap(words: list[dict], mapping: Callable[[float], float]) -> list[dict]:
     return [{"w": w["w"], "s": mapping(w["s"]), "e": mapping(w["e"])} for w in words]
+
+
+def _ends_sentence(word: str) -> bool:
+    text = word.rstrip(CLOSERS)
+    return text.endswith(SENTENCE_END) and sum(c.isalpha() for c in text) >= MIN_LETTERS
+
+
+def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
+    inserts: list[tuple[int, int]] = []
+    for word, after in zip(words, words[1:]):
+        gap = after["s"] - word["e"]
+        if not _ends_sentence(word["w"]) or not 0 <= gap < SENTENCE_GAP:
+            continue
+        at = word["e"] + (gap / 2 if gap > 0.02 else 0.0)
+        inserts.append((min(len(pcm), round(at * RATE)), round((SENTENCE_GAP - gap) * RATE)))
+    if not inserts:
+        return pcm, lambda t: t
+    parts, cursor = [], 0
+    for at, length in inserts:
+        parts += [pcm[cursor:at], np.zeros(length, dtype=pcm.dtype)]
+        cursor = at
+    parts.append(pcm[cursor:])
+
+    def mapping(t: float) -> float:
+        x = t * RATE
+        return (x + sum(length for at, length in inserts if x >= at)) / RATE
+
+    return np.concatenate(parts), mapping

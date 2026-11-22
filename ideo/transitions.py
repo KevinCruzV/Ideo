@@ -9,7 +9,9 @@ RATE = 48000
 FPS = 30
 WIPE_BEFORE = 7
 WIPE_FRAMES = 9
-VARIANTS = 4
+VARIANTS = 8
+HISTORY = 2
+PICK_SEED = 20261122
 TAIL = 0.14
 BANDS = 9
 DUCK_DB = 6.0
@@ -73,9 +75,66 @@ def _rustle(seed: int) -> np.ndarray:
     return _normalize((body + clicks * noise.std()) * _envelope(length))
 
 
+def _length() -> int:
+    return int((WIPE_FRAMES / FPS + TAIL) * RATE)
+
+
+def _swish(seed: int) -> np.ndarray:
+    rng = np.random.RandomState(seed)
+    length = _length()
+    noise = _bandpass(rng.standard_normal(length), 5200, 13000)
+    t = np.arange(length) / RATE
+    sweep = 0.4 + 0.6 * np.exp(-(((t - 0.2) / 0.07) ** 2))
+    return _normalize(noise * sweep * _envelope(length))
+
+
+def _flick(seed: int) -> np.ndarray:
+    rng = np.random.RandomState(seed)
+    length = _length()
+    t = np.arange(length) / RATE
+    body = np.zeros(length)
+    for at in (0.13, 0.17, 0.2, 0.225, 0.245):
+        burst = _bandpass(rng.standard_normal(length), 1800, 7000) * np.exp(-np.clip(t - at, 0, None) / 0.012) * (t >= at)
+        body += burst * rng.uniform(0.7, 1.2)
+    return _normalize(body * _envelope(length) + 0.15 * _bandpass(rng.standard_normal(length), 700, 1500) * _envelope(length))
+
+
+def _thump(seed: int) -> np.ndarray:
+    rng = np.random.RandomState(seed)
+    length = _length()
+    t = np.arange(length) / RATE
+    peak = WIPE_BEFORE / FPS
+    tone = np.sin(2 * np.pi * (70 + 60 * np.exp(-np.clip(t - peak, 0, None) / 0.05)) * t)
+    low = _bandpass(rng.standard_normal(length), 60, 320)
+    return _normalize((tone * 0.8 + low * 0.5) * _envelope(length))
+
+
+def _slow_whoosh(seed: int) -> np.ndarray:
+    rng = np.random.RandomState(seed)
+    length = _length()
+    noise = rng.standard_normal(length)
+    t = np.arange(length) / RATE
+    centers = np.geomspace(180, 1500, BANDS)
+    out = np.zeros(length)
+    for k, center in enumerate(centers):
+        gain = np.exp(-(((t - (0.1 + k / (BANDS - 1) * 0.2)) / 0.09) ** 2))
+        out += gain * _bandpass(noise, center * 0.7, center * 1.3)
+    return _normalize(out * _envelope(length))
+
+
 @lru_cache(maxsize=1)
 def variants() -> tuple:
-    return (_whoosh(11, True), _rustle(23), _whoosh(37, False), _rustle(41))
+    return (_whoosh(11, True), _rustle(23), _whoosh(37, False), _rustle(41),
+            _swish(53), _flick(67), _thump(79), _slow_whoosh(97))
+
+
+def sequence(count: int) -> list[int]:
+    rng = np.random.RandomState(PICK_SEED)
+    chosen: list[int] = []
+    for _ in range(count):
+        options = [v for v in range(VARIANTS) if v not in chosen[-HISTORY:]]
+        chosen.append(int(options[rng.randint(len(options))]))
+    return chosen
 
 
 def _spans(offsets: list[dict]) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
@@ -89,7 +148,7 @@ def _overlap(a: tuple[float, float], spans: list[tuple[float, float]]) -> bool:
 
 
 def mix(raw: Path, offsets: list[dict]) -> dict:
-    info = {"enabled": config.transition_sfx_enabled(), "count": 0, "skipped": 0, "ducked": 0}
+    info = {"enabled": config.transition_sfx_enabled(), "count": 0, "skipped": 0, "ducked": 0, "sounds": []}
     if not info["enabled"] or len(offsets) < 2:
         return info
     samples = music.read_wav(raw)
@@ -101,6 +160,7 @@ def mix(raw: Path, offsets: list[dict]) -> dict:
         return info
     level = 10 ** (config.transition_sfx_db() / 20) * reference
     relative = []
+    order = sequence(len(offsets) - 1)
     for i in range(1, len(offsets)):
         first = _frame(offsets[i]["start"]) - WIPE_BEFORE
         if first < 0:
@@ -112,13 +172,14 @@ def mix(raw: Path, offsets: list[dict]) -> dict:
             continue
         ducked = _overlap((begin, begin + WIPE_BEFORE / FPS), voice)
         gain = level * (10 ** (-DUCK_DB / 20) if ducked else 1.0)
-        sound = variants()[(i - 1) % VARIANTS] * gain
+        sound = variants()[order[i - 1]] * gain
         start = int(begin * RATE)
         end = min(start + len(sound), len(samples))
         if end <= start:
             continue
         samples[start:end] += sound[:end - start]
         info["count"] += 1
+        info["sounds"].append(order[i - 1])
         info["ducked"] += 1 if ducked else 0
         relative.append(20 * np.log10(gain / reference))
     peak = float(np.max(np.abs(samples))) if len(samples) else 0.0

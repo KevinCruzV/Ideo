@@ -4,12 +4,12 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien")
+         "| photo <job> \"<nom de la personne>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien")
 
 
 class UsageError(Exception):
@@ -85,6 +85,10 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if len(rest) < 2 or rest[0].startswith("--"):
             raise UsageError(USAGE)
         return cmd, rest[0], None, {"choix": " ".join(rest[1:])}
+    if cmd == "photo":
+        if len(rest) < 2 or rest[0].startswith("--"):
+            raise UsageError(USAGE)
+        return cmd, rest[0], None, {"name": " ".join(rest[1:])}
     if cmd == "entretien":
         if not rest:
             return cmd, "", None, opts
@@ -139,6 +143,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
                 f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_notice_tail()}"], 0
     job = pipeline.resolve_job(arg)
+    if cmd == "photo":
+        return [photo.run(job, opts["name"])], 0
     if cmd == "musique" and opts.get("dernier"):
         name, seconds = music.take_latest(job)
         stamp = f"{int(seconds) // 60}:{int(seconds) % 60:02d}" if seconds else "durée inconnue"

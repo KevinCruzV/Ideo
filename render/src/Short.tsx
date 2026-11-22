@@ -11,10 +11,11 @@ import { BeatsContext, localBeats } from "./scenes/beats";
 import { cleanItems, earlyItems } from "./scenes/coerce";
 import { resolveScene } from "./scenes/registry";
 import { SceneFrame } from "./scenes/SceneFrame";
-import { segmentAccent } from "./theme";
+import { moodOf, segmentAccent, setMood } from "./theme";
 import { Timeline } from "./types";
 
 export const Short: React.FC<Timeline> = (timeline) => {
+  setMood(moodOf(timeline.mood));
   const accents = timeline.segments.map((segment, i) => ({
     from: segment.from,
     to: segment.to,

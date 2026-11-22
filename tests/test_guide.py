@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ideo import plan_check, scene_schema
+from ideo import common, plan_check, scene_schema
 
 REPO = Path(__file__).resolve().parent.parent
 GUIDE = REPO / "skills" / "ideo" / "references" / "plan-guide.md"
@@ -142,3 +142,11 @@ def tracked_text_files():
 def test_no_em_dash_in_any_tracked_file():
     hits = [str(path.relative_to(REPO)) for path, text in tracked_text_files() if EM_DASH in text]
     assert hits == []
+
+
+def test_guide_and_skill_document_mood_and_photo():
+    guide = (common.REPO_ROOT / "skills" / "ideo" / "references" / "plan-guide.md").read_text(encoding="utf-8")
+    skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
+    assert '"mood": "dark"' in guide and '"mood": "dark"' in skill
+    assert 'ideo photo JOB' in guide and "ideo photo JOB" in skill and "aucune photo libre" in guide and "aucune photo libre" in skill
+    assert "par acte" in guide and "par acte" in skill

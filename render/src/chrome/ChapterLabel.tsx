@@ -26,7 +26,7 @@ export const ChapterLabel: React.FC<{ chapter: Chapter }> = ({ chapter }) => {
         top: CHAPTER_TOP,
         left: layout.marginSide,
         maxWidth: CHAPTER_FIT.maxWidth,
-        color: colors.ink,
+        color: colors.fg,
         fontFamily: fonts.text,
         fontWeight: 800,
         fontSize: fit.size,

@@ -72,3 +72,6 @@ export const earlyItems = (items: TimelineItem[], from: number): TimelineItem[] 
   if (first - from <= FIRST_ITEM_MAX) return items;
   return items.map((i) => (i.at === first ? { ...i, at: from + FIRST_ITEM_MAX } : i));
 };
+
+export const photoSource = (value: unknown): string | null =>
+  typeof value === "string" && /^[\w-]+\.(jpe?g|png|webp)$/i.test(value) ? value : null;

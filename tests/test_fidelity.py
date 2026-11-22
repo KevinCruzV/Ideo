@@ -47,3 +47,17 @@ def test_extra_filler_words_cost_little():
 
 def test_best_of_picks_the_highest_score():
     assert fidelity.best([0.5, 0.95, 0.7]) == 1
+
+
+def test_an_added_word_is_found_even_when_the_similarity_stays_high():
+    expected = "Et la Chine, alors ? Ses empereurs préfèrent garder leur frontière nord. L'Europe, petite et divisée, va chercher au loin ce qui lui manque."
+    heard = [{"w": expected.replace("préfèrent", "préfèrent tout")}]
+    assert fidelity.similarity(expected, heard) > 0.95
+    assert fidelity.added(expected, heard) == ["tout"]
+    assert fidelity.added(expected, [{"w": expected}]) == []
+
+
+def test_numbers_and_a_changed_word_are_not_added_words():
+    assert fidelity.added("Il a 3 enfants", [{"w": "Il a trois enfants"}]) == []
+    assert fidelity.added("Il a mangé le gâteau", [{"w": "Il a goûté le gâteau"}]) == []
+    assert fidelity.added("Il a mangé", [{"w": "Il a vraiment très mangé"}]) == ["vraiment", "tres"]

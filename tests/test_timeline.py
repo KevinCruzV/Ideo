@@ -99,6 +99,14 @@ def test_timeline_has_hook_first_outro_last_and_watermark(job_with_offsets):
     assert common.read_status(job_with_offsets)["steps"]["timeline-01"]["ok"] is True
 
 
+def test_mood_dark_goes_into_the_timeline_and_nothing_otherwise(job_with_offsets):
+    assert "mood" not in build(job_with_offsets)
+    plan = common.load_json(job_with_offsets / "plan.json")
+    plan["mood"] = "dark"
+    common.save_json(job_with_offsets / "plan.json", plan)
+    assert build(job_with_offsets)["mood"] == "dark"
+
+
 def test_single_part_plan_has_chapter_total_one(job_with_offsets):
     tl = common.load_json(timeline.build_timeline(job_with_offsets, 1, 1))
     assert tl["chapter"]["part"] == 1 and tl["chapter"]["total"] == 1

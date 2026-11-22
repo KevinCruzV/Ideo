@@ -2,6 +2,8 @@ import re
 
 ERROR_PATTERNS = (
     ("wishes-invalides", r"« wishes"),
+    ("mood-invalide", r"« mood »"),
+    ("photo-invalide", r"« photo » demande|pas de photo dans un fait divers|la photo du job est celle"),
     ("type-inconnu", r"type inconnu"),
     ("texte-trop-long", r"caractères, \d+ au plus"),
     ("drapeau-inconnu", r"n'est pas un drapeau connu"),
@@ -83,6 +85,8 @@ LESSONS = {
     "ia-guillemets": "N'utilise pas de guillemets dans un say : ils sont réservés à la scène quote.",
     "drapeau-existe": "Avant de noter un drapeau dans wishes, cherche flag:<code> : les drapeaux de pays existent tous.",
     "drapeau-inconnu": "Écris flag: suivi du code de pays à deux lettres en minuscules, par exemple flag:fr.",
+    "photo-invalide": "Lance ideo photo avant le plan et mets photo seulement si une photo libre a été trouvée, jamais pour un fait divers.",
+    "mood-invalide": "Écris \"mood\": \"dark\" au premier niveau du plan, ou rien.",
     "wishes-invalides": "Garde wishes à 5 textes de 40 caractères au plus.",
     "plan-invalide": "Relis le message de check et corrige exactement ce qu'il demande avant de relancer.",
 }

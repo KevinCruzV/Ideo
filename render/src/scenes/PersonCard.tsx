@@ -1,12 +1,13 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
-import { drift, entry, paperTransform } from "../paper/motion";
+import { cutEdge, drift, entry, paperTransform } from "../paper/motion";
 import { colors, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { Backdrop } from "./Backdrop";
-import { initials, str } from "./coerce";
+import { initials, photoSource, str } from "./coerce";
 import { fitText } from "../text/fit";
-import { bustHeight, BUST_VIEW, PersonBust } from "./PersonBust";
+import { bustHeight, CLOSE_VIEW, PersonBust } from "./PersonBust";
+import { PHOTO_W, PHOTO_H, PhotoFrame } from "./PhotoFrame";
 import { lookOf } from "./personLook";
 import { hasVisual, Picto } from "../pictos/Picto";
 import type { SceneProps } from "./registry";
@@ -15,9 +16,9 @@ import { Strips } from "./Strips";
 import { areaFor, FitBox } from "./FitBox";
 import { enterFor } from "./timing";
 
-const BUST_W = 600;
-const BUST_H = bustHeight(BUST_W);
-const HEAD_Y = ((40 - BUST_VIEW.y) / BUST_VIEW.h) * BUST_H;
+const BUST_W = 760;
+const BUST_H = bustHeight(BUST_W, CLOSE_VIEW);
+const HEAD_Y = ((40 - CLOSE_VIEW.y) / CLOSE_VIEW.h) * BUST_H;
 
 export const PersonCard: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
@@ -34,13 +35,14 @@ export const PersonCard: React.FC<SceneProps> = ({ props, items, from, to }) => 
   const badge = accent === "yellow" ? colors.red : colors.yellow;
   const look = React.useMemo(() => lookOf(props), [props]);
   const flag = hasVisual(props.picto);
+  const photo = photoSource(props.photo);
 
   return (
     <Stage>
       <FitBox area={areaFor(top + 10, BOX_L, BOX_W)} maxScale={1.1}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40, width: BOX_W }}>
           <div style={{ position: "relative", width: BUST_W, height: BUST_H }}>
-            <Backdrop color={accent} size={580} cx={BUST_W / 2} cy={HEAD_Y + 50} seed="pc-disk" turn={6} />
+            {photo ? null : <Backdrop color={accent} size={660} cx={BUST_W / 2} cy={HEAD_Y + 40} seed="pc-disk" turn={6} />}
             <div
               style={{
                 position: "absolute",
@@ -50,7 +52,15 @@ export const PersonCard: React.FC<SceneProps> = ({ props, items, from, to }) => 
                 transformOrigin: "50% 100%",
               }}
             >
-              <PersonBust width={BUST_W} initials={letters} badge={badge} badgeInk={onPaper[accent === "yellow" ? "red" : "yellow"]} look={look} accent={accent} />
+              {photo ? (
+                <div style={{ position: "absolute", left: (BUST_W - PHOTO_W) / 2, top: (BUST_H - PHOTO_H) / 2 }}>
+                  <PhotoFrame src={photo} seed="pc-photo" />
+                </div>
+              ) : (
+                <div style={{ position: "absolute", inset: 0, clipPath: cutEdge("pc-crop", 0.7) }}>
+                <PersonBust width={BUST_W} initials={letters} badge={badge} badgeInk={onPaper[accent === "yellow" ? "red" : "yellow"]} look={look} accent={accent} view={CLOSE_VIEW} />
+                </div>
+              )}
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 26 }}>

@@ -49,11 +49,11 @@ export const Progress: React.FC<{ chapter: Chapter; segments?: Tick[] }> = ({ ch
           style={{
             flex: tick.weight,
             height: "100%",
-            background: "rgba(31,26,20,.16)",
+            background: colors.track,
             overflow: "hidden",
           }}
         >
-          <div style={{ width: `${tick.fill * 100}%`, height: "100%", background: colors.ink }} />
+          <div style={{ width: `${tick.fill * 100}%`, height: "100%", background: colors.fg }} />
         </div>
       ))}
     </div>

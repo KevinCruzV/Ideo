@@ -6,7 +6,7 @@ Lis ce guide une seule fois, en entier, avant d'écrire.
 
 Tu lis la transcription compacte d'une vidéo YouTube et tu écris `plan.json` : une vidéo verticale courte qui réexplique les idées principales, avec une voix off et des formes en papier découpé. Chaque scène a un texte dit à voix haute (`say`), un visuel (`type` + `props`) et des éléments qui apparaissent sur des mots du texte (`items`). Tout le reste (voix, minutage, rendu) est fait par le code.
 
-Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription, et écris TOUS les textes (`title`, `hook`, `question`, `say`, textes des `props`) dans cette langue. Ce guide est en français, la vidéo peut être en anglais : dans ce cas tout est en anglais.
+Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription, et écris TOUS les textes (`title`, `hook`, `question`, `say`, textes des `props`) dans cette langue.
 
 ## 2. Choisir et construire
 
@@ -18,13 +18,13 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
   3. Longueur = nombre d'idées x 25 s environ. 4 idées font une vidéo d'environ 100 s, 6 idées environ 150 s.
   4. Si le total dépasse 180 s, retire l'idée la moins utile plutôt que de raccourcir chaque scène. Si une idée ne tient pas en 3 scènes, donne-lui-en une de plus.
 - Repère : une scène dure 6 à 9 s (18 à 26 mots). 45 scènes au plus.
-- Une idée par scène. Garde moins d'idées, mais explique chacune jusqu'au bout et relie-la à la suivante. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
+- Une idée par scène. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
 
 La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 - Scène 1 : le point de départ. Pour une histoire, sa date ou son lieu. Pour un sujet sans chronologie (science, santé, méthode), le problème concret que le spectateur reconnaît chez lui.
 - Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes : par époque pour une histoire, par thème ou par cas pour un sujet sans chronologie (un acte par position, par organe, par méthode). Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène. Ajoute `"break": true` à cette scène, à côté de `"type"` (sauf pour la toute première scène) : la voix marque alors une vraie pause avant de changer de sujet.
 - Chaque `say` part de la scène d'avant : dis ce qui relie les deux (la cause, la conséquence, l'opposition, le temps passé). Exemples de liens : "Résultat", "Mais dix ans plus tard", "C'est là que", "Face à ça", "Le problème". Si on peut mélanger deux scènes sans que ça se voie, il manque le lien.
-- Quand un événement a une date ou un lieu dans la source, le spectateur doit le voir : mets-le dans `kicker` (section 5), et dis l'année dans `say` quand elle aide à suivre.
+- Quand un événement a une date ou un lieu dans la source, mets-le dans `kicker` (section 5) et dis l'année dans `say` si elle aide à suivre.
 - Dernière scène : la réponse à la question de l'accroche, en une phrase claire. Pas une ouverture vague.
 - `title` : le titre de la vidéo, affiché en haut de l'écran pendant toute la vidéo, 40 caractères au plus (espaces compris).
 - Suis l'ordre de la vidéo source. Chaque scène a un `src` : le `[mm:ss]` du paragraphe qui la justifie.
@@ -95,7 +95,7 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 | type | quand l'utiliser | props | `el` possibles |
 |---|---|---|---|
 | `key-title` | la phrase-clé d'une idée | `text`* [90 caractères], `accent` [40 caractères] (un mot ou une suite de mots recopiés de `text`, posés sur la bande de couleur) ; `kicker`, `picto` (voir sous le tableau) | `text`, `accent` |
-| `person-card` | qui a dit ou fait quoi, avec son personnage en papier | `name`* [48 caractères], `role` [100 caractères], `picto` (le drapeau de son pays) ; apparence : `hair`, `hair_color`, `facial`, `hat`, `glasses`, `outfit`, `skin` (voir sous le tableau) ; `kicker` (voir sous le tableau) | `avatar`, `name`, `role` |
+| `person-card` | qui a dit ou fait quoi, avec son personnage en papier | `name`* [48 caractères], `role` [100 caractères], `picto` (le drapeau de son pays) ; apparence : `hair`, `hair_color`, `facial`, `hat`, `glasses`, `outfit`, `skin` (voir sous le tableau) ; `photo` ; `kicker` (voir sous le tableau) | `avatar`, `name`, `role` |
 | `fact-chips` | 2 à 6 faits courts qui s'ajoutent | `chips`* : liste de textes (6 max) [28 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `chips.0` à `chips.5` |
 | `stack-list` | étapes ou raisons qui s'accumulent | `items`* : liste de textes (5 max) [60 caractères chacun] ; `kicker`, `picto` (voir sous le tableau) | `items.0` à `items.4` |
 | `counter` | un nombre qui monte | `to`* : le nombre d'arrivée, sans texte ; `from` : nombre de départ ; `label` [60 caractères] : ce qu'on compte ; `unit` [4 caractères] : l'unité écrite après le nombre ("%", "x", "km") ; `kicker`, `picto` (voir sous le tableau) | `to` (lance le compte), `label` |
@@ -119,11 +119,13 @@ Personnages (`person-card`) : compose l'apparence de la personne avec ces props,
 - `facial` : `none`, `moustache`, `beard`, `goatee`, `sideburns` ; `glasses` : `true` ou `false`
 - `hat` : `none`, `cap`, `kepi`, `bicorne`, `crown`, `helmet`, `top-hat`, `beret`, `turban`, `laurel`, `wig`
 - `outfit` : `suit`, `uniform`, `robe`, `lab-coat`, `casual`, `toga`, `armor`, `dress` ; `skin` : `light`, `tan`, `brown`, `dark`
-Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dès qu'une personne compte dans l'histoire, donne-lui une `person-card` avec son apparence.
+Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dans une biographie ou une histoire, la personne principale a une `person-card` par acte, avec la même apparence à chaque fois, pour qu'on la revoie jusqu'au bout. Biographie seulement, jamais fait divers ni personne privée : lance `ideo photo JOB "<nom>"` avant d'écrire le plan. Si la réponse n'est pas « aucune photo libre », mets `"photo": true` sur ses cartes, sinon garde le portrait en papier.
 
 Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du code du pays à deux lettres en minuscules : `flag:us`, `flag:cn`, `flag:ru`, `flag:in`, `flag:br`, `flag:za`, `flag:fr`, `flag:gb`, `flag:de`, `flag:jp`. Aussi `flag:eu` (Union européenne), `flag:un` (ONU) et `flag:su` (Union soviétique). Tous les pays ont leur drapeau, même s'ils ne sont pas dans ces exemples : écris leur code (`flag:iq` pour l'Irak, `flag:eg` pour l'Égypte). Ne demande jamais un drapeau de pays dans `wishes`. Dès qu'un pays est nommé à l'écran, montre son drapeau. Quand un `say` cite trois pays ou plus (une alliance, un groupe, des pays visés), la scène est une `icon-grid` avec un drapeau et le nom du pays par cellule. Un `versus` entre deux pays a un drapeau de chaque côté.
 
 Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `picto` approximatif. Note ce qui t'a manqué dans un champ `"wishes"` au premier niveau du plan, à côté de `"parts"` : une liste de 0 à 5 textes courts [40 caractères], par exemple `"wishes": ["drapeau américain", "carte du monde"]`. Ces dessins seront ajoutés plus tard.
+
+Humeur : pour un fait divers, un crime, une horreur ou une catastrophe, ajoute `"mood": "dark"` au premier niveau du plan, à côté de `"parts"` : fonds et papiers deviennent sombres. Sinon, n'écris rien.
 
 Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`, `lungs`, `stomach`, `spine`, `bone`, `muscle`, `tooth`, `blood`, `pill`, `syringe`, `virus`, `bed`, `pillow`, `moon`, `thermometer`, `scale-weight`, `apple`, `dumbbell`, `running-shoe`, `stethoscope`, `hospital`, `raised-bed`, `stomach-sleeper`, `knee-pillow`, `snore`, `pelvis-tilt`, `numb-arm`.
 
@@ -169,7 +171,7 @@ Un exemple par type :
 - `src` de la citation = le `[mm:ss]` du paragraphe qui la contient.
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
 - Si la transcription ne dit pas qui parle, ou parle seulement d'"un journal" ou d'"un reportage" sans nommer le média, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. `speaker` n'est jamais le nom de la chaîne YouTube, ni le titre de la vidéo, ni un nom inventé.
-- Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa") : quand on entend le présentateur ou l'auteur de la vidéo, mets `"speaker": ""`.
+- Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa"). Une `quote` n'est jamais le présentateur qui lit un texte (lettre, article) : un extrait où la source passe la voix à quelqu'un d'autre, sinon mets le texte dans un `stamp` ou dans le `say`.
 - Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment, et jamais sur un sujet grave (section 4). Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
 
 Exemple : la transcription contient

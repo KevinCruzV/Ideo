@@ -25,6 +25,7 @@ from ideo import codes
     ("Plan : le contenu tient en une seule vidéo (durée estimée totale 200 s).", "parties-fusionnables"),
     ("Partie 1 : 46 scènes, 45 au plus par vidéo. Retire", "trop-de-scenes"),
     ("Plan : « wishes » doit être une liste de 0 à 5 textes.", "wishes-invalides"),
+    ("Plan : « mood » doit valoir \"dark\".", "mood-invalide"),
     ("Plan : version 2 non supportée.", "plan-invalide"),
 ])
 def test_error_messages_get_a_stable_code(message, code):

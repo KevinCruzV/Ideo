@@ -14,14 +14,14 @@ def active_rms(sound):
     return float(np.sqrt(np.mean(sound[mask] ** 2)))
 
 
-def test_four_distinct_deterministic_variants():
+def test_eight_distinct_deterministic_variants():
     first = transitions.variants()
-    assert len(first) == 4
+    assert len(first) == 8
     transitions.variants.cache_clear()
     again = transitions.variants()
     assert all(np.array_equal(a, b) for a, b in zip(first, again))
-    for i in range(4):
-        for j in range(i + 1, 4):
+    for i in range(8):
+        for j in range(i + 1, 8):
             assert not np.allclose(first[i], first[j])
 
 
@@ -196,3 +196,20 @@ def test_changing_the_transition_level_rebuilds_the_part(job_with_voice_fixtures
     (home / "config.json").write_text(json.dumps({"transition_sfx_db": -20}), encoding="utf-8")
     assemble.assemble_part(job, 1)
     assert (job / "parts" / "01" / "part.wav").stat().st_mtime_ns != stamp
+
+
+def test_the_choice_never_repeats_the_last_two_sounds_and_is_deterministic():
+    order = transitions.sequence(40)
+    assert order == transitions.sequence(40)
+    assert order[:10] == transitions.sequence(10)
+    for i in range(1, len(order)):
+        assert order[i] not in order[max(0, i - 2):i]
+    assert len(set(order[:20])) >= 6
+
+
+def test_mix_records_the_sounds_it_picked(tmp_path):
+    spans = [(0.0, 1.0)] + [(1.6 + 1.6 * k, 2.6 + 1.6 * k) for k in range(9)]
+    raw = make_raw(tmp_path, 20.0, spans)
+    info = transitions.mix(raw, offsets_of(spans))
+    assert info["sounds"] == transitions.sequence(9)
+    assert len(set(info["sounds"])) >= 5

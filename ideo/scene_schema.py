@@ -94,7 +94,7 @@ SCHEMA = {
     "person-card": {
         "required": {"name": TEXT},
         "optional": {"role": TEXT, "hair": HAIRS, "hair_color": HAIR_COLORS, "facial": FACIALS, "hat": HATS,
-                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS},
+                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS, "photo": BOOL},
         "el": ("avatar", "name", "role"),
     },
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},

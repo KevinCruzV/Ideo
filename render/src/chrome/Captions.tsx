@@ -1,7 +1,7 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { cutEdge } from "../paper/motion";
-import { accentAt, AccentSpan, colors, content, fonts, layout, onPaper, shade, SHADOW_X, SHADOW_Y } from "../theme";
+import { accentAt, AccentSpan, colors, content, dimmed, fonts, layout, onPaper, shade, SHADOW_X, SHADOW_Y } from "../theme";
 import { textWidth } from "../text/fit";
 import { str } from "../scenes/coerce";
 import { CaptionGroup } from "../types";
@@ -140,8 +140,8 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
                 <span
                   style={{
                     position: "relative",
-                    color: isActive ? onPaper[accent] : colors.ink,
-                    opacity: i > active ? 0.38 : 1,
+                    color: isActive ? onPaper[accent] : colors.fg,
+                    opacity: i > active ? dimmed : 1,
                   }}
                 >
                   {text}

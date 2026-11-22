@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ideo import common, i18n, plan_check
+from ideo import common, i18n, photo, plan_check
 
 REPO = Path(__file__).resolve().parent.parent
 FPS = 30
@@ -184,6 +184,9 @@ def write_sources(job: Path) -> Path:
     credit = _music_credit(job)
     if credit:
         lines += [credit, ""]
+    picture = photo.credit_line(job)
+    if picture:
+        lines += [picture, ""]
     path = job / "out" / "sources.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")
