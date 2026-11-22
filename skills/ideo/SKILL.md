@@ -1,11 +1,12 @@
 ---
 name: ideo
 description: Transforme une vidéo YouTube en vidéo verticale courte qui l'explique (voix off et formes en papier découpé). À utiliser quand l'utilisateur donne une URL YouTube avec "short", "vidéo courte", "explique-moi cette vidéo" ou "ideo", ou demande "approfondis ce point" après une vidéo ideo.
+model: haiku
 ---
 
 # ideo
 
-Conseil à donner une fois à l'utilisateur au début : cette tâche marche avec le modèle le moins cher, tape `/model haiku` (passe à Sonnet si le résultat ne suffit pas).
+Ce skill passe sur Haiku, le modèle le moins cher, mais seulement jusqu'à la fin du tour en cours. Conseil à donner une fois à l'utilisateur au début : pour que les corrections suivantes restent sur Haiku, tape `/model haiku` (passe à Sonnet si le résultat ne suffit pas).
 
 Règles pour toute la tâche :
 - Lis le guide (`plan-guide.md`), les leçons (`lecons.md`) et `transcript_compact.md` UNE seule fois chacun : chaque ligne est lue une fois, jamais deux. Pour la transcription, c'est un seul Read, ou les Read par morceaux que donne la ligne `OK prepare` (étape 2). Ne les relis jamais. Seule exception : l'étape 2 de "Approfondis ce point".

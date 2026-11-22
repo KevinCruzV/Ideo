@@ -1,6 +1,7 @@
 ---
 name: entretien
 description: Entretien du skill ideo. Corrige les défauts accumulés, ajoute les dessins qui ont manqué, range les leçons, et vérifie que tout marche. À utiliser quand l'utilisateur dit "entretien ideo", "améliore ideo", "corrige le skill ideo", ou quand le skill ideo affiche "Entretien à lancer".
+model: sonnet
 ---
 
 # Entretien d'ideo
