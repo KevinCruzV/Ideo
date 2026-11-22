@@ -301,6 +301,20 @@ def test_at_most_one_retry_and_only_under_080(eleven_job, server, monkeypatch):
     assert info["characters"] == sum(len(t) for t in texts.values()) + len(texts["seg_00_hook"])
 
 
+def test_an_added_word_triggers_one_retry_and_is_flagged_when_it_stays(eleven_job, server, monkeypatch):
+    plan = common.load_json(eleven_job / "plan.json")
+    texts = dict(voice.segments(plan, plan["parts"][0]))
+    monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [{"w": texts[Path(wav).stem] + " tout", "s": 0.0, "e": 1.0}]
+                        if Path(wav).stem == "seg_01" else [{"w": texts[Path(wav).stem], "s": 0.0, "e": 1.0}])
+    voice.voice_part(eleven_job, 1)
+    assert len(server.requests) == 8
+    quality = common.load_json(eleven_job / "parts" / "01" / "voice-quality.json")
+    assert quality["seg_01"] == eleven.ADDED_WORD_SCORE < 0.80
+    assert quality["seg_02"] > 0.9
+    log = (eleven_job / "logs" / "voice-01.log").read_text(encoding="utf-8")
+    assert "garde un mot ajouté : tout" in log
+
+
 def test_failure_falls_back_to_the_online_voice_and_says_so(eleven_job, server, monkeypatch, fake_backend):
     server.fail = (429, "quota")
     monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)

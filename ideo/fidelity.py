@@ -49,5 +49,17 @@ def similarity(text: str, heard: list[dict]) -> float:
     return round(difflib.SequenceMatcher(None, expected, got, autojunk=False).ratio(), 4)
 
 
+def added(text: str, heard: list[dict]) -> list[str]:
+    expected = _clean(_tokens(text))
+    got = _clean(_tokens(" ".join(w["w"] for w in heard)))
+    extra: list[str] = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, expected, got, autojunk=False).get_opcodes():
+        if tag == "insert":
+            extra += got[j1:j2]
+        elif tag == "replace" and j2 - j1 > i2 - i1:
+            extra += got[j2 - ((j2 - j1) - (i2 - i1)):j2]
+    return extra
+
+
 def best(scores: list[float]) -> int:
     return max(range(len(scores)), key=lambda i: scores[i])

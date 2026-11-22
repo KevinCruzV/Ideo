@@ -251,6 +251,27 @@ def test_finish_segment_trims_silence_and_shifts_words(tmp_path):
     assert words[-1]["e"] <= duration
 
 
+def test_finish_segment_adds_a_pause_after_a_sentence_that_runs_into_the_next(tmp_path):
+    import numpy as np
+
+    wav = tmp_path / "s.wav"
+    rate = 48000
+    t = np.arange(rate)
+    tone = 8000 * np.sin(2 * np.pi * 440 * t / rate)
+    pcm = np.concatenate([tone, np.zeros(int(0.18 * rate)), tone]).astype("<i2")
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    heard = [{"w": "grippe.", "s": 0.0, "e": 1.0}, {"w": "Entre", "s": 1.18, "e": 2.18}]
+    words = voice.finish_segment(wav, "grippe. Entre", heard)
+    with wave.open(str(wav), "rb") as w:
+        duration = w.getnframes() / rate
+    assert duration == pytest.approx(2.18 + 0.12, abs=0.05)
+    assert words[1]["s"] - words[0]["e"] >= 0.28
+
+
 def plan_with_numbers(job, say="En 1998, il y avait 3 000 personnes et 8 % de pluie."):
     plan = common.load_json(job / "plan.json")
     plan["parts"][0]["scenes"][0]["say"] = say

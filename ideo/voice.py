@@ -186,6 +186,9 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
             raise common.IdeoError(f"{wav.name} doit être en 48 kHz mono 16 bits : relancez la voix.")
         pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
     tight, mapping = pacing.tighten(pcm)
+    heard = pacing.remap(heard, mapping)
+    tight, spread = pacing.pause_sentences(tight, heard)
+    heard = pacing.remap(heard, spread)
     if len(tight) != len(pcm):
         with wave.open(str(wav), "wb") as w:
             w.setnchannels(1)
@@ -195,12 +198,12 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
     duration = len(tight) / pacing.RATE
     shown = align.script_words(text)
     said = align.script_words(spoken) if spoken and spoken != text else shown
-    words = align.align_words(said, pacing.remap(heard, mapping), duration)
+    words = align.align_words(said, heard, duration)
     if units and sum(u["orig"] for u in units) == len(shown) and sum(u["said"] for u in units) == len(said):
         return _regroup(words, shown, units)
     if len(said) == len(shown):
         return [{**w, "w": label} for w, label in zip(words, shown)]
-    return align.align_words(shown, pacing.remap(heard, mapping), duration)
+    return align.align_words(shown, heard, duration)
 
 
 def _regroup(words: list[dict], shown: list[str], units: list) -> list[dict]:
@@ -400,14 +403,19 @@ def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str,
         def take():
             words = backend.synthesize(spoken[name], lang, wav, previous_text=before, next_text=after)
             listened = retranscribe(wav, lang, log)
-            return words or listened, fidelity.similarity(spoken[name], listened), wav.read_bytes()
+            return (words or listened, fidelity.similarity(spoken[name], listened), wav.read_bytes(),
+                    fidelity.added(spoken[name], listened))
 
-        words, score, audio = take()
-        if score < eleven.RETRY_BELOW:
-            _log_line(log, f"voix : {name} refait une fois (ressemblance {score:.2f})")
-            words2, score2, audio2 = take()
-            if score2 >= score:
-                words, score, audio = words2, score2, audio2
+        words, score, audio, extra = take()
+        if score < eleven.RETRY_BELOW or extra:
+            reason = f"mot ajouté : {' '.join(extra)}" if extra else f"ressemblance {score:.2f}"
+            _log_line(log, f"voix : {name} refait une fois ({reason})")
+            words2, score2, audio2, extra2 = take()
+            if (len(extra2), -score2) <= (len(extra), -score):
+                words, score, audio, extra = words2, score2, audio2, extra2
+        if extra:
+            _log_line(log, f"voix : {name} garde un mot ajouté : {' '.join(extra)}")
+            score = min(score, eleven.ADDED_WORD_SCORE)
         wav.write_bytes(audio)
         heard_by_name[name] = words
         scores[name] = score

@@ -56,3 +56,33 @@ def test_apply_maps_word_times():
     words = pacing.remap([{"w": "a", "s": 0.6, "e": 0.9}, {"w": "b", "s": 2.1, "e": 2.4}], mapping)
     assert words[0]["s"] == pytest.approx(0.13, abs=0.02)
     assert words[1]["s"] == pytest.approx(1.13, abs=0.05)
+
+
+def words_of(*spans):
+    return [{"w": w, "s": s, "e": e} for w, s, e in spans]
+
+
+def test_a_sentence_end_followed_too_quickly_gets_a_pause():
+    pcm = np.concatenate([tone(1.0), quiet(0.18), tone(1.0)])
+    heard = words_of(("grippe.", 0.1, 1.0), ("Entre", 1.18, 1.6))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    assert len(out) / RATE == pytest.approx(len(pcm) / RATE + (pacing.SENTENCE_GAP - 0.18), abs=0.01)
+    assert mapping(1.0) == pytest.approx(1.0, abs=0.01)
+    assert mapping(1.18) == pytest.approx(1.18 + (pacing.SENTENCE_GAP - 0.18), abs=0.01)
+    inserted = out[int(1.0 * RATE) + 4800:int((1.18 + 0.1) * RATE)]
+    assert np.max(np.abs(inserted)) == 0
+
+
+def test_commas_long_gaps_and_the_last_word_are_left_alone():
+    pcm = np.concatenate([tone(1.0), quiet(0.18), tone(1.0), quiet(0.5), tone(0.5)])
+    heard = words_of(("Chine,", 0.1, 1.0), ("alors", 1.18, 2.1), ("nord.", 2.1, 2.2), ("Europe", 2.7, 3.2))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    assert len(out) == len(pcm) and mapping(2.0) == 2.0
+    out, _ = pacing.pause_sentences(pcm, words_of(("fin.", 0.1, 1.0)))
+    assert len(out) == len(pcm)
+
+
+def test_an_abbreviation_is_not_a_sentence_end():
+    pcm = np.concatenate([tone(1.0), quiet(0.05), tone(1.0)])
+    out, _ = pacing.pause_sentences(pcm, words_of(("M.", 0.1, 1.0), ("Dupont", 1.05, 1.6)))
+    assert len(out) == len(pcm)

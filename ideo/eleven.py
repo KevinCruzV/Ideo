@@ -12,6 +12,7 @@ from ideo import common, config
 API_BASE = "https://api.elevenlabs.io"
 TIMEOUT = 180
 RETRY_BELOW = 0.80
+ADDED_WORD_SCORE = 0.79
 MASK = "***"
 DEFAULT_TEST = "Bonjour, ceci est un essai de la voix choisie."
 SETUP_HELP = ("Mets ta clé dans la variable d'environnement ELEVENLABS_API_KEY ou dans config.json (« elevenlabs_api_key »), "
