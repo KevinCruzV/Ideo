@@ -63,6 +63,9 @@ def voiced_scene(scene: dict) -> dict:
 
 
 def _voice_settings(lang: str) -> dict:
+    if config.engine() == "elevenlabs":
+        return {"engine": "elevenlabs", "voice": config.eleven_voice_id(), "model": config.eleven_model(),
+                **config.eleven_settings()}
     if lang in voice.KYUTAI_LANGS and config.engine() == "kyutai":
         settings = {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
         hook = [config.kyutai_hook_temp(), config.kyutai_hook_padding_bonus()]

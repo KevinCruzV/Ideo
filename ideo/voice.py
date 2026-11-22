@@ -10,7 +10,7 @@ from typing import Protocol
 
 import numpy as np
 
-from ideo import align, common, config, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
+from ideo import align, common, config, eleven, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
 
 TICKS = 1e7
 LAUNCHER = Path(__file__).with_name("kyutai_launcher.py")
@@ -151,6 +151,8 @@ def get_backend(log: Path | None = None) -> VoiceBackend:
 
 
 def choose_backend(lang: str, log: Path | None = None) -> VoiceBackend:
+    if config.engine() == "elevenlabs":
+        return eleven.ElevenLabsBackend(log)
     if lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed():
         return KyutaiBackend(log)
     return get_backend(log)
@@ -167,7 +169,9 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
     return words
 
 
-def spoken_for(text: str, lang: str, local: bool, name: str = "") -> tuple[str, list | None]:
+def spoken_for(text: str, lang: str, local: bool, name: str = "", plain: bool = False) -> tuple[str, list | None]:
+    if plain:
+        return lexicon.apply(text, lang), None
     if name == HOOK:
         text = hookvoice.shape(text, lang)
     normalized = numbers.normalize(text, lang)
@@ -241,11 +245,12 @@ def stale(job: Path, n: int) -> list[str]:
     if part is None:
         return []
     lang = plan["lang"]
-    local = lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed()
+    paid = config.engine() == "elevenlabs"
+    local = not paid and lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed()
     out_dir = job / "parts" / f"{n:02d}"
     return [name for name, text in segments(plan, part)
             if (out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()
-            and _stored(out_dir, name, text) != spoken_for(text, lang, local, name)[0]]
+            and _stored(out_dir, name, text) != spoken_for(text, lang, local, name, plain=paid)[0]]
 
 
 def _short(err: Exception) -> str:
@@ -365,6 +370,67 @@ def _write_json_merged(path: Path, update: dict) -> None:
     common.save_json(path, current)
 
 
+def _kind(backend) -> str:
+    if getattr(backend, "local", False):
+        return "local"
+    return "paid" if getattr(backend, "paid", False) else "edge"
+
+
+def _fallback_backend(lang: str, log: Path, failed: str = "local"):
+    if failed == "paid" and lang in KYUTAI_LANGS and config.kyutai_installed() and config.apple_silicon():
+        return KyutaiBackend(log)
+    return get_backend(log)
+
+
+def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str, str]], lang: str, out_dir: Path,
+                 log: Path) -> tuple[dict, dict]:
+    order = [name for name, _ in items]
+    spoken = {name: spoken_for(text, lang, False, name, plain=True)[0] for name, text in items}
+    heard_by_name: dict = {}
+    scores: dict = {}
+    for name, _ in pending:
+        index = order.index(name)
+        before = spoken[order[index - 1]] if index else None
+        after = spoken[order[index + 1]] if index + 1 < len(order) else None
+        wav = out_dir / f"{name}.wav"
+
+        def take():
+            words = backend.synthesize(spoken[name], lang, wav, previous_text=before, next_text=after)
+            listened = retranscribe(wav, lang, log)
+            return words or listened, fidelity.similarity(spoken[name], listened), wav.read_bytes()
+
+        words, score, audio = take()
+        if score < eleven.RETRY_BELOW:
+            _log_line(log, f"voix : {name} refait une fois (ressemblance {score:.2f})")
+            words2, score2, audio2 = take()
+            if score2 >= score:
+                words, score, audio = words2, score2, audio2
+        wav.write_bytes(audio)
+        heard_by_name[name] = words
+        scores[name] = score
+        (out_dir / f"{name}.spoken.txt").write_text(spoken[name], encoding="utf-8")
+    return heard_by_name, scores
+
+
+def _run_backend(backend, pending, items, lang, out_dir, log, key) -> dict:
+    kind = _kind(backend)
+    result = {"heard": {}, "scores": {}, "pitch": {}, "hook": None}
+    if kind == "local":
+        heard, scores, pitch, _, hook_info = _settle_local(backend, pending, lang, out_dir, log, key)
+        result.update(heard=heard, scores=scores, pitch=pitch, hook=hook_info)
+    elif kind == "paid":
+        heard, scores = _settle_paid(backend, pending, items, lang, out_dir, log)
+        result.update(heard=heard, scores=scores)
+    else:
+        for name, text in pending:
+            wav = out_dir / f"{name}.wav"
+            spoken, _ = spoken_for(text, lang, False, name)
+            heard = backend.synthesize(spoken, lang, wav)
+            result["heard"][name] = heard if heard else retranscribe(wav, lang, log)
+            (out_dir / f"{name}.spoken.txt").write_text(spoken, encoding="utf-8")
+    return result
+
+
 def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[Path]:
     job = Path(job)
     plan = common.load_json(job / "plan.json")
@@ -379,59 +445,66 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     backend = backend or choose_backend(lang, log)
     items = segments(plan, part)
     paths = [out_dir / f"{name}.wav" for name, _ in items]
-    local = getattr(backend, "local", False)
+    kind = _kind(backend)
 
     def done(name: str, text: str) -> bool:
         if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
             return False
-        return _stored(out_dir, name, text) == spoken_for(text, lang, local, name)[0]
+        return _stored(out_dir, name, text) == spoken_for(text, lang, kind == "local", name, plain=kind == "paid")[0]
 
     pending = [(name, text) for name, text in items if not done(name, text)]
     try:
         if pending:
             fallback = None
-            heard_by_name: dict = {}
-            scores: dict = {}
-            pitch: dict = {}
-            hook_info = None
-            if local:
-                try:
-                    heard_by_name, scores, pitch, _, hook_info = _settle_local(backend, pending, lang, out_dir, log, f"{job.name}:{n}")
-                except common.IdeoError as err:
-                    fallback = _short(err)
-                    _log_line(log, f"voix : repli sur la voix en ligne ({err})")
-                    backend = get_backend(log)
-            if fallback or not getattr(backend, "local", False):
-                for name, text in pending:
-                    wav = out_dir / f"{name}.wav"
-                    spoken, _ = spoken_for(text, lang, False, name)
-                    heard = backend.synthesize(spoken, lang, wav)
-                    heard_by_name[name] = heard if heard else retranscribe(wav, lang, log)
-                    (out_dir / f"{name}.spoken.txt").write_text(spoken, encoding="utf-8")
-            engine_is_local = getattr(backend, "local", False)
+            key = f"{job.name}:{n}"
+            try:
+                result = _run_backend(backend, pending, items, lang, out_dir, log, key)
+            except common.IdeoError as err:
+                if kind == "edge":
+                    raise
+                fallback = _short(err)
+                _log_line(log, f"voix : repli ({err})")
+                backend = _fallback_backend(lang, log, kind)
+                result = _run_backend(backend, pending, items, lang, out_dir, log, key)
+            kind = _kind(backend)
             for name, text in pending:
                 wav = out_dir / f"{name}.wav"
-                spoken, units = spoken_for(text, lang, engine_is_local, name)
+                spoken, units = spoken_for(text, lang, kind == "local", name, plain=kind == "paid")
                 common.save_json(out_dir / f"{name}.words.json",
-                                 finish_segment(wav, text, heard_by_name[name], spoken, units))
-            engine = "kyutai" if getattr(backend, "local", False) else "edge"
-            common.save_json(out_dir / "voice-info.json", {"engine": engine, "fallback": fallback,
-                                                           "local_missing": config.local_voice_missing(lang)})
-            if hook_info:
-                common.save_json(out_dir / "voice-hook.json", hook_info)
-            if scores:
-                _write_json_merged(out_dir / "voice-quality.json", scores)
-                _write_json_merged(out_dir / "voice-prosody.json", pitch)
+                                 finish_segment(wav, text, result["heard"][name], spoken, units))
+            info = {"engine": {"local": "kyutai", "paid": "elevenlabs", "edge": "edge"}[kind], "fallback": fallback,
+                    "local_missing": config.local_voice_missing(lang)}
+            if kind == "paid":
+                previous = _read_info(out_dir)
+                before = previous.get("characters", 0) if previous.get("engine") == "elevenlabs" else 0
+                info["characters"] = before + backend.characters
+                _log_line(log, f"voix : ElevenLabs, {backend.characters} caractères envoyés ({info['characters']} pour la partie)")
+            common.save_json(out_dir / "voice-info.json", info)
+            if result["hook"]:
+                common.save_json(out_dir / "voice-hook.json", result["hook"])
+            if result["scores"]:
+                _write_json_merged(out_dir / "voice-quality.json", result["scores"])
+            if result["pitch"]:
+                _write_json_merged(out_dir / "voice-prosody.json", result["pitch"])
     except common.IdeoError as err:
         common.mark(job, step, False, str(err))
         raise
     except Exception as err:
         common.mark(job, step, False, str(err))
         raise common.IdeoError(f"la voix a échoué : {err}") from err
-    if local and (out_dir / "voice-info.json").exists():
+    if kind == "local" and (out_dir / "voice-info.json").exists():
         _backfill_prosody(out_dir, [name for name, _ in items])
     common.mark(job, step, True, f"{len(paths)} segments")
     return paths
+
+
+def _read_info(out_dir: Path) -> dict:
+    path = out_dir / "voice-info.json"
+    try:
+        data = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def _backfill_prosody(out_dir: Path, names: list[str]) -> None:
