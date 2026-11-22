@@ -6,7 +6,13 @@ model: haiku
 
 # ideo
 
-Ce skill passe sur Haiku, le modèle le moins cher, mais seulement jusqu'à la fin du tour en cours. Conseil à donner une fois à l'utilisateur au début : pour que les corrections suivantes restent sur Haiku, tape `/model haiku` (passe à Sonnet si le résultat ne suffit pas).
+Ce skill passe sur Haiku, le modèle le moins cher, mais seulement jusqu'à la fin du tour en cours : au message suivant, la session reprend son modèle.
+
+Modèle par étape. Quand l'étape suivante demande un autre modèle que le tien, dis-le à l'utilisateur en une ligne avant de la faire : « Tape `/model <modèle>` puis redis-moi <sa demande> ».
+- Haiku pour tout le reste : prepare, plan, check, corrections, musique, produce, retours (`learn`).
+- Sonnet pour le plan seulement si check échoue 3 fois de suite, ou si l'utilisateur trouve le plan faible (histoire mal choisie, phrases floues, faits faux). Repasse sur Haiku après le plan validé.
+- Sonnet pour l'entretien (étape 8).
+- Opus seulement si Sonnet a échoué sur la même chose : un plan encore refusé par l'utilisateur, ou un défaut que l'entretien n'a pas corrigé deux fois de suite. Repasse sur Haiku juste après.
 
 Règles pour toute la tâche :
 - Lis le guide (`plan-guide.md`), les leçons (`lecons.md`) et `transcript_compact.md` UNE seule fois chacun : chaque ligne est lue une fois, jamais deux. Pour la transcription, c'est un seul Read, ou les Read par morceaux que donne la ligne `OK prepare` (étape 2). Ne les relis jamais. Seule exception : l'étape 2 de "Approfondis ce point".
