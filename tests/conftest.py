@@ -101,7 +101,7 @@ VOICE_WORDS = {
     "seg_01": ["Aujourd'hui", "nous", "allons", "comprendre", "pourquoi", "on", "oublie."],
     "seg_02": ["Le", "lundi", "tout", "est", "clair", "dans", "la", "tête,", "mais", "dès", "le", "quatrième", "jour",
                "rien."],
-    "seg_03": ["Un", "chercheur", "allemand", "a", "mesuré", "ce", "phénomène."],
+    "seg_03": ["Il", "y", "a", "plus", "de", "cent", "ans."],
     "seg_04": ["Heureusement", "il", "existe", "des", "gestes", "simples."],
     "seg_05": ["Voici", "son", "résultat."],
     "seg_99_outro": ["Et", "toi,", "tu", "relis", "tes", "cours", "ou", "tu", "les", "oublies\u00a0?", "Abonne-toi", "pour", "la", "suite."],

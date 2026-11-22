@@ -76,3 +76,17 @@ def anchor_text(value) -> str | None:
     if isinstance(value, str) and value.strip():
         return value
     return None
+
+
+def source_grams(words: list[dict], size: int) -> set:
+    tokens = _needle(" ".join(w["w"] for w in words))
+    return {tuple(tokens[i:i + size]) for i in range(len(tokens) - size + 1)}
+
+
+def copied_tokens(text: str, grams: set, size: int) -> tuple[list[str], list[bool]]:
+    tokens = _needle(text)
+    hits = [False] * len(tokens)
+    for i in range(len(tokens) - size + 1):
+        if tuple(tokens[i:i + size]) in grams:
+            hits[i:i + size] = [True] * size
+    return tokens, hits

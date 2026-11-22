@@ -504,3 +504,39 @@ def test_pause_seconds_follow_the_position_of_each_gap():
     assert plan_check.pause_seconds([{}, {"break": True}, {}]) == pytest.approx(0.66 + 0.96 + 0.56 + 0.56)
     assert plan_check.pause_seconds([{"break": True}, {}]) == pytest.approx(0.96 + 0.56 + 0.56)
     assert plan_check.pause_seconds([{"break": "oui"}, {}]) == pytest.approx(0.66 + 0.56 + 0.56)
+
+
+def test_say_copied_from_source_is_an_error(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][3]["say"] = ("Heureusement il existe des moyens simples de ralentir cette perte de mémoire. "
+                                            "Revoir juste avant d'oublier change tout.")
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    hits = [e for e in errors if "mot pour mot" in e]
+    assert len(hits) == 1, errors
+    assert hits[0].startswith("Partie 1, scène 4 : « say »")
+    assert "Heureusement il existe des moyens" in hits[0] and "gardant les chiffres" in hits[0]
+
+
+def test_reworded_fact_with_same_numbers_passes(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][3]["say"] = ("Bonne nouvelle, tu peux freiner cet oubli. "
+                                            "Revoir une information juste avant de l'oublier suffit souvent.")
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert not [e for e in errors if "origine" in e], errors
+
+
+def test_verbatim_quote_text_is_not_plagiarism(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    assert plan["parts"][0]["scenes"][4]["type"] == "quote"
+    assert len(plan["parts"][0]["scenes"][4]["props"]["text"].split()) >= plan_check.COPY_RUN
+    assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_part_following_source_too_closely_is_an_error(job_with_fixtures, monkeypatch):
+    monkeypatch.setattr(plan_check, "COPY_SHARE", 0.0)
+    errors = plan_check.check_plan(job_with_fixtures)
+    hits = [e for e in errors if "reprend des suites" in e]
+    assert len(hits) == 1, errors
+    assert hits[0].startswith("Partie 1 : ") and "change l'ordre des idées" in hits[0]

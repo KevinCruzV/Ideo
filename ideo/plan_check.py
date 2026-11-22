@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ideo import scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
-from ideo.textmatch import SPLIT, anchor_text, closest_passage, find_span, normalize
+from ideo.textmatch import SPLIT, anchor_text, closest_passage, copied_tokens, find_span, normalize, source_grams
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
@@ -23,6 +23,9 @@ TRIM = 0.06
 GAP_HOOK = 0.60 + TRIM
 GAP_SCENE = 0.50 + TRIM
 GAP_BREAK = 0.90 + TRIM
+COPY_GRAM = 5
+COPY_RUN = 10
+COPY_SHARE = 0.20
 
 
 def pause_seconds(scenes: list) -> float:
@@ -199,6 +202,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         errors.extend(scene_schema.check_props(kind, props, where))
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
+    _check_copy(say, where, "say", ctx, errors, part_state)
 
     if "break" in scene and not isinstance(scene["break"], bool):
         errors.append(f"{where} : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le.")
@@ -261,6 +265,24 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         _check_quote(scene, props, src_seconds, where, ctx, errors, part_state)
 
 
+def _check_copy(text, where: str, field: str, ctx: dict, errors: list[str], part_state: dict) -> None:
+    if not ctx["grams"] or not isinstance(text, str):
+        return
+    tokens, hits = copied_tokens(text, ctx["grams"], COPY_GRAM)
+    part_state["copy"][0] += sum(hits)
+    part_state["copy"][1] += len(tokens)
+    best, run = [], []
+    for token, hit in zip(tokens, hits):
+        run = run + [token] if hit else []
+        if len(run) > len(best):
+            best = run
+    if len(best) >= COPY_RUN:
+        passage = closest_passage(ctx["words"], " ".join(best))
+        errors.append(f"{where} : « {field} » recopie la vidéo d'origine mot pour mot ({len(best)} mots d'affilée, "
+                      f"source : {passage}). Reformule avec tes mots et une autre construction de phrase, "
+                      "en gardant les chiffres, les noms et les faits.")
+
+
 def _check_order(spoken: list, where: str, errors: list[str]) -> None:
     for (before, first), (after, second) in zip(spoken, spoken[1:]):
         if after < before:
@@ -317,7 +339,7 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         errors.append(f"{where} : numéro « n » = {part.get('n')!r}, attendu {index}. Numérote les parties 1, 2, 3, dans l'ordre.")
     _text_field(part, "title", where, errors)
     hook = part.get("hook")
-    state = {"seconds": OUTRO_SECONDS, "clips": [], "usable": True, "unresolved": 0}
+    state = {"seconds": OUTRO_SECONDS, "clips": [], "usable": True, "unresolved": 0, "copy": [0, 0]}
     if not isinstance(hook, str) or not hook.strip():
         errors.append(f"{where} : l'accroche « hook » est manquante ou vide. Écris une phrase d'accroche qui donne envie de regarder.")
         state["usable"] = False
@@ -341,6 +363,8 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
             if error:
                 errors.append(error)
     _check_channel([("title", part.get("title")), ("hook", hook), ("question", question)], where, ctx, errors)
+    _check_copy(hook, where, "hook", ctx, errors, state)
+    _check_copy(question, where, "question", ctx, errors, state)
     scenes = part.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
@@ -350,6 +374,11 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
     state["seconds"] += pause_seconds(scenes)
+    copied, total_tokens = state["copy"]
+    if total_tokens and copied / total_tokens > COPY_SHARE:
+        errors.append(f"{where} : {round(100 * copied / total_tokens)} % du texte reprend des suites de {COPY_GRAM} mots "
+                      f"de la vidéo d'origine (maximum {round(100 * COPY_SHARE)} %). Ne suis pas la source phrase par phrase : "
+                      "reformule, regroupe et change l'ordre des idées, en gardant les faits.")
     if not state["usable"]:
         return state["clips"], None
     total = round(state["seconds"])
@@ -460,6 +489,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
         "hidden": hidden,
         "ends": end_ranges(job),
         "sponsor": sponsor,
+        "grams": source_grams(words, COPY_GRAM),
     }
     _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
     results = [_check_part(part, i, ctx, errors) for i, part in enumerate(parts, 1)]

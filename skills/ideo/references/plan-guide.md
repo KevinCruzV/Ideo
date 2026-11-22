@@ -66,6 +66,14 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
 - Le `say` d'une scène `quote` présente la citation sans la répéter : la vraie voix de la source est jouée juste après.
 
+### Écrire avec tes mots (anti-plagiat)
+
+La vidéo raconte les mêmes faits que la source, pas avec les mêmes phrases.
+- Ne recopie pas les phrases de la transcription. Garde les chiffres, les dates, les noms et les faits, change les mots et la construction : « En moyenne, on change de position entre 10 et 40 fois par nuit » devient « Chaque nuit, ton corps bouge 10 à 40 fois sans que tu le saches ».
+- Ne suis pas la source phrase par phrase. Regroupe deux idées dans une scène, coupe les détails, change l'ordre quand le sens le permet. Ton rythme n'est pas celui de la source.
+- `check` refuse une suite de 10 mots identiques à la source dans `say`, `hook` ou `question`, et une partie dont plus de 20 % du texte reprend des suites de 5 mots de la source. Une liste de lieux, un nom propre long ou une date restent possibles quand le reste de la phrase est à toi.
+- Seule la citation (`quote`, `props.text`) reprend la source mot pour mot.
+
 ### Écrire sans tics d'IA (filtre anti-slop)
 
 Le spectateur repère vite un texte écrit par une IA. Dans `hook`, `say` et les textes à l'écran :
@@ -342,6 +350,8 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `« title » est manquant ou vide` ou `« say » est manquant ou vide` | remplis ce champ |
 | `l'accroche « hook »` | écris une accroche (section 3) |
 | `la « question » au spectateur` | ajoute `question` à la partie (section 3) |
+| `recopie la vidéo d'origine mot pour mot` | réécris ce champ avec tes mots et une autre construction, en gardant les chiffres et les faits (section 4) |
+| `reprend des suites de 5 mots` | réécris les scènes les plus proches de la source : regroupe, coupe, change l'ordre (section 4) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
 | `type inconnu` | prends un des 15 types de la section 5 |
 | `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |
