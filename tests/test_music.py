@@ -108,9 +108,9 @@ def test_envelope_levels_follow_speech_pauses_and_source_clips():
     env = music.envelope(length, [(0.0, 8.0), (12.0, 20.0)], [(22.0, 26.0)])
     db = lambda t: 20 * np.log10(env[int(t * RATE)])
     assert abs(db(4.0)) < 0.5 and abs(db(16.0)) < 0.5
-    assert db(10.0) == pytest.approx(8.0, abs=0.5)
-    assert db(24.0) == pytest.approx(-6.0, abs=0.5)
-    assert db(29.0) == pytest.approx(8.0, abs=0.5)
+    assert db(10.0) == pytest.approx(6.0, abs=0.5)
+    assert db(24.0) == pytest.approx(-4.0, abs=0.5)
+    assert db(29.0) == pytest.approx(6.0, abs=0.5)
     assert abs(db(8.01) - db(8.0)) < 0.5 and db(7.8) < db(8.0) < db(8.2)
 
 
@@ -123,10 +123,10 @@ def test_attribution_with_and_without_the_licence_file(library, tmp_path):
 
 
 def test_config_defaults_and_keys(home, tmp_path):
-    assert config.music_enabled() is True and config.music_level_db() == -20
+    assert config.music_enabled() is False and config.music_level_db() == -30
     assert config.music_dir() == home / "musique"
-    write_config(home, {"music": False, "music_dir": str(tmp_path / "x"), "music_level_db": -25})
-    assert config.music_enabled() is False and config.music_dir() == tmp_path / "x" and config.music_level_db() == -25
+    write_config(home, {"music": True, "music_dir": str(tmp_path / "x"), "music_level_db": -25})
+    assert config.music_enabled() is True and config.music_dir() == tmp_path / "x" and config.music_level_db() == -25
     write_config(home, {"music_dir": "sons"})
     assert config.music_dir() == home / "sons"
 
@@ -144,7 +144,7 @@ def loudness(path):
 
 
 def assembled(job, library, home, **cfg):
-    write_config(home, {"music_dir": str(library), **cfg})
+    write_config(home, {"music": True, "music_dir": str(library), **cfg})
     return assemble.assemble_part(job, 1)
 
 
@@ -155,15 +155,15 @@ def test_music_is_mixed_at_minus_14_lufs_with_a_chosen_track(job_with_voice_fixt
     info = common.load_json(job / "parts" / "01" / "music.json")
     assert info["track"] in {t.name for t in music.tracks(library)}
     assert info["voice_lufs"] is not None and info["music_under_voice_lufs"] is not None
-    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 20, abs=2.5)
+    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 30, abs=2.5)
     assert history.load()["jobs"][job.name]["music"] == info["track"]
 
 
 def test_level_follows_the_config(job_with_voice_fixtures, library, home):
     job = job_with_voice_fixtures
-    assembled(job, library, home, music_level_db=-30)
+    assembled(job, library, home, music_level_db=-22)
     info = common.load_json(job / "parts" / "01" / "music.json")
-    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 30, abs=2.5)
+    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 22, abs=2.5)
 
 
 def test_disabled_or_empty_folder_means_no_music(job_with_voice_fixtures, tmp_path, home):
@@ -173,11 +173,11 @@ def test_disabled_or_empty_folder_means_no_music(job_with_voice_fixtures, tmp_pa
     assert common.load_json(job / "parts" / "01" / "music.json")["track"] is None
     empty = tmp_path / "vide"
     empty.mkdir()
-    write_config(home, {"music_dir": str(empty)})
+    write_config(home, {"music": True, "music_dir": str(empty)})
     assemble.assemble_part(job, 1)
     info = common.load_json(job / "parts" / "01" / "music.json")
     assert info["track"] is None and info["missing"] is True
-    write_config(home, {"music_dir": str(tmp_path / "absent")})
+    write_config(home, {"music": True, "music_dir": str(tmp_path / "absent")})
     assemble.assemble_part(job, 1)
     assert common.load_json(job / "parts" / "01" / "music.json")["missing"] is True
 
@@ -198,7 +198,7 @@ def test_changing_the_music_settings_rebuilds_the_part(job_with_voice_fixtures, 
     before = (job / "parts" / "01" / "part.wav").stat().st_mtime_ns
     assemble.assemble_part(job, 1)
     assert (job / "parts" / "01" / "part.wav").stat().st_mtime_ns == before
-    write_config(home, {"music_dir": str(library), "music_level_db": -26})
+    write_config(home, {"music": True, "music_dir": str(library), "music_level_db": -26})
     assemble.assemble_part(job, 1)
     assert (job / "parts" / "01" / "part.wav").stat().st_mtime_ns != before
 
@@ -233,3 +233,138 @@ def test_sources_md_has_no_music_line_without_music(job_with_voice_fixtures, hom
     write_config(home, {"music": False})
     assemble.assemble_part(job, 1)
     assert "Musique" not in render.write_sources(job).read_text(encoding="utf-8")
+
+
+def test_without_a_choice_file_music_is_off_by_default(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    assemble.assemble_part(job, 1)
+    assert common.load_json(job / "parts" / "01" / "music.json")["track"] is None
+
+
+def test_resolve_names_case_insensitively_and_paths(library, tmp_path):
+    assert music.resolve("ALPHA", library).name == "alpha.wav"
+    assert music.resolve("beta.wav", library).name == "beta.wav"
+    assert music.resolve("inconnu", library) is None
+    outside = tone_track(tmp_path / "ailleurs.wav", seconds=5.0)
+    assert music.resolve(str(outside), library) == outside
+    assert music.resolve(str(tmp_path / "rien.wav"), library) is None
+
+
+def test_choice_file_round_trip(tmp_path):
+    assert music.read_choice(tmp_path) is None
+    music.write_choice(tmp_path, "alpha")
+    assert music.read_choice(tmp_path) == {"choice": "alpha"}
+    (tmp_path / "music.json").write_text("{pas du json", encoding="utf-8")
+    assert music.read_choice(tmp_path) is None
+    (tmp_path / "music.json").write_text('{"choice": 3}', encoding="utf-8")
+    assert music.read_choice(tmp_path) is None
+
+
+def test_a_chosen_track_is_used_even_when_the_config_is_off(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "Gamma")
+    assemble.assemble_part(job, 1)
+    info = common.load_json(job / "parts" / "01" / "music.json")
+    assert info["track"] == "gamma.wav" and info["folder"] == str(library)
+
+
+def test_choice_aucune_beats_the_config(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music": True, "music_dir": str(library)})
+    music.write_choice(job, "aucune")
+    assemble.assemble_part(job, 1)
+    info = common.load_json(job / "parts" / "01" / "music.json")
+    assert info["track"] is None and "missing" not in info
+
+
+def test_a_choice_pointing_nowhere_is_reported_as_missing(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "inconnu")
+    assemble.assemble_part(job, 1)
+    assert common.load_json(job / "parts" / "01" / "music.json")["missing"] is True
+
+
+def test_changing_the_choice_rebuilds_the_part_but_not_the_voice(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "alpha")
+    assemble.assemble_part(job, 1)
+    first = (job / "parts" / "01" / "part.wav").stat().st_mtime_ns
+    assemble.assemble_part(job, 1)
+    assert (job / "parts" / "01" / "part.wav").stat().st_mtime_ns == first
+    music.write_choice(job, "beta")
+    assemble.assemble_part(job, 1)
+    assert (job / "parts" / "01" / "part.wav").stat().st_mtime_ns != first
+    assert common.load_json(job / "parts" / "01" / "music.json")["track"] == "beta.wav"
+
+
+def test_the_music_is_very_discreet_by_default(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "alpha")
+    assemble.assemble_part(job, 1)
+    info = common.load_json(job / "parts" / "01" / "music.json")
+    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 30, abs=2.5)
+    assert (music.PAUSE_RISE_DB, music.CLIP_DROP_DB) == (6.0, 4.0)
+
+
+def test_cli_musique_liste(library, home, capsys):
+    from ideo import cli
+
+    write_config(home, {"music_dir": str(library)})
+    assert cli.main(["musique", "--liste"]) == 0
+    out = capsys.readouterr().out.strip().splitlines()
+    assert out[0] == "OK musique : 5 morceaux" and len(out) == 6
+    assert out[1] == "alpha (0:12)" and out[-1] == "gamma (0:12)"
+
+
+def test_cli_musique_liste_empty(home, capsys, tmp_path):
+    from ideo import cli
+
+    write_config(home, {"music_dir": str(tmp_path / "vide")})
+    assert cli.main(["musique", "--liste"]) == 0
+    assert capsys.readouterr().out.strip() == "OK musique : 0 morceau"
+
+
+def test_cli_musique_choice_writes_the_job_file(library, home, capsys, job_with_voice_fixtures):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    assert cli.main(["musique", str(job), "Beta"]) == 0
+    assert capsys.readouterr().out.strip() == "OK musique : Beta"
+    assert common.load_json(job / "music.json") == {"choice": "beta"}
+    assert cli.main(["musique", str(job), "aucune"]) == 0
+    assert common.load_json(job / "music.json") == {"choice": "aucune"}
+
+
+def test_cli_musique_with_a_path(library, home, capsys, job_with_voice_fixtures, tmp_path):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    outside = tone_track(tmp_path / "mon morceau.wav", seconds=5.0)
+    write_config(home, {"music_dir": str(library)})
+    assert cli.main(["musique", str(job), str(outside)]) == 0
+    stored = common.load_json(job / "music.json")
+    assert stored["choice"] == "mon morceau.wav" and stored["path"] == str(outside.resolve())
+    assemble.assemble_part(job, 1)
+    info = common.load_json(job / "parts" / "01" / "music.json")
+    assert info["track"] == "mon morceau.wav" and info["folder"] == str(tmp_path)
+
+
+def test_cli_musique_errors_are_clear(library, home, capsys, job_with_voice_fixtures):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    assert cli.main(["musique", str(job), "inconnu"]) == 1
+    out = capsys.readouterr().out.strip()
+    assert out.startswith("ERREUR musique : morceau introuvable : inconnu. Morceaux disponibles : alpha, beta") and "« aucune »" in out
+    assert not (job / "music.json").exists()
+    assert cli.main(["musique", str(job)]) == 1
+    assert cli.main(["musique"]) == 1
+    assert cli.main(["musique", "--liste", "x"]) == 1
+    assert cli.main(["musique", "jobinconnu12", "aucune"]) == 1

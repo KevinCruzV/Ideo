@@ -4,12 +4,12 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, entretien, history, learn, lexicon, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, entretien, history, learn, lexicon, music, pipeline, plan_check, qc, retours, review, setup_voix
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "setup-voix")
+         "| musique <job> <choix> | musique --liste | voix-liste | voix-test [\"phrase\"] | setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "setup-voix", "musique", "voix-liste", "voix-test")
 
 
 class UsageError(Exception):
@@ -69,6 +69,18 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if rest:
             raise UsageError(USAGE)
         return cmd, "", None, opts
+    if cmd == "voix-liste":
+        if rest:
+            raise UsageError(USAGE)
+        return cmd, "", None, opts
+    if cmd == "voix-test":
+        return cmd, " ".join(rest), None, opts
+    if cmd == "musique":
+        if rest == ["--liste"]:
+            return cmd, "", None, {"liste": True}
+        if len(rest) < 2 or rest[0].startswith("--"):
+            raise UsageError(USAGE)
+        return cmd, rest[0], None, {"choix": " ".join(rest[1:])}
     if cmd == "entretien":
         if not rest:
             return cmd, "", None, opts
@@ -103,12 +115,17 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return _entretien(arg, opts), 0
     if cmd == "setup-voix":
         return [f"OK setup-voix : {setup_voix.run()}"], 0
+    if cmd == "musique" and opts.get("liste"):
+        lines = music.listing()
+        return [f"OK musique : {len(lines)} morceau{'x' if len(lines) > 1 else ''}"] + lines, 0
     if cmd == "prepare":
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
                 f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_notice_tail()}"], 0
     job = pipeline.resolve_job(arg)
+    if cmd == "musique":
+        return [f"OK musique : {music.choose_for(job, opts['choix'])}"], 0
     if cmd == "cost":
         if not pipeline.prepared(job):
             raise common.IdeoError(f"{job.name} n'est pas préparé : lance d'abord prepare <url>.")
@@ -256,7 +273,7 @@ def _learn(arg: str, opts: dict) -> list[str]:
 
 def _log_for(cmd: str, arg: str) -> tuple[Path, Path | None]:
     job = None
-    if cmd in ("learn", "entretien", "setup-voix"):
+    if cmd in ("learn", "entretien", "setup-voix", "voix-liste", "voix-test") or (cmd == "musique" and arg == ""):
         return common.JOBS / "cli.log", None
     try:
         job = common.job_dir(arg) if cmd == "prepare" else pipeline.resolve_job(arg)

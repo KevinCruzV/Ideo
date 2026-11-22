@@ -225,8 +225,14 @@ def test_the_flag_wish_line_survives_the_review_off_switch(job_with_fixtures, ca
     assert any("le drapeau de Inde existe : écris « flag:in »" in x for x in out) and retours.wishes() == []
 
 
+def test_produce_says_nothing_about_music_by_default(produce_job, capsys):
+    assert cli.main(["produce", str(produce_job[0])]) == 0
+    assert "Musique" not in out_lines(capsys)[0]
+
+
 def test_produce_says_once_when_no_music_is_found(produce_job, capsys):
     job = produce_job[0]
+    (common._root() / "config.json").write_text('{"music": true}', encoding="utf-8")
     assert cli.main(["produce", str(job)]) == 0
     line = out_lines(capsys)[0]
     assert line.count(" ; Musique : aucun morceau trouvé") == 1

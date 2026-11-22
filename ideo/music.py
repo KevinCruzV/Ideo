@@ -14,8 +14,9 @@ FADE_IN = 1.5
 FADE_OUT = 2.0
 CROSSFADE = 2.0
 SMOOTH = 0.3
-PAUSE_RISE_DB = 8.0
-CLIP_DROP_DB = 6.0
+PAUSE_RISE_DB = 6.0
+CLIP_DROP_DB = 4.0
+NONE = "aucune"
 CALM_RATIO = 0.6
 LIVELY_RATIO = 0.8
 INTRO_SECONDS = 8
@@ -123,9 +124,87 @@ def read_wav(path: Path) -> np.ndarray:
         return np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32) / 32768.0
 
 
-def signature() -> dict:
-    return {"enabled": config.music_enabled(), "level": config.music_level_db(), "folder": str(config.music_dir()),
-            "has_tracks": bool(tracks(config.music_dir())) if config.music_enabled() else False}
+def choice_path(job: Path) -> Path:
+    return Path(job) / "music.json"
+
+
+def read_choice(job: Path) -> dict | None:
+    path = choice_path(job)
+    try:
+        data = common.load_json(path) if path.exists() else None
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) and isinstance(data.get("choice"), str) else None
+
+
+def write_choice(job: Path, choice: str, path: str | None = None) -> None:
+    common.save_json(choice_path(job), {"choice": choice, **({"path": path} if path else {})})
+
+
+def resolve(choice: str, folder: Path) -> Path | None:
+    candidate = Path(choice).expanduser()
+    if candidate.is_absolute() or "/" in choice:
+        return candidate if candidate.is_file() else None
+    wanted = choice.strip().lower()
+    for track in tracks(folder):
+        if wanted in (track.stem.lower(), track.name.lower()):
+            return track
+    return None
+
+
+def duration(path: Path) -> float | None:
+    try:
+        out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+                             capture_output=True, text=True).stdout.strip()
+        return float(out)
+    except (ValueError, OSError):
+        return None
+
+
+def listing() -> list[str]:
+    out = []
+    for track in tracks(config.music_dir()):
+        seconds = duration(track)
+        stamp = f"{int(seconds) // 60}:{int(seconds) % 60:02d}" if seconds else "durée inconnue"
+        out.append(f"{track.stem} ({stamp})")
+    return out
+
+
+def choose_for(job: Path, text: str) -> str:
+    text = text.strip()
+    if not text:
+        raise common.IdeoError("dis quelle musique tu veux : « aucune », le nom d'un morceau de la liste ou un chemin de fichier.")
+    if text.lower() == NONE:
+        write_choice(job, NONE)
+        return text
+    target = resolve(text, config.music_dir())
+    if target is None:
+        names = ", ".join(t.stem for t in tracks(config.music_dir())) or "aucun morceau dans " + str(config.music_dir())
+        raise common.IdeoError(f"morceau introuvable : {text}. Morceaux disponibles : {names}. "
+                               "Donne un de ces noms, un chemin de fichier audio ou « aucune ».")
+    if target.parent == config.music_dir():
+        write_choice(job, target.stem)
+    else:
+        write_choice(job, target.name, str(target.resolve()))
+    return text
+
+
+def selected(job: Path) -> tuple[str, Path | None]:
+    choice = read_choice(job)
+    if choice:
+        if choice["choice"].strip().lower() == NONE:
+            return "none", None
+        target = Path(choice["path"]) if choice.get("path") else resolve(choice["choice"], config.music_dir())
+        return "choice", target if target and target.is_file() else None
+    return ("auto", None) if config.music_enabled() else ("none", None)
+
+
+def signature(job: Path | None = None) -> dict:
+    mode, target = selected(job) if job else ("auto" if config.music_enabled() else "none", None)
+    choice = read_choice(job) if job else None
+    return {"mode": mode, "choice": choice["choice"] if choice else None, "level": config.music_level_db(),
+            "folder": str(config.music_dir()), "sfx": config.transition_sfx_enabled(), "sfx_db": config.transition_sfx_db(),
+            "has_tracks": bool(tracks(config.music_dir())) if mode == "auto" else bool(target)}
 
 
 def title_of(track: Path) -> str:
@@ -148,18 +227,24 @@ def attribution(folder: Path, track_name: str) -> str:
 
 def mix(raw: Path, offsets: list[dict], job: Path, out_dir: Path, work: Path, log: Path, loudness) -> dict:
     job = Path(job)
-    sig = signature()
+    sig = signature(job)
     info = {"signature": sig, "track": None}
-    if not sig["enabled"]:
+    mode, target = selected(job)
+    if mode == "none":
         return info
-    folder = config.music_dir()
-    available = tracks(folder)
-    if not available:
-        info["missing"] = True
-        return info
-    previous = _stored(out_dir)
-    recent = history.recent_music(job.name, RECENT)
-    track = next((t for t in available if previous and t.name == previous), None) or choose(job.name, available, recent)
+    if mode == "choice":
+        if target is None:
+            info["missing"] = True
+            return info
+        track = target
+    else:
+        available = tracks(config.music_dir())
+        if not available:
+            info["missing"] = True
+            return info
+        previous = _stored(out_dir)
+        recent = history.recent_music(job.name, RECENT)
+        track = next((t for t in available if previous and t.name == previous), None) or choose(job.name, available, recent)
     samples = decode(track, work, log)
     voice = read_wav(raw)
     length = len(voice)
@@ -183,7 +268,7 @@ def mix(raw: Path, offsets: list[dict], job: Path, out_dir: Path, work: Path, lo
     under_lufs = loudness(probe)
     probe.unlink(missing_ok=True)
     write_wav(raw, mixed)
-    info.update({"track": track.name, "offset": offset, "gain_db": round(base, 2),
+    info.update({"track": track.name, "folder": str(track.parent), "offset": offset, "gain_db": round(base, 2),
                  "voice_lufs": voice_lufs, "music_under_voice_lufs": under_lufs})
     history.set_music(job.name, track.name)
     return info

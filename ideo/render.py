@@ -163,7 +163,7 @@ def _music_credit(job: Path) -> str | None:
         except (OSError, ValueError):
             continue
         if isinstance(info, dict) and info.get("track"):
-            return music.attribution(config.music_dir(), info["track"])
+            return music.attribution(Path(info.get("folder") or config.music_dir()), info["track"])
     return None
 
 

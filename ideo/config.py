@@ -7,9 +7,12 @@ from ideo import common
 
 DEFAULT_RATE = "+0%"
 DEFAULT_SEUIL = 5
-DEFAULT_MUSIC_LEVEL = -20
+DEFAULT_MUSIC_LEVEL = -30
 KYUTAI_LANGS = ("fr", "en")
-ENGINES = ("kyutai", "edge")
+ENGINES = ("kyutai", "edge", "elevenlabs")
+DEFAULT_ELEVEN_MODEL = "eleven_multilingual_v2"
+ELEVEN_DEFAULTS = {"stability": 0.65, "similarity": 0.8, "style": 0.0, "speed": 1.0}
+DEFAULT_TRANSITION_DB = -12
 KYUTAI_PYTHON = common.REPO_ROOT / ".venv-voix2" / "bin" / "python"
 DEFAULT_KYUTAI_VOICE = "unmute-prod-website/developpeuse-3.wav"
 DEFAULT_PADDING_BONUS = 0.5
@@ -47,7 +50,22 @@ def _load() -> dict:
         raise common.IdeoError("config.json : « entretien_seuil » doit être un nombre entier d'au moins 1.")
     engine = data.get("engine")
     if engine is not None and engine not in ENGINES:
-        raise common.IdeoError("config.json : « engine » doit valoir « kyutai » ou « edge ».")
+        raise common.IdeoError("config.json : « engine » doit valoir « kyutai », « edge » ou « elevenlabs ».")
+    for key in ("elevenlabs_api_key", "elevenlabs_voice_id", "elevenlabs_model"):
+        value = data.get(key)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            raise common.IdeoError(f"config.json : « {key} » doit être un texte non vide.")
+    for key, (low, high) in {"stability": (0, 1), "similarity": (0, 1), "style": (0, 1), "speed": (0.7, 1.2)}.items():
+        value = data.get(f"elevenlabs_{key}", ELEVEN_DEFAULTS[key])
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high:
+            raise common.IdeoError(f"config.json : « elevenlabs_{key} » doit être un nombre entre {low} et {high}.")
+    transition = data.get("transition_sfx", True)
+    if not isinstance(transition, bool):
+        raise common.IdeoError("config.json : « transition_sfx » doit être true ou false.")
+    transition_db = data.get("transition_sfx_db", DEFAULT_TRANSITION_DB)
+    if isinstance(transition_db, bool) or not isinstance(transition_db, (int, float)) or not -40 <= transition_db <= 0:
+        raise common.IdeoError("config.json : « transition_sfx_db » doit être un nombre entre -40 et 0 "
+                               "(niveau des sons de transition sous la voix, en dB).")
     voice = data.get("kyutai_voice", DEFAULT_KYUTAI_VOICE)
     if not isinstance(voice, str) or not voice.strip():
         raise common.IdeoError("config.json : « kyutai_voice » doit être le nom d'une voix, par exemple "
@@ -78,7 +96,34 @@ def _load() -> dict:
 
 
 def music_enabled() -> bool:
-    return _load().get("music", True)
+    return _load().get("music", False)
+
+
+def eleven_key() -> str | None:
+    import os
+
+    return (os.environ.get("ELEVENLABS_API_KEY") or "").strip() or _load().get("elevenlabs_api_key")
+
+
+def eleven_voice_id() -> str | None:
+    return _load().get("elevenlabs_voice_id")
+
+
+def eleven_model() -> str:
+    return _load().get("elevenlabs_model", DEFAULT_ELEVEN_MODEL)
+
+
+def eleven_settings() -> dict:
+    data = _load()
+    return {key: data.get(f"elevenlabs_{key}", default) for key, default in ELEVEN_DEFAULTS.items()}
+
+
+def transition_sfx_enabled() -> bool:
+    return _load().get("transition_sfx", True)
+
+
+def transition_sfx_db() -> float:
+    return _load().get("transition_sfx_db", DEFAULT_TRANSITION_DB)
 
 
 def music_dir() -> Path:

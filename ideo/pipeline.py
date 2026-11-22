@@ -152,7 +152,7 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
         if only is not None and n != only:
             continue
         digest = part_hash(plan, part)
-        if _done(job, plan, n, digest) and not voice.stale(job, n):
+        if _done(job, plan, n, digest) and not voice.stale(job, n) and assemble.mix_current(job, n):
             progress(job, f"OK partie {n:02d} : déjà rendue, inchangée")
         else:
             if _stored_hash(job, n) != digest:

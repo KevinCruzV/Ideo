@@ -1,3 +1,4 @@
+import json
 import sys
 
 import pytest
@@ -382,3 +383,32 @@ def test_produce_redoes_only_the_stale_segments_without_wiping_the_part(produce_
     capsys.readouterr()
     assert cli.main(["produce", str(job)]) == 0
     assert len(backend.calls) == calls + 1 and backend.calls[-1][2] == "seg_02.wav" and len(renders) == rendered + 1
+
+
+def test_changing_the_music_redoes_assembly_and_render_but_not_the_voice(produce_job, capsys, tmp_path):
+    from ideo import music
+
+    job, backend, renders = produce_job
+    folder = tmp_path / "zik"
+    folder.mkdir()
+    from tests.test_music import tone_track
+
+    tone_track(folder / "alpha.wav", seconds=8.0)
+    tone_track(folder / "beta.wav", seconds=8.0)
+    (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder)}), encoding="utf-8")
+    assert cli.main(["produce", str(job)]) == 0
+    calls, rendered = len(backend.calls), len(renders)
+    capsys.readouterr()
+    cli.main(["produce", str(job)])
+    assert len(backend.calls) == calls and len(renders) == rendered
+    music.write_choice(job, "alpha")
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls and len(renders) == rendered + 1
+    assert common.load_json(job / "parts" / "01" / "music.json")["track"] == "alpha.wav"
+    music.write_choice(job, "beta")
+    cli.main(["produce", str(job)])
+    assert len(renders) == rendered + 2 and common.load_json(job / "parts" / "01" / "music.json")["track"] == "beta.wav"
+    (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder), "music_level_db": -26}), encoding="utf-8")
+    cli.main(["produce", str(job)])
+    assert len(renders) == rendered + 3 and len(backend.calls) == calls

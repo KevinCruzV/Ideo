@@ -155,13 +155,17 @@ def _cut(source: Path, start: float, end: float, work: Path, log: Path) -> bytes
     return pcm
 
 
-def _music_current(out_dir: Path) -> bool:
+def _music_current(job: Path, out_dir: Path) -> bool:
     path = out_dir / "music.json"
     try:
         stored = common.load_json(path) if path.exists() else None
     except (OSError, ValueError):
         return False
-    return isinstance(stored, dict) and stored.get("signature") == music.signature()
+    return isinstance(stored, dict) and stored.get("signature") == music.signature(job)
+
+
+def mix_current(job: Path, n: int) -> bool:
+    return _music_current(Path(job), Path(job) / "parts" / f"{n:02d}")
 
 
 def _mix_music(raw: Path, offsets: list, job: Path, out_dir: Path, work: Path, log: Path) -> dict:
@@ -213,7 +217,7 @@ def _assemble(job: Path, n: int) -> Path:
             raise common.IdeoError(f"{name}.wav est introuvable : lancez d'abord la voix de la partie {n}.")
     out_wav = out_dir / "part.wav"
     offsets_path = out_dir / "offsets.json"
-    if out_wav.exists() and offsets_path.exists() and _music_current(out_dir):
+    if out_wav.exists() and offsets_path.exists() and _music_current(job, out_dir):
         newest = max(p.stat().st_mtime for p in _inputs(out_dir, names, job))
         if min(out_wav.stat().st_mtime, offsets_path.stat().st_mtime) >= newest:
             return out_wav
