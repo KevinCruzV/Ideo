@@ -93,7 +93,7 @@ def build(job):
 def test_timeline_has_hook_first_outro_last_and_watermark(job_with_offsets):
     tl = build(job_with_offsets)
     assert tl["segments"][0]["kind"] == "hook" and tl["segments"][-1]["kind"] == "outro"
-    assert tl["watermark"] == "Ideo" and tl["width"] == 1080 and tl["height"] == 1920
+    assert tl["watermark"] == "@ideovideos" and tl["width"] == 1080 and tl["height"] == 1920
     assert tl["chapter"] == {"part": 1, "total": 3, "title": "L'oubli", "label": "Partie"}
     assert tl["fps"] == 30 and tl["lang"] == "fr" and tl["audio"] == "part.wav"
     assert common.read_status(job_with_offsets)["steps"]["timeline-01"]["ok"] is True
