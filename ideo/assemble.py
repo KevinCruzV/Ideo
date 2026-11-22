@@ -1,18 +1,73 @@
+import json
+import math
+import re
 import shutil
 import subprocess
 import tempfile
 import wave
 from pathlib import Path
 
-from ideo import common, textmatch, voice
+from ideo import common, music, textmatch, transitions, voice
 
 RATE = 48000
-SILENCE_GAP = 0.12
+GAP_HOOK = 0.60
+GAP_SCENE = 0.50
+GAP_BREAK = 0.90
 CLIP_PAD = 0.25
 FADE = 0.08
 QUOTE_WINDOW = 90.0
 QUOTE_MARGIN = 0.15
+TARGET_LUFS = -14.0
 LOUDNORM = "loudnorm=I=-14:TP=-1.5:LRA=11"
+MEASURED = ("input_i", "input_tp", "input_lra", "input_thresh", "target_offset")
+
+
+def _measure(raw: Path) -> dict | None:
+    result = subprocess.run(
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(raw), "-af", LOUDNORM + ":print_format=json", "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    match = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", result.stderr)
+    if not match:
+        return None
+    try:
+        data = json.loads(match.group(0))
+        values = {k: float(data[k]) for k in MEASURED}
+    except (ValueError, KeyError):
+        return None
+    return values if all(math.isfinite(v) for v in values.values()) else None
+
+
+def _integrated(path: Path) -> float | None:
+    result = subprocess.run(
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(path), "-af", "ebur128", "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    found = re.findall(r"I:\s+(-?[\d.]+) LUFS", result.stderr)
+    return float(found[-1]) if found else None
+
+
+def reach_target(path: Path, work: Path, log: Path, tolerance: float = 0.2) -> None:
+    loudness = _integrated(path)
+    if loudness is None or abs(loudness - TARGET_LUFS) <= tolerance:
+        return
+    out = work / "gain.wav"
+    gain = TARGET_LUFS - loudness
+    common.run(
+        [_ffmpeg(), "-y", "-i", str(path), "-af", f"volume={gain:.2f}dB,alimiter=limit=0.841:level=disabled",
+         "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le", str(out)],
+        log,
+    )
+    shutil.copyfile(out, path)
+
+
+def _loudnorm_filter(raw: Path) -> str:
+    values = _measure(raw)
+    if values is None:
+        return LOUDNORM
+    return (f"{LOUDNORM}:measured_I={values['input_i']}:measured_TP={values['input_tp']}"
+            f":measured_LRA={values['input_lra']}:measured_thresh={values['input_thresh']}"
+            f":offset={values['target_offset']}:linear=true")
 
 
 def _ffmpeg() -> str:
@@ -100,9 +155,46 @@ def _cut(source: Path, start: float, end: float, work: Path, log: Path) -> bytes
     return pcm
 
 
+def _music_current(job: Path, out_dir: Path) -> bool:
+    path = out_dir / "music.json"
+    try:
+        stored = common.load_json(path) if path.exists() else None
+    except (OSError, ValueError):
+        return False
+    return isinstance(stored, dict) and stored.get("signature") == music.signature(job)
+
+
+def mix_current(job: Path, n: int) -> bool:
+    return _music_current(Path(job), Path(job) / "parts" / f"{n:02d}")
+
+
+def _mix_music(raw: Path, offsets: list, job: Path, out_dir: Path, work: Path, log: Path) -> dict:
+    rounded = [{"start": round(o["start"], 4), "end": round(o["end"], 4), "clip": o["clip"]} for o in offsets]
+    try:
+        info = music.mix(raw, rounded, job, out_dir, work, log, _integrated)
+    except common.IdeoError:
+        raise
+    except Exception as err:
+        info = {"signature": music.signature(job), "track": None, "error": str(err)}
+    try:
+        info["transitions"] = transitions.mix(raw, rounded)
+    except Exception as err:
+        info["transitions"] = {"enabled": False, "count": 0, "error": str(err)}
+    return info
+
+
 def _inputs(out_dir: Path, names: list[str], job: Path) -> list[Path]:
     paths = [out_dir / f"{name}.wav" for name in names] + [job / "plan.json", job / "sfx.json"]
     return [p for p in paths if p.exists()]
+
+
+def _gap(names: list[str], index: int, scenes: dict, after_clip: bool) -> float:
+    scene = scenes.get(names[index])
+    if scene and scene.get("break") is True:
+        return GAP_BREAK - CLIP_PAD if after_clip else GAP_BREAK
+    if after_clip:
+        return 0.0
+    return GAP_HOOK if names[index - 1] == "seg_00_hook" else GAP_SCENE
 
 
 def assemble_part(job: Path, n: int) -> Path:
@@ -130,7 +222,7 @@ def _assemble(job: Path, n: int) -> Path:
             raise common.IdeoError(f"{name}.wav est introuvable : lancez d'abord la voix de la partie {n}.")
     out_wav = out_dir / "part.wav"
     offsets_path = out_dir / "offsets.json"
-    if out_wav.exists() and offsets_path.exists():
+    if out_wav.exists() and offsets_path.exists() and _music_current(job, out_dir):
         newest = max(p.stat().st_mtime for p in _inputs(out_dir, names, job))
         if min(out_wav.stat().st_mtime, offsets_path.stat().st_mtime) >= newest:
             return out_wav
@@ -151,9 +243,11 @@ def _assemble(job: Path, n: int) -> Path:
         source_len = None
         after_clip = False
         for index, name in enumerate(names):
-            if index and not after_clip:
-                chunks.append(_silence(SILENCE_GAP))
-                cursor += SILENCE_GAP
+            if index:
+                gap = _gap(names, index, scenes, after_clip)
+                if gap > 0:
+                    chunks.append(_silence(gap))
+                    cursor += gap
             pcm = _read_wav(out_dir / f"{name}.wav")
             entry = {"seg": name, "start": cursor, "end": cursor + _seconds(pcm), "clip": None}
             chunks.append(pcm)
@@ -192,12 +286,14 @@ def _assemble(job: Path, n: int) -> Path:
             w.setsampwidth(2)
             w.setframerate(RATE)
             w.writeframes(b"".join(chunks))
+        music_info = _mix_music(raw, offsets, job, out_dir, work, log)
         tmp_out = work / "part.wav"
         common.run(
-            [_ffmpeg(), "-y", "-i", str(raw), "-af", LOUDNORM, "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le",
+            [_ffmpeg(), "-y", "-i", str(raw), "-af", _loudnorm_filter(raw), "-ar", str(RATE), "-ac", "1", "-c:a", "pcm_s16le",
              str(tmp_out)],
             log,
         )
+        reach_target(tmp_out, work, log)
         shutil.copyfile(tmp_out, out_wav)
 
     for entry in offsets:
@@ -206,5 +302,6 @@ def _assemble(job: Path, n: int) -> Path:
         if entry["clip"]:
             entry["clip"] = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in entry["clip"].items()}
     common.save_json(offsets_path, offsets)
+    common.save_json(out_dir / "music.json", music_info)
     common.mark(job, f"assemble-{n:02d}", True, f"{len(offsets)} segments, {offsets[-1]['end']:.1f} s")
     return out_wav

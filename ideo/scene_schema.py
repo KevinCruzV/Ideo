@@ -6,10 +6,70 @@ TEXT = "text"
 NUMBER = "number"
 LABEL = "label"
 OPTIONAL_TEXT = "optional-text"
+PICTO = "picto"
+MAP_CODE = "map-code"
+BOOL = "bool"
 OBJECTS = ("screen", "board", "jar", "door", "scale")
 GRID_SHAPES = ("circle", "square", "triangle", "diamond", "arrow", "strip")
 DIAGRAM_SHAPES = ("circle", "square", "triangle", "bar")
 MASCOT_POSES = ("question", "surprise", "montre", "content")
+PICTOS = (
+    "globe", "flag", "pin", "city", "house", "factory", "bank", "coin", "chart-up", "chart-down", "ship", "plane",
+    "train", "rocket", "satellite", "tank", "shield", "sword", "bomb", "dove", "handshake", "justice", "wall", "chain",
+    "lock", "key", "crown", "ballot", "megaphone", "newspaper", "tv", "phone", "computer", "chip", "book", "brain",
+    "heart", "eye", "clock", "calendar", "lightbulb", "atom", "flask", "leaf", "sun", "drop", "fire", "lightning",
+    "mountain", "barrel", "gear", "people",
+    "lungs", "stomach", "spine", "bone", "muscle", "tooth", "blood", "pill", "syringe", "virus", "bed", "pillow", "moon",
+    "thermometer", "scale-weight", "apple", "dumbbell", "running-shoe", "stethoscope", "hospital",
+)
+FLAGS = (
+    "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
+    "bd", "be", "bf", "bg", "bh", "bi", "bj", "bl", "bm", "bn", "bo", "bq", "br", "bs", "bt", "bv", "bw", "by",
+    "bz", "ca", "cc", "cd", "cf", "cg", "ch", "ci", "ck", "cl", "cm", "cn", "co", "cr", "cu", "cv", "cw", "cx",
+    "cy", "cz", "de", "dj", "dk", "dm", "do", "dz", "ec", "ee", "eg", "eh", "er", "es", "et", "eu", "fi", "fj",
+    "fk", "fm", "fo", "fr", "ga", "gb", "gd", "ge", "gf", "gg", "gh", "gi", "gl", "gm", "gn", "gp", "gq", "gr",
+    "gs", "gt", "gu", "gw", "gy", "hk", "hm", "hn", "hr", "ht", "hu", "id", "ie", "il", "im", "in", "io", "iq",
+    "ir", "is", "it", "je", "jm", "jo", "jp", "ke", "kg", "kh", "ki", "km", "kn", "kp", "kr", "kw", "ky", "kz",
+    "la", "lb", "lc", "li", "lk", "lr", "ls", "lt", "lu", "lv", "ly", "ma", "mc", "md", "me", "mf", "mg", "mh",
+    "mk", "ml", "mm", "mn", "mo", "mp", "mq", "mr", "ms", "mt", "mu", "mv", "mw", "mx", "my", "mz", "na", "nc",
+    "ne", "nf", "ng", "ni", "nl", "no", "np", "nr", "nu", "nz", "om", "pa", "pe", "pf", "pg", "ph", "pk", "pl",
+    "pm", "pn", "pr", "ps", "pt", "pw", "py", "qa", "re", "ro", "rs", "ru", "rw", "sa", "sb", "sc", "sd", "se",
+    "sg", "sh", "si", "sj", "sk", "sl", "sm", "sn", "so", "sr", "ss", "st", "su", "sv", "sx", "sy", "sz", "tc",
+    "td", "tf", "tg", "th", "tj", "tk", "tl", "tm", "tn", "to", "tr", "tt", "tv", "tw", "tz", "ua", "ug", "um",
+    "un", "us", "uy", "uz", "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "yt", "za", "zm", "zw",
+)
+MAP_CODES = (
+    "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
+    "bd", "be", "bf", "bg", "bh", "bi", "bj", "bl", "bm", "bn", "bo", "br", "bs", "bt", "bw", "by", "bz", "ca",
+    "cd", "cf", "cg", "ch", "ci", "ck", "cl", "cm", "cn", "co", "cr", "cu", "cv", "cw", "cy", "cz", "de", "dj",
+    "dk", "dm", "do", "dz", "ec", "ee", "eg", "eh", "er", "es", "et", "fi", "fj", "fk", "fm", "fo", "fr", "ga",
+    "gb", "gd", "ge", "gg", "gh", "gl", "gm", "gn", "gq", "gr", "gs", "gt", "gu", "gw", "gy", "hk", "hm", "hn",
+    "hr", "ht", "hu", "id", "ie", "il", "im", "in", "io", "iq", "ir", "is", "it", "je", "jm", "jo", "jp", "ke",
+    "kg", "kh", "ki", "km", "kn", "kp", "kr", "kw", "ky", "kz", "la", "lb", "lc", "li", "lk", "lr", "ls", "lt",
+    "lu", "lv", "ly", "ma", "mc", "md", "me", "mf", "mg", "mh", "mk", "ml", "mm", "mn", "mo", "mp", "mr", "ms",
+    "mt", "mu", "mv", "mw", "mx", "my", "mz", "na", "nc", "ne", "nf", "ng", "ni", "nl", "no", "np", "nr", "nu",
+    "nz", "om", "pa", "pe", "pf", "pg", "ph", "pk", "pl", "pm", "pn", "pr", "ps", "pt", "pw", "py", "qa", "ro",
+    "rs", "ru", "rw", "sa", "sb", "sc", "sd", "se", "sg", "sh", "si", "sk", "sl", "sm", "sn", "so", "sr", "ss",
+    "st", "sv", "sx", "sy", "sz", "tc", "td", "tf", "tg", "th", "tj", "tl", "tm", "tn", "to", "tr", "tt", "tw",
+    "tz", "ua", "ug", "us", "uy", "uz", "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "za", "zm",
+    "zw",
+)
+MAP_FOCUS = ("world", "europe", "africa", "asia", "north-america", "south-america", "middle-east", "oceania", "arctic")
+BODY_POSES = ("standing", "sitting", "walking", "running", "lying-back", "lying-starfish", "lying-side-left",
+              "lying-side-right", "lying-fetal", "lying-stomach")
+BODY_SETTINGS = ("none", "bed", "chair", "desk", "outdoor")
+BODY_PARTS = ("head", "brain", "neck", "throat", "shoulders", "chest", "heart", "lungs", "stomach", "back", "spine", "hips",
+              "arms", "hands", "knees", "legs", "feet")
+BODY_TONES = ("good", "bad", "neutral")
+PICTO_KINDS = ("key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline", "stamp", "quote")
+FLAG_EXAMPLES = ("fr", "us", "cn", "de", "br", "za")
+HAIRS = ("none", "short", "side", "long", "curly", "wild", "bun", "crown-bald")
+HAIR_COLORS = ("black", "brown", "blond", "red", "grey", "white")
+FACIALS = ("none", "moustache", "beard", "goatee", "sideburns")
+HATS = ("none", "cap", "kepi", "bicorne", "crown", "helmet", "top-hat", "beret", "turban", "laurel", "wig")
+OUTFITS = ("suit", "uniform", "robe", "lab-coat", "casual", "toga", "armor", "dress")
+SKINS = ("light", "tan", "brown", "dark")
+KICKER_CAP = 28
 
 
 def text_list(most: int) -> dict:
@@ -20,23 +80,32 @@ def number_list(most: int) -> dict:
     return {"list": NUMBER, "max": most}
 
 
-def object_list(most: int, keys: dict, required: tuple) -> dict:
-    return {"list": "object", "max": most, "keys": keys, "required": required}
+def object_list(most: int, keys: dict, required: tuple, least: int = 1) -> dict:
+    return {"list": "object", "max": most, "min": least, "keys": keys, "required": required}
+
+
+def code_list(most: int, least: int) -> dict:
+    return {"list": MAP_CODE, "max": most, "min": least}
 
 
 SCHEMA = {
     "key-title": {"required": {"text": TEXT}, "optional": {"accent": TEXT}, "el": ("text", "accent")},
-    "person-card": {"required": {"name": TEXT}, "optional": {"role": TEXT}, "el": ("avatar", "name", "role")},
+    "person-card": {
+        "required": {"name": TEXT},
+        "optional": {"role": TEXT, "hair": HAIRS, "hair_color": HAIR_COLORS, "facial": FACIALS, "hat": HATS,
+                     "glasses": BOOL, "outfit": OUTFITS, "skin": SKINS},
+        "el": ("avatar", "name", "role"),
+    },
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},
     "stack-list": {"required": {"items": text_list(5)}, "optional": {}, "el": ("items.<i>",)},
-    "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT}, "el": ("to", "label")},
+    "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT, "unit": TEXT}, "el": ("to", "label")},
     "timeline": {
         "required": {"marks": object_list(5, {"at": LABEL, "label": TEXT}, ("at",))},
         "optional": {"start": LABEL, "end": LABEL},
         "el": ("marks.<i>",),
     },
     "icon-grid": {
-        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT}, ("label",))},
+        "required": {"cells": object_list(9, {"shape": GRID_SHAPES, "label": TEXT, "picto": PICTO}, ("label",))},
         "optional": {},
         "el": ("cells.<i>",),
     },
@@ -45,11 +114,31 @@ SCHEMA = {
     "object-state": {"required": {"object": OBJECTS, "states": text_list(6)}, "optional": {}, "el": ("states.<i>",)},
     "shape-diagram": {
         "required": {"values": number_list(8)},
-        "optional": {"shape": DIAGRAM_SHAPES, "labels": text_list(8)},
+        "optional": {"shape": DIAGRAM_SHAPES, "labels": text_list(8), "unit": TEXT},
         "el": ("values.<i>", "labels.<i>"),
     },
     "mascot": {"required": {"bubble": TEXT}, "optional": {"pose": MASCOT_POSES}, "el": ("bubble",)},
+    "map": {
+        "required": {"focus": MAP_FOCUS, "places": object_list(6, {"code": MAP_CODE, "label": TEXT}, ("code",))},
+        "optional": {"route": code_list(6, 2)},
+        "el": ("places.<i>", "route"),
+    },
+    "body": {
+        "required": {"pose": BODY_POSES},
+        "optional": {"setting": BODY_SETTINGS, "tone": BODY_TONES,
+                     "marks": object_list(4, {"part": BODY_PARTS, "label": TEXT}, ("part",), least=0)},
+        "el": ("marks.<i>",),
+    },
+    "versus": {
+        "required": {"left": TEXT, "right": TEXT},
+        "optional": {"left_picto": PICTO, "right_picto": PICTO},
+        "el": ("left", "right"),
+    },
 }
+for _kind, _schema in SCHEMA.items():
+    _schema["optional"]["kicker"] = TEXT
+    if _kind in PICTO_KINDS:
+        _schema["optional"]["picto"] = PICTO
 
 PART_CAPS = {"hook": 60, "title": 40}
 TEXT_CAPS = {
@@ -57,7 +146,7 @@ TEXT_CAPS = {
     "person-card": {"name": 48, "role": 100},
     "fact-chips": {"chips": 28},
     "stack-list": {"items": 60},
-    "counter": {"label": 60},
+    "counter": {"label": 60, "unit": 4},
     "timeline": {"marks.at": 12, "marks.label": 48, "start": 30, "end": 30},
     "icon-grid": {"cells.label": 16},
     "stamp": {"text": 48},
@@ -65,11 +154,74 @@ TEXT_CAPS = {
     "object-state": {"states": 36},
     "shape-diagram": {"labels": 14},
     "mascot": {"bubble": 80},
+    "versus": {"left": 24, "right": 24},
+    "map": {"places.label": 24},
+    "body": {"marks.label": 28},
 }
+for _kind, _fields in TEXT_CAPS.items():
+    _fields["kicker"] = KICKER_CAP
+TEXT_CAPS["shape-diagram"]["unit"] = 8
 CHARS_PER_WORD = 6
 
 INDEXED = re.compile(r"^([a-z]+)\.(\d+)$")
 NOT_WORD = re.compile(r"[\W_]+")
+
+
+FLAG_PREFIX = "flag:"
+
+
+def is_flag(value) -> bool:
+    return isinstance(value, str) and value.startswith(FLAG_PREFIX) and value[len(FLAG_PREFIX):] in FLAGS
+
+
+def _flag_problems(props: dict) -> list[tuple[str, str]]:
+    found = []
+    for key in ("picto", "left_picto", "right_picto"):
+        value = props.get(key)
+        if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+            found.append((f"props.{key}", value))
+    cells = props.get("cells")
+    for i, cell in enumerate(cells if isinstance(cells, list) else []):
+        value = cell.get("picto") if isinstance(cell, dict) else None
+        if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+            found.append((f"props.cells.{i}.picto", value))
+    return found
+
+
+def _map_problems(kind: str, props: dict) -> list[tuple[str, str]]:
+    if kind != "map":
+        return []
+    found = []
+    places = props.get("places")
+    for i, place in enumerate(places if isinstance(places, list) else []):
+        code = place.get("code") if isinstance(place, dict) else None
+        if isinstance(code, str) and code not in MAP_CODES:
+            found.append((f"props.places.{i}.code", code))
+    route = props.get("route")
+    for i, code in enumerate(route if isinstance(route, list) else []):
+        if isinstance(code, str) and code not in MAP_CODES:
+            found.append((f"props.route.{i}", code))
+    return found
+
+
+def _map_neutral(value, bad: set):
+    if isinstance(value, str) and value in bad:
+        return "fr"
+    if isinstance(value, list):
+        return [_map_neutral(v, bad) for v in value]
+    if isinstance(value, dict):
+        return {k: _map_neutral(v, bad) for k, v in value.items()}
+    return value
+
+
+def _neutral(value):
+    if isinstance(value, str) and value.startswith(FLAG_PREFIX) and not is_flag(value):
+        return PICTOS[0]
+    if isinstance(value, list):
+        return [_neutral(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _neutral(v) for k, v in value.items()}
+    return value
 
 
 def _is_number(value) -> bool:
@@ -85,14 +237,24 @@ def _describe(spec) -> str:
         return "un texte ou un nombre"
     if spec == OPTIONAL_TEXT:
         return "un texte, vide si inconnu"
+    if spec == PICTO:
+        return ("un des dessins " + ", ".join(PICTOS) + ", ou un drapeau « flag:<code> » avec un code de pays à deux lettres "
+                "en minuscules (par exemple flag:fr)")
+    if spec == BOOL:
+        return "true ou false, sans guillemets"
     if isinstance(spec, tuple):
         return "une de ces valeurs : " + ", ".join(spec)
+    least = spec.get("min", 1)
+    if spec == MAP_CODE:
+        return "un code de pays à deux lettres en minuscules, comme cn, ru ou in"
     if spec["list"] == TEXT:
         return f"une liste de 1 à {spec['max']} textes"
     if spec["list"] == NUMBER:
         return f"une liste de 1 à {spec['max']} nombres"
+    if spec["list"] == MAP_CODE:
+        return f"une liste de {least} à {spec['max']} codes de pays à deux lettres en minuscules, comme cn, ru ou in"
     keys = ", ".join(f"« {k} »" for k in spec["keys"])
-    return f"une liste de 1 à {spec['max']} objets avec {keys}"
+    return f"une liste de {least} à {spec['max']} objets avec {keys}"
 
 
 def _valid(spec, value) -> bool:
@@ -104,11 +266,17 @@ def _valid(spec, value) -> bool:
         return isinstance(value, str)
     if spec == LABEL:
         return (isinstance(value, str) and bool(value.strip())) or _is_number(value)
+    if spec == PICTO:
+        return isinstance(value, str) and (value in PICTOS or is_flag(value))
+    if spec == BOOL:
+        return isinstance(value, bool)
+    if spec == MAP_CODE:
+        return isinstance(value, str) and value in MAP_CODES
     if isinstance(spec, tuple):
         return value in spec
-    if not isinstance(value, list) or not 1 <= len(value) <= spec["max"]:
+    if not isinstance(value, list) or not spec.get("min", 1) <= len(value) <= spec["max"]:
         return False
-    if spec["list"] in (TEXT, NUMBER):
+    if spec["list"] in (TEXT, NUMBER, MAP_CODE):
         return all(_valid(spec["list"], v) for v in value)
     for entry in value:
         if not isinstance(entry, dict) or set(entry) - set(spec["keys"]):
@@ -208,8 +376,22 @@ def check_props(kind: str, props: dict, where: str) -> list[str]:
     for key in schema["required"]:
         if key not in props:
             errors.append(f"{where} : prop « {key} » manquante pour « {kind} ». Props acceptées : {accepted_props(kind)}.")
+    map_problems = _map_problems(kind, props)
+    bad_codes = {code for _, code in map_problems}
+    for field, value in map_problems:
+        errors.append(f"{where} : « {field} » : « {value} » n'a pas de contour sur la carte. Écris un code de pays à deux lettres "
+                      "en minuscules (par exemple cn, ru, in). Quelques petits territoires (par exemple gf, re, yt) et eu, un, su "
+                      "n'ont pas de contour : choisis un autre pays.")
+    problems = _flag_problems(props)
+    for field, value in problems:
+        errors.append(f"{where} : « {field} » : « {value} » n'est pas un drapeau connu. Écris « flag: » suivi d'un code de pays "
+                      f"à deux lettres en minuscules, par exemple {', '.join(FLAG_PREFIX + c for c in FLAG_EXAMPLES)}.")
     for key, spec in known.items():
         if key in props and not _valid(spec, props[key]):
+            if problems and _valid(spec, _neutral(props[key])):
+                continue
+            if bad_codes and _valid(spec, _map_neutral(props[key], bad_codes)):
+                continue
             errors.append(f"{where} : « props.{key} » doit être {_describe(spec)}.")
     return errors + _coherence(kind, props, where) + _caps(kind, props, where)
 

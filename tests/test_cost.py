@@ -90,7 +90,7 @@ def test_cli_cost_prints_one_ok_line(tmp_path, capsys):
     job = make_job(tmp_path)
     assert cli.main(["cost", str(job)]) == 0
     out = capsys.readouterr().out.strip().splitlines()
-    assert out == [f"OK cost : {cost.line(job)}. Transcription : {job.resolve() / 'transcript_compact.md'} "
+    assert out == [f"OK cost : {cost.line(job)}.{cost.advice(job)} Transcription : {job.resolve() / 'transcript_compact.md'} "
                    f"({cost.reading_note(job)})"]
 
 
@@ -145,3 +145,15 @@ def test_two_hour_source_is_read_in_chunks(tmp_path):
 def test_source_under_a_minute_is_shown_in_seconds(tmp_path):
     assert cost.line(make_job(tmp_path, words=50, duration=25)).endswith("source 25 s")
     assert cost.line(make_job(tmp_path / "b", words=50, duration=90)).endswith("source 2 min")
+
+
+def test_cost_line_carries_the_advised_duration(tmp_path, capsys):
+    job = make_job(tmp_path)
+    assert cost.advice(job).startswith(" Durée conseillée : ")
+    assert "jusqu'à 300 s si elle en a besoin" in cost.advice(job)
+    assert "Durée conseillée" in capsys.readouterr().out if cli.main(["cost", str(job)]) == 0 else False
+
+
+def test_lessons_file_counts_in_the_reading_estimate():
+    names = [p.name for p in cost.SKILL_FILES]
+    assert "lecons.md" in names and all(p.exists() for p in cost.SKILL_FILES)

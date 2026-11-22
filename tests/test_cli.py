@@ -1,3 +1,4 @@
+import json
 import sys
 
 import pytest
@@ -63,10 +64,44 @@ def test_cli_check_lists_errors_and_exits_1(job_with_fixtures, capsys):
 
 
 def test_cli_check_ok_gives_plan_md_path(job_with_fixtures, capsys):
+    assert cli.main(["check", str(job_with_fixtures), "--sans-relecture"]) == 0
+    out = lines(capsys)
+    assert len(out) == 1 and out[0].startswith("OK check : 1 vidéo, 5 scènes, environ ")
+    assert " s. Relecture : " in out[0] and "à relire" not in out[0]
+    assert str((job_with_fixtures / "plan.md").resolve()) in out[0]
+
+
+def test_cli_check_adds_relire_lines_and_counts_them(job_with_fixtures, capsys):
     assert cli.main(["check", str(job_with_fixtures)]) == 0
     out = lines(capsys)
-    assert len(out) == 1 and out[0].startswith("OK check : 1 vidéo")
-    assert str((job_with_fixtures / "plan.md").resolve()) in out[0]
+    relire = [line for line in out if line.startswith("RELIRE : ")]
+    assert relire and len(relire) <= 8 and out[0].startswith("OK check : 1 vidéo, 5 scènes, environ ")
+    assert f", {len(relire)} point" in out[0] and "à relire. Relecture : " in out[0]
+    assert out[1:] == relire
+
+
+def test_cli_check_stops_emitting_after_three_passes(job_with_fixtures, capsys):
+    for _ in range(3):
+        cli.main(["check", str(job_with_fixtures)])
+        assert any(line.startswith("RELIRE") for line in lines(capsys))
+    cli.main(["check", str(job_with_fixtures)])
+    out = lines(capsys)
+    assert len(out) == 1 and "à relire" not in out[0]
+
+
+def test_cli_check_without_review_does_not_count_a_pass(job_with_fixtures, capsys):
+    cli.main(["check", str(job_with_fixtures), "--sans-relecture"])
+    capsys.readouterr()
+    cli.main(["check", str(job_with_fixtures)])
+    assert any(line.startswith("RELIRE") for line in lines(capsys))
+
+
+def test_plan_md_starts_with_duration_scenes_and_rhythm(job_with_fixtures):
+    from ideo import plan_check
+
+    assert plan_check.check_plan(job_with_fixtures) == []
+    head = (job_with_fixtures / "plan.md").read_text(encoding="utf-8").splitlines()[:3]
+    assert head[2].startswith("Durée estimée : environ ") and "5 scènes" in head[2] and "scènes par minute." in head[2]
 
 
 @pytest.mark.parametrize("cmd", ["check", "produce", "status", "deepen"])
@@ -325,3 +360,55 @@ def test_prepare_refuses_a_language_without_voice(tmp_path, monkeypatch, capsys)
     assert not pipeline.prepared(job)
     assert cli.main(["status", str(job)]) == 0
     assert "« sw »" in lines(capsys)[0]
+
+
+def test_produce_resets_the_review_counter(produce_job, capsys):
+    job = produce_job[0]
+    cli.main(["check", str(job)])
+    cli.main(["check", str(job)])
+    assert (job / "review.json").exists()
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert not (job / "review.json").exists()
+
+
+def test_produce_redoes_only_the_stale_segments_without_wiping_the_part(produce_job, capsys):
+    job, backend, renders = produce_job
+    assert cli.main(["produce", str(job)]) == 0
+    calls, rendered = len(backend.calls), len(renders)
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls and len(renders) == rendered
+    (job / "parts" / "01" / "seg_02.spoken.txt").write_text("ancien texte envoyé", encoding="utf-8")
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls + 1 and backend.calls[-1][2] == "seg_02.wav" and len(renders) == rendered + 1
+
+
+def test_changing_the_music_redoes_assembly_and_render_but_not_the_voice(produce_job, capsys, tmp_path):
+    from ideo import music
+
+    job, backend, renders = produce_job
+    folder = tmp_path / "zik"
+    folder.mkdir()
+    from tests.test_music import tone_track
+
+    tone_track(folder / "alpha.wav", seconds=8.0)
+    tone_track(folder / "beta.wav", seconds=8.0)
+    (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder)}), encoding="utf-8")
+    assert cli.main(["produce", str(job)]) == 0
+    calls, rendered = len(backend.calls), len(renders)
+    capsys.readouterr()
+    cli.main(["produce", str(job)])
+    assert len(backend.calls) == calls and len(renders) == rendered
+    music.write_choice(job, "alpha")
+    capsys.readouterr()
+    assert cli.main(["produce", str(job)]) == 0
+    assert len(backend.calls) == calls and len(renders) == rendered + 1
+    assert common.load_json(job / "parts" / "01" / "music.json")["track"] == "alpha.wav"
+    music.write_choice(job, "beta")
+    cli.main(["produce", str(job)])
+    assert len(renders) == rendered + 2 and common.load_json(job / "parts" / "01" / "music.json")["track"] == "beta.wav"
+    (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder), "music_level_db": -26}), encoding="utf-8")
+    cli.main(["produce", str(job)])
+    assert len(renders) == rendered + 3 and len(backend.calls) == calls

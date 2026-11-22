@@ -4,13 +4,13 @@ import os
 import shutil
 from pathlib import Path
 
-from ideo import assemble, common, compact, fetch, plan_check, render, timeline, transcribe, voice
+from ideo import assemble, common, config, compact, fetch, plan_check, render, timeline, transcribe, voice
 
 PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md")
 AUDIO_FILES = ("source.wav", "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")
-PART_FILES = ("part.wav", "offsets.json", "timeline.json")
+PART_FILES = ("part.wav", "offsets.json", "timeline.json", "voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json", "music.json")
 
 
 def resolve_job(arg: str) -> Path:
@@ -62,9 +62,23 @@ def voiced_scene(scene: dict) -> dict:
     return {k: v for k, v in scene.items() if k != "src"}
 
 
+def _voice_settings(lang: str) -> dict:
+    if config.engine() == "elevenlabs":
+        return {"engine": "elevenlabs", "voice": config.eleven_voice_id(), "model": config.eleven_model(),
+                **config.eleven_settings()}
+    if lang in voice.KYUTAI_LANGS and config.engine() == "kyutai":
+        settings = {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
+        hook = [config.kyutai_hook_temp(), config.kyutai_hook_padding_bonus()]
+        if hook != [config.DEFAULT_HOOK_TEMP, config.DEFAULT_HOOK_PADDING]:
+            settings["hook"] = hook
+        return settings
+    return {"engine": "edge", "voice": config.voice_for(lang), "rate": config.rate()}
+
+
 def part_hash(plan: dict, part: dict) -> str:
     content = {
         "lang": plan["lang"],
+        "voice": _voice_settings(plan["lang"]),
         "total": len(plan["parts"]),
         "title": part["title"],
         "segments": voice.segments(plan, part),
@@ -141,7 +155,7 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
         if only is not None and n != only:
             continue
         digest = part_hash(plan, part)
-        if _done(job, plan, n, digest):
+        if _done(job, plan, n, digest) and not voice.stale(job, n) and assemble.mix_current(job, n):
             progress(job, f"OK partie {n:02d} : déjà rendue, inchangée")
         else:
             if _stored_hash(job, n) != digest:

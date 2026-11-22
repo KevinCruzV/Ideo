@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { captionSize, captionWord } from "./Captions";
+import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionTokens, captionWord, lineWidth } from "./Captions";
 import { chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
 import { layout } from "../theme";
 import { progressTicks } from "./Progress";
@@ -27,9 +27,9 @@ describe("chrome", () => {
     const long = { part: 8, total: 8, title: "Un titre beaucoup trop long qui ne tiendrait jamais sur une seule ligne du bandeau", label: "Partie" };
     const fit = chapterFit(long);
     expect(fit.lines.length).toBeLessThanOrEqual(2);
-    expect(fit.size).toBeLessThan(40);
+    expect(fit.size).toBeLessThan(38);
     expect(chapterBottom(long)).toBeLessThan(layout.stageTop);
-    expect(chapterFit(single).size).toBe(40);
+    expect(chapterFit(single).size).toBe(38);
     expect(chapterBottom(series)).toBeLessThan(layout.stageTop);
   });
 
@@ -48,8 +48,42 @@ describe("chrome", () => {
 });
 
 describe("sous-titres", () => {
-  test("un groupe tient sur deux lignes", () => {
-    expect(captionSize(["Dis-moi", "pourquoi", "tu", "oublies"])).toBe(76);
-    expect(captionSize(["extraordinairement", "incompréhensiblement", "mémorisables"])).toBeLessThan(76);
+  test("un groupe court tient sur une ligne, grand", () => {
+    expect(captionSize(["Dis-moi", "pourquoi", "tu"])).toBe(CAPTION_MAX);
+    expect(captionSize(["Dis-moi", "pourquoi", "tu", "oublies"])).toBeGreaterThanOrEqual(56);
+    expect(captionLayout(["Dis-moi", "pourquoi", "tu", "oublies"]).lines).toHaveLength(1);
+  });
+
+  test("un mot composé reste entier", () => {
+    const { lines } = captionLayout(["Les", "États-Unis", "et", "l'Union"]);
+    expect(lines.flat()).toEqual(["Les", "États-Unis", "et", "l'Union"]);
+  });
+
+  test("deux lignes équilibrées, jamais un mot seul quand il y en a quatre", () => {
+    const words = ["extraordinairement", "incompréhensiblement", "mémorisables", "aujourd'hui"];
+    const { size, lines } = captionLayout(words);
+    expect(lines).toHaveLength(2);
+    lines.forEach((line) => {
+      expect(line.length).toBeGreaterThanOrEqual(2);
+      expect(lineWidth(line, size)).toBeLessThanOrEqual(CAPTION_ROW);
+    });
+  });
+
+  test("trois longs mots restent sur une ligne en réduisant avant de couper", () => {
+    const { lines, size } = captionLayout(["Constantinople", "révolutionnaire", "soviétique"]);
+    expect(lines.length === 1 || lines.every((l) => l.length >= 1)).toBe(true);
+    lines.forEach((line) => expect(lineWidth(line, size)).toBeLessThanOrEqual(CAPTION_ROW));
+  });
+});
+
+describe("ponctuation isolée", () => {
+  test("un point d'interrogation seul rejoint le mot d'avant", () => {
+    const tokens = captionTokens([
+      { w: "bataille", from: 0, to: 5 },
+      { w: "?", from: 5, to: 6 },
+      { w: "Ça", from: 6, to: 9 },
+    ]);
+    expect(tokens.map((t) => t.w)).toEqual(["bataille ?", "Ça"]);
+    expect(tokens[0].to).toBe(6);
   });
 });

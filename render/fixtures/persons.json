@@ -1,0 +1,18 @@
+[
+  { "hat": "bicorne", "outfit": "uniform", "hair": "short", "hair_color": "black", "facial": "sideburns", "skin": "light" },
+  { "hat": "wig", "outfit": "robe", "skin": "light" },
+  { "hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat", "skin": "light" },
+  { "hat": "kepi", "outfit": "uniform", "facial": "moustache", "hair_color": "grey", "skin": "tan" },
+  { "hat": "crown", "outfit": "armor", "hair": "long", "hair_color": "brown", "facial": "beard", "skin": "light" },
+  { "hat": "laurel", "outfit": "toga", "hair": "curly", "hair_color": "black", "skin": "tan" },
+  { "hair": "side", "hair_color": "blond", "outfit": "suit", "skin": "light" },
+  { "hat": "turban", "facial": "beard", "hair_color": "black", "outfit": "robe", "skin": "brown" },
+  { "hair": "bun", "hair_color": "black", "outfit": "dress", "skin": "dark" },
+  { "glasses": true, "outfit": "suit", "hair": "crown-bald", "hair_color": "grey", "skin": "light" },
+  { "hat": "beret", "outfit": "casual", "hair": "short", "hair_color": "brown", "facial": "goatee", "skin": "tan" },
+  { "hat": "helmet", "outfit": "armor", "skin": "light" },
+  { "hat": "top-hat", "outfit": "suit", "hair": "short", "hair_color": "red", "facial": "sideburns", "skin": "light" },
+  { "hat": "cap", "outfit": "casual", "hair": "curly", "hair_color": "black", "skin": "dark" },
+  { "hair": "long", "hair_color": "red", "outfit": "dress", "glasses": true, "skin": "light" },
+  { "hair": "none", "outfit": "lab-coat", "glasses": true, "facial": "goatee", "hair_color": "black", "skin": "brown" }
+]

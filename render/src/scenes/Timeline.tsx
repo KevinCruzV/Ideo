@@ -1,88 +1,96 @@
 import React from "react";
 import { PaperShape } from "../paper/PaperShape";
+import { stripHeight } from "../paper/PaperStrip";
+import { hasVisual, Picto } from "../pictos/Picto";
 import { useAccent } from "./accent";
-import { list, num, str } from "./coerce";
+import { list, str } from "./coerce";
+import { areaFor, FitBox, largestFitting } from "./FitBox";
 import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { Stage, STAGE_H } from "./Stage";
-import { Strips } from "./Strips";
+import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
+import { Strips, stripsHeight } from "./Strips";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
-const AXIS_X = 170;
-const TOP = 70;
-const BOTTOM = STAGE_H - 70;
+const RAIL = 150;
+const LABEL_W = BOX_W - RAIL - 10;
 
-type Mark = { at: string; label: string; value: number | null };
+type Mark = { at: string; label: string };
 
-export const placeMarks = (
-  values: (number | null)[],
-  start: number | null,
-  end: number | null,
-  top: number,
-  bottom: number,
-  gap: number,
-  edge = gap,
-): number[] => {
-  const n = values.length;
-  if (n === 0) return [];
-  const innerTop = top + edge;
-  const innerBottom = bottom - edge;
-  const even = values.map((_, i) => (n === 1 ? (innerTop + innerBottom) / 2 : innerTop + ((innerBottom - innerTop) * i) / (n - 1)));
-  if (start === null || end === null || start === end || values.some((v) => v === null)) return even;
-  const ys = values.map((v) => top + ((bottom - top) * ((v as number) - start)) / (end - start));
-  const ordered = ys.every((y, i) => i === 0 || y >= ys[i - 1]);
-  if (!ordered) return even;
-  const placed = ys.map((y) => Math.min(innerBottom, Math.max(innerTop, y)));
-  for (let i = 1; i < n; i++) placed[i] = Math.max(placed[i], placed[i - 1] + gap);
-  for (let i = n - 2; i >= 0; i--) placed[i] = Math.min(placed[i], placed[i + 1] - gap);
-  return placed[0] < innerTop - 1 || placed[n - 1] > innerBottom + 1 ? even : placed;
-};
+const Rail: React.FC<{ height: number; children: React.ReactNode }> = ({ height, children }) => (
+  <div style={{ position: "relative", width: RAIL, height, flex: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>{children}</div>
+);
 
 export const Timeline: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const accent = useAccent();
-  const startText = str(props.start);
-  const endText = str(props.end);
+  const beat = useBeat();
   const marks: Mark[] = list(props.marks, 5).map((m) => {
     const o = m && typeof m === "object" ? (m as Record<string, unknown>) : { label: m };
     const at = str(o.at);
-    return { at, label: str(o.label) || at, value: num(o.at) };
+    return { at, label: str(o.label) || at };
   });
-  const labelMax = marks.length <= 3 ? 60 : 52;
-  const fits = marks.map((mark) => {
-    const text = mark.at && mark.label !== mark.at ? `${mark.at} · ${mark.label}` : mark.label;
-    return fitText(text, { maxWidth: 800, maxLines: 2, max: labelMax, min: 44 });
-  });
-  const heights = fits.map((f) => f.lines.length * f.size * 1.3);
-  const gap = Math.max(110, ...heights.map((h) => h + 26));
-  const ys = placeMarks(marks.map((m) => m.value), num(props.start), num(props.end), TOP, BOTTOM, gap, Math.max(100, gap * 0.6));
-  const endFit = fitText(endText, { maxWidth: 760, maxLines: 1, max: 64, min: 44 });
-  const startFit = fitText(startText, { maxWidth: 760, maxLines: 1, max: 64, min: 44 });
+  const hasPicto = hasVisual(props.picto);
+  const few = marks.length <= 3;
+  const capH = hasPicto ? 150 : 70;
+  const gap = few ? 56 : 34;
+  const area = areaFor(areaTop(props) + 10, BOX_L, BOX_W);
+  const startFit = fitText(str(props.start), { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 44 });
+  const endFit = fitText(str(props.end), { maxWidth: LABEL_W, maxLines: 1, max: 60, min: 44 });
+  const layoutAt = (labelMax: number) => {
+    const dates = marks.map((mark) =>
+      mark.at && mark.label !== mark.at ? fitText(mark.at, { maxWidth: LABEL_W, maxLines: 1, max: Math.max(44, Math.round(labelMax * 0.78)), min: 44 }) : null,
+    );
+    const fits = marks.map((mark) => fitText(mark.label, { maxWidth: LABEL_W, maxLines: 2, max: labelMax, min: Math.min(48, labelMax), prefer: true }));
+    const rows = fits.map((f, i) => (dates[i] ? stripHeight(dates[i]!.size) + 4 : 0) + stripsHeight(f.lines.length, f.size, 6));
+    const height = capH + 64 + rows.reduce((a, b) => a + b, 0) + gap * (marks.length + 1);
+    return { dates, fits, height };
+  };
+  const labelMax = largestFitting(few ? 76 : 64, 44, (m) => layoutAt(m).height <= area.height);
+  const { dates, fits } = layoutAt(labelMax);
+  const dateH = (i: number) => (dates[i] ? stripHeight(dates[i]!.size) + 4 : 0);
 
   return (
     <Stage>
-      <PaperShape kind="square" color="cream" size={1} w={34} h={BOTTOM - TOP} x={AXIS_X - 17} y={TOP} rotate={0.6} seed="tl-axis" wobble={0.2} />
-      <PaperShape kind="square" color="ink" size={64} x={AXIS_X - 32} y={TOP - 32} rotate={8} seed="tl-start" />
-      <PaperShape kind="square" color="ink" size={64} x={AXIS_X - 32} y={BOTTOM - 32} rotate={-6} seed="tl-end" />
-      <div style={{ position: "absolute", left: AXIS_X + 70, top: TOP - startFit.size * 0.7 }}>
-        <Strips lines={startFit.lines} size={startFit.size} color="ink" align="flex-start" seed="tl-start-label" />
-      </div>
-      <div style={{ position: "absolute", left: AXIS_X + 70, top: BOTTOM - endFit.size * 0.7 }}>
-        <Strips lines={endFit.lines} size={endFit.size} color="ink" align="flex-start" seed="tl-end-label" />
-      </div>
-      {marks.map((_, i) => {
-        const at = enterFor(`marks.${i}`, items, from, to);
-        const fit = fits[i];
-        const y = ys[i];
-        const textH = heights[i];
-        return (
-          <React.Fragment key={`mark-${i}`}>
-            <PaperShape kind="circle" color={accent} size={76} x={AXIS_X - 38} y={y - 38} enterAt={at} seed={`tl-dot-${i}`} />
-            <div style={{ position: "absolute", left: AXIS_X + 70, top: y - textH / 2 }}>
-              <Strips lines={fit.lines} size={fit.size} enterAt={at + 1} align="flex-start" seed={`tl-mark-${i}`} gap={6} />
-            </div>
-          </React.Fragment>
-        );
-      })}
+      <FitBox area={area} maxScale={1.3}>
+        <div style={{ position: "relative", display: "flex", flexDirection: "column", gap, maxWidth: BOX_W }}>
+          <div style={{ position: "absolute", left: RAIL / 2 - 11, top: capH / 2, bottom: 32, width: 22 }}>
+            <PaperShape kind="square" color="ink" size={1} w={22} h={10} seed="tl-axis" float={0.6} spin={0.1} motion={{ dy: 0, spin: 0, from: 0.96 }} style={{ width: 22, height: "100%" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Rail height={capH}>
+              {hasPicto ? (
+                <Picto name={props.picto} size={capH} rotate={-6} />
+              ) : (
+                <PaperShape kind="square" color="ink" size={capH} x={(RAIL - capH) / 2} rotate={8} seed="tl-start" />
+              )}
+            </Rail>
+            {startFit.lines.length ? <Strips lines={startFit.lines} size={startFit.size} color="ink" align="flex-start" seed="tl-start-label" /> : null}
+          </div>
+          {marks.map((_, i) => {
+            const at = enterFor(`marks.${i}`, items, from, to);
+            const fit = fits[i];
+            return (
+              <div key={`mark-${i}`} style={{ display: "flex", alignItems: "flex-start", transform: beat && beat.index % Math.max(1, marks.length) === i ? `translateX(${46 * beat.wave}px) scale(${1 + 0.08 * beat.wave}) rotate(${-1.5 * beat.wave}deg)` : undefined, transformOrigin: "0 50%" }}>
+                <Rail height={Math.max(70, dateH(i) || stripHeight(fit.size))}>
+                  <PaperShape kind="circle" color={accent} size={70} x={(RAIL - 70) / 2} y={(Math.max(70, dateH(i) || stripHeight(fit.size)) - 70) / 2} enterAt={at} seed={`tl-dot-${i}`} float={1.5} motion={{ dy: 0, spin: 0, from: 0.9 }} />
+                </Rail>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                  {dates[i] ? (
+                    <Strips lines={dates[i]!.lines} size={dates[i]!.size} color={accent} enterAt={at + 1} align="flex-start" seed={`tl-date-${i}`} motion={{ dx: -30, dy: 0 }} />
+                  ) : null}
+                  <Strips lines={fit.lines} size={fit.size} enterAt={at + 3} align="flex-start" seed={`tl-mark-${i}`} gap={6} motion={{ dx: -40, dy: 0 }} />
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Rail height={64}>
+              <PaperShape kind="square" color="ink" size={64} x={(RAIL - 64) / 2} rotate={-6} seed="tl-end" />
+            </Rail>
+            {endFit.lines.length ? <Strips lines={endFit.lines} size={endFit.size} color="ink" align="flex-start" seed="tl-end-label" /> : null}
+          </div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };

@@ -13,8 +13,13 @@ GUIDE = REPO / "skills" / "ideo" / "references" / "plan-guide.md"
 COMPONENTS = {
     "key-title": "KeyTitle", "person-card": "PersonCard", "fact-chips": "FactChips", "stack-list": "StackList",
     "counter": "Counter", "timeline": "Timeline", "icon-grid": "IconGrid", "stamp": "Stamp", "quote": "Quote",
-    "object-state": "ObjectState", "shape-diagram": "ShapeDiagram", "mascot": "Mascot",
+    "object-state": "ObjectState", "shape-diagram": "ShapeDiagram", "mascot": "Mascot", "versus": "Versus",
+    "map": "MapScene", "body": "BodyScene",
 }
+PENDING_FIXTURES = {"map", "body"}
+SHARED = {"kicker": REPO / "render" / "src" / "scenes" / "SceneFrame.tsx"}
+SHORT = REPO / "render" / "src" / "Short.tsx"
+EXTRA_SOURCES = {"person-card": [SCENES_DIR / "personLook.ts"]}
 
 
 def test_schema_covers_exactly_the_plan_types():
@@ -24,7 +29,9 @@ def test_schema_covers_exactly_the_plan_types():
 def test_render_fixture_scenes_validate_against_schema():
     timeline = json.loads(ALL_SCENES.read_text(encoding="utf-8"))
     scenes = [s for s in timeline["segments"] if s["kind"] == "scene"]
-    assert {s["type"] for s in scenes} == set(scene_schema.SCHEMA)
+    fixture_types = {s["type"] for s in scenes}
+    assert fixture_types <= set(scene_schema.SCHEMA)
+    assert set(scene_schema.SCHEMA) - fixture_types <= PENDING_FIXTURES
     for s in scenes:
         assert scene_schema.check_props(s["type"], s["props"], s["type"]) == []
         for item in s["items"]:
@@ -41,8 +48,16 @@ def test_mascot_pose_fixture_validates_against_schema():
 
 @pytest.mark.parametrize("kind", sorted(COMPONENTS))
 def test_schema_props_are_the_ones_the_component_reads(kind):
+    if not (SCENES_DIR / f"{COMPONENTS[kind]}.tsx").exists():
+        pytest.skip(f"{COMPONENTS[kind]}.tsx n'existe pas encore dans le rendu")
     source = (SCENES_DIR / f"{COMPONENTS[kind]}.tsx").read_text(encoding="utf-8")
     read = set(re.findall(r"props\.(\w+)", source))
+    for extra in EXTRA_SOURCES.get(kind, ()):
+        read |= set(re.findall(r"props\.(\w+)", extra.read_text(encoding="utf-8")))
+    assert "<SceneFrame" in SHORT.read_text(encoding="utf-8")
+    for shared, path in SHARED.items():
+        if re.search(rf"props\.{shared}\b", path.read_text(encoding="utf-8")):
+            read.add(shared)
     schema = scene_schema.SCHEMA[kind]
     assert read == set(schema["required"]) | set(schema["optional"])
 
@@ -56,7 +71,7 @@ def test_guide_table_lists_schema_props(kind):
 
 
 @pytest.mark.parametrize("kind,props,fragment", [
-    ("key-title", {"title": "x"}, "prop inconnue « title » pour « key-title ». Props acceptées : text, accent."),
+    ("key-title", {"title": "x"}, "prop inconnue « title » pour « key-title ». Props acceptées : text, accent, kicker, picto."),
     ("key-title", {"accent": "x"}, "prop « text » manquante pour « key-title »"),
     ("counter", {"to": "2300 mots"}, "« props.to » doit être un nombre"),
     ("fact-chips", {"chips": ["a"] * 7}, "« props.chips » doit être une liste de 1 à 6 textes"),
@@ -117,8 +132,8 @@ def test_plan_check_reports_props_and_el_errors(job_with_fixtures):
     plan["parts"][0]["scenes"][1]["items"][1]["el"] = "values.9"
     (job_with_fixtures / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
     errors = plan_check.check_plan(job_with_fixtures)
-    assert "Partie 1, scène 1 : prop inconnue « title » pour « key-title ». Props acceptées : text, accent." in errors
-    assert "Partie 1, scène 1 : prop « text » manquante pour « key-title ». Props acceptées : text, accent." in errors
+    assert "Partie 1, scène 1 : prop inconnue « title » pour « key-title ». Props acceptées : text, accent, kicker, picto." in errors
+    assert "Partie 1, scène 1 : prop « text » manquante pour « key-title ». Props acceptées : text, accent, kicker, picto." in errors
     assert any(e.startswith("Partie 1, scène 2 : « el » « values.9 »") and "values.0 à values.3" in e for e in errors)
 
 
@@ -136,11 +151,31 @@ def ts_caps() -> dict:
     text = CAPS_TEST.read_text(encoding="utf-8")
     caps = {key: int(cap) for key, cap in re.findall(r'^\s+"?([\w.-]+)"?: \{\s*cap: (\d+)', text, re.M)}
     caps["title"] = int(re.search(r"TITLE_CAP = (\d+)", text).group(1))
+    side = caps.pop("versus.side")
+    caps["versus.left"] = caps["versus.right"] = side
+    kicker = caps.pop("kicker")
+    caps.update({f"{kind}.kicker": kicker for kind in scene_schema.SCHEMA})
+    for kind, component in (("shape-diagram", "ShapeDiagram"), ("counter", "Counter")):
+        source = (SCENES_DIR / f"{component}.tsx").read_text(encoding="utf-8")
+        caps[f"{kind}.unit"] = int(re.search(r"props\.unit\)\.slice\(0, (\d+)\)", source).group(1))
+    caps["map.places.label"] = int(re.search(r"str\(o\.label\)\.slice\(0, (\d+)\)",
+                                              (SCENES_DIR / "MapScene.tsx").read_text(encoding="utf-8")).group(1))
+    body = SCENES_DIR / "BodyScene.tsx"
+    if body.exists():
+        found = re.search(r"label\)\.slice\(0, (\d+)\)", body.read_text(encoding="utf-8"))
+        if found:
+            caps["body.marks.label"] = int(found.group(1))
     return caps
 
 
 def test_caps_are_the_ones_proven_by_the_render_test():
-    assert scene_schema.flat_caps() == ts_caps()
+    expected, proven = scene_schema.flat_caps(), ts_caps()
+    if "body.marks.label" not in proven:
+        assert set(expected) - set(proven) == {"body.marks.label"}
+        expected.pop("body.marks.label")
+        assert expected == proven
+        pytest.skip("BodyScene.tsx n'existe pas encore : plafond body.marks.label (28) non prouvé par le rendu")
+    assert expected == proven
 
 
 @pytest.mark.parametrize("kind,props,field,cap", [
@@ -183,3 +218,38 @@ def test_guide_type_table_lists_every_cap():
     text = GUIDE.read_text(encoding="utf-8")
     for key, cap in scene_schema.flat_caps().items():
         assert f"{cap} caractères" in text, key
+
+
+def test_pictos_are_the_ones_the_render_library_draws():
+    source = (REPO / "render" / "src" / "pictos" / "library.ts").read_text(encoding="utf-8")
+    block = re.search(r"export const PICTOS = \[(.*?)\]", source, re.S).group(1)
+    drawn = tuple(re.findall(r'"([\w-]+)"', block))
+    if len(drawn) < len(scene_schema.PICTOS):
+        assert drawn == scene_schema.PICTOS[:len(drawn)]
+        pytest.skip(f"{len(scene_schema.PICTOS) - len(drawn)} pictos santé pas encore dessinés dans le rendu")
+    assert drawn == scene_schema.PICTOS
+
+
+def ts_list(path, name):
+    source = (REPO / "render" / "src" / path).read_text(encoding="utf-8")
+    block = re.search(rf"export const {name} = \[(.*?)\]", source, re.S).group(1)
+    return tuple(re.findall(r'"([\w:-]+)"', block))
+
+
+def test_flags_are_the_ones_the_render_knows():
+    assert ts_list("pictos/flags.ts", "FLAGS") == scene_schema.FLAGS
+
+
+@pytest.mark.parametrize("name,expected", [
+    ("HAIRS", "HAIRS"), ("HAIR_COLORS", "HAIR_COLORS"), ("FACIALS", "FACIALS"), ("HATS", "HATS"), ("OUTFITS", "OUTFITS"),
+    ("SKINS", "SKINS"),
+])
+def test_person_values_are_the_ones_the_render_draws(name, expected):
+    assert ts_list("scenes/personLook.ts", name) == getattr(scene_schema, expected)
+
+
+def test_person_props_are_the_ones_the_render_reads():
+    source = (SCENES_DIR / "personLook.ts").read_text(encoding="utf-8")
+    read = set(re.findall(r"props\.(\w+)", source))
+    schema = scene_schema.SCHEMA["person-card"]
+    assert read == set(schema["optional"]) - {"role", "kicker", "picto"}

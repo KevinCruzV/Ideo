@@ -43,14 +43,14 @@ def test_assemble_inserts_quote_and_sfx_clips_and_writes_offsets(job_with_voice_
     for o, d in zip(offsets, DURATIONS):
         assert o["end"] - o["start"] == pytest.approx(d, abs=0.05)
     starts = [o["start"] for o in offsets]
-    assert starts[:4] == pytest.approx([0.0, 0.92, 2.04, 3.16], abs=0.05)
-    assert starts[4:] == pytest.approx([7.16, 8.28, 14.30], abs=0.05)
+    assert starts[:4] == pytest.approx([0.0, 1.4, 2.9, 4.4], abs=0.05)
+    assert starts[4:] == pytest.approx([8.4, 9.9, 15.92], abs=0.05)
     sfx = offsets[3]["clip"]
     assert sfx["kind"] == "sfx"
-    assert sfx["start"] == pytest.approx(4.41, abs=0.05) and sfx["end"] - sfx["start"] == pytest.approx(2.5, abs=0.05)
+    assert sfx["start"] == pytest.approx(5.65, abs=0.05) and sfx["end"] - sfx["start"] == pytest.approx(2.5, abs=0.05)
     quote = offsets[5]["clip"]
     assert quote["kind"] == "quote"
-    assert quote["start"] == pytest.approx(9.13, abs=0.05) and quote["end"] - quote["start"] == pytest.approx(4.92, abs=0.05)
+    assert quote["start"] == pytest.approx(10.75, abs=0.05) and quote["end"] - quote["start"] == pytest.approx(4.92, abs=0.05)
     assert [o["clip"] for i, o in enumerate(offsets) if i not in (3, 5)] == [None] * 5
     assert total == pytest.approx(offsets[-1]["end"], abs=0.05)
 
@@ -91,3 +91,47 @@ def test_assemble_quote_not_in_source_is_french_error(job_with_voice_fixtures):
     common.save_json(job / "plan.json", plan)
     with pytest.raises(common.IdeoError, match="citation"):
         assemble.assemble_part(job, 1)
+
+
+def measured_lufs(path):
+    import re
+    import subprocess
+
+    out = subprocess.run(["ffmpeg", "-nostats", "-i", str(path), "-af", "ebur128", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    return float(re.findall(r"I:\s+(-?[\d.]+) LUFS", out)[-1])
+
+
+def test_assembled_part_reaches_minus_14_lufs(job_with_voice_fixtures):
+    out = assemble.assemble_part(job_with_voice_fixtures, 1)
+    assert measured_lufs(out) == pytest.approx(-14.0, abs=0.5)
+
+
+def test_gaps_are_marked_by_position():
+    assert (assemble.GAP_HOOK, assemble.GAP_SCENE, assemble.GAP_BREAK) == (0.60, 0.50, 0.90)
+
+
+def test_break_scene_gets_the_long_pause(job_with_voice_fixtures):
+    job = job_with_voice_fixtures
+    plan = common.load_json(job / "plan.json")
+    plan["parts"][0]["scenes"][1]["break"] = True
+    common.save_json(job / "plan.json", plan)
+    assemble.assemble_part(job, 1)
+    offsets = common.load_json(job / "parts" / "01" / "offsets.json")
+    assert offsets[2]["start"] - offsets[1]["end"] == pytest.approx(0.90, abs=0.01)
+    assert offsets[1]["start"] - offsets[0]["end"] == pytest.approx(0.60, abs=0.01)
+    assert offsets[3]["start"] - offsets[2]["end"] == pytest.approx(0.50, abs=0.01)
+
+
+def test_reach_target_lifts_a_quiet_part_to_minus_14(tmp_path):
+    from tests.conftest import write_sine_wav
+
+    path = tmp_path / "p.wav"
+    write_sine_wav(path, seconds=2.0)
+    import subprocess
+
+    quiet = tmp_path / "q.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", "volume=-22dB", str(quiet)], check=True)
+    assert measured_lufs(quiet) < -30
+    assemble.reach_target(quiet, tmp_path, tmp_path / "log")
+    assert measured_lufs(quiet) == pytest.approx(-14.0, abs=0.5)

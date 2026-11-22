@@ -1,13 +1,32 @@
 import asyncio
+import hashlib
+import json
+import re
 import shutil
 import tempfile
+import wave
 from pathlib import Path
 from typing import Protocol
 
-from ideo import common, i18n, transcribe
+import numpy as np
+
+from ideo import align, common, config, eleven, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
+
+TICKS = 1e7
+LAUNCHER = Path(__file__).with_name("kyutai_launcher.py")
+DEFAULT_SEED = 299792458
+TAKE = re.compile(r"_t\d{2}$")
+KYUTAI_LANGS = config.KYUTAI_LANGS
+KEEP_THRESHOLD = 0.90
+ALERT_THRESHOLD = 0.80
+MAX_REDOS = 3
+REDO_TEMPS = (0.75, 0.9, 1.0)
+HOOK = "seg_00_hook"
+BOUNDARY_SEGMENTS = (HOOK, "seg_99_outro")
+REASON_LENGTH = 90
 
 EDGE_VOICES = {
-    "fr": "fr-FR-HenriNeural",
+    "fr": "fr-FR-RemyMultilingualNeural",
     "en": "en-US-GuyNeural",
     "es": "es-ES-AlvaroNeural",
     "de": "de-DE-ChristophNeural",
@@ -28,7 +47,7 @@ def unsupported(lang: str) -> str | None:
 
 
 class VoiceBackend(Protocol):
-    def synthesize(self, text: str, lang: str, out_wav: Path) -> None: ...
+    def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None: ...
 
 
 def _ffmpeg() -> str:
@@ -42,17 +61,31 @@ class EdgeTTSBackend:
     def __init__(self, log: Path | None = None):
         self.log = log
 
-    def synthesize(self, text: str, lang: str, out_wav: Path) -> None:
-        voice = EDGE_VOICES.get(lang)
-        if not voice:
+    def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None:
+        if lang not in EDGE_VOICES:
             raise common.IdeoError(unsupported(lang))
+        voice = config.voice_for(lang)
+        rate = config.rate()
         import edge_tts
 
         out_wav = Path(out_wav)
+        words: list[dict] = []
+
+        async def run(mp3: Path) -> None:
+            communicate = edge_tts.Communicate(text, voice, rate=rate, boundary="WordBoundary")
+            with mp3.open("wb") as f:
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        f.write(chunk["data"])
+                    elif chunk["type"] == "WordBoundary":
+                        start = chunk["offset"] / TICKS
+                        words.append({"w": chunk["text"], "s": round(start, 4),
+                                  "e": round(start + chunk["duration"] / TICKS, 4)})
+
         with tempfile.TemporaryDirectory() as tmp:
             mp3 = Path(tmp) / "voice.mp3"
             try:
-                asyncio.run(edge_tts.Communicate(text, voice).save(str(mp3)))
+                asyncio.run(run(mp3))
             except Exception as err:
                 raise common.IdeoError(
                     f"la synthèse vocale a échoué (connexion à edge-tts impossible ?) : {err}"
@@ -63,10 +96,66 @@ class EdgeTTSBackend:
                 [_ffmpeg(), "-y", "-i", str(mp3), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le", str(out_wav)],
                 self.log or out_wav.parent / "ffmpeg.log",
             )
+        return words or None
+
+
+class KyutaiBackend:
+    local = True
+
+    def __init__(self, log: Path | None = None):
+        self.log = log
+
+    def synthesize_batch(self, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None,
+                         padding: float | None = None, seed: int | None = None) -> dict:
+        python = config.KYUTAI_PYTHON
+        if not Path(python).exists():
+            raise common.IdeoError("le moteur de voix local est introuvable : lance « python -m ideo setup-voix » "
+                                   "ou mets « engine »: « edge » dans config.json.")
+        out_dir = Path(out_dir)
+        log = self.log or out_dir / "kyutai.log"
+        voice = config.kyutai_voice()
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            jsonl = work / "script.jsonl"
+            jsonl.write_text("\n".join(json.dumps({"id": name, "turns": [text], "voices": [voice]}, ensure_ascii=False)
+                                       for name, text in items) + "\n", encoding="utf-8")
+            common.run(
+                [str(python), str(LAUNCHER), str(DEFAULT_SEED if seed is None else seed), str(jsonl), "--out-folder", str(work / "out"), "--only-wav",
+                 "--padding-bonus", f"{config.kyutai_padding_bonus() if padding is None else padding:g}"] + ([] if temp is None else ["--temp", f"{temp:g}"]),
+                log,
+            )
+            for name, _ in items:
+                raw = work / "out" / f"{name}.wav"
+                if not raw.exists() or raw.stat().st_size == 0:
+                    raise common.IdeoError(f"le moteur de voix local n'a pas produit {name}.wav. Voir {log}")
+                common.run(
+                    [_ffmpeg(), "-y", "-i", str(raw), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le",
+                     str(out_dir / f"{name}.wav")],
+                    log,
+                )
+        return {name: None for name, _ in items}
+
+    def synthesize(self, text: str, lang: str, out_wav: Path) -> list[dict] | None:
+        out_wav = Path(out_wav)
+        self.synthesize_batch([(out_wav.stem, text)], lang, out_wav.parent)
+        return None
+
+
+def derive_seed(key: str, attempt: int, group: str) -> int:
+    digest = hashlib.sha256(f"{key}:{attempt}:{group}".encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % (2 ** 31 - 2) + 1
 
 
 def get_backend(log: Path | None = None) -> VoiceBackend:
     return EdgeTTSBackend(log)
+
+
+def choose_backend(lang: str, log: Path | None = None) -> VoiceBackend:
+    if config.engine() == "elevenlabs":
+        return eleven.ElevenLabsBackend(log)
+    if lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed():
+        return KyutaiBackend(log)
+    return get_backend(log)
 
 
 def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
@@ -78,6 +167,53 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
         )
         words, _ = transcribe.whisper_words(transcribe.read_pcm(wav16), language=lang)
     return words
+
+
+def spoken_for(text: str, lang: str, local: bool, name: str = "", plain: bool = False) -> tuple[str, list | None]:
+    if plain:
+        return lexicon.apply(text, lang), None
+    if name == HOOK:
+        text = hookvoice.shape(text, lang)
+    normalized = numbers.normalize(text, lang)
+    spoken = lexicon.apply(normalized.text, lang) if local else normalized.text
+    return spoken, normalized.units
+
+
+def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None, units: list | None = None) -> list[dict]:
+    wav = Path(wav)
+    with wave.open(str(wav), "rb") as w:
+        if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (pacing.RATE, 1, 2):
+            raise common.IdeoError(f"{wav.name} doit être en 48 kHz mono 16 bits : relancez la voix.")
+        pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
+    tight, mapping = pacing.tighten(pcm)
+    if len(tight) != len(pcm):
+        with wave.open(str(wav), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(pacing.RATE)
+            w.writeframes(tight.astype("<i2").tobytes())
+    duration = len(tight) / pacing.RATE
+    shown = align.script_words(text)
+    said = align.script_words(spoken) if spoken and spoken != text else shown
+    words = align.align_words(said, pacing.remap(heard, mapping), duration)
+    if units and sum(u["orig"] for u in units) == len(shown) and sum(u["said"] for u in units) == len(said):
+        return _regroup(words, shown, units)
+    if len(said) == len(shown):
+        return [{**w, "w": label} for w, label in zip(words, shown)]
+    return align.align_words(shown, pacing.remap(heard, mapping), duration)
+
+
+def _regroup(words: list[dict], shown: list[str], units: list) -> list[dict]:
+    out, k, o = [], 0, 0
+    for unit in units:
+        chunk = words[k:k + unit["said"]]
+        k += unit["said"]
+        start, end, count = chunk[0]["s"], chunk[-1]["e"], unit["orig"]
+        for j in range(count):
+            out.append({"w": shown[o + j], "s": round(start + (end - start) * j / count, 3),
+                        "e": round(start + (end - start) * (j + 1) / count, 3)})
+        o += count
+    return out
 
 
 def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
@@ -97,6 +233,204 @@ def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
     return segments
 
 
+def _stored(out_dir: Path, name: str, text: str) -> str:
+    sidecar = out_dir / f"{name}.spoken.txt"
+    return sidecar.read_text(encoding="utf-8") if sidecar.exists() else text
+
+
+def stale(job: Path, n: int) -> list[str]:
+    job = Path(job)
+    plan = common.load_json(job / "plan.json")
+    part = next((p for p in plan["parts"] if p["n"] == n), None)
+    if part is None:
+        return []
+    lang = plan["lang"]
+    paid = config.engine() == "elevenlabs"
+    local = not paid and lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed()
+    out_dir = job / "parts" / f"{n:02d}"
+    return [name for name, text in segments(plan, part)
+            if (out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()
+            and _stored(out_dir, name, text) != spoken_for(text, lang, local, name, plain=paid)[0]]
+
+
+def _short(err: Exception) -> str:
+    text = " ".join(str(err).split())
+    return text if len(text) <= REASON_LENGTH else text[:REASON_LENGTH - 1].rstrip() + "…"
+
+
+def _log_line(log: Path, line: str) -> None:
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("a", encoding="utf-8") as f:
+        f.write(line + "\n")
+
+
+def _generate(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, temp: float | None = None,
+              key: str = "", attempt: int = 0) -> None:
+    if hasattr(backend, "synthesize_batch"):
+        edges = [(n, t) for n, t in items if TAKE.sub("", n) in BOUNDARY_SEGMENTS]
+        rest = [(n, t) for n, t in items if TAKE.sub("", n) not in BOUNDARY_SEGMENTS]
+        if rest:
+            backend.synthesize_batch(rest, lang, out_dir, temp=temp, seed=derive_seed(key, attempt, "pass"))
+        if edges:
+            backend.synthesize_batch(edges, lang, out_dir, temp=max(temp or 0.0, config.kyutai_hook_temp()),
+                                     padding=config.kyutai_hook_padding_bonus(), seed=derive_seed(key, attempt, "hook"))
+        return
+    for name, text in items:
+        backend.synthesize(text, lang, out_dir / f"{name}.wav")
+
+
+def target_for(name: str) -> float:
+    return prosody.BOUNDARY if name in BOUNDARY_SEGMENTS else prosody.FLAT
+
+
+def _faithful(take: dict) -> bool:
+    return take["fidelity"] >= KEEP_THRESHOLD
+
+
+def best_take(takes: list[dict]) -> dict:
+    lively = lambda t: t["prosody"] if t["prosody"] is not None else float("inf")
+    faithful = [t for t in takes if _faithful(t)]
+    if faithful:
+        return max(faithful, key=lively)
+    return max(takes, key=lambda t: (t["fidelity"], lively(t)))
+
+
+def needs_redo(name: str, take: dict) -> bool:
+    if not _faithful(take):
+        return True
+    return take["prosody"] is not None and take["prosody"] < target_for(name)
+
+
+def _expand(todo: list[tuple[str, str]], spoken: dict) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for name, _ in todo:
+        if name == HOOK:
+            out += [(f"{HOOK}_t{i:02d}", spoken[HOOK]) for i in range(hookvoice.TAKES)]
+        else:
+            out.append((name, spoken[name]))
+    return out
+
+
+def _pick_hook(out_dir: Path, spoken: str, expected: str, lang: str, log: Path) -> tuple[dict, dict]:
+    candidates = []
+    for i in range(hookvoice.TAKES):
+        wav = out_dir / f"{HOOK}_t{i:02d}.wav"
+        heard = retranscribe(wav, lang, log)
+        candidates.append({"scores": hookvoice.evaluate(wav, spoken, heard, lang, expected), "heard": heard,
+                           "prosody": prosody.score(wav), "bytes": wav.read_bytes()})
+        wav.unlink()
+    index = hookvoice.best(candidates)
+    chosen = candidates[index]
+    problems = hookvoice.failed(chosen["scores"])
+    info = {**chosen["scores"], "passed": not problems, "failed": problems, "takes": hookvoice.TAKES, "chosen": index}
+    take = {"fidelity": chosen["scores"]["fidelity"], "prosody": chosen["prosody"], "heard": chosen["heard"],
+            "bytes": chosen["bytes"]}
+    return take, info
+
+
+def _settle_local(backend, items: list[tuple[str, str]], lang: str, out_dir: Path, log: Path, key: str = "") -> tuple:
+    prepared = {name: spoken_for(text, lang, True, name) for name, text in items}
+    spoken = {name: p[0] for name, p in prepared.items()}
+    takes: dict = {name: [] for name, _ in items}
+    hook_info = None
+    redone = 0
+    todo = items
+    for attempt in range(MAX_REDOS + 1):
+        temp = None if attempt == 0 else REDO_TEMPS[min(attempt - 1, len(REDO_TEMPS) - 1)]
+        _generate(backend, _expand(todo, spoken), lang, out_dir, temp, key, attempt)
+        for name, _ in todo:
+            expected = numbers.plain_words(*prepared[name])
+            if name == HOOK:
+                take, hook_info = _pick_hook(out_dir, spoken[name], expected, lang, log)
+                takes[name].append(take)
+                continue
+            wav = out_dir / f"{name}.wav"
+            heard = retranscribe(wav, lang, log)
+            takes[name].append({"fidelity": fidelity.similarity(expected, heard), "prosody": prosody.score(wav),
+                                "heard": heard, "bytes": wav.read_bytes()})
+        todo = [(n, t) for n, t in items if n != HOOK and needs_redo(n, best_take(takes[n]))]
+        if not todo or attempt == MAX_REDOS:
+            break
+        redone += len(todo)
+    chosen = {name: best_take(takes[name]) for name, _ in items}
+    for name, _ in items:
+        (out_dir / f"{name}.wav").write_bytes(chosen[name]["bytes"])
+        (out_dir / f"{name}.spoken.txt").write_text(spoken[name], encoding="utf-8")
+    scores = [c["prosody"] for c in chosen.values() if c["prosody"] is not None]
+    _log_line(log, f"voix : segments refaits : {redone}, ressemblance la plus basse : "
+                   f"{min(c['fidelity'] for c in chosen.values()):.2f}, intonation médiane : "
+                   f"{prosody.median(scores) if scores else 'inconnue'}")
+    return ({n: c["heard"] for n, c in chosen.items()}, {n: c["fidelity"] for n, c in chosen.items()},
+            {n: c["prosody"] for n, c in chosen.items() if c["prosody"] is not None}, redone, hook_info)
+
+
+def _write_json_merged(path: Path, update: dict) -> None:
+    current = common.load_json(path) if path.exists() else {}
+    current.update(update)
+    common.save_json(path, current)
+
+
+def _kind(backend) -> str:
+    if getattr(backend, "local", False):
+        return "local"
+    return "paid" if getattr(backend, "paid", False) else "edge"
+
+
+def _fallback_backend(lang: str, log: Path, failed: str = "local"):
+    if failed == "paid" and lang in KYUTAI_LANGS and config.kyutai_installed() and config.apple_silicon():
+        return KyutaiBackend(log)
+    return get_backend(log)
+
+
+def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str, str]], lang: str, out_dir: Path,
+                 log: Path) -> tuple[dict, dict]:
+    order = [name for name, _ in items]
+    spoken = {name: spoken_for(text, lang, False, name, plain=True)[0] for name, text in items}
+    heard_by_name: dict = {}
+    scores: dict = {}
+    for name, _ in pending:
+        index = order.index(name)
+        before = spoken[order[index - 1]] if index else None
+        after = spoken[order[index + 1]] if index + 1 < len(order) else None
+        wav = out_dir / f"{name}.wav"
+
+        def take():
+            words = backend.synthesize(spoken[name], lang, wav, previous_text=before, next_text=after)
+            listened = retranscribe(wav, lang, log)
+            return words or listened, fidelity.similarity(spoken[name], listened), wav.read_bytes()
+
+        words, score, audio = take()
+        if score < eleven.RETRY_BELOW:
+            _log_line(log, f"voix : {name} refait une fois (ressemblance {score:.2f})")
+            words2, score2, audio2 = take()
+            if score2 >= score:
+                words, score, audio = words2, score2, audio2
+        wav.write_bytes(audio)
+        heard_by_name[name] = words
+        scores[name] = score
+        (out_dir / f"{name}.spoken.txt").write_text(spoken[name], encoding="utf-8")
+    return heard_by_name, scores
+
+
+def _run_backend(backend, pending, items, lang, out_dir, log, key) -> dict:
+    kind = _kind(backend)
+    result = {"heard": {}, "scores": {}, "pitch": {}, "hook": None}
+    if kind == "local":
+        heard, scores, pitch, _, hook_info = _settle_local(backend, pending, lang, out_dir, log, key)
+        result.update(heard=heard, scores=scores, pitch=pitch, hook=hook_info)
+    elif kind == "paid":
+        heard, scores = _settle_paid(backend, pending, items, lang, out_dir, log)
+        result.update(heard=heard, scores=scores)
+    else:
+        for name, text in pending:
+            wav = out_dir / f"{name}.wav"
+            spoken, _ = spoken_for(text, lang, False, name)
+            heard = backend.synthesize(spoken, lang, wav)
+            result["heard"][name] = heard if heard else retranscribe(wav, lang, log)
+            (out_dir / f"{name}.spoken.txt").write_text(spoken, encoding="utf-8")
+    return result
+
+
 def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[Path]:
     job = Path(job)
     plan = common.load_json(job / "plan.json")
@@ -108,22 +442,80 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     out_dir = job / "parts" / f"{n:02d}"
     out_dir.mkdir(parents=True, exist_ok=True)
     log = job / "logs" / f"voice-{n:02d}.log"
-    backend = backend or get_backend(log)
-    paths = []
+    backend = backend or choose_backend(lang, log)
+    items = segments(plan, part)
+    paths = [out_dir / f"{name}.wav" for name, _ in items]
+    kind = _kind(backend)
+
+    def done(name: str, text: str) -> bool:
+        if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
+            return False
+        return _stored(out_dir, name, text) == spoken_for(text, lang, kind == "local", name, plain=kind == "paid")[0]
+
+    pending = [(name, text) for name, text in items if not done(name, text)]
     try:
-        for name, text in segments(plan, part):
-            wav = out_dir / f"{name}.wav"
-            words_path = out_dir / f"{name}.words.json"
-            paths.append(wav)
-            if wav.exists() and words_path.exists():
-                continue
-            backend.synthesize(text, lang, wav)
-            common.save_json(words_path, retranscribe(wav, lang, log))
+        if pending:
+            fallback = None
+            key = f"{job.name}:{n}"
+            try:
+                result = _run_backend(backend, pending, items, lang, out_dir, log, key)
+            except common.IdeoError as err:
+                if kind == "edge":
+                    raise
+                fallback = _short(err)
+                _log_line(log, f"voix : repli ({err})")
+                backend = _fallback_backend(lang, log, kind)
+                result = _run_backend(backend, pending, items, lang, out_dir, log, key)
+            kind = _kind(backend)
+            for name, text in pending:
+                wav = out_dir / f"{name}.wav"
+                spoken, units = spoken_for(text, lang, kind == "local", name, plain=kind == "paid")
+                common.save_json(out_dir / f"{name}.words.json",
+                                 finish_segment(wav, text, result["heard"][name], spoken, units))
+            info = {"engine": {"local": "kyutai", "paid": "elevenlabs", "edge": "edge"}[kind], "fallback": fallback,
+                    "local_missing": config.local_voice_missing(lang)}
+            if kind == "paid":
+                previous = _read_info(out_dir)
+                before = previous.get("characters", 0) if previous.get("engine") == "elevenlabs" else 0
+                info["characters"] = before + backend.characters
+                _log_line(log, f"voix : ElevenLabs, {backend.characters} caractères envoyés ({info['characters']} pour la partie)")
+            common.save_json(out_dir / "voice-info.json", info)
+            if result["hook"]:
+                common.save_json(out_dir / "voice-hook.json", result["hook"])
+            if result["scores"]:
+                _write_json_merged(out_dir / "voice-quality.json", result["scores"])
+            if result["pitch"]:
+                _write_json_merged(out_dir / "voice-prosody.json", result["pitch"])
     except common.IdeoError as err:
         common.mark(job, step, False, str(err))
         raise
     except Exception as err:
         common.mark(job, step, False, str(err))
         raise common.IdeoError(f"la voix a échoué : {err}") from err
+    if kind == "local" and (out_dir / "voice-info.json").exists():
+        _backfill_prosody(out_dir, [name for name, _ in items])
     common.mark(job, step, True, f"{len(paths)} segments")
     return paths
+
+
+def _read_info(out_dir: Path) -> dict:
+    path = out_dir / "voice-info.json"
+    try:
+        data = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _backfill_prosody(out_dir: Path, names: list[str]) -> None:
+    path = out_dir / "voice-prosody.json"
+    known = common.load_json(path) if path.exists() else {}
+    missing = {}
+    for name in names:
+        wav = out_dir / f"{name}.wav"
+        if name not in known and wav.exists():
+            score = prosody.score(wav)
+            if score is not None:
+                missing[name] = score
+    if missing:
+        _write_json_merged(path, missing)

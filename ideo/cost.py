@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from ideo import common, plan_check
+from ideo import common, plan_check, target
 
 REPO = Path(__file__).resolve().parent.parent
-SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md")
+SKILL_FILES = (REPO / "skills" / "ideo" / "SKILL.md", REPO / "skills" / "ideo" / "references" / "plan-guide.md",
+               REPO / "skills" / "ideo" / "references" / "lecons.md")
 SKILL_LANG = "fr"
 CHARS_PER_TOKEN = {"fr": 3.3, "en": 4.0}
 OTHER_CHARS_PER_TOKEN = 3.5
@@ -91,6 +92,25 @@ def estimate(job: Path) -> dict:
     }
 
 
+CHARS_PER_WORD = 6
+
+
+def eleven_note(job: Path) -> str:
+    from ideo import config
+
+    if config.engine() != "elevenlabs":
+        return ""
+    info = plan_check.read_json(job, "info.json", {})
+    duration = info.get("duration") if isinstance(info, dict) else None
+    if not isinstance(duration, (int, float)) or isinstance(duration, bool) or duration <= 0:
+        return ""
+    _, ranges = plan_check.sponsor_ranges(job, info)
+    low, high = target.bounds(target.useful_seconds(float(duration), ranges))
+    words_low, words_high = target.words(low, high, _lang(job) or "fr")
+    return (f" Voix ElevenLabs : environ {fmt(words_low * CHARS_PER_WORD)} à {fmt(words_high * CHARS_PER_WORD)} caractères "
+            f"pour la durée conseillée (mots du say x {CHARS_PER_WORD}).")
+
+
 def line(job: Path) -> str:
     e = estimate(job)
     text = (f"lecture au moins ~{fmt(e['reading'])} tokens (transcription {fmt(e['transcript'])} + skill et guide {fmt(e['skill'])}), "
@@ -98,6 +118,11 @@ def line(job: Path) -> str:
     if e["long"]:
         text += ", contenu long : une vidéo de 5 min ou plusieurs parties"
     return text
+
+
+def advice(job: Path) -> str:
+    text = target.for_job(job)
+    return (f" {text}" if text else "") + eleven_note(job)
 
 
 def reading(job: Path) -> dict:

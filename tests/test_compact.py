@@ -122,3 +122,97 @@ def test_sponsor_wording_in_both_languages():
 ])
 def test_weak_or_negated_wording_is_not_a_sponsor(text):
     assert not compact.is_sponsor_text(text)
+
+
+LONG_INFO = {"title": "T", "channel": "C", "duration": 1000, "language": "fr"}
+BODY = (para_words(0, "Le ciel est bleu parce que la lumière se diffuse dans l'air")
+        + para_words(500, "La conclusion est que la physique explique les couleurs")
+        + para_words(930, "Cette partie reste dans la vidéo et parle de physique")
+        + para_words(960, "Merci d 'avoir regardé, abonne -toi et active la cloche")
+        + para_words(975, "Retrouve -moi sur Instagram et sur Patreon, à bientôt"))
+
+
+def test_end_of_video_with_strong_keywords_is_replaced():
+    text, hidden = compact.build(BODY, [], LONG_INFO)
+    assert "[fin de vidéo, ignorée]" in text
+    assert "Merci" not in text and "Instagram" not in text and "[15:30] Cette partie" in text
+    assert hidden[-1]["end"] is True and hidden[-1]["s"] == 960.0
+
+
+def test_end_zone_needs_a_strong_keyword():
+    words = BODY[:-22]
+    words = words + para_words(960, "Voilà la dernière idée, une jolie conclusion sur la lumière")
+    text, hidden = compact.build(words, [], LONG_INFO)
+    assert "[fin de vidéo" not in text and "end" not in str(hidden)
+
+
+def test_keywords_before_the_last_eight_percent_are_kept():
+    words = para_words(100, "Abonne -toi à la chaîne, mais ce n'est pas la fin") + BODY[:-22]
+    words = sorted(words, key=lambda w: w["s"])
+    text, hidden = compact.build(words, [], LONG_INFO)
+    assert "Abonne" in text and "[fin de vidéo" not in text
+
+
+@pytest.mark.parametrize("phrase", [
+    "Please like and subscribe to the channel", "Thanks for watching, see you soon",
+    "Suscríbete y activa la campana", "Abonniere den Kanal und lass ein Like da",
+    "Iscriviti al canale e segui su Instagram", "Inscreva-se no canal", "Abonneer je op het kanaal",
+    "Zasubskrybuj kanał", "Kanala abone ol",
+])
+def test_end_keywords_in_the_supported_languages(phrase):
+    assert compact.is_end_text(phrase)
+
+
+def test_end_keywords_are_whole_words():
+    assert not compact.is_end_text("This is likely to be unlike the rest")
+    assert not compact.is_end_text("Le ciel est bleu à cause de la diffusion")
+
+
+def test_header_has_the_advised_duration():
+    text = compact.build(BODY, [], LONG_INFO)[0]
+    assert "Durée conseillée : 120 à 180 s (environ 360 à 540 mots de say)." in text.split("\n\n")[0]
+
+
+def prepared_job(tmp_path, monkeypatch):
+    from ideo import common
+
+    job = tmp_path / "job"
+    job.mkdir()
+    common.save_json(job / "words.json", BODY)
+    common.save_json(job / "info.json", {"title": "T", "channel": "C", "duration": 1000})
+    (job / "lang.txt").write_text("fr", encoding="utf-8")
+    monkeypatch.setattr(compact.sfx_mod, "rms_db_per_second", lambda path: [])
+    monkeypatch.setattr(compact.sfx_mod, "find_sfx", lambda rms, words: [])
+    return job
+
+
+def test_transcript_cache_is_reused_at_the_same_version(tmp_path, monkeypatch):
+    job = prepared_job(tmp_path, monkeypatch)
+    compact.prepare_transcript(job)
+    (job / "transcript_compact.md").write_text("édité", encoding="utf-8")
+    compact.prepare_transcript(job)
+    assert (job / "transcript_compact.md").read_text(encoding="utf-8") == "édité"
+
+
+def test_transcript_is_rebuilt_when_the_cache_version_is_old(tmp_path, monkeypatch):
+    from ideo import common
+
+    job = prepared_job(tmp_path, monkeypatch)
+    compact.prepare_transcript(job)
+    skip = common.load_json(job / "skip.json")
+    assert skip["version"] == compact.TRANSCRIPT_VERSION
+    del skip["version"]
+    common.save_json(job / "skip.json", skip)
+    (job / "transcript_compact.md").write_text("ancien format", encoding="utf-8")
+    compact.prepare_transcript(job)
+    text = (job / "transcript_compact.md").read_text(encoding="utf-8")
+    assert "Durée conseillée" in text and "[fin de vidéo, ignorée]" in text
+
+
+def test_refresh_advice_rewrites_a_stale_line(tmp_path):
+    out = tmp_path / "transcript_compact.md"
+    out.write_text("Titre : x\nDurée conseillée : ancienne\n\n[0:00] texte\n", encoding="utf-8")
+    text = compact.refresh_advice(out, "Durée conseillée : nouvelle")
+    assert "Durée conseillée : nouvelle" in text
+    assert "ancienne" not in out.read_text(encoding="utf-8")
+    assert compact.refresh_advice(out, None) == text

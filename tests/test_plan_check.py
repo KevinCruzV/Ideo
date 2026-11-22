@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from ideo import plan_check
+from ideo import plan_check, speed
 
 EM = chr(0x2014)
 
@@ -108,7 +108,7 @@ def expected_estimate(job, says):
     first = next(i for i, w in enumerate(words) if w["w"] == "Nous" and words[i + 1]["w"] == "oublions")
     clip = words[first + len(quote) - 1]["e"] - words[first]["s"]
     hook = len(plan["parts"][0]["hook"].split())
-    return round((hook + sum(len(s.split()) for s in says)) / 2.6 + clip + 2.5 + 3.0)
+    return round((hook + sum(len(s.split()) for s in says)) / speed.rate('fr') + 0.66 + 0.56 * len(says) + clip + 2.5 + 3.0)
 
 
 def test_part_too_short_reports_estimate(job_with_fixtures):
@@ -129,7 +129,7 @@ def test_part_too_long_reports_estimate(job_with_fixtures):
     plan = load(job_with_fixtures)
     scenes = plan["parts"][0]["scenes"]
     says = [s["say"] for s in scenes]
-    says[0] = "mot " * 700
+    says[0] = "mot " * 1100
     scenes[0]["say"] = says[0]
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
@@ -209,9 +209,9 @@ def test_unreadable_plan_json_is_an_error(job_with_fixtures):
 
 
 def test_estimate_seconds():
-    assert plan_check.estimate_seconds("un deux trois quatre cinq", "fr") == pytest.approx(5 / 2.6)
-    assert plan_check.estimate_seconds("un deux trois quatre cinq", "en") == pytest.approx(5 / 2.8)
-    assert plan_check.estimate_seconds("un deux", "es") == pytest.approx(2 / 2.6)
+    assert plan_check.estimate_seconds("un deux trois quatre cinq", "fr") == pytest.approx(5 / speed.rate('fr'))
+    assert plan_check.estimate_seconds("un deux trois quatre cinq", "en") == pytest.approx(5 / speed.rate('en'))
+    assert plan_check.estimate_seconds("un deux", "es") == pytest.approx(2 / speed.rate('es'))
 
 
 def test_missing_plan_json_is_an_error_not_a_traceback(job_with_fixtures):
@@ -249,7 +249,7 @@ def test_several_parts_that_fit_one_video_are_rejected(job_with_fixtures):
 
 def test_several_long_parts_are_valid(job_with_fixtures):
     plan = load(job_with_fixtures)
-    plan["parts"] = [dict(plan["parts"][0], n=i) for i in range(1, 7)]
+    plan["parts"] = [dict(plan["parts"][0], n=i) for i in range(1, 9)]
     write(job_with_fixtures, plan)
     assert plan_check.check_plan(job_with_fixtures) == []
 
@@ -473,3 +473,30 @@ def test_sfx_on_a_quote_scene_is_refused(job_with_fixtures):
     write(job_with_fixtures, plan)
     errors = plan_check.check_plan(job_with_fixtures)
     assert any("« sfx »" in e and "quote" in e and "Retire" in e for e in errors), errors
+
+
+def set_end_skip(job, s, e):
+    (job / "skip.json").write_text(json.dumps({
+        "hidden": [{"s": s, "e": e, "probable": False, "end": True}], "segments": [],
+    }), encoding="utf-8")
+
+
+def test_src_in_the_end_of_the_video_is_an_error(job_with_fixtures):
+    set_end_skip(job_with_fixtures, 14.0, 20.0)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert errors == ["Partie 1, scène 2 : « src » 0:15 est dans la fin de la vidéo (remerciements, appel à s'abonner), "
+                      "ignorée (0:14 à 0:20), choisis un autre passage."]
+
+
+def test_quote_in_the_end_of_the_video_is_an_error(job_with_fixtures):
+    set_end_skip(job_with_fixtures, 20.0, 40.0)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any(e.startswith("Partie 1, scène 5 : la citation est dans la fin de la vidéo") for e in errors)
+
+
+def test_pause_seconds_follow_the_position_of_each_gap():
+    assert plan_check.pause_seconds([{}]) == pytest.approx(0.66 + 0.56)
+    assert plan_check.pause_seconds([{}, {}, {}]) == pytest.approx(0.66 + 2 * 0.56 + 0.56)
+    assert plan_check.pause_seconds([{}, {"break": True}, {}]) == pytest.approx(0.66 + 0.96 + 0.56 + 0.56)
+    assert plan_check.pause_seconds([{"break": True}, {}]) == pytest.approx(0.96 + 0.56 + 0.56)
+    assert plan_check.pause_seconds([{"break": "oui"}, {}]) == pytest.approx(0.66 + 0.56 + 0.56)

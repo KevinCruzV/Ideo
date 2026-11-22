@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BLINK_FRAMES, blinkStarts, hopLift, idleTilt, isBlinking, poseOf } from "./pose";
+import { BLINK_FRAMES, blinkStarts, breath, gaze, HOP_FRAMES, hopLift, idleTilt, isBlinking, poseOf } from "./pose";
 import { characterWidth, sizeForHead, VIEW } from "./Character";
 
 describe("pose", () => {
@@ -52,24 +52,28 @@ describe("clignement", () => {
 });
 
 describe("vie au repos", () => {
-  test("la tête change de un ou deux degrés, par paliers de plusieurs pas", () => {
+  test("la tête oscille en douceur dans trois degrés", () => {
     const tilts = Array.from({ length: 300 }, (_, f) => idleTilt("mascot", f));
-    tilts.forEach((t) => {
-      expect(Number.isInteger(t)).toBe(true);
-      expect(Math.abs(t)).toBeLessThanOrEqual(2);
-    });
-    const changes = tilts.filter((t, i) => i > 0 && t !== tilts[i - 1]).length;
-    expect(changes).toBeGreaterThan(2);
-    expect(changes).toBeLessThan(300 / 10);
-    expect(idleTilt("mascot", 3)).toBe(idleTilt("mascot", 4));
+    tilts.forEach((t) => expect(Math.abs(t)).toBeLessThanOrEqual(3));
+    tilts.slice(1).forEach((t, i) => expect(Math.abs(t - tilts[i])).toBeLessThan(0.3));
+    expect(Math.max(...tilts) - Math.min(...tilts)).toBeGreaterThan(1);
   });
 
-  test("le saut à l'arrivée de la bulle dure deux pas puis s'arrête", () => {
+  test("la respiration et le regard restent discrets", () => {
+    Array.from({ length: 300 }, (_, f) => f).forEach((f) => {
+      expect(Math.abs(breath(f) - 1)).toBeLessThanOrEqual(0.012);
+      const [x, y] = gaze("mascot", f);
+      expect(Math.abs(x)).toBeLessThanOrEqual(3);
+      expect(Math.abs(y)).toBeLessThanOrEqual(1.5);
+    });
+  });
+
+  test("le petit saut monte puis retombe à zéro", () => {
     expect(hopLift(9, 10)).toBe(0);
-    const lifts = [10, 11, 12, 13, 14, 15, 16, 40].map((f) => hopLift(f, 10));
-    expect(lifts.slice(0, 5).every((l) => l > 0)).toBe(true);
-    expect(lifts[0]).toBeGreaterThan(lifts[4]);
-    expect(lifts.slice(5)).toEqual([0, 0, 0]);
+    const lifts = Array.from({ length: HOP_FRAMES + 6 }, (_, i) => hopLift(10 + i, 10));
+    expect(Math.max(...lifts)).toBeGreaterThan(0.03);
+    expect(lifts.slice(HOP_FRAMES)).toEqual(lifts.slice(HOP_FRAMES).map(() => 0));
+    lifts.slice(1).forEach((l, i) => expect(Math.abs(l - lifts[i])).toBeLessThan(0.015));
   });
 
   test("la largeur suit la taille et la tête donne l'échelle", () => {

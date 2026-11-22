@@ -20,6 +20,22 @@ Donne une URL YouTube ("fais un short de https://youtu.be/...") ou lance `/ideo:
 
 Conseil : lance la session avec le modèle le moins cher (`/model haiku`), Sonnet si le résultat ne suffit pas.
 
+## La voix
+
+Sur un Mac Apple Silicon, ideo utilise une voix locale, gratuite et sans internet une fois installée (environ 4,5 Go). Si elle manque, le skill le dit et l'installe tout seul pendant qu'il écrit le plan ; en cas d'échec ou sur un autre Mac, il utilise une voix en ligne. Chaque phrase produite est réécoutée automatiquement et refaite si elle ne correspond pas au texte.
+
+Réglages facultatifs dans `config.json` à la racine (fichier ignoré par git) : `engine` (`kyutai` ou `edge`), `kyutai_voice`, `voices`, `rate`, `entretien_auto`, `entretien_seuil`.
+
+## Le skill se relit, se contrôle et apprend
+
+- Avant le rendu, `check` refuse les erreurs et signale des points à relire (année sans date à l'écran, pays cités sans drapeau, rythme haché, scène trop chargée) que le modèle corrige en un passage.
+- Après le rendu, un contrôle automatique écrit `out/qc.md` (silences, scènes figées, sous-titres, volume, durée).
+- Tes remarques sur une vidéo deviennent des leçons dans `skills/ideo/references/lecons.md`, relues à chaque vidéo. Une faute qui revient sur deux vidéos devient une leçon toute seule.
+- Les défauts que seul du code peut corriger et les dessins qui ont manqué s'accumulent dans `retours.md`.
+- Toutes les 5 vidéos environ, le skill lance lui-même `/ideo:entretien` en arrière-plan, sur un modèle plus capable : il corrige les défauts accumulés, ajoute les dessins manquants et range les leçons. Il ne garde ses changements que si tous les tests passent, et ne pousse jamais sur GitHub.
+
+Pour récupérer les améliorations sur un autre Mac : `git pull`. Pour partager celles faites sur ce Mac : `git push` (leçons, retours et entretiens sont des fichiers du dépôt).
+
 ## Où sont les fichiers
 
 Tout est dans `jobs/<id de la vidéo>/` :
@@ -33,4 +49,4 @@ Tout est dans `jobs/<id de la vidéo>/` :
 
 ## Coût
 
-Claude lit la transcription compacte une fois et écrit le plan une fois. Le téléchargement, la transcription, la voix, le montage et le rendu tournent en local et ne consomment aucun crédit.
+Claude lit le guide, les leçons et la transcription compacte une fois, écrit le plan une fois, puis corrige les points à relire. Le téléchargement, la transcription, la voix, le montage, le rendu et le contrôle tournent en local et ne consomment aucun crédit. L'entretien automatique, lui, consomme des crédits sur un modèle plus capable, environ une fois toutes les 5 vidéos.

@@ -1,59 +1,94 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { interpolate, spring, useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
-import { jitter, stepIndex } from "../paper/stopMotion";
-import { colors, fonts, onPaper, shadowFilter } from "../theme";
+import { PaperBacking } from "../paper/PaperStrip";
+import { Picto } from "../pictos/Picto";
+import { colors, fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { str } from "./coerce";
 import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaTop, BOX_CX, BOX_W, Stage, STAGE_H } from "./Stage";
 import { enterFor } from "./timing";
+import { useBeat } from "./beats";
 
-const SLAM = [1.7, 1.25, 0.94, 1];
+const SHEET_W = BOX_W - 20;
 
 export const Stamp: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
+  const beat = useBeat();
+  const press = beat ? beat.wave : 0;
   const text = str(props.text, "…").toUpperCase();
-  const fit = fitText(text, { maxWidth: 700, maxLines: 3, max: 150, min: 56 });
+  const fit = fitText(text, { maxWidth: SHEET_W - 200, maxLines: 3, max: 136, min: 56 });
   const at = enterFor("text", items, from, to);
   const local = frame - at;
-  const step = local < 0 ? -1 : stepIndex(local);
-  const scale = step < 0 ? 0 : SLAM[Math.min(step, SLAM.length - 1)];
+  const top = areaTop(props);
+  const sheetH = Math.min(760, STAGE_H - top - 70);
+  const sheetY = top + (STAGE_H - top - sheetH) / 2;
+  const slam = local < 0 ? 0 : spring({ frame: local, fps: 30, config: { damping: 11, stiffness: 260, mass: 0.6 } });
+  const scale = local < 0 ? 1.5 : 1.5 - 0.5 * slam;
+  const opacity = interpolate(local, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const thump = (local >= 0 && local < 10 ? Math.sin((local / 10) * Math.PI) * (1 - local / 10) * 10 : 0) + 7 * press;
   const ink = onPaper[accent];
+  const lines = [0.22, 0.34, 0.46, 0.58, 0.7, 0.82];
 
   return (
     <Stage>
-      <PaperShape kind="square" color="cream" size={1} w={860} h={640} x={(STAGE_W - 860) / 2} y={(STAGE_H - 640) / 2} rotate={3} seed="stamp-sheet" wobble={0.3} />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            opacity: scale === 0 ? 0 : 1,
-            transform: `rotate(${-7 + jitter("stamp", frame, 0.6)}deg) scale(${scale})`,
-            filter: shadowFilter,
-          }}
-        >
-          <div style={{ background: colors[accent], padding: 26 }}>
+      <div style={{ position: "absolute", inset: 0, transform: `translateY(${thump}px)` }}>
+        <PaperShape kind="square" color="cream" size={1} w={SHEET_W} h={sheetH} x={BOX_CX - SHEET_W / 2} y={sheetY} rotate={2} seed="stamp-sheet" float={2} spin={0.2} motion={{ dy: 80, spin: 6 }}>
+          <div style={{ position: "absolute", inset: 0 }}>
+            {lines.map((l, i) => (
+              <div
+                key={`rule-${i}`}
+                style={{ position: "absolute", left: 70, right: i % 3 === 2 ? 260 : 70, top: `${l * 100}%`, height: 10, background: "rgba(31,26,20,.09)" }}
+              />
+            ))}
+          </div>
+        </PaperShape>
+        <Picto name={props.picto} size={190} x={BOX_CX - SHEET_W / 2 - 20} y={sheetY - 50} rotate={-8} enterAt={4} />
+      </div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: sheetY, height: sheetH, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {local < 6 ? (
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: `translate(calc(-50% + ${BOX_CX - 540}px), -50%) rotate(-7deg)`, opacity: 0.16 * (1 - Math.max(0, local) / 6) }}>
+            <div style={{ padding: 24 }}>
+              <div
+                style={{
+                  border: `9px dashed ${colors.ink}`,
+                  padding: "26px 44px 30px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  fontFamily: fonts.text,
+                  fontWeight: 800,
+                  fontSize: fit.size,
+                  lineHeight: 1.12,
+                  letterSpacing: 2,
+                  color: colors.ink,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {fit.lines.map((l, i) => (
+                  <span key={`ghost-${i}`}>{l}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <div style={{ position: "relative", left: BOX_CX - 540, opacity, transform: `rotate(${-7 + 2 * press}deg) scale(${scale * (1 - 0.06 * press)})` }}>
+          <PaperBacking color={accent} seed="stamp-plate" amount={0.8} />
+          <div style={{ position: "relative", padding: 24 }}>
             <div
               style={{
-                border: `8px solid ${ink}`,
-                padding: "22px 40px",
+                border: `9px solid ${ink}`,
+                padding: "26px 44px 30px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 fontFamily: fonts.text,
                 fontWeight: 800,
                 fontSize: fit.size,
-                lineHeight: 1.02,
+                lineHeight: 1.12,
                 letterSpacing: 2,
                 color: ink,
                 whiteSpace: "nowrap",

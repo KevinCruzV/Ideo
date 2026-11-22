@@ -7,3 +7,11 @@ render/out/
 __pycache__/
 .DS_Store
 .pytest_cache/
+config.json
+.venv-tools/
+.venv-voix/
+voix/
+historique.json
+entretien.md
+musique/
+voix-test.wav

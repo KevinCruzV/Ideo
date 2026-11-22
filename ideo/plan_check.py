@@ -1,14 +1,15 @@
 from pathlib import Path
 
-from ideo import scene_schema, voice
+from ideo import scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
-from ideo.textmatch import SPLIT, closest_passage, find_span, normalize
+from ideo.textmatch import SPLIT, anchor_text, closest_passage, find_span, normalize
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
-    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body",
 })
 MAX_PARTS = 8
+MAX_SCENES = 45
 MIN_SECONDS = 45
 MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0
@@ -18,10 +19,23 @@ EM_DASH = chr(0x2014)
 CHANNEL_MIN_CHARS = 6
 CHANNEL_MAX_SPOKEN = 3
 RATES = {"fr": 2.6, "en": 2.8}
+TRIM = 0.06
+GAP_HOOK = 0.60 + TRIM
+GAP_SCENE = 0.50 + TRIM
+GAP_BREAK = 0.90 + TRIM
+
+
+def pause_seconds(scenes: list) -> float:
+    def broken(scene) -> bool:
+        return isinstance(scene, dict) and scene.get("break") is True
+
+    total = GAP_BREAK if broken(scenes[0]) else GAP_HOOK
+    total += sum(GAP_BREAK if broken(s) else GAP_SCENE for s in scenes[1:])
+    return total + GAP_SCENE
 
 
 def estimate_seconds(text: str, lang: str) -> float:
-    return len(text.split()) / RATES.get(lang, 2.6)
+    return len(text.split()) / speed.rate(lang)
 
 
 def read_json(job: Path, name: str, default):
@@ -125,12 +139,29 @@ def sponsor_ranges(job: Path, info) -> tuple[list, list]:
     return hidden, hidden + _ranges(segments)
 
 
+def end_ranges(job: Path) -> set:
+    skip = read_json(job, "skip.json", {})
+    entries = skip.get("hidden") if isinstance(skip, dict) else []
+    out = set()
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, dict) and entry.get("end") is True:
+            try:
+                out.add((float(entry["s"]), float(entry["e"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+    return out
+
+
 def _sponsored(start: float, end: float, ranges: list) -> tuple[float, float] | None:
     return next(((s, e) for s, e in ranges if start < e and end > s), None)
 
 
-def _sponsor_error(where: str, what: str, hit: tuple[float, float]) -> str:
-    return f"{where} : {what} est dans un passage sponsorisé ({fmt_ts(hit[0])} à {fmt_ts(hit[1])}), choisis un autre passage."
+def _sponsor_error(where: str, what: str, hit: tuple[float, float], ends=()) -> str:
+    span = f"{fmt_ts(hit[0])} à {fmt_ts(hit[1])}"
+    if hit in ends:
+        return (f"{where} : {what} est dans la fin de la vidéo (remerciements, appel à s'abonner), "
+                f"ignorée ({span}), choisis un autre passage.")
+    return f"{where} : {what} est dans un passage sponsorisé ({span}), choisis un autre passage."
 
 
 def _sfx_by_ts(sfx: list) -> dict:
@@ -169,20 +200,24 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
 
+    if "break" in scene and not isinstance(scene["break"], bool):
+        errors.append(f"{where} : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le.")
+
     items = scene.get("items", [])
     if not isinstance(items, list):
         errors.append(f"{where} : « items » doit être une liste d'objets {{\"el\": ..., \"on\": ...}}.")
         items = []
     spoken = []
     for item in items:
-        if not isinstance(item, dict) or not isinstance(item.get("on"), str) or not item["on"].strip():
-            errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide qui apparaît dans « say ».")
+        anchor = anchor_text(item.get("on")) if isinstance(item, dict) else None
+        if anchor is None:
+            errors.append(f"{where} : chaque élément de « items » doit avoir « el » et un « on » non vide (texte ou nombre) qui apparaît dans « say ».")
             continue
         if known:
             errors.extend(scene_schema.check_el(kind, props, item.get("el"), where))
-        span = find_span(say.split(), item["on"]) if say is not None else None
+        span = find_span(say.split(), anchor) if say is not None else None
         if say is not None and span is None:
-            errors.append(f"{where} : « {item['on']} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
+            errors.append(f"{where} : « {anchor} » n'est pas dans le texte de « say ». Recopie dans « on » un mot ou une suite de mots exacts de « say », ou corrige « say ».")
         elif span is not None:
             spoken.append((span[0], item))
     _check_order(spoken, where, errors)
@@ -197,7 +232,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         if src_seconds is not None:
             hit = next(((a, b) for a, b in ctx["hidden"] if a <= src_seconds < int(b)), None)
             if hit:
-                errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit))
+                errors.append(_sponsor_error(where, f"« src » {scene['src']}", hit, ctx["ends"]))
 
     if "sfx" in scene and kind == "quote":
         errors.append(f"{where} : « sfx » sur une scène « quote » ne serait pas joué, la citation joue déjà la vraie voix. Retire « sfx » ou mets-le sur une autre scène.")
@@ -219,7 +254,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
                 except (KeyError, TypeError, ValueError):
                     hit = None
                 if hit:
-                    errors.append(_sponsor_error(where, f"le son {scene['sfx']}", hit))
+                    errors.append(_sponsor_error(where, f"le son {scene['sfx']}", hit, ctx["ends"]))
                 part_state["clips"].append(("sfx", scene["sfx"], "", ""))
 
     if kind == "quote":
@@ -230,7 +265,7 @@ def _check_order(spoken: list, where: str, errors: list[str]) -> None:
     for (before, first), (after, second) in zip(spoken, spoken[1:]):
         if after < before:
             order = ", ".join(str(item.get("el")) for _, item in sorted(spoken, key=lambda pair: pair[0]))
-            errors.append(f"{where} : l'item « {second.get('el')} » (« {second['on']} ») est dit avant l'item « {first.get('el')} » (« {first['on']} »). "
+            errors.append(f"{where} : l'item « {second.get('el')} » (« {anchor_text(second['on'])} ») est dit avant l'item « {first.get('el')} » (« {anchor_text(first['on'])} »). "
                           f"Échange ces deux items : les items suivent l'ordre des mots dans « say ». Ordre attendu : {order}.")
             return
 
@@ -268,7 +303,7 @@ def _check_quote(scene, props, src_seconds, where, ctx, errors, part_state) -> N
         errors.append(f"{where} : la citation dure {round(clip)} s, {QUOTE_MAX_SECONDS:.0f} s au plus. Choisis une suite de mots plus courte dans le même passage.")
     hit = _sponsored(window[span[0]]["s"], window[span[1]]["e"], ctx["sponsor"])
     if hit:
-        errors.append(_sponsor_error(where, "la citation", hit))
+        errors.append(_sponsor_error(where, "la citation", hit, ctx["ends"]))
     part_state["seconds"] += clip
     part_state["clips"].append(("citation", fmt_ts(window[span[0]]["s"]), text, speaker or "voix non identifiée"))
 
@@ -301,8 +336,11 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     if not isinstance(scenes, list) or not scenes:
         errors.append(f"{where} : « scenes » doit être une liste d'au moins une scène.")
         return [], None
+    if len(scenes) > MAX_SCENES:
+        errors.append(f"{where} : {len(scenes)} scènes, {MAX_SCENES} au plus par vidéo. Retire ou fusionne {len(scenes) - MAX_SCENES} scène(s), ou découpe en plusieurs parties.")
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
+    state["seconds"] += pause_seconds(scenes)
     if not state["usable"]:
         return state["clips"], None
     total = round(state["seconds"])
@@ -316,8 +354,14 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
     return state["clips"], state["seconds"]
 
 
-def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
-    lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", ""]
+def pace_line(seconds: int, scenes: int) -> str:
+    rhythm = str(round(scenes / (seconds / 60), 1) if seconds else 0.0).replace(".", ",")
+    return f"Durée estimée : environ {seconds} s, {scenes} scènes, {rhythm} scènes par minute."
+
+
+def _write_md(job: Path, plan: dict, clips_by_part: list, stats: dict) -> None:
+    lines = [f"# {plan['series_title']}" if plan.get("series_title") else "# Plan", "",
+             pace_line(stats["seconds"], stats["scenes"]), ""]
     for part, clips in zip(plan["parts"], clips_by_part):
         lines += [f"## Partie {part['n']} : {part['title']}", "", f"Accroche : {part['hook']}", ""]
         lines += [f"- [{s['type']}] {s['say']}" for s in part["scenes"]]
@@ -328,20 +372,42 @@ def _write_md(job: Path, plan: dict, clips_by_part: list) -> None:
     (job / "plan.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def check_plan(job: Path) -> list[str]:
+MAX_WISHES = 5
+WISH_CAP = 40
+
+
+def _check_wishes(plan: dict, errors: list[str]) -> None:
+    if "wishes" not in plan:
+        return
+    wishes = plan["wishes"]
+    if not isinstance(wishes, list) or len(wishes) > MAX_WISHES:
+        errors.append(f"Plan : « wishes » doit être une liste de 0 à {MAX_WISHES} textes courts (les dessins qui t'ont manqué). "
+                      "Retire les souhaits en trop ou supprime le champ.")
+        return
+    for i, wish in enumerate(wishes):
+        if not isinstance(wish, str) or not wish.strip():
+            errors.append(f"Plan : « wishes.{i} » doit être un texte non vide. Écris le dessin voulu en quelques mots ou retire-le.")
+            continue
+        _check_dash([wish], "Plan", errors)
+        error = scene_schema.cap_error("Plan", f"wishes.{i}", wish, WISH_CAP)
+        if error:
+            errors.append(error)
+
+
+def _analyze(job: Path) -> tuple[list[str], dict | None]:
     job = Path(job)
     path = job / "plan.json"
     (job / "plan.md").unlink(missing_ok=True)
     if not path.exists():
-        return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."]
+        return ["Plan : plan.json est introuvable. Écris-le dans le dossier du job avant de lancer la validation."], None
     try:
         plan = load_json(path)
     except ValueError as exc:
-        return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."]
+        return [f"Plan : plan.json n'est pas un JSON valide ({exc}). Corrige la syntaxe puis relance."], None
     except OSError as exc:
-        return [f"Plan : plan.json est illisible ({exc}). Vérifie le fichier puis relance."]
+        return [f"Plan : plan.json est illisible ({exc}). Vérifie le fichier puis relance."], None
     if not isinstance(plan, dict):
-        return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."]
+        return ["Plan : plan.json doit contenir un objet JSON avec « version », « lang », « series_title » et « parts »."], None
 
     errors: list[str] = []
     lang_file = job / "lang.txt"
@@ -356,10 +422,11 @@ def check_plan(job: Path) -> list[str]:
     if "series_title" in plan:
         _check_dash([plan["series_title"]] if isinstance(plan["series_title"], str) else [], "Plan", errors)
 
+    _check_wishes(plan, errors)
     parts = plan.get("parts")
     if not isinstance(parts, list):
         errors.append("Plan : « parts » doit être une liste de parties.")
-        return errors
+        return errors, None
     if not parts:
         errors.append("Plan : il faut au moins 1 partie dans « parts ».")
     if len(parts) > MAX_PARTS:
@@ -382,6 +449,7 @@ def check_plan(job: Path) -> list[str]:
         "words": words,
         "sfx": _sfx_by_ts(sfx if isinstance(sfx, list) else []),
         "hidden": hidden,
+        "ends": end_ranges(job),
         "sponsor": sponsor,
     }
     _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)
@@ -390,6 +458,19 @@ def check_plan(job: Path) -> list[str]:
     seconds = [sec for _, sec in results]
     if len(parts) > 1 and all(sec is not None for sec in seconds) and sum(seconds) <= MAX_SECONDS:
         errors.append(f"Plan : le contenu tient en une seule vidéo (durée estimée totale {round(sum(seconds))} s). Fusionne les parties en une seule.")
+    stats = None
     if not errors:
-        _write_md(job, plan, clips_by_part)
-    return errors
+        total = round(sum(seconds))
+        count = sum(len(part["scenes"]) for part in parts)
+        stats = {"seconds": total, "scenes": count, "plan": plan, "lang": lang, "source": ctx["duration"]}
+        _write_md(job, plan, clips_by_part, stats)
+    return errors, stats
+
+
+def check_plan(job: Path) -> list[str]:
+    return analyze(job)["errors"]
+
+
+def analyze(job: Path) -> dict:
+    errors, stats = _analyze(job)
+    return {"errors": errors, "stats": stats}

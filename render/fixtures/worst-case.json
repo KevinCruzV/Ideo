@@ -1,0 +1,2728 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 2200,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": {
+    "part": 8,
+    "total": 8,
+    "title": "Un titre de chapitre vraiment très long",
+    "label": "Partie"
+  },
+  "segments": [
+    {
+      "kind": "hook",
+      "from": 0,
+      "to": 100,
+      "props": {
+        "text": "Les États-Unis et l'Union soviétique se disputent l'Égypte p"
+      },
+      "items": []
+    },
+    {
+      "kind": "scene",
+      "from": 100,
+      "to": 200,
+      "props": {
+        "text": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change partout d",
+        "accent": "l'Union soviétique",
+        "kicker": "Révolution des œillets à Lis",
+        "picto": "globe"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 104
+        },
+        {
+          "el": "accent",
+          "at": 112
+        }
+      ],
+      "type": "key-title"
+    },
+    {
+      "kind": "scene",
+      "from": 200,
+      "to": 300,
+      "props": {
+        "text": "Le retour de Donald Trump à la Maison-Blanche",
+        "accent": "Donald Trump",
+        "kicker": "Révolution des œillets à Lis",
+        "picto": "ballot"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 204
+        },
+        {
+          "el": "accent",
+          "at": 212
+        }
+      ],
+      "type": "key-title"
+    },
+    {
+      "kind": "scene",
+      "from": 300,
+      "to": 400,
+      "props": {
+        "name": "Mikhaïl Sergueïevitch Gorbatchev Kroutchenko Mik",
+        "role": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change partout dans le mon",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "name",
+          "at": 304
+        },
+        {
+          "el": "role",
+          "at": 314
+        }
+      ],
+      "type": "person-card"
+    },
+    {
+      "kind": "scene",
+      "from": 400,
+      "to": 500,
+      "props": {
+        "chips": [
+          "Les États-Unis d'Amérique du",
+          "L'Égypte de Gamal Abdel Nass",
+          "Ça change tout pour le monde",
+          "L'Union soviétique de Stalin",
+          "Le Royaume-Uni de Churchill",
+          "La France du général de Gaul"
+        ],
+        "picto": "flag",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "chips.0",
+          "at": 404
+        },
+        {
+          "el": "chips.1",
+          "at": 416
+        },
+        {
+          "el": "chips.2",
+          "at": 428
+        },
+        {
+          "el": "chips.3",
+          "at": 440
+        },
+        {
+          "el": "chips.4",
+          "at": 452
+        },
+        {
+          "el": "chips.5",
+          "at": 464
+        }
+      ],
+      "type": "fact-chips"
+    },
+    {
+      "kind": "scene",
+      "from": 500,
+      "to": 600,
+      "props": {
+        "items": [
+          "Relire juste avant d'oublier pour fixer durablement la mémoi",
+          "Espacer les révisions sur plusieurs jours puis plusieurs sem",
+          "Se tester au lieu de relire passivement ses notes de cours S",
+          "Dormir suffisamment après avoir appris quelque chose de nouv",
+          "Expliquer à quelqu'un d'autre ce que l'on vient de comprendr"
+        ],
+        "picto": "brain",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "items.0",
+          "at": 504
+        },
+        {
+          "el": "items.1",
+          "at": 516
+        },
+        {
+          "el": "items.2",
+          "at": 528
+        },
+        {
+          "el": "items.3",
+          "at": 540
+        },
+        {
+          "el": "items.4",
+          "at": 552
+        }
+      ],
+      "type": "stack-list"
+    },
+    {
+      "kind": "scene",
+      "from": 600,
+      "to": 700,
+      "props": {
+        "label": "Les États-Unis et l'Union soviétique se disputent l'Égypte p",
+        "from": 0,
+        "to": 123456789,
+        "unit": "km",
+        "picto": "coin",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "to",
+          "at": 606
+        },
+        {
+          "el": "label",
+          "at": 604
+        }
+      ],
+      "type": "counter"
+    },
+    {
+      "kind": "scene",
+      "from": 700,
+      "to": 800,
+      "props": {
+        "label": "de taxe sur les produits chinois",
+        "from": 0,
+        "to": 20,
+        "unit": "%",
+        "picto": "coin"
+      },
+      "items": [
+        {
+          "el": "to",
+          "at": 706
+        },
+        {
+          "el": "label",
+          "at": 704
+        }
+      ],
+      "type": "counter"
+    },
+    {
+      "kind": "scene",
+      "from": 800,
+      "to": 900,
+      "props": {
+        "start": "Les États-Unis et l'Union sovi",
+        "end": "Aujourd'hui encore dans le mon",
+        "marks": [
+          {
+            "at": "12 avril 196",
+            "label": "Premier homme dans l'espace avec Gagarine en orb"
+          },
+          {
+            "at": "12 avril 196",
+            "label": "Les États-Unis marchent sur la Lune avec Armstro"
+          },
+          {
+            "at": "12 avril 196",
+            "label": "Chute du mur de Berlin et fin de la guerre froid"
+          },
+          {
+            "at": "12 avril 196",
+            "label": "Disparition de l'Union soviétique le jour de Noë"
+          },
+          {
+            "at": "12 avril 196",
+            "label": "Attentats du 11 septembre à New York et Washingt"
+          }
+        ],
+        "picto": "calendar",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 804
+        },
+        {
+          "el": "marks.1",
+          "at": 814
+        },
+        {
+          "el": "marks.2",
+          "at": 824
+        },
+        {
+          "el": "marks.3",
+          "at": 834
+        },
+        {
+          "el": "marks.4",
+          "at": 844
+        }
+      ],
+      "type": "timeline"
+    },
+    {
+      "kind": "scene",
+      "from": 900,
+      "to": 1000,
+      "props": {
+        "cells": [
+          {
+            "label": "Constantinople C"
+          },
+          {
+            "label": "Afrique du Sud A"
+          },
+          {
+            "label": "Royaume-Uni et R"
+          },
+          {
+            "label": "États-Unis amis"
+          },
+          {
+            "label": "Égypte ancienne"
+          },
+          {
+            "label": "Union soviétique"
+          },
+          {
+            "label": "Arabie saoudite"
+          },
+          {
+            "label": "Nouvelle-Zélande"
+          },
+          {
+            "label": "Corée du Nord ok"
+          }
+        ],
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "cells.0",
+          "at": 904
+        },
+        {
+          "el": "cells.1",
+          "at": 910
+        },
+        {
+          "el": "cells.2",
+          "at": 916
+        },
+        {
+          "el": "cells.3",
+          "at": 922
+        },
+        {
+          "el": "cells.4",
+          "at": 928
+        },
+        {
+          "el": "cells.5",
+          "at": 934
+        },
+        {
+          "el": "cells.6",
+          "at": 940
+        },
+        {
+          "el": "cells.7",
+          "at": 946
+        },
+        {
+          "el": "cells.8",
+          "at": 952
+        }
+      ],
+      "type": "icon-grid"
+    },
+    {
+      "kind": "scene",
+      "from": 1000,
+      "to": 1100,
+      "props": {
+        "cells": [
+          {
+            "picto": "factory",
+            "label": "Industrie lourde"
+          },
+          {
+            "picto": "bank",
+            "label": "Finance mondiale"
+          },
+          {
+            "label": "Russie"
+          },
+          {
+            "label": "Inde"
+          }
+        ],
+        "kicker": "Les BRICS"
+      },
+      "items": [
+        {
+          "el": "cells.0",
+          "at": 1004
+        },
+        {
+          "el": "cells.1",
+          "at": 1010
+        },
+        {
+          "el": "cells.2",
+          "at": 1016
+        },
+        {
+          "el": "cells.3",
+          "at": 1022
+        }
+      ],
+      "type": "icon-grid"
+    },
+    {
+      "kind": "scene",
+      "from": 1100,
+      "to": 1200,
+      "props": {
+        "shape": "bar",
+        "values": [
+          5,
+          110,
+          3,
+          47,
+          88,
+          12,
+          0.5,
+          64
+        ],
+        "labels": [
+          "Afrique du Sud",
+          "États-Unis ok",
+          "Royaume-Uni Ro",
+          "Union soviét.",
+          "Constantinople",
+          "Arabie saoud.",
+          "Égypte Égypte",
+          "Nouvelle-Zél."
+        ],
+        "unit": "Md$",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "values.0",
+          "at": 1104
+        },
+        {
+          "el": "values.1",
+          "at": 1110
+        },
+        {
+          "el": "values.2",
+          "at": 1116
+        },
+        {
+          "el": "values.3",
+          "at": 1122
+        },
+        {
+          "el": "values.4",
+          "at": 1128
+        },
+        {
+          "el": "values.5",
+          "at": 1134
+        },
+        {
+          "el": "values.6",
+          "at": 1140
+        },
+        {
+          "el": "values.7",
+          "at": 1146
+        }
+      ],
+      "type": "shape-diagram"
+    },
+    {
+      "kind": "scene",
+      "from": 1200,
+      "to": 1300,
+      "props": {
+        "shape": "circle",
+        "values": [
+          1,
+          0.5,
+          0.25,
+          0.1
+        ],
+        "labels": [
+          "appris",
+          "20 minutes",
+          "un jour",
+          "un mois"
+        ],
+        "unit": "%"
+      },
+      "items": [
+        {
+          "el": "values.0",
+          "at": 1204
+        },
+        {
+          "el": "values.1",
+          "at": 1210
+        },
+        {
+          "el": "values.2",
+          "at": 1216
+        },
+        {
+          "el": "values.3",
+          "at": 1222
+        }
+      ],
+      "type": "shape-diagram"
+    },
+    {
+      "kind": "scene",
+      "from": 1300,
+      "to": 1400,
+      "props": {
+        "text": "Les États-Unis et l'Union soviétique se disputen",
+        "picto": "justice",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 1306
+        }
+      ],
+      "type": "stamp"
+    },
+    {
+      "kind": "scene",
+      "from": 1400,
+      "to": 1500,
+      "props": {
+        "text": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change partout dans le monde entier aujourd'hui encore et toujours Les États-Unis et l'Union soviétique se disputent l'Égypte",
+        "speaker": "Mikhaïl Sergueïevitch Gorbatchev",
+        "picto": "newspaper",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "text",
+          "at": 1406
+        },
+        {
+          "el": "speaker",
+          "at": 1440
+        }
+      ],
+      "type": "quote"
+    },
+    {
+      "kind": "scene",
+      "from": 1500,
+      "to": 1600,
+      "props": {
+        "object": "scale",
+        "states": [
+          "Balance parfaitement droite au dépar",
+          "Balance qui penche nettement à droit"
+        ],
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "states.1",
+          "at": 1540
+        }
+      ],
+      "type": "object-state"
+    },
+    {
+      "kind": "scene",
+      "from": 1600,
+      "to": 1700,
+      "props": {
+        "object": "screen",
+        "states": [
+          "Écran éteint Écran éteint Écran étei",
+          "Écran allumé Écran allumé Écran allu",
+          "Écran brisé Écran brisé Écran brisé",
+          "Écran réparé Écran réparé Écran répa",
+          "Écran recyclé Écran recyclé Écran re",
+          "Écran oublié Écran oublié Écran oubl"
+        ]
+      },
+      "items": [
+        {
+          "el": "states.1",
+          "at": 1640
+        },
+        {
+          "el": "states.2",
+          "at": 1650
+        },
+        {
+          "el": "states.3",
+          "at": 1660
+        },
+        {
+          "el": "states.4",
+          "at": 1670
+        },
+        {
+          "el": "states.5",
+          "at": 1680
+        }
+      ],
+      "type": "object-state"
+    },
+    {
+      "kind": "scene",
+      "from": 1700,
+      "to": 1800,
+      "props": {
+        "left": "Les États-Unis d'Amériqu",
+        "right": "L'Union soviétique russe",
+        "left_picto": "rocket",
+        "right_picto": "satellite",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "left",
+          "at": 1704
+        },
+        {
+          "el": "right",
+          "at": 1740
+        }
+      ],
+      "type": "versus"
+    },
+    {
+      "kind": "scene",
+      "from": 1800,
+      "to": 1900,
+      "props": {
+        "focus": "europe",
+        "kicker": "Révolution des œillets à Lis",
+        "places": [
+          {
+            "code": "fr",
+            "label": "République française uni"
+          },
+          {
+            "code": "de",
+            "label": "République fédérale alle"
+          },
+          {
+            "code": "it",
+            "label": "République italienne ok"
+          },
+          {
+            "code": "es",
+            "label": "Royaume d'Espagne et île"
+          },
+          {
+            "code": "pl",
+            "label": "République de Pologne ok"
+          },
+          {
+            "code": "gb",
+            "label": "Royaume-Uni de Grande-Br"
+          }
+        ],
+        "route": [
+          "es",
+          "fr",
+          "de",
+          "pl"
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 1804
+        },
+        {
+          "el": "places.1",
+          "at": 1812
+        },
+        {
+          "el": "places.2",
+          "at": 1820
+        },
+        {
+          "el": "places.3",
+          "at": 1828
+        },
+        {
+          "el": "places.4",
+          "at": 1836
+        },
+        {
+          "el": "places.5",
+          "at": 1844
+        },
+        {
+          "el": "route",
+          "at": 1856
+        }
+      ],
+      "type": "map"
+    },
+    {
+      "kind": "scene",
+      "from": 1900,
+      "to": 2000,
+      "props": {
+        "pose": "lying-stomach",
+        "setting": "bed",
+        "tone": "bad",
+        "kicker": "Révolution des œillets à Lis",
+        "marks": [
+          {
+            "part": "neck",
+            "label": "Cou tordu toute la nuit dura"
+          },
+          {
+            "part": "lungs",
+            "label": "Poumons écrasés sous le poid"
+          },
+          {
+            "part": "back",
+            "label": "Dos cambré jusqu'au réveil o"
+          },
+          {
+            "part": "knees",
+            "label": "Genoux pliés sur le matelas"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "marks.0",
+          "at": 1904
+        },
+        {
+          "el": "marks.1",
+          "at": 1914
+        },
+        {
+          "el": "marks.2",
+          "at": 1924
+        },
+        {
+          "el": "marks.3",
+          "at": 1934
+        }
+      ],
+      "type": "body"
+    },
+    {
+      "kind": "scene",
+      "from": 2000,
+      "to": 2100,
+      "props": {
+        "bubble": "Les États-Unis et l'Union soviétique se disputent l'Égypte pendant que ça change",
+        "pose": "surprise",
+        "kicker": "Révolution des œillets à Lis"
+      },
+      "items": [
+        {
+          "el": "bubble",
+          "at": 2006
+        }
+      ],
+      "type": "mascot"
+    },
+    {
+      "kind": "outro",
+      "from": 2100,
+      "to": 2200,
+      "props": {
+        "text": "Abonne-toi pour la partie 2 : Les États-Unis et l'Union soviétique se"
+      },
+      "items": []
+    }
+  ],
+  "captions": [
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 2,
+          "to": 7
+        },
+        {
+          "w": "États-Unis",
+          "from": 7,
+          "to": 12
+        },
+        {
+          "w": "face",
+          "from": 12,
+          "to": 17
+        },
+        {
+          "w": "à",
+          "from": 17,
+          "to": 22
+        }
+      ],
+      "from": 2,
+      "to": 27
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 27,
+          "to": 32
+        },
+        {
+          "w": "soviétique",
+          "from": 32,
+          "to": 37
+        },
+        {
+          "w": ":",
+          "from": 37,
+          "to": 42
+        },
+        {
+          "w": "ça",
+          "from": 42,
+          "to": 47
+        }
+      ],
+      "from": 27,
+      "to": 52
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 52,
+          "to": 57
+        },
+        {
+          "w": "tout",
+          "from": 57,
+          "to": 62
+        },
+        {
+          "w": "pour",
+          "from": 62,
+          "to": 67
+        },
+        {
+          "w": "l'Égypte",
+          "from": 67,
+          "to": 72
+        }
+      ],
+      "from": 52,
+      "to": 77
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 77,
+          "to": 82
+        }
+      ],
+      "from": 77,
+      "to": 100
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 102,
+          "to": 107
+        },
+        {
+          "w": "États-Unis",
+          "from": 107,
+          "to": 112
+        },
+        {
+          "w": "face",
+          "from": 112,
+          "to": 117
+        },
+        {
+          "w": "à",
+          "from": 117,
+          "to": 122
+        }
+      ],
+      "from": 102,
+      "to": 127
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 127,
+          "to": 132
+        },
+        {
+          "w": "soviétique",
+          "from": 132,
+          "to": 137
+        },
+        {
+          "w": ":",
+          "from": 137,
+          "to": 142
+        },
+        {
+          "w": "ça",
+          "from": 142,
+          "to": 147
+        }
+      ],
+      "from": 127,
+      "to": 152
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 152,
+          "to": 157
+        },
+        {
+          "w": "tout",
+          "from": 157,
+          "to": 162
+        },
+        {
+          "w": "pour",
+          "from": 162,
+          "to": 167
+        },
+        {
+          "w": "l'Égypte",
+          "from": 167,
+          "to": 172
+        }
+      ],
+      "from": 152,
+      "to": 177
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 177,
+          "to": 182
+        }
+      ],
+      "from": 177,
+      "to": 200
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 202,
+          "to": 207
+        },
+        {
+          "w": "États-Unis",
+          "from": 207,
+          "to": 212
+        },
+        {
+          "w": "face",
+          "from": 212,
+          "to": 217
+        },
+        {
+          "w": "à",
+          "from": 217,
+          "to": 222
+        }
+      ],
+      "from": 202,
+      "to": 227
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 227,
+          "to": 232
+        },
+        {
+          "w": "soviétique",
+          "from": 232,
+          "to": 237
+        },
+        {
+          "w": ":",
+          "from": 237,
+          "to": 242
+        },
+        {
+          "w": "ça",
+          "from": 242,
+          "to": 247
+        }
+      ],
+      "from": 227,
+      "to": 252
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 252,
+          "to": 257
+        },
+        {
+          "w": "tout",
+          "from": 257,
+          "to": 262
+        },
+        {
+          "w": "pour",
+          "from": 262,
+          "to": 267
+        },
+        {
+          "w": "l'Égypte",
+          "from": 267,
+          "to": 272
+        }
+      ],
+      "from": 252,
+      "to": 277
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 277,
+          "to": 282
+        }
+      ],
+      "from": 277,
+      "to": 300
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 302,
+          "to": 307
+        },
+        {
+          "w": "États-Unis",
+          "from": 307,
+          "to": 312
+        },
+        {
+          "w": "face",
+          "from": 312,
+          "to": 317
+        },
+        {
+          "w": "à",
+          "from": 317,
+          "to": 322
+        }
+      ],
+      "from": 302,
+      "to": 327
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 327,
+          "to": 332
+        },
+        {
+          "w": "soviétique",
+          "from": 332,
+          "to": 337
+        },
+        {
+          "w": ":",
+          "from": 337,
+          "to": 342
+        },
+        {
+          "w": "ça",
+          "from": 342,
+          "to": 347
+        }
+      ],
+      "from": 327,
+      "to": 352
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 352,
+          "to": 357
+        },
+        {
+          "w": "tout",
+          "from": 357,
+          "to": 362
+        },
+        {
+          "w": "pour",
+          "from": 362,
+          "to": 367
+        },
+        {
+          "w": "l'Égypte",
+          "from": 367,
+          "to": 372
+        }
+      ],
+      "from": 352,
+      "to": 377
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 377,
+          "to": 382
+        }
+      ],
+      "from": 377,
+      "to": 400
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 402,
+          "to": 407
+        },
+        {
+          "w": "États-Unis",
+          "from": 407,
+          "to": 412
+        },
+        {
+          "w": "face",
+          "from": 412,
+          "to": 417
+        },
+        {
+          "w": "à",
+          "from": 417,
+          "to": 422
+        }
+      ],
+      "from": 402,
+      "to": 427
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 427,
+          "to": 432
+        },
+        {
+          "w": "soviétique",
+          "from": 432,
+          "to": 437
+        },
+        {
+          "w": ":",
+          "from": 437,
+          "to": 442
+        },
+        {
+          "w": "ça",
+          "from": 442,
+          "to": 447
+        }
+      ],
+      "from": 427,
+      "to": 452
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 452,
+          "to": 457
+        },
+        {
+          "w": "tout",
+          "from": 457,
+          "to": 462
+        },
+        {
+          "w": "pour",
+          "from": 462,
+          "to": 467
+        },
+        {
+          "w": "l'Égypte",
+          "from": 467,
+          "to": 472
+        }
+      ],
+      "from": 452,
+      "to": 477
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 477,
+          "to": 482
+        }
+      ],
+      "from": 477,
+      "to": 500
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 502,
+          "to": 507
+        },
+        {
+          "w": "États-Unis",
+          "from": 507,
+          "to": 512
+        },
+        {
+          "w": "face",
+          "from": 512,
+          "to": 517
+        },
+        {
+          "w": "à",
+          "from": 517,
+          "to": 522
+        }
+      ],
+      "from": 502,
+      "to": 527
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 527,
+          "to": 532
+        },
+        {
+          "w": "soviétique",
+          "from": 532,
+          "to": 537
+        },
+        {
+          "w": ":",
+          "from": 537,
+          "to": 542
+        },
+        {
+          "w": "ça",
+          "from": 542,
+          "to": 547
+        }
+      ],
+      "from": 527,
+      "to": 552
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 552,
+          "to": 557
+        },
+        {
+          "w": "tout",
+          "from": 557,
+          "to": 562
+        },
+        {
+          "w": "pour",
+          "from": 562,
+          "to": 567
+        },
+        {
+          "w": "l'Égypte",
+          "from": 567,
+          "to": 572
+        }
+      ],
+      "from": 552,
+      "to": 577
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 577,
+          "to": 582
+        }
+      ],
+      "from": 577,
+      "to": 600
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 602,
+          "to": 607
+        },
+        {
+          "w": "États-Unis",
+          "from": 607,
+          "to": 612
+        },
+        {
+          "w": "face",
+          "from": 612,
+          "to": 617
+        },
+        {
+          "w": "à",
+          "from": 617,
+          "to": 622
+        }
+      ],
+      "from": 602,
+      "to": 627
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 627,
+          "to": 632
+        },
+        {
+          "w": "soviétique",
+          "from": 632,
+          "to": 637
+        },
+        {
+          "w": ":",
+          "from": 637,
+          "to": 642
+        },
+        {
+          "w": "ça",
+          "from": 642,
+          "to": 647
+        }
+      ],
+      "from": 627,
+      "to": 652
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 652,
+          "to": 657
+        },
+        {
+          "w": "tout",
+          "from": 657,
+          "to": 662
+        },
+        {
+          "w": "pour",
+          "from": 662,
+          "to": 667
+        },
+        {
+          "w": "l'Égypte",
+          "from": 667,
+          "to": 672
+        }
+      ],
+      "from": 652,
+      "to": 677
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 677,
+          "to": 682
+        }
+      ],
+      "from": 677,
+      "to": 700
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 702,
+          "to": 707
+        },
+        {
+          "w": "États-Unis",
+          "from": 707,
+          "to": 712
+        },
+        {
+          "w": "face",
+          "from": 712,
+          "to": 717
+        },
+        {
+          "w": "à",
+          "from": 717,
+          "to": 722
+        }
+      ],
+      "from": 702,
+      "to": 727
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 727,
+          "to": 732
+        },
+        {
+          "w": "soviétique",
+          "from": 732,
+          "to": 737
+        },
+        {
+          "w": ":",
+          "from": 737,
+          "to": 742
+        },
+        {
+          "w": "ça",
+          "from": 742,
+          "to": 747
+        }
+      ],
+      "from": 727,
+      "to": 752
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 752,
+          "to": 757
+        },
+        {
+          "w": "tout",
+          "from": 757,
+          "to": 762
+        },
+        {
+          "w": "pour",
+          "from": 762,
+          "to": 767
+        },
+        {
+          "w": "l'Égypte",
+          "from": 767,
+          "to": 772
+        }
+      ],
+      "from": 752,
+      "to": 777
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 777,
+          "to": 782
+        }
+      ],
+      "from": 777,
+      "to": 800
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 802,
+          "to": 807
+        },
+        {
+          "w": "États-Unis",
+          "from": 807,
+          "to": 812
+        },
+        {
+          "w": "face",
+          "from": 812,
+          "to": 817
+        },
+        {
+          "w": "à",
+          "from": 817,
+          "to": 822
+        }
+      ],
+      "from": 802,
+      "to": 827
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 827,
+          "to": 832
+        },
+        {
+          "w": "soviétique",
+          "from": 832,
+          "to": 837
+        },
+        {
+          "w": ":",
+          "from": 837,
+          "to": 842
+        },
+        {
+          "w": "ça",
+          "from": 842,
+          "to": 847
+        }
+      ],
+      "from": 827,
+      "to": 852
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 852,
+          "to": 857
+        },
+        {
+          "w": "tout",
+          "from": 857,
+          "to": 862
+        },
+        {
+          "w": "pour",
+          "from": 862,
+          "to": 867
+        },
+        {
+          "w": "l'Égypte",
+          "from": 867,
+          "to": 872
+        }
+      ],
+      "from": 852,
+      "to": 877
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 877,
+          "to": 882
+        }
+      ],
+      "from": 877,
+      "to": 900
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 902,
+          "to": 907
+        },
+        {
+          "w": "États-Unis",
+          "from": 907,
+          "to": 912
+        },
+        {
+          "w": "face",
+          "from": 912,
+          "to": 917
+        },
+        {
+          "w": "à",
+          "from": 917,
+          "to": 922
+        }
+      ],
+      "from": 902,
+      "to": 927
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 927,
+          "to": 932
+        },
+        {
+          "w": "soviétique",
+          "from": 932,
+          "to": 937
+        },
+        {
+          "w": ":",
+          "from": 937,
+          "to": 942
+        },
+        {
+          "w": "ça",
+          "from": 942,
+          "to": 947
+        }
+      ],
+      "from": 927,
+      "to": 952
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 952,
+          "to": 957
+        },
+        {
+          "w": "tout",
+          "from": 957,
+          "to": 962
+        },
+        {
+          "w": "pour",
+          "from": 962,
+          "to": 967
+        },
+        {
+          "w": "l'Égypte",
+          "from": 967,
+          "to": 972
+        }
+      ],
+      "from": 952,
+      "to": 977
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 977,
+          "to": 982
+        }
+      ],
+      "from": 977,
+      "to": 1000
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1002,
+          "to": 1007
+        },
+        {
+          "w": "États-Unis",
+          "from": 1007,
+          "to": 1012
+        },
+        {
+          "w": "face",
+          "from": 1012,
+          "to": 1017
+        },
+        {
+          "w": "à",
+          "from": 1017,
+          "to": 1022
+        }
+      ],
+      "from": 1002,
+      "to": 1027
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1027,
+          "to": 1032
+        },
+        {
+          "w": "soviétique",
+          "from": 1032,
+          "to": 1037
+        },
+        {
+          "w": ":",
+          "from": 1037,
+          "to": 1042
+        },
+        {
+          "w": "ça",
+          "from": 1042,
+          "to": 1047
+        }
+      ],
+      "from": 1027,
+      "to": 1052
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1052,
+          "to": 1057
+        },
+        {
+          "w": "tout",
+          "from": 1057,
+          "to": 1062
+        },
+        {
+          "w": "pour",
+          "from": 1062,
+          "to": 1067
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1067,
+          "to": 1072
+        }
+      ],
+      "from": 1052,
+      "to": 1077
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1077,
+          "to": 1082
+        }
+      ],
+      "from": 1077,
+      "to": 1100
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1102,
+          "to": 1107
+        },
+        {
+          "w": "États-Unis",
+          "from": 1107,
+          "to": 1112
+        },
+        {
+          "w": "face",
+          "from": 1112,
+          "to": 1117
+        },
+        {
+          "w": "à",
+          "from": 1117,
+          "to": 1122
+        }
+      ],
+      "from": 1102,
+      "to": 1127
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1127,
+          "to": 1132
+        },
+        {
+          "w": "soviétique",
+          "from": 1132,
+          "to": 1137
+        },
+        {
+          "w": ":",
+          "from": 1137,
+          "to": 1142
+        },
+        {
+          "w": "ça",
+          "from": 1142,
+          "to": 1147
+        }
+      ],
+      "from": 1127,
+      "to": 1152
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1152,
+          "to": 1157
+        },
+        {
+          "w": "tout",
+          "from": 1157,
+          "to": 1162
+        },
+        {
+          "w": "pour",
+          "from": 1162,
+          "to": 1167
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1167,
+          "to": 1172
+        }
+      ],
+      "from": 1152,
+      "to": 1177
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1177,
+          "to": 1182
+        }
+      ],
+      "from": 1177,
+      "to": 1200
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1202,
+          "to": 1207
+        },
+        {
+          "w": "États-Unis",
+          "from": 1207,
+          "to": 1212
+        },
+        {
+          "w": "face",
+          "from": 1212,
+          "to": 1217
+        },
+        {
+          "w": "à",
+          "from": 1217,
+          "to": 1222
+        }
+      ],
+      "from": 1202,
+      "to": 1227
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1227,
+          "to": 1232
+        },
+        {
+          "w": "soviétique",
+          "from": 1232,
+          "to": 1237
+        },
+        {
+          "w": ":",
+          "from": 1237,
+          "to": 1242
+        },
+        {
+          "w": "ça",
+          "from": 1242,
+          "to": 1247
+        }
+      ],
+      "from": 1227,
+      "to": 1252
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1252,
+          "to": 1257
+        },
+        {
+          "w": "tout",
+          "from": 1257,
+          "to": 1262
+        },
+        {
+          "w": "pour",
+          "from": 1262,
+          "to": 1267
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1267,
+          "to": 1272
+        }
+      ],
+      "from": 1252,
+      "to": 1277
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1277,
+          "to": 1282
+        }
+      ],
+      "from": 1277,
+      "to": 1300
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1302,
+          "to": 1307
+        },
+        {
+          "w": "États-Unis",
+          "from": 1307,
+          "to": 1312
+        },
+        {
+          "w": "face",
+          "from": 1312,
+          "to": 1317
+        },
+        {
+          "w": "à",
+          "from": 1317,
+          "to": 1322
+        }
+      ],
+      "from": 1302,
+      "to": 1327
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1327,
+          "to": 1332
+        },
+        {
+          "w": "soviétique",
+          "from": 1332,
+          "to": 1337
+        },
+        {
+          "w": ":",
+          "from": 1337,
+          "to": 1342
+        },
+        {
+          "w": "ça",
+          "from": 1342,
+          "to": 1347
+        }
+      ],
+      "from": 1327,
+      "to": 1352
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1352,
+          "to": 1357
+        },
+        {
+          "w": "tout",
+          "from": 1357,
+          "to": 1362
+        },
+        {
+          "w": "pour",
+          "from": 1362,
+          "to": 1367
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1367,
+          "to": 1372
+        }
+      ],
+      "from": 1352,
+      "to": 1377
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1377,
+          "to": 1382
+        }
+      ],
+      "from": 1377,
+      "to": 1400
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1402,
+          "to": 1407
+        },
+        {
+          "w": "États-Unis",
+          "from": 1407,
+          "to": 1412
+        },
+        {
+          "w": "face",
+          "from": 1412,
+          "to": 1417
+        },
+        {
+          "w": "à",
+          "from": 1417,
+          "to": 1422
+        }
+      ],
+      "from": 1402,
+      "to": 1427
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1427,
+          "to": 1432
+        },
+        {
+          "w": "soviétique",
+          "from": 1432,
+          "to": 1437
+        },
+        {
+          "w": ":",
+          "from": 1437,
+          "to": 1442
+        },
+        {
+          "w": "ça",
+          "from": 1442,
+          "to": 1447
+        }
+      ],
+      "from": 1427,
+      "to": 1452
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1452,
+          "to": 1457
+        },
+        {
+          "w": "tout",
+          "from": 1457,
+          "to": 1462
+        },
+        {
+          "w": "pour",
+          "from": 1462,
+          "to": 1467
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1467,
+          "to": 1472
+        }
+      ],
+      "from": 1452,
+      "to": 1477
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1477,
+          "to": 1482
+        }
+      ],
+      "from": 1477,
+      "to": 1500
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1502,
+          "to": 1507
+        },
+        {
+          "w": "États-Unis",
+          "from": 1507,
+          "to": 1512
+        },
+        {
+          "w": "face",
+          "from": 1512,
+          "to": 1517
+        },
+        {
+          "w": "à",
+          "from": 1517,
+          "to": 1522
+        }
+      ],
+      "from": 1502,
+      "to": 1527
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1527,
+          "to": 1532
+        },
+        {
+          "w": "soviétique",
+          "from": 1532,
+          "to": 1537
+        },
+        {
+          "w": ":",
+          "from": 1537,
+          "to": 1542
+        },
+        {
+          "w": "ça",
+          "from": 1542,
+          "to": 1547
+        }
+      ],
+      "from": 1527,
+      "to": 1552
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1552,
+          "to": 1557
+        },
+        {
+          "w": "tout",
+          "from": 1557,
+          "to": 1562
+        },
+        {
+          "w": "pour",
+          "from": 1562,
+          "to": 1567
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1567,
+          "to": 1572
+        }
+      ],
+      "from": 1552,
+      "to": 1577
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1577,
+          "to": 1582
+        }
+      ],
+      "from": 1577,
+      "to": 1600
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1602,
+          "to": 1607
+        },
+        {
+          "w": "États-Unis",
+          "from": 1607,
+          "to": 1612
+        },
+        {
+          "w": "face",
+          "from": 1612,
+          "to": 1617
+        },
+        {
+          "w": "à",
+          "from": 1617,
+          "to": 1622
+        }
+      ],
+      "from": 1602,
+      "to": 1627
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1627,
+          "to": 1632
+        },
+        {
+          "w": "soviétique",
+          "from": 1632,
+          "to": 1637
+        },
+        {
+          "w": ":",
+          "from": 1637,
+          "to": 1642
+        },
+        {
+          "w": "ça",
+          "from": 1642,
+          "to": 1647
+        }
+      ],
+      "from": 1627,
+      "to": 1652
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1652,
+          "to": 1657
+        },
+        {
+          "w": "tout",
+          "from": 1657,
+          "to": 1662
+        },
+        {
+          "w": "pour",
+          "from": 1662,
+          "to": 1667
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1667,
+          "to": 1672
+        }
+      ],
+      "from": 1652,
+      "to": 1677
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1677,
+          "to": 1682
+        }
+      ],
+      "from": 1677,
+      "to": 1700
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1702,
+          "to": 1707
+        },
+        {
+          "w": "États-Unis",
+          "from": 1707,
+          "to": 1712
+        },
+        {
+          "w": "face",
+          "from": 1712,
+          "to": 1717
+        },
+        {
+          "w": "à",
+          "from": 1717,
+          "to": 1722
+        }
+      ],
+      "from": 1702,
+      "to": 1727
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1727,
+          "to": 1732
+        },
+        {
+          "w": "soviétique",
+          "from": 1732,
+          "to": 1737
+        },
+        {
+          "w": ":",
+          "from": 1737,
+          "to": 1742
+        },
+        {
+          "w": "ça",
+          "from": 1742,
+          "to": 1747
+        }
+      ],
+      "from": 1727,
+      "to": 1752
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1752,
+          "to": 1757
+        },
+        {
+          "w": "tout",
+          "from": 1757,
+          "to": 1762
+        },
+        {
+          "w": "pour",
+          "from": 1762,
+          "to": 1767
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1767,
+          "to": 1772
+        }
+      ],
+      "from": 1752,
+      "to": 1777
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1777,
+          "to": 1782
+        }
+      ],
+      "from": 1777,
+      "to": 1800
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1802,
+          "to": 1807
+        },
+        {
+          "w": "États-Unis",
+          "from": 1807,
+          "to": 1812
+        },
+        {
+          "w": "face",
+          "from": 1812,
+          "to": 1817
+        },
+        {
+          "w": "à",
+          "from": 1817,
+          "to": 1822
+        }
+      ],
+      "from": 1802,
+      "to": 1827
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1827,
+          "to": 1832
+        },
+        {
+          "w": "soviétique",
+          "from": 1832,
+          "to": 1837
+        },
+        {
+          "w": ":",
+          "from": 1837,
+          "to": 1842
+        },
+        {
+          "w": "ça",
+          "from": 1842,
+          "to": 1847
+        }
+      ],
+      "from": 1827,
+      "to": 1852
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1852,
+          "to": 1857
+        },
+        {
+          "w": "tout",
+          "from": 1857,
+          "to": 1862
+        },
+        {
+          "w": "pour",
+          "from": 1862,
+          "to": 1867
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1867,
+          "to": 1872
+        }
+      ],
+      "from": 1852,
+      "to": 1877
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1877,
+          "to": 1882
+        }
+      ],
+      "from": 1877,
+      "to": 1900
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 1902,
+          "to": 1907
+        },
+        {
+          "w": "États-Unis",
+          "from": 1907,
+          "to": 1912
+        },
+        {
+          "w": "face",
+          "from": 1912,
+          "to": 1917
+        },
+        {
+          "w": "à",
+          "from": 1917,
+          "to": 1922
+        }
+      ],
+      "from": 1902,
+      "to": 1927
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 1927,
+          "to": 1932
+        },
+        {
+          "w": "soviétique",
+          "from": 1932,
+          "to": 1937
+        },
+        {
+          "w": ":",
+          "from": 1937,
+          "to": 1942
+        },
+        {
+          "w": "ça",
+          "from": 1942,
+          "to": 1947
+        }
+      ],
+      "from": 1927,
+      "to": 1952
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 1952,
+          "to": 1957
+        },
+        {
+          "w": "tout",
+          "from": 1957,
+          "to": 1962
+        },
+        {
+          "w": "pour",
+          "from": 1962,
+          "to": 1967
+        },
+        {
+          "w": "l'Égypte",
+          "from": 1967,
+          "to": 1972
+        }
+      ],
+      "from": 1952,
+      "to": 1977
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 1977,
+          "to": 1982
+        }
+      ],
+      "from": 1977,
+      "to": 2000
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 2002,
+          "to": 2007
+        },
+        {
+          "w": "États-Unis",
+          "from": 2007,
+          "to": 2012
+        },
+        {
+          "w": "face",
+          "from": 2012,
+          "to": 2017
+        },
+        {
+          "w": "à",
+          "from": 2017,
+          "to": 2022
+        }
+      ],
+      "from": 2002,
+      "to": 2027
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 2027,
+          "to": 2032
+        },
+        {
+          "w": "soviétique",
+          "from": 2032,
+          "to": 2037
+        },
+        {
+          "w": ":",
+          "from": 2037,
+          "to": 2042
+        },
+        {
+          "w": "ça",
+          "from": 2042,
+          "to": 2047
+        }
+      ],
+      "from": 2027,
+      "to": 2052
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 2052,
+          "to": 2057
+        },
+        {
+          "w": "tout",
+          "from": 2057,
+          "to": 2062
+        },
+        {
+          "w": "pour",
+          "from": 2062,
+          "to": 2067
+        },
+        {
+          "w": "l'Égypte",
+          "from": 2067,
+          "to": 2072
+        }
+      ],
+      "from": 2052,
+      "to": 2077
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 2077,
+          "to": 2082
+        }
+      ],
+      "from": 2077,
+      "to": 2100
+    },
+    {
+      "words": [
+        {
+          "w": "Les",
+          "from": 2102,
+          "to": 2107
+        },
+        {
+          "w": "États-Unis",
+          "from": 2107,
+          "to": 2112
+        },
+        {
+          "w": "face",
+          "from": 2112,
+          "to": 2117
+        },
+        {
+          "w": "à",
+          "from": 2117,
+          "to": 2122
+        }
+      ],
+      "from": 2102,
+      "to": 2127
+    },
+    {
+      "words": [
+        {
+          "w": "l'Union",
+          "from": 2127,
+          "to": 2132
+        },
+        {
+          "w": "soviétique",
+          "from": 2132,
+          "to": 2137
+        },
+        {
+          "w": ":",
+          "from": 2137,
+          "to": 2142
+        },
+        {
+          "w": "ça",
+          "from": 2142,
+          "to": 2147
+        }
+      ],
+      "from": 2127,
+      "to": 2152
+    },
+    {
+      "words": [
+        {
+          "w": "change",
+          "from": 2152,
+          "to": 2157
+        },
+        {
+          "w": "tout",
+          "from": 2157,
+          "to": 2162
+        },
+        {
+          "w": "pour",
+          "from": 2162,
+          "to": 2167
+        },
+        {
+          "w": "l'Égypte",
+          "from": 2167,
+          "to": 2172
+        }
+      ],
+      "from": 2152,
+      "to": 2177
+    },
+    {
+      "words": [
+        {
+          "w": "extraordinairement",
+          "from": 2177,
+          "to": 2182
+        }
+      ],
+      "from": 2177,
+      "to": 2200
+    }
+  ]
+}

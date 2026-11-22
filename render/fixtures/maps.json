@@ -1,0 +1,385 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "durationInFrames": 600,
+  "lang": "fr",
+  "audio": null,
+  "watermark": "Ideo",
+  "chapter": {
+    "part": 1,
+    "total": 1,
+    "title": "Qui domine vraiment le monde ?",
+    "label": "Partie"
+  },
+  "segments": [
+    {
+      "kind": "scene",
+      "type": "map",
+      "from": 0,
+      "to": 150,
+      "props": {
+        "focus": "asia",
+        "kicker": "Les routes de la soie",
+        "places": [
+          {
+            "code": "cn",
+            "label": "Chine"
+          },
+          {
+            "code": "kz",
+            "label": "Kazakhstan"
+          },
+          {
+            "code": "ir",
+            "label": "Iran"
+          },
+          {
+            "code": "tr",
+            "label": "Turquie"
+          },
+          {
+            "code": "it",
+            "label": "Italie"
+          }
+        ],
+        "route": [
+          "cn",
+          "kz",
+          "ir",
+          "tr",
+          "it"
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 4
+        },
+        {
+          "el": "places.1",
+          "at": 18
+        },
+        {
+          "el": "places.2",
+          "at": 32
+        },
+        {
+          "el": "places.3",
+          "at": 46
+        },
+        {
+          "el": "places.4",
+          "at": 60
+        },
+        {
+          "el": "route",
+          "at": 74
+        }
+      ],
+      "beats": [
+        110
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "map",
+      "from": 150,
+      "to": 300,
+      "props": {
+        "focus": "arctic",
+        "kicker": "Le Groenland",
+        "places": [
+          {
+            "code": "gl",
+            "label": "Groenland"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 154
+        }
+      ],
+      "beats": [
+        260
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "map",
+      "from": 300,
+      "to": 450,
+      "props": {
+        "focus": "north-america",
+        "kicker": "Canal de Panama",
+        "places": [
+          {
+            "code": "pa",
+            "label": "Panama"
+          },
+          {
+            "code": "us",
+            "label": "États-Unis"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 304
+        },
+        {
+          "el": "places.1",
+          "at": 318
+        }
+      ],
+      "beats": [
+        410
+      ]
+    },
+    {
+      "kind": "scene",
+      "type": "map",
+      "from": 450,
+      "to": 600,
+      "props": {
+        "focus": "world",
+        "kicker": "Les BRICS",
+        "places": [
+          {
+            "code": "br",
+            "label": "Brésil"
+          },
+          {
+            "code": "ru",
+            "label": "Russie"
+          },
+          {
+            "code": "in",
+            "label": "Inde"
+          },
+          {
+            "code": "cn",
+            "label": "Chine"
+          },
+          {
+            "code": "za",
+            "label": "Afrique du Sud"
+          }
+        ]
+      },
+      "items": [
+        {
+          "el": "places.0",
+          "at": 454
+        },
+        {
+          "el": "places.1",
+          "at": 468
+        },
+        {
+          "el": "places.2",
+          "at": 482
+        },
+        {
+          "el": "places.3",
+          "at": 496
+        },
+        {
+          "el": "places.4",
+          "at": 510
+        }
+      ],
+      "beats": [
+        560
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "words": [
+        {
+          "w": "Des",
+          "from": 4,
+          "to": 14
+        },
+        {
+          "w": "routes",
+          "from": 14,
+          "to": 24
+        },
+        {
+          "w": "de",
+          "from": 24,
+          "to": 34
+        },
+        {
+          "w": "la",
+          "from": 34,
+          "to": 44
+        }
+      ],
+      "from": 4,
+      "to": 44
+    },
+    {
+      "words": [
+        {
+          "w": "Chine",
+          "from": 44,
+          "to": 54
+        },
+        {
+          "w": "jusqu'à",
+          "from": 54,
+          "to": 64
+        },
+        {
+          "w": "l'Italie.",
+          "from": 64,
+          "to": 74
+        }
+      ],
+      "from": 44,
+      "to": 74
+    },
+    {
+      "words": [
+        {
+          "w": "Trump",
+          "from": 154,
+          "to": 164
+        },
+        {
+          "w": "veut",
+          "from": 164,
+          "to": 174
+        },
+        {
+          "w": "le",
+          "from": 174,
+          "to": 184
+        },
+        {
+          "w": "Groenland.",
+          "from": 184,
+          "to": 194
+        }
+      ],
+      "from": 154,
+      "to": 194
+    },
+    {
+      "words": [
+        {
+          "w": "Et",
+          "from": 304,
+          "to": 314
+        },
+        {
+          "w": "le",
+          "from": 314,
+          "to": 324
+        },
+        {
+          "w": "canal",
+          "from": 324,
+          "to": 334
+        },
+        {
+          "w": "de",
+          "from": 334,
+          "to": 344
+        }
+      ],
+      "from": 304,
+      "to": 344
+    },
+    {
+      "words": [
+        {
+          "w": "Panama.",
+          "from": 344,
+          "to": 354
+        }
+      ],
+      "from": 344,
+      "to": 354
+    },
+    {
+      "words": [
+        {
+          "w": "Le",
+          "from": 454,
+          "to": 464
+        },
+        {
+          "w": "Brésil,",
+          "from": 464,
+          "to": 474
+        },
+        {
+          "w": "la",
+          "from": 474,
+          "to": 484
+        },
+        {
+          "w": "Russie,",
+          "from": 484,
+          "to": 494
+        }
+      ],
+      "from": 454,
+      "to": 494
+    },
+    {
+      "words": [
+        {
+          "w": "l'Inde,",
+          "from": 494,
+          "to": 504
+        },
+        {
+          "w": "la",
+          "from": 504,
+          "to": 514
+        },
+        {
+          "w": "Chine",
+          "from": 514,
+          "to": 524
+        },
+        {
+          "w": "et",
+          "from": 524,
+          "to": 534
+        }
+      ],
+      "from": 494,
+      "to": 534
+    },
+    {
+      "words": [
+        {
+          "w": "l'Afrique",
+          "from": 534,
+          "to": 544
+        },
+        {
+          "w": "du",
+          "from": 544,
+          "to": 554
+        },
+        {
+          "w": "Sud.",
+          "from": 554,
+          "to": 564
+        }
+      ],
+      "from": 534,
+      "to": 564
+    }
+  ]
+}

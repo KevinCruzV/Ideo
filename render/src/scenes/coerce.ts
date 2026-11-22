@@ -63,3 +63,12 @@ export const initials = (name: string): string => {
   const letters = picked.map((w) => w[0].toUpperCase()).join("");
   return letters.length > 0 ? letters.slice(0, 2) : "?";
 };
+
+export const FIRST_ITEM_MAX = 9;
+
+export const earlyItems = (items: TimelineItem[], from: number): TimelineItem[] => {
+  if (items.length === 0) return items;
+  const first = Math.min(...items.map((i) => i.at));
+  if (first - from <= FIRST_ITEM_MAX) return items;
+  return items.map((i) => (i.at === first ? { ...i, at: from + FIRST_ITEM_MAX } : i));
+};

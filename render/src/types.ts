@@ -10,6 +10,7 @@ export type Segment = {
   to: number;
   props: Record<string, unknown>;
   items?: TimelineItem[];
+  beats?: number[];
 };
 
 export type Chapter = { part: number; total: number; title: string; label: string };

@@ -11,113 +11,308 @@
         {
           "type": "key-title",
           "say": "La lumière du soleil est blanche. Pourtant, au-dessus de ta tête, le ciel est bleu.",
-          "props": {"text": "Une lumière blanche, un ciel bleu", "accent": "bleu"},
-          "items": [{"el": "text", "on": "blanche"}, {"el": "accent", "on": "bleu"}],
+          "props": {
+            "picto": "sun",
+            "text": "Une lumière blanche, un ciel bleu",
+            "accent": "bleu"
+          },
+          "items": [
+            {
+              "el": "text",
+              "on": "blanche"
+            },
+            {
+              "el": "accent",
+              "on": "bleu"
+            }
+          ],
           "src": "0:02"
         },
         {
           "type": "shape-diagram",
-          "say": "Cette lumière mélange toutes les couleurs, et chacune est une onde : longue pour le rouge, courte pour le violet.",
-          "props": {"shape": "bar", "values": [700, 400], "labels": ["rouge, 700 nm", "violet, 400 nm"]},
+          "say": "En réalité, cette lumière mélange toutes les couleurs, et chacune est une onde : longue pour le rouge, courte pour le violet.",
+          "props": {
+            "kicker": "Longueur d'onde",
+            "shape": "bar",
+            "values": [
+              700,
+              400
+            ],
+            "labels": [
+              "rouge",
+              "violet"
+            ],
+            "unit": "nm"
+          },
           "items": [
-            {"el": "values.0", "on": "longue"},
-            {"el": "labels.0", "on": "rouge"},
-            {"el": "values.1", "on": "courte"},
-            {"el": "labels.1", "on": "violet"}
+            {
+              "el": "values.0",
+              "on": "longue"
+            },
+            {
+              "el": "labels.0",
+              "on": "rouge"
+            },
+            {
+              "el": "values.1",
+              "on": "courte"
+            },
+            {
+              "el": "labels.1",
+              "on": "violet"
+            }
           ],
           "src": "0:25"
         },
         {
           "type": "fact-chips",
-          "say": "Dans l'air, cette lumière croise des milliards de molécules d'azote et d'oxygène, bien plus petites que ces ondes.",
-          "props": {"chips": ["Des milliards de molécules", "Azote et oxygène", "Plus petites que l'onde"]},
+          "say": "En entrant dans l'air, elle croise des milliards de molécules d'azote et d'oxygène, bien plus petites que ces ondes.",
+          "props": {
+            "picto": "atom",
+            "chips": [
+              "Des milliards de molécules",
+              "Azote et oxygène",
+              "Plus petites que l'onde"
+            ]
+          },
           "items": [
-            {"el": "chips.0", "on": "milliards"},
-            {"el": "chips.1", "on": "azote"},
-            {"el": "chips.2", "on": "petites"}
+            {
+              "el": "chips.0",
+              "on": "milliards"
+            },
+            {
+              "el": "chips.1",
+              "on": "azote"
+            },
+            {
+              "el": "chips.2",
+              "on": "petites"
+            }
           ],
           "src": "0:49"
         },
         {
           "type": "counter",
-          "say": "Plus l'onde est courte, plus elle rebondit : le bleu, plus de cinq fois plus que le rouge.",
-          "props": {"label": "fois plus de bleu renvoyé", "from": 1, "to": 5},
-          "items": [{"el": "to", "on": "bleu"}, {"el": "label", "on": "rouge"}],
+          "say": "Résultat : plus l'onde est courte, plus elle rebondit, et le bleu rebondit plus de 5 fois plus que le rouge.",
+          "props": {
+            "label": "fois plus de bleu renvoyé",
+            "from": 1,
+            "to": 5
+          },
+          "items": [
+            {
+              "el": "to",
+              "on": "bleu"
+            },
+            {
+              "el": "label",
+              "on": "rouge"
+            }
+          ],
           "src": "1:11"
         },
         {
           "type": "person-card",
           "say": "Ce phénomène porte le nom du physicien anglais Lord Rayleigh, qui l'a mis en équation au dix-neuvième siècle.",
-          "props": {"name": "Lord Rayleigh", "role": "Physicien anglais, 1871"},
+          "props": {
+            "kicker": "1871",
+            "name": "Lord Rayleigh",
+            "role": "Physicien anglais",
+            "picto": "flag:gb",
+            "facial": "beard",
+            "hair": "crown-bald",
+            "outfit": "suit"
+          },
           "items": [
-            {"el": "avatar", "on": "physicien"},
-            {"el": "name", "on": "Lord Rayleigh"},
-            {"el": "role", "on": "équation"}
+            {
+              "el": "avatar",
+              "on": "physicien"
+            },
+            {
+              "el": "name",
+              "on": "Lord Rayleigh"
+            },
+            {
+              "el": "role",
+              "on": "équation"
+            }
           ],
           "src": "1:32"
         },
         {
           "type": "quote",
           "say": "Une physicienne de l'atmosphère le résume en une phrase.",
-          "props": {"text": "Le ciel n'est pas peint en bleu, c'est de la lumière du soleil renvoyée vers nous", "speaker": ""},
-          "items": [{"el": "text", "on": "résume"}],
+          "props": {
+            "text": "Le ciel n'est pas peint en bleu, c'est de la lumière du soleil renvoyée vers nous",
+            "speaker": ""
+          },
+          "items": [
+            {
+              "el": "text",
+              "on": "résume"
+            }
+          ],
           "src": "1:55"
         },
         {
           "type": "mascot",
           "say": "Mais alors, si le violet rebondit encore plus, pourquoi le ciel n'est pas violet ?",
-          "props": {"bubble": "Et pourquoi pas violet ?"},
-          "items": [{"el": "bubble", "on": "pourquoi"}],
+          "props": {
+            "bubble": "Et pourquoi pas violet ?"
+          },
+          "items": [
+            {
+              "el": "bubble",
+              "on": "pourquoi"
+            }
+          ],
           "src": "2:11"
         },
         {
           "type": "stack-list",
           "say": "Le soleil envoie moins de violet. Le haut de l'atmosphère en absorbe une partie. Et tes yeux voient mieux le bleu.",
-          "props": {"items": ["Le soleil envoie moins de violet", "L'atmosphère en absorbe", "Nos yeux préfèrent le bleu"]},
+          "props": {
+            "kicker": "Trois raisons",
+            "items": [
+              "Le soleil envoie moins de violet",
+              "L'atmosphère en absorbe",
+              "Nos yeux préfèrent le bleu"
+            ]
+          },
           "items": [
-            {"el": "items.0", "on": "soleil"},
-            {"el": "items.1", "on": "absorbe"},
-            {"el": "items.2", "on": "yeux"}
+            {
+              "el": "items.0",
+              "on": "soleil"
+            },
+            {
+              "el": "items.1",
+              "on": "absorbe"
+            },
+            {
+              "el": "items.2",
+              "on": "yeux"
+            }
           ],
           "src": "2:11"
         },
         {
           "type": "object-state",
           "say": "Chez toi, éclaire un verre d'eau avec quelques gouttes de lait : vu de côté, il devient bleuté.",
-          "props": {"object": "jar", "states": ["Eau et lait", "Vu de côté : bleuté"]},
-          "items": [{"el": "states.1", "on": "bleuté"}],
+          "props": {
+            "object": "jar",
+            "states": [
+              "Eau et lait",
+              "Vu de côté : bleuté"
+            ]
+          },
+          "items": [
+            {
+              "el": "states.1",
+              "on": "bleuté"
+            }
+          ],
           "sfx": "2:43",
           "src": "2:33"
         },
         {
           "type": "shape-diagram",
-          "say": "Le soir, la lumière traverse jusqu'à quarante fois plus d'air qu'à midi. Le bleu se perd en route, il reste le rouge.",
-          "props": {"shape": "square", "values": [1, 40], "labels": ["midi", "soir"]},
+          "say": "Et le soir, alors ? La lumière traverse jusqu'à 40 fois plus d'air qu'à midi. Le bleu se perd en route, il reste le rouge.",
+          "props": {
+            "kicker": "Coucher de soleil",
+            "shape": "square",
+            "values": [
+              1,
+              40
+            ],
+            "labels": [
+              "midi",
+              "soir"
+            ]
+          },
           "items": [
-            {"el": "values.1", "on": "soir"},
-            {"el": "labels.1", "on": "soir"},
-            {"el": "values.0", "on": "midi"},
-            {"el": "labels.0", "on": "midi"}
+            {
+              "el": "values.1",
+              "on": "soir"
+            },
+            {
+              "el": "labels.1",
+              "on": "soir"
+            },
+            {
+              "el": "values.0",
+              "on": "midi"
+            },
+            {
+              "el": "labels.0",
+              "on": "midi"
+            }
           ],
           "src": "3:00"
         },
         {
           "type": "stamp",
           "say": "Et non, le ciel ne reflète pas la mer. Il est aussi bleu au-dessus du désert.",
-          "props": {"text": "Reflet de la mer : faux"},
-          "items": [{"el": "text", "on": "mer"}],
+          "props": {
+            "text": "Reflet de la mer : faux"
+          },
+          "items": [
+            {
+              "el": "text",
+              "on": "mer"
+            }
+          ],
           "src": "3:20"
         },
         {
           "type": "icon-grid",
           "say": "Sur Mars, la poussière inverse tout : le ciel est couleur caramel le jour, et bleu au coucher du soleil.",
-          "props": {"cells": [{"shape": "circle", "label": "Mars"}, {"shape": "square", "label": "Jour : caramel"}, {"shape": "diamond", "label": "Soir : bleu"}]},
+          "props": {
+            "kicker": "Sur Mars",
+            "cells": [
+              {
+                "picto": "globe",
+                "label": "Mars"
+              },
+              {
+                "picto": "sun",
+                "label": "Jour : caramel"
+              },
+              {
+                "shape": "diamond",
+                "label": "Soir : bleu"
+              }
+            ]
+          },
           "items": [
-            {"el": "cells.0", "on": "Mars"},
-            {"el": "cells.1", "on": "caramel"},
-            {"el": "cells.2", "on": "coucher"}
+            {
+              "el": "cells.0",
+              "on": "Mars"
+            },
+            {
+              "el": "cells.1",
+              "on": "caramel"
+            },
+            {
+              "el": "cells.2",
+              "on": "coucher"
+            }
           ],
           "src": "3:33"
+        },
+        {
+          "type": "mascot",
+          "say": "Donc le ciel est bleu parce que l'air renvoie surtout le bleu, et que tes yeux le voient mieux que le violet.",
+          "props": {
+            "bubble": "L'air renvoie surtout le bleu",
+            "pose": "content"
+          },
+          "items": [
+            {
+              "el": "bubble",
+              "on": "renvoie"
+            }
+          ],
+          "src": "2:11"
         }
       ]
     }

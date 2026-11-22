@@ -22,19 +22,32 @@ export const fonts = {
   brand: "'Unbounded', sans-serif",
 } as const;
 
-export const shadow = "2px 3px 0 rgba(0,0,0,.22)";
-export const shadowFilter = "drop-shadow(2px 3px 0 rgba(0,0,0,.22))";
+export const shade = "rgba(31,26,20,.24)";
+export const shadow = `3px 4px 0 ${shade}`;
+export const SHADOW_X = 3;
+export const SHADOW_Y = 4;
 
 export const layout = {
   width: 1080,
   height: 1920,
-  marginTop: 80,
-  marginSide: 48,
-  captionBottom: 440,
-  progressBottom: 250,
-  progressHeight: 16,
-  stageTop: 190,
-  stageBottom: 1220,
+  marginTop: 72,
+  marginSide: 56,
+  safeRight: 130,
+  contentLeft: 64,
+  contentRight: 950,
+  stageTop: 196,
+  stageBottom: 1300,
+  captionTop: 1336,
+  captionBottom: 1480,
+  progressTop: 1546,
+  progressHeight: 12,
+} as const;
+
+export const content = {
+  left: layout.contentLeft,
+  right: layout.contentRight,
+  width: layout.contentRight - layout.contentLeft,
+  center: (layout.contentLeft + layout.contentRight) / 2,
 } as const;
 
 export type AccentColor = "red" | "yellow" | "blue";
@@ -57,4 +70,3 @@ export const accentAt = (spans: AccentSpan[], frame: number): AccentColor => {
   const span = spans.find((s) => frame >= s.from && frame < s.to);
   return span ? span.accent : accentCycle[0];
 };
-export const stripClip = "polygon(0 4%, 100% 0, 98% 100%, 2% 94%)";

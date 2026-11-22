@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { colors, PaperColor } from "../theme";
-import { idleTilt, isBlinking, Mouth, Pose, POSE_SPECS } from "./pose";
+import { breath, gaze, idleTilt, isBlinking, Mouth, Pose, POSE_SPECS } from "./pose";
 
 const SHADE = "rgba(0,0,0,.22)";
 
@@ -23,9 +23,9 @@ const MouthShape: React.FC<{ mouth: Mouth }> = ({ mouth }) => {
   return <path d="M-9 -19 Q1 -9 12 -19" fill="none" stroke={colors.ink} strokeWidth={4.5} strokeLinecap="round" />;
 };
 
-type FaceProps = { pose: Pose; blink: boolean; tilt: number; shade: [number, number] };
+type FaceProps = { pose: Pose; blink: boolean; tilt: number; shade: [number, number]; look?: [number, number] };
 
-const Face: React.FC<FaceProps> = ({ pose, blink, tilt, shade }) => {
+const Face: React.FC<FaceProps> = ({ pose, blink, tilt, shade, look = [0, 0] }) => {
   const spec = POSE_SPECS[pose];
   const eyes: [number, number][] = [
     [-11, -35],
@@ -48,7 +48,7 @@ const Face: React.FC<FaceProps> = ({ pose, blink, tilt, shade }) => {
         ) : (
           <g key={`eye-${i}`}>
             <circle cx={cx} cy={cy} r={spec.eyeR} fill={colors.cream} />
-            <circle cx={cx + spec.look[0]} cy={cy + spec.look[1]} r={spec.pupilR} fill={colors.ink} />
+            <circle cx={cx + spec.look[0] + look[0]} cy={cy + spec.look[1] + look[1]} r={spec.pupilR} fill={colors.ink} />
           </g>
         ),
       )}
@@ -65,6 +65,8 @@ export type CharacterProps = {
   body?: PaperColor;
   seed?: string;
   lift?: number;
+  nod?: number;
+  glance?: [number, number];
   style?: React.CSSProperties;
 };
 
@@ -78,14 +80,19 @@ export const Character: React.FC<CharacterProps> = ({
   body = "blue",
   seed = "mascot",
   lift = 0,
+  nod = 0,
+  glance = [0, 0],
   style,
 }) => {
   const frame = useCurrentFrame();
   const spec = POSE_SPECS[pose];
   const shade = shadeOffset(size, VIEW.h / size);
-  const tilt = spec.headTilt + idleTilt(seed, frame);
+  const tilt = spec.headTilt + idleTilt(seed, frame) + nod;
   const blink = isBlinking(seed, frame);
   const fill = colors[body];
+  const base = gaze(seed, frame);
+  const look: [number, number] = [base[0] + glance[0], base[1] + glance[1]];
+  const chest = breath(frame);
 
   return (
     <svg
@@ -95,7 +102,7 @@ export const Character: React.FC<CharacterProps> = ({
       style={{ position: "absolute", overflow: "visible", transform: `translateY(${-lift * size}px)`, ...style }}
     >
       <g transform={`rotate(${spec.lean} 0 ${CUT_Y})`}>
-        <g transform="rotate(3 0 40)">
+        <g transform={`rotate(3 0 40) translate(0 ${CUT_Y + 68}) scale(${2 - chest} ${chest}) translate(0 ${-(CUT_Y + 68)})`}>
           <path d={SHOULDERS} fill={SHADE} transform={`translate(${shade[0]} ${shade[1]})`} />
           <path d={SHOULDERS} fill={fill} />
         </g>
@@ -105,7 +112,9 @@ export const Character: React.FC<CharacterProps> = ({
             <path d={ARM} fill={fill} />
           </g>
         ) : null}
-        <Face pose={pose} blink={blink} tilt={tilt} shade={shade} />
+        <g transform={`translate(0 ${(1 - chest) * 60})`}>
+          <Face pose={pose} blink={blink} tilt={tilt} shade={shade} look={look} />
+        </g>
       </g>
     </svg>
   );

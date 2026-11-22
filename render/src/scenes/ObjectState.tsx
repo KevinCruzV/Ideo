@@ -2,14 +2,16 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
 import { PaperStrip } from "../paper/PaperStrip";
-import { stepIndex } from "../paper/stopMotion";
+import { tween as ease } from "../paper/motion";
 import { AccentColor, colors, fonts, onPaper, shadow } from "../theme";
 import { useAccent } from "./accent";
 import { str, strList } from "./coerce";
 import { fitText } from "../text/fit";
 import type { SceneProps } from "./registry";
-import { Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H, STAGE_W } from "./Stage";
+import { areaFor, FitBox } from "./FitBox";
 import { stateIndex, stateTimes } from "./timing";
+import { useBeat } from "./beats";
 
 type ObjectKind = "screen" | "board" | "jar" | "door" | "scale";
 
@@ -29,21 +31,20 @@ export const objectKind = (value: unknown): ObjectKind => {
   return (KINDS as string[]).includes(key) ? (key as ObjectKind) : ALIASES[key] ?? "screen";
 };
 
-const CX = STAGE_W / 2;
+const CX = BOX_CX;
 
-const tween = (frame: number, at: number, prev: number, next: number): number => {
-  const step = stepIndex(frame - at);
-  const t = Math.min(1, step / 3);
-  return prev + (next - prev) * t;
-};
+const tween = (frame: number, at: number, prev: number, next: number): number => prev + (next - prev) * ease(frame, at, 16);
 
 type Look = { accent: AccentColor; index: number; count: number; label: string; changedAt: number; frame: number; prevIndex: number };
 
 const Swap: React.FC<{ at: number; children: React.ReactNode }> = ({ at, children }) => {
   const frame = useCurrentFrame();
-  const step = stepIndex(frame - at);
-  const scale = [0.86, 0.95, 1][Math.min(step, 2)];
-  return <div style={{ transform: `scale(${scale})`, display: "flex", flexDirection: "column", alignItems: "center" }}>{children}</div>;
+  const t = ease(frame, at, 10);
+  return (
+    <div style={{ opacity: Math.min(1, t * 2), transform: `translateY(${(1 - t) * 30}px) scale(${0.92 + 0.08 * t})`, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {children}
+    </div>
+  );
 };
 
 const InnerText: React.FC<{ text: string; width: number; color: string; max: number; at: number }> = ({ text, width, color, max, at }) => {
@@ -63,7 +64,7 @@ const InnerText: React.FC<{ text: string; width: number; color: string; max: num
 };
 
 const Caption: React.FC<{ look: Look; top: number }> = ({ look, top }) => {
-  const fit = fitText(look.label, { maxWidth: 900, maxLines: 1, max: 72, min: 44 });
+  const fit = fitText(look.label, { maxWidth: 886, maxLines: 1, max: 72, min: 40 });
   if (fit.lines.length === 0) return null;
   return (
     <div key={`cap-${look.index}`} style={{ position: "absolute", left: 0, right: 0, top, display: "flex", justifyContent: "center" }}>
@@ -104,7 +105,7 @@ const Screen: React.FC<{ look: Look; board?: boolean }> = ({ look, board }) => {
     <>
       {board ? (
         <>
-          <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} rotate={-1} seed="board" wobble={0.3}>
+          <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} rotate={-1} seed="board" float={1.5}>
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <InnerText text={look.label} width={w - 120} color={textColor} max={110} at={look.changedAt} />
             </div>
@@ -117,7 +118,7 @@ const Screen: React.FC<{ look: Look; board?: boolean }> = ({ look, board }) => {
         <>
           <PaperShape kind="square" color="cream" size={1} w={90} h={120} x={CX - 45} y={y + h - 20} />
           <PaperShape kind="square" color="cream" size={1} w={380} h={44} x={CX - 190} y={y + h + 90} rotate={-1} />
-          <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} rotate={-1} seed="screen" wobble={0.3}>
+          <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} rotate={-1} seed="screen" float={1.5}>
             <div
               style={{
                 position: "absolute",
@@ -148,7 +149,7 @@ const Jar: React.FC<{ look: Look }> = ({ look }) => {
   const innerH = h - 60;
   return (
     <>
-      <PaperShape kind="square" color="cream" size={1} w={w} h={h} x={x} y={y} radius="24px 24px 90px 90px" seed="jar" wobble={0.3}>
+      <PaperShape kind="square" color="cream" size={1} w={w} h={h} x={x} y={y} radius="24px 24px 90px 90px" seed="jar" float={1.5}>
         <div
           style={{
             position: "absolute",
@@ -178,7 +179,7 @@ const Door: React.FC<{ look: Look }> = ({ look }) => {
   const angle = tween(look.frame, look.changedAt, open(look.prevIndex), open(look.index)) * 68;
   return (
     <>
-      <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} seed="door-frame" wobble={0.2}>
+      <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} seed="door-frame" float={1.5}>
         <div style={{ position: "absolute", inset: "30px 30px 0 30px", background: colors.cream, perspective: 1400 }}>
           <div
             style={{
@@ -247,7 +248,16 @@ const Scale: React.FC<{ look: Look }> = ({ look }) => {
   );
 };
 
+const EXTENT: Record<ObjectKind, [number, number]> = {
+  screen: [70, 854],
+  board: [50, 854],
+  jar: [50, 874],
+  door: [50, 954],
+  scale: [150, 984],
+};
+
 export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) => {
+  const beat = useBeat();
   const frame = useCurrentFrame();
   const accent = useAccent();
   const kind = objectKind(props.object);
@@ -261,7 +271,11 @@ export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) =>
     kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : <Screen look={look} board={kind === "board"} />;
   return (
     <Stage>
-      <div style={{ position: "absolute", left: 0, top: 0, width: STAGE_W, height: STAGE_H }}>{body}</div>
+      <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
+        <div style={{ position: "relative", width: BOX_W, height: EXTENT[kind][1] - EXTENT[kind][0], transform: beat ? `scale(${1 + 0.05 * beat.wave}) rotate(${(beat.index % 2 ? 1.5 : -1.5) * beat.wave}deg)` : undefined }}>
+          <div style={{ position: "absolute", left: -BOX_L, top: -EXTENT[kind][0], width: STAGE_W, height: STAGE_H }}>{body}</div>
+        </div>
+      </FitBox>
     </Stage>
   );
 };
