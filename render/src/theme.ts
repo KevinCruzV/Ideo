@@ -1,20 +1,64 @@
-export const colors = {
+export type Mood = "dark";
+export type Palette = {
+  background: string;
+  red: string;
+  yellow: string;
+  blue: string;
+  cream: string;
+  ink: string;
+  fg: string;
+  track: string;
+};
+
+export type PaperColor = "red" | "yellow" | "blue" | "cream" | "ink";
+
+const LIGHT: Palette = {
   background: "#f4efe4",
   red: "#e2462c",
   yellow: "#f5bf2a",
   blue: "#2747c9",
   cream: "#fbf6ea",
   ink: "#1f1a14",
-} as const;
+  fg: "#1f1a14",
+  track: "rgba(31,26,20,.16)",
+};
 
-export type PaperColor = "red" | "yellow" | "blue" | "cream" | "ink";
+const DARK: Palette = {
+  background: "#252932",
+  red: "#a82a22",
+  yellow: "#c99a1a",
+  blue: "#3a5aa8",
+  cream: "#d3ccba",
+  ink: "#0e0c09",
+  fg: "#efe8d8",
+  track: "rgba(239,232,216,.2)",
+};
 
-export const onPaper: Record<PaperColor, string> = {
-  red: colors.cream,
-  yellow: colors.ink,
-  blue: colors.cream,
-  cream: colors.ink,
-  ink: colors.cream,
+const LIGHT_ON: Record<PaperColor, string> = { red: "#fbf6ea", yellow: "#1f1a14", blue: "#fbf6ea", cream: "#1f1a14", ink: "#fbf6ea" };
+const DARK_ON: Record<PaperColor, string> = { red: "#fbf6ea", yellow: "#14110d", blue: "#fbf6ea", cream: "#1a1612", ink: "#efe8d8" };
+
+export const palettes: Record<"light" | Mood, { colors: Palette; onPaper: Record<PaperColor, string>; shade: string }> = {
+  light: { colors: LIGHT, onPaper: LIGHT_ON, shade: "rgba(31,26,20,.24)" },
+  dark: { colors: DARK, onPaper: DARK_ON, shade: "rgba(0,0,0,.5)" },
+};
+
+export const colors: Palette = { ...LIGHT };
+export const onPaper: Record<PaperColor, string> = { ...LIGHT_ON };
+export let shade = palettes.light.shade;
+export let dimmed = 0.38;
+export let shadow = `3px 4px 0 ${shade}`;
+export const SHADOW_X = 3;
+export const SHADOW_Y = 4;
+
+export const moodOf = (value: unknown): Mood | undefined => (value === "dark" ? "dark" : undefined);
+
+export const setMood = (mood?: Mood): void => {
+  const palette = palettes[mood ?? "light"];
+  Object.assign(colors, palette.colors);
+  Object.assign(onPaper, palette.onPaper);
+  shade = palette.shade;
+  dimmed = mood === "dark" ? 0.55 : 0.38;
+  shadow = `${SHADOW_X}px ${SHADOW_Y}px 0 ${shade}`;
 };
 
 export const fonts = {
@@ -22,10 +66,6 @@ export const fonts = {
   brand: "'Unbounded', sans-serif",
 } as const;
 
-export const shade = "rgba(31,26,20,.24)";
-export const shadow = `3px 4px 0 ${shade}`;
-export const SHADOW_X = 3;
-export const SHADOW_Y = 4;
 
 export const layout = {
   width: 1080,

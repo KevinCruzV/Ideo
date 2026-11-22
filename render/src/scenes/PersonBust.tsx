@@ -6,7 +6,10 @@ import { useBeat } from "./beats";
 import { AccentColor, colors, fonts, shade } from "../theme";
 import { HAIR_TONES, HIDES_HAIR_TOP, NEUTRAL_LOOK, PersonLook, SKIN_TONES } from "./personLook";
 
-export const BUST_VIEW = { x: 0, y: -46, w: 200, h: 174 } as const;
+export type View = { x: number; y: number; w: number; h: number };
+
+export const BUST_VIEW: View = { x: 0, y: -46, w: 200, h: 174 };
+export const CLOSE_VIEW: View = { x: 34, y: -48, w: 132, h: 142 };
 
 type Shape = { d: string; fill: string; shadow?: boolean };
 
@@ -299,11 +302,12 @@ export type PersonBustProps = {
   look?: PersonLook;
   accent?: AccentColor;
   seed?: string;
+  view?: View;
 };
 
-export const bustHeight = (width: number): number => (width * BUST_VIEW.h) / BUST_VIEW.w;
+export const bustHeight = (width: number, view: View = BUST_VIEW): number => (width * view.h) / view.w;
 
-export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, badgeInk, look = NEUTRAL_LOOK, accent = "red", seed = "person" }) => {
+export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, badgeInk, look = NEUTRAL_LOOK, accent = "red", seed = "person", view = BUST_VIEW }) => {
   const frame = useCurrentFrame();
   const chest = breath(frame + 11);
   const blink = isBlinking(seed, frame);
@@ -317,8 +321,8 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
   return (
     <svg
       width={width}
-      height={bustHeight(width)}
-      viewBox={`${BUST_VIEW.x} ${BUST_VIEW.y} ${BUST_VIEW.w} ${BUST_VIEW.h}`}
+      height={bustHeight(width, view)}
+      viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       style={{ display: "block", overflow: "visible" }}
     >
       <g transform={`translate(0 128) scale(1 ${chest}) translate(0 -128)`}>
@@ -338,7 +342,14 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
           <Layer key={`k-${i}`} shape={s} />
         ))}
         <Layer shape={parts.neck} />
+        {[66, 134].map((x) => (
+          <ellipse key={`ear-${x}`} cx={x} cy={46} rx={5.5} ry={8} fill={faceFill} stroke={shade} strokeWidth={0.8} />
+        ))}
         <Layer shape={parts.head} />
+        <path d="M98 48 L102 48 L104 57 L96 57 Z" fill="rgba(31,26,20,.16)" />
+        {[[82, 94], [106, 118]].map(([a, b]) => (
+          <path key={`brow-${a}`} d={`M${a} 37.5 L${b} 37.5 L${b} 40 L${a} 40.6 Z`} fill={HAIR_TONES[look.hairColor]} />
+        ))}
         {blink ? (
           <>
             <rect x={84} y={44} width={9} height={2.2} fill={featureInk} />
