@@ -6,13 +6,10 @@ model: haiku
 
 # ideo
 
-Ce skill passe sur Haiku, le modèle le moins cher, mais seulement jusqu'à la fin du tour en cours : au message suivant, la session reprend son modèle.
-
-Modèle par étape. Quand l'étape suivante demande un autre modèle que le tien, dis-le à l'utilisateur en une ligne avant de la faire : « Tape `/model <modèle>` puis redis-moi <sa demande> ».
-- Haiku pour tout le reste : prepare, plan, check, corrections, musique, produce, retours (`learn`).
-- Sonnet pour le plan seulement si check échoue 3 fois de suite, ou si l'utilisateur trouve le plan faible (histoire mal choisie, phrases floues, faits faux). Repasse sur Haiku après le plan validé.
-- Sonnet pour l'entretien (étape 8).
-- Opus seulement si Sonnet a échoué sur la même chose : un plan encore refusé par l'utilisateur, ou un défaut que l'entretien n'a pas corrigé deux fois de suite. Repasse sur Haiku juste après.
+Ce skill tourne sur Haiku, le modèle le moins cher. L'utilisateur n'intervient que pour donner ses retours après la vidéo : ne lui demande rien entre l'URL et la vidéo finie (ni validation du plan, ni choix de musique, ni changement de modèle). Quand un travail demande un modèle plus capable, confie-le à un sous-agent avec l'outil Agent et le bon `model` :
+- Haiku (toi) : tout le reste.
+- Sonnet : le plan quand check échoue 3 fois de suite (étape 4), et l'entretien (étape 8).
+- Opus : seulement si le sous-agent Sonnet a échoué sur la même chose.
 
 Règles pour toute la tâche :
 - Lis le guide (`plan-guide.md`), les leçons (`lecons.md`) et `transcript_compact.md` UNE seule fois chacun : chaque ligne est lue une fois, jamais deux. Pour la transcription, c'est un seul Read, ou les Read par morceaux que donne la ligne `OK prepare` (étape 2). Ne les relis jamais. Seule exception : l'étape 2 de "Approfondis ce point".
@@ -34,21 +31,13 @@ Règles pour toute la tâche :
 3. Écris `JOB/plan.json` en UN seul appel de l'outil Write, en suivant le guide, y compris le filtre anti-slop de la section 4 (« Écrire sans tics d'IA »). Si un skill antislop est installé, ne le charge pas : ses règles utiles à la voix off sont déjà dans le guide, et `check` les vérifie.
 4. Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` (pas en arrière-plan).
    - Lignes `ERREUR check : ...` : corrige seulement ce qu'elles nomment, avec l'outil Edit sur `JOB/plan.json`, puis relance check. Si Edit refuse parce que le fichier a changé, lis `JOB/plan.json` une fois avec Read, puis refais l'Edit.
-   - Lance check 3 fois au plus de suite. Après le 3e échec, montre les lignes d'erreur à l'utilisateur et arrête-toi. Le compte repart à zéro après chaque demande de l'utilisateur.
+   - Lance check 3 fois au plus de suite. Après le 3e échec, lance un sous-agent avec l'outil Agent, modèle `sonnet`, avec cette consigne : "Lis <chemin du guide>, puis JOB/transcript_compact.md une fois. Corrige JOB/plan.json avec Edit jusqu'à ce que `cd ~/Desktop/ideo && .venv/bin/python -m ideo check JOB` affiche OK, 3 lancements au plus. Réponds par la dernière ligne de check." S'il échoue encore, relance la même consigne avec le modèle `opus`. Si Opus échoue aussi, montre les lignes d'erreur à l'utilisateur et arrête-toi.
    - Relecture : quand check réussit, il peut afficher des lignes `RELIRE : <endroit> : <constat>`. Ce ne sont pas des erreurs. Corrige chacune avec Edit sur `JOB/plan.json`, sauf si la correction rendrait le plan faux ou contraire à la source. Fais toutes les corrections, puis relance check. Si de nouvelles lignes `RELIRE` apparaissent (une correction peut en créer), corrige-les et relance check une dernière fois : deux passages de correction au plus. S'il reste des lignes `RELIRE` après le deuxième, continue sans les corriger. Ces passages ne comptent pas dans les 3 lancements. Quand tu allonges ou réécris un `say`, vérifie que ses `items` restent ancrés sur des mots qui existent encore, et que le dernier est dans la dernière phrase.
-5. Ligne `OK check : ... Relecture : <chemin de plan.md>`. Elle donne le nombre de scènes et la durée estimée : dis-les à l'utilisateur. Dis-lui aussi, sans montrer le contenu :
-   "Le plan est prêt : <chemin de plan.md>. Tu peux modifier `hook`, `say` et `question` dans `JOB/plan.json`, ou me demander une correction précise. Dis go pour lancer la vidéo."
-   Attends sa réponse. S'il demande une correction : fais-la avec Edit sur `plan.json`, puis retourne à l'étape 4. S'il a modifié le fichier lui-même : retourne à l'étape 4.
-5 bis. Musique de fond, à chaque vidéo, après le go et avant `produce` :
-   - Propose 2 ou 3 types de musique adaptés au sujet et au ton de la vidéo (par exemple « funk groovy » pour un sujet léger, « cinématique » pour une histoire ou un sujet grave, « acoustique » pour la santé ou le quotidien, « électro légère » pour la technologie), plus « aucune ». Jamais de lofi. Pose la question avec l'outil AskUserQuestion s'il est disponible, sinon en une ligne.
-   - « aucune » : lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB aucune`.
-   - Un type : lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique-lien "<type en anglais>"`, donne le lien à l'utilisateur et dis : « Écoute, clique sur Téléchargement gratuit sur le morceau qui te plaît, puis dis-moi c'est bon. » À sa réponse, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB --dernier` et montre la ligne `OK musique : ...` (ou l'erreur, puis attends qu'il ait téléchargé).
-   - S'il donne un fichier ou un nom de morceau déjà utilisé, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB <nom ou chemin>`.
-   La musique est mixée très bas sous la voix : ne propose pas de la monter.
-6. Après son go, lance en arrière-plan :
+5. Ligne `OK check : ...` : ne t'arrête pas, ne montre pas le plan et n'attends pas de réponse. Choisis la musique toi-même : lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique --liste`, prends le morceau dont le nom colle le mieux au ton de la vidéo (jamais de lofi), et lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB <nom>`. Si aucun ne colle ou si la liste est vide, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo musique JOB aucune`.
+6. Lance tout de suite, en arrière-plan :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo produce JOB`
    Attends la notification de fin. Si l'utilisateur demande où en est le rendu, lance `tail -n 3 JOB/logs/progress.log` et donne la réponse en une phrase.
-7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
+7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Dis en une phrase quel morceau de musique tu as choisi (ou aucun), et que l'utilisateur peut en ajouter dans `musique/`. Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
 8. Entretien automatique. Si la ligne `OK produce` contient `Entretien à lancer :`, lance l'entretien toi-même, après avoir donné la vidéo à l'utilisateur, sans attendre qu'il le demande :
    - Dis-lui en une phrase : "Je lance l'entretien du skill en arrière-plan (<raison affichée>). Tu peux continuer."
    - Lance un sous-agent en arrière-plan avec l'outil Agent (ou Task), modèle `sonnet`, avec exactement cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/SKILL.md et fais l'entretien qu'il décrit, de l'étape 1 à l'étape 9. Tu es le modèle capable : fais le travail toi-même." (remplace le chemin par le vrai, celui du dossier de ce skill avec `entretien` à la place de `ideo`).
