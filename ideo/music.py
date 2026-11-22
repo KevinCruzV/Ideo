@@ -1,5 +1,10 @@
 import hashlib
+import os
 import re
+import shutil
+import time
+import unicodedata
+import urllib.parse
 import subprocess
 import wave
 from pathlib import Path
@@ -22,13 +27,26 @@ LIVELY_RATIO = 0.8
 INTRO_SECONDS = 8
 MAX_START_SHARE = 0.4
 RECENT = 3
+CHOSEN = "choisis"
+CREDITS = "credits.json"
+DOWNLOAD_SUFFIXES = (".mp3", ".wav", ".m4a", ".ogg")
+DOWNLOAD_MINUTES = 30
+MIN_GAP_DB = 28.0
+GAP_WINDOW = 1.0
+SPEECH_FLOOR_DB = -50.0
+PIXABAY = "https://pixabay.com/music/search/"
 
 
 def tracks(folder: Path) -> list[Path]:
     folder = Path(folder)
     if not folder.is_dir():
         return []
-    return sorted(p for p in folder.iterdir() if p.is_file() and p.suffix.lower() in EXTENSIONS and not p.name.startswith(("_", ".")))
+    def audio(directory: Path) -> list[Path]:
+        if not directory.is_dir():
+            return []
+        return [p for p in directory.iterdir() if p.is_file() and p.suffix.lower() in EXTENSIONS and not p.name.startswith(("_", "."))]
+
+    return sorted(audio(folder) + audio(folder / CHOSEN))
 
 
 def choose(job_id: str, available: list[Path], recent: list[str]) -> Path | None:
@@ -110,6 +128,26 @@ def envelope(length: int, voice: list[tuple[float, float]], clips: list[tuple[fl
     return ((csum[window:] - csum[:-window]) / window).astype(np.float32)
 
 
+def _db(samples: np.ndarray) -> float:
+    rms = float(np.sqrt(np.mean(samples ** 2))) if len(samples) else 0.0
+    return 20 * np.log10(rms) if rms > 0 else -200.0
+
+
+def min_gap(voice: np.ndarray, stem: np.ndarray, spans: list[tuple[float, float]]) -> float | None:
+    step = int(GAP_WINDOW * RATE)
+    gaps = []
+    for start, end in spans:
+        a, b = int(start * RATE), int(end * RATE)
+        for k in range(a, b, step):
+            window = slice(k, min(k + step, b))
+            if window.stop - window.start < step // 2:
+                continue
+            speech = _db(voice[window])
+            if speech > SPEECH_FLOOR_DB:
+                gaps.append(speech - _db(stem[window]))
+    return round(min(gaps), 2) if gaps else None
+
+
 def write_wav(path: Path, samples: np.ndarray) -> None:
     clipped = np.clip(samples, -1.0, 1.0)
     with wave.open(str(path), "wb") as w:
@@ -182,11 +220,59 @@ def choose_for(job: Path, text: str) -> str:
         names = ", ".join(t.stem for t in tracks(config.music_dir())) or "aucun morceau dans " + str(config.music_dir())
         raise common.IdeoError(f"morceau introuvable : {text}. Morceaux disponibles : {names}. "
                                "Donne un de ces noms, un chemin de fichier audio ou « aucune ».")
-    if target.parent == config.music_dir():
+    if target.parent in (config.music_dir(), config.music_dir() / CHOSEN):
         write_choice(job, target.stem)
     else:
         write_choice(job, target.name, str(target.resolve()))
     return text
+
+
+def downloads_dir() -> Path:
+    return Path(os.environ.get("IDEO_DOWNLOADS") or Path.home() / "Downloads")
+
+
+def simple_name(filename: str) -> str:
+    stem = Path(filename).stem
+    plain = "".join(c for c in unicodedata.normalize("NFKD", stem.lower()) if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", "-", plain).strip("-") or "morceau"
+
+
+def take_latest(job: Path) -> tuple[str, float | None]:
+    folder = downloads_dir()
+    limit = time.time() - DOWNLOAD_MINUTES * 60
+    recent = []
+    if folder.is_dir():
+        recent = [p for p in folder.iterdir() if p.is_file() and p.suffix.lower() in DOWNLOAD_SUFFIXES and p.stat().st_mtime >= limit]
+    if not recent:
+        raise common.IdeoError(f"aucun fichier audio téléchargé depuis {DOWNLOAD_MINUTES} minutes dans Téléchargements. "
+                               "Clique sur « Téléchargement gratuit » sur la page du morceau, puis relance.")
+    latest = max(recent, key=lambda p: p.stat().st_mtime)
+    target_dir = config.music_dir() / CHOSEN
+    target_dir.mkdir(parents=True, exist_ok=True)
+    name = simple_name(latest.name)
+    destination = target_dir / f"{name}{latest.suffix.lower()}"
+    k = 2
+    while destination.exists() and destination.read_bytes() != latest.read_bytes():
+        destination = target_dir / f"{name}-{k}{latest.suffix.lower()}"
+        k += 1
+    if not destination.exists():
+        shutil.copy2(latest, destination)
+    credits_path = target_dir / CREDITS
+    try:
+        credits = common.load_json(credits_path) if credits_path.exists() else {}
+    except (OSError, ValueError):
+        credits = {}
+    credits.setdefault(destination.stem, {"original": latest.name})
+    common.save_json(credits_path, credits)
+    write_choice(job, destination.stem)
+    return destination.stem, duration(destination)
+
+
+def search_link(kind: str) -> str:
+    text = kind.strip()
+    if not text:
+        raise common.IdeoError("dis quel type de musique chercher, par exemple « lofi chill ».")
+    return PIXABAY + urllib.parse.quote(text, safe="") + "/"
 
 
 def selected(job: Path) -> tuple[str, Path | None]:
@@ -212,7 +298,23 @@ def title_of(track: Path) -> str:
     return words[:1].upper() + words[1:]
 
 
+def _credit(folder: Path, track_name: str) -> str | None:
+    path = Path(folder) / CREDITS
+    try:
+        data = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return None
+    entry = data.get(Path(track_name).stem) if isinstance(data, dict) else None
+    if not isinstance(entry, dict) or not entry.get("title"):
+        return None
+    parts = [entry["title"]] + [f"par {entry['artist']}"] * bool(entry.get("artist")) + [entry["source"]] * bool(entry.get("source"))
+    return "Musique : " + ", ".join(parts)
+
+
 def attribution(folder: Path, track_name: str) -> str:
+    credit = _credit(folder, track_name)
+    if credit:
+        return credit
     licence = Path(folder) / "LICENCE.txt"
     title = title_of(Path(track_name))
     try:
@@ -259,6 +361,13 @@ def mix(raw: Path, offsets: list[dict], job: Path, out_dir: Path, work: Path, lo
     clips = [(o["clip"]["start"], o["clip"]["end"]) for o in offsets if o.get("clip")]
     gain = envelope(length, spans, clips) * fades(length) * (10 ** (base / 20))
     stem = music * gain
+    gap = min_gap(voice, stem, spans)
+    corrected = 0.0
+    limit = min(MIN_GAP_DB, -config.music_level_db() - 2)
+    if gap is not None and gap < limit:
+        corrected = round(limit - gap, 2)
+        stem = stem * (10 ** (-corrected / 20))
+        gap = min_gap(voice, stem, spans)
     mixed = voice + stem
     peak = float(np.max(np.abs(mixed))) if len(mixed) else 0.0
     if peak > 0.98:
@@ -268,7 +377,8 @@ def mix(raw: Path, offsets: list[dict], job: Path, out_dir: Path, work: Path, lo
     under_lufs = loudness(probe)
     probe.unlink(missing_ok=True)
     write_wav(raw, mixed)
-    info.update({"track": track.name, "folder": str(track.parent), "offset": offset, "gain_db": round(base, 2),
+    info.update({"track": track.name, "folder": str(track.parent), "offset": offset, "min_gap_db": gap,
+                 "gap_corrected_db": corrected, "gain_db": round(base, 2),
                  "voice_lufs": voice_lufs, "music_under_voice_lufs": under_lufs})
     history.set_music(job.name, track.name)
     return info

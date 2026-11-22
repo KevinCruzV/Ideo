@@ -155,7 +155,7 @@ def test_music_is_mixed_at_minus_14_lufs_with_a_chosen_track(job_with_voice_fixt
     info = common.load_json(job / "parts" / "01" / "music.json")
     assert info["track"] in {t.name for t in music.tracks(library)}
     assert info["voice_lufs"] is not None and info["music_under_voice_lufs"] is not None
-    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 30, abs=2.5)
+    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 28
     assert history.load()["jobs"][job.name]["music"] == info["track"]
 
 
@@ -307,7 +307,7 @@ def test_the_music_is_very_discreet_by_default(job_with_voice_fixtures, library,
     music.write_choice(job, "alpha")
     assemble.assemble_part(job, 1)
     info = common.load_json(job / "parts" / "01" / "music.json")
-    assert info["music_under_voice_lufs"] == pytest.approx(info["voice_lufs"] - 30, abs=2.5)
+    assert info["music_under_voice_lufs"] <= info["voice_lufs"] - 28
     assert (music.PAUSE_RISE_DB, music.CLIP_DROP_DB) == (6.0, 4.0)
 
 
@@ -368,3 +368,152 @@ def test_cli_musique_errors_are_clear(library, home, capsys, job_with_voice_fixt
     assert cli.main(["musique"]) == 1
     assert cli.main(["musique", "--liste", "x"]) == 1
     assert cli.main(["musique", "jobinconnu12", "aucune"]) == 1
+
+
+def dynamic_track(path, seconds=12.0):
+    t = np.arange(int(seconds * RATE)) / RATE
+    loud = (np.sin(2 * np.pi * 0.25 * t) > 0.8).astype(float) * 0.6 + 0.04
+    music.write_wav(Path(path), (np.sin(2 * np.pi * 200 * t) * loud).astype(np.float32))
+    return Path(path)
+
+
+def test_the_gap_between_voice_and_music_is_at_least_28_db_everywhere(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    dynamic_track(library / "dynamique.wav")
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "dynamique")
+    assemble.assemble_part(job, 1)
+    info = common.load_json(job / "parts" / "01" / "music.json")
+    assert info["min_gap_db"] >= 27.9
+    assert info["gap_corrected_db"] >= 0
+
+
+def test_min_gap_function_measures_the_worst_second():
+    voice = np.full(6 * RATE, 0.1, dtype=np.float32)
+    stem = np.full(6 * RATE, 0.001, dtype=np.float32)
+    stem[2 * RATE:3 * RATE] = 0.01
+    assert music.min_gap(voice, stem, [(0.0, 6.0)]) == pytest.approx(20.0, abs=0.1)
+    assert music.min_gap(np.zeros(RATE * 2, dtype=np.float32), stem[:2 * RATE], [(0.0, 2.0)]) is None
+
+
+def test_every_default_mix_keeps_the_gap_in_the_record(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "alpha")
+    assemble.assemble_part(job, 1)
+    assert common.load_json(job / "parts" / "01" / "music.json")["min_gap_db"] >= 27.9
+
+
+def test_musique_lien_prints_only_the_pixabay_search_address(capsys):
+    from ideo import cli
+
+    assert cli.main(["musique-lien", "lofi chill"]) == 0
+    assert capsys.readouterr().out.strip() == "OK musique-lien : https://pixabay.com/music/search/lofi%20chill/"
+    assert cli.main(["musique-lien", "rap", "doux", "é"]) == 0
+    assert capsys.readouterr().out.strip() == "OK musique-lien : https://pixabay.com/music/search/rap%20doux%20%C3%A9/"
+    assert cli.main(["musique-lien"]) == 1
+    assert capsys.readouterr().out.startswith("ERREUR musique-lien : dis quel type")
+
+
+def fake_download(downloads, name, age_minutes=1.0, seconds=6.0):
+    import os
+    import time
+
+    path = downloads / name
+    tone_track(path, seconds=seconds)
+    stamp = time.time() - age_minutes * 60
+    os.utime(path, (stamp, stamp))
+    return path
+
+
+@pytest.fixture
+def downloads(tmp_path, monkeypatch):
+    folder = tmp_path / "Downloads"
+    folder.mkdir()
+    monkeypatch.setenv("IDEO_DOWNLOADS", str(folder))
+    return folder
+
+
+def test_dernier_copies_the_most_recent_download_with_a_simple_name(downloads, home, capsys, job_with_voice_fixtures):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(home / "musique")})
+    fake_download(downloads, "Vieux Morceau.wav", age_minutes=20)
+    fake_download(downloads, "Chill Beat – Été 2024 (Sub_Clair).wav", age_minutes=2, seconds=6.0)
+    (downloads / "notes.pdf").write_text("x", encoding="utf-8")
+    assert cli.main(["musique", str(job), "--dernier"]) == 0
+    assert capsys.readouterr().out.strip() == "OK musique : chill-beat-ete-2024-sub-clair (0:06)"
+    copied = home / "musique" / "choisis" / "chill-beat-ete-2024-sub-clair.wav"
+    assert copied.exists()
+    assert common.load_json(job / "music.json") == {"choice": "chill-beat-ete-2024-sub-clair"}
+    assemble.assemble_part(job, 1)
+    assert common.load_json(job / "parts" / "01" / "music.json")["track"] == "chill-beat-ete-2024-sub-clair.wav"
+
+
+def test_dernier_ignores_old_files_and_partial_downloads(downloads, home, capsys, job_with_voice_fixtures):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    fake_download(downloads, "ancien.mp3" if False else "ancien.wav", age_minutes=45)
+    (downloads / "en-cours.crdownload").write_text("x", encoding="utf-8")
+    assert cli.main(["musique", str(job), "--dernier"]) == 1
+    out = capsys.readouterr().out.strip()
+    assert out == ("ERREUR musique : aucun fichier audio téléchargé depuis 30 minutes dans Téléchargements. "
+                   "Clique sur « Téléchargement gratuit » sur la page du morceau, puis relance.")
+    assert not (job / "music.json").exists()
+
+
+def test_dernier_with_a_missing_downloads_folder_is_the_same_clear_error(home, capsys, job_with_voice_fixtures, monkeypatch, tmp_path):
+    from ideo import cli
+
+    monkeypatch.setenv("IDEO_DOWNLOADS", str(tmp_path / "nulle-part"))
+    assert cli.main(["musique", str(job_with_voice_fixtures), "--dernier"]) == 1
+    assert "aucun fichier audio téléchargé depuis 30 minutes" in capsys.readouterr().out
+
+
+def test_dernier_keeps_both_files_when_names_collide_with_different_content(downloads, home, capsys, job_with_voice_fixtures):
+    from ideo import cli
+
+    job = job_with_voice_fixtures
+    write_config(home, {"music_dir": str(home / "musique")})
+    fake_download(downloads, "Meme Nom.wav", age_minutes=3, seconds=5.0)
+    cli.main(["musique", str(job), "--dernier"])
+    (downloads / "Meme Nom.wav").unlink()
+    fake_download(downloads, "Meme Nom.wav", age_minutes=1, seconds=7.0)
+    capsys.readouterr()
+    cli.main(["musique", str(job), "--dernier"])
+    assert capsys.readouterr().out.strip() == "OK musique : meme-nom-2 (0:07)"
+    cli.main(["musique", str(job), "meme-nom"])
+    assert common.load_json(job / "music.json") == {"choice": "meme-nom"}
+
+
+def test_chosen_tracks_appear_in_the_list_and_resolve(home, library):
+    (library / "choisis").mkdir()
+    tone_track(library / "choisis" / "perso.wav", seconds=3.0)
+    write_config(home, {"music_dir": str(library)})
+    assert "perso (0:03)" in music.listing()
+    assert music.resolve("PERSO", library).parent.name == "choisis"
+
+
+def test_credits_file_gives_the_pixabay_credit(job_with_voice_fixtures, library, home):
+    job = job_with_voice_fixtures
+    (library / "choisis").mkdir()
+    tone_track(library / "choisis" / "no-copyright-music-sub-clair.wav", seconds=8.0)
+    common.save_json(library / "choisis" / "credits.json", {"no-copyright-music-sub-clair": {
+        "title": "No Copyright Music", "artist": "Sub_Clair", "source": "Pixabay"}})
+    write_config(home, {"music_dir": str(library)})
+    music.write_choice(job, "no-copyright-music-sub-clair")
+    assemble.assemble_part(job, 1)
+    common.save_json(job / "info.json", {"id": "abcdefghijk", "duration": 120})
+    from ideo import render
+
+    text = render.write_sources(job).read_text(encoding="utf-8")
+    assert "Musique : No Copyright Music, par Sub_Clair, Pixabay" in text
+
+
+def test_a_track_without_credit_falls_back_to_the_licence_or_the_file_name(library, tmp_path):
+    (library / "choisis").mkdir()
+    assert music.attribution(library / "choisis", "inconnu.mp3") == "Musique : inconnu.mp3"
+    assert music.simple_name("Été Café – Mix #2.MP3") == "ete-cafe-mix-2"
+    assert music.simple_name("???.mp3") == "morceau"
