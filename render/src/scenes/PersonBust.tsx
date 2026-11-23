@@ -9,7 +9,7 @@ import { HAIR_TONES, HIDES_HAIR_TOP, NEUTRAL_LOOK, PersonLook, SKIN_TONES } from
 export type View = { x: number; y: number; w: number; h: number };
 
 export const BUST_VIEW: View = { x: 0, y: -46, w: 200, h: 174 };
-export const CLOSE_VIEW: View = { x: 34, y: -48, w: 132, h: 142 };
+export const CLOSE_VIEW: View = { x: 30, y: -48, w: 140, h: 164 };
 
 type Shape = { d: string; fill: string; shadow?: boolean };
 
@@ -102,6 +102,94 @@ const outfitShapes = (k: Cutter, look: PersonLook, accent: AccentColor): Shape[]
         body(alt),
         { d: k.path(ring(100, 76, 26, 20, 0, 180, 18).concat([[74, 74], [126, 74]])), fill: skin, shadow: false },
         { d: k.path(ring(100, 76, 26, 20, 0, 180, 18).map(([x, y]) => [x, y + 3] as Pt).concat(ring(100, 76, 26, 20, 180, 0, 18).map(([x, y]) => [x, y + 3] as Pt))), fill: colors.cream },
+      ];
+    case "police":
+      return [
+        body("#243a6b"),
+        { d: k.path([[82, 77], [118, 77], [100, 106]]), fill: "#c4d8ee" },
+        { d: k.path([[96, 84], [104, 84], [106, 112], [100, 118], [94, 112]]), fill: colors.ink },
+        { d: k.path([[80, 77], [100, 106], [90, 118], [68, 82]]), fill: "#243a6b", shadow: true },
+        { d: k.path([[120, 77], [132, 82], [110, 118], [100, 106]]), fill: "#243a6b", shadow: true },
+        { d: k.path([[30, 94], [58, 83], [63, 91], [35, 103]]), fill: colors.yellow, shadow: true },
+        { d: k.path([[170, 94], [142, 83], [137, 91], [165, 103]]), fill: colors.yellow, shadow: true },
+        { d: k.path([[121, 92], [140, 92], [140, 104], [130.5, 112], [121, 104]]), fill: colors.yellow, shadow: true },
+        { d: k.path(ring(130.5, 101, 3.2, 3.2, 0, 360, 8)), fill: colors.red },
+      ];
+    case "firefighter":
+      return [
+        body("#c93a22"),
+        { d: k.path([[72, 80], [128, 80], [126, 90], [74, 90]]), fill: colors.ink, shadow: true },
+        { d: k.path([[20, 100], [180, 100], [181, 108], [19, 108]]), fill: colors.yellow },
+        { d: k.path([[18, 114], [182, 114], [183, 122], [17, 122]]), fill: colors.yellow },
+        { d: k.path([[98, 90], [102, 90], [102, 128], [98, 128]]), fill: colors.ink },
+        ...[93, 107].map((y) => ({ d: k.path(ring(88, y, 3, 3, 0, 360, 8)), fill: colors.cream })),
+      ];
+    case "doctor":
+      return [
+        body(colors.cream),
+        { d: k.path([[84, 77], [116, 77], [100, 104]]), fill: "#34a0ab" },
+        { d: k.path([[80, 77], [100, 104], [92, 126], [66, 82]]), fill: colors.cream, shadow: true },
+        { d: k.path([[120, 77], [134, 82], [108, 126], [100, 104]]), fill: colors.cream, shadow: true },
+        { d: k.path(ring(100, 80, 26, 34, 18, 162, 20).concat(ring(100, 80, 21, 29, 162, 18, 20))), fill: colors.ink, shadow: true },
+        { d: k.path(ring(104, 112, 6, 6, 0, 360, 10)), fill: "#bfc4c9", shadow: true },
+        { d: k.path(ring(104, 112, 2.6, 2.6, 0, 360, 8)), fill: colors.ink },
+      ];
+    case "judge":
+      return [
+        body("#17151b"),
+        { d: k.path([[78, 77], [122, 77], [112, 96], [100, 112], [88, 96]]), fill: colors.cream, shadow: true },
+        { d: k.path([[78, 77], [100, 112], [88, 128], [64, 82]]), fill: "#17151b", shadow: true },
+        { d: k.path([[122, 77], [136, 82], [112, 128], [100, 112]]), fill: "#17151b", shadow: true },
+        { d: k.path([[64, 82], [70, 80], [94, 128], [88, 128]]), fill: colors.red },
+        { d: k.path([[136, 82], [130, 80], [106, 128], [112, 128]]), fill: colors.red },
+        { d: k.path([[20, 120], [180, 120], [181, 126], [19, 126]]), fill: colors.red },
+      ];
+    case "soldier":
+      return [
+        body("#5b6340"),
+        { d: k.path(ring(52, 100, 14, 9, 0, 360, 10)), fill: "#3f452c" },
+        { d: k.path(ring(150, 108, 16, 10, 0, 360, 10)), fill: "#79845a" },
+        { d: k.path(ring(40, 118, 12, 8, 0, 360, 10)), fill: "#79845a" },
+        { d: k.path([[82, 77], [118, 77], [100, 100]]), fill: "#c9ba8c" },
+        { d: k.path([[80, 77], [100, 100], [92, 110], [66, 82]]), fill: "#5b6340", shadow: true },
+        { d: k.path([[120, 77], [134, 82], [108, 110], [100, 100]]), fill: "#5b6340", shadow: true },
+        { d: k.path([[126, 96], [152, 96], [152, 104], [126, 104]]), fill: colors.cream },
+        { d: k.path([[88, 88], [92, 86], [100, 106], [96, 108]]), fill: "#bfc4c9" },
+        { d: k.path(ring(98, 108, 4, 5, 0, 360, 8)), fill: "#bfc4c9", shadow: true },
+      ];
+    case "worker":
+      return [
+        body(colors.blue),
+        { d: k.path([[84, 77], [116, 77], [100, 92]]), fill: colors.cream },
+        { d: k.path([[58, 82], [84, 77], [100, 100], [116, 77], [142, 82], [138, 128], [62, 128]]), fill: "#ee7d1a", shadow: true },
+        { d: k.path([[68, 82], [78, 80], [76, 128], [66, 128]]), fill: "#e9e4c8" },
+        { d: k.path([[122, 80], [132, 82], [134, 128], [124, 128]]), fill: "#e9e4c8" },
+        { d: k.path([[98, 100], [102, 100], [102, 128], [98, 128]]), fill: "#bf5f0f" },
+      ];
+    case "journalist":
+      return [
+        body("#a98558"),
+        { d: k.path([[84, 77], [116, 77], [100, 96]]), fill: colors.cream },
+        { d: k.path([[80, 77], [100, 96], [90, 112], [66, 82]]), fill: "#a98558", shadow: true },
+        { d: k.path([[120, 77], [134, 82], [110, 112], [100, 96]]), fill: "#a98558", shadow: true },
+        { d: k.path([[88, 80], [92, 80], [100, 106], [96, 108]]), fill: colors.ink },
+        { d: k.path([[112, 80], [108, 80], [100, 106], [104, 108]]), fill: colors.ink },
+        { d: k.path([[88, 106], [112, 106], [112, 126], [88, 126]]), fill: colors.cream, shadow: true },
+        { d: k.path([[88, 106], [112, 106], [112, 112], [88, 112]]), fill: colors.red },
+        { d: k.path([[128, 96], [160, 96], [160, 120], [128, 120]]), fill: colors.ink, shadow: true },
+        { d: k.path(ring(144, 108, 7, 7, 0, 360, 10)), fill: colors.cream },
+        { d: k.path(ring(144, 108, 3.4, 3.4, 0, 360, 8)), fill: "#3b352d" },
+      ];
+    case "lawyer":
+      return [
+        body("#2e3547"),
+        ...[50, 64, 78, 122, 136, 150].map((x) => ({ d: k.path([[x, 90], [x + 2, 90], [x + 2, 128], [x, 128]]), fill: "rgba(251,246,234,.35)" })),
+        { d: k.path([[82, 77], [118, 77], [100, 108]]), fill: colors.cream },
+        { d: k.path([[96, 84], [104, 84], [107, 118], [100, 126], [93, 118]]), fill: colors.yellow },
+        { d: k.path([[80, 77], [100, 108], [86, 126], [66, 82]]), fill: "#2e3547", shadow: true },
+        { d: k.path([[120, 77], [134, 82], [114, 126], [100, 108]]), fill: "#2e3547", shadow: true },
+        { d: k.path([[124, 98], [140, 98], [140, 106], [124, 106]]), fill: colors.cream },
+        { d: k.path(ring(112, 98, 3.4, 3.4, 0, 360, 8)), fill: colors.yellow },
       ];
     case "suit":
     default:
@@ -251,6 +339,38 @@ const hatShapes = (k: Cutter, look: PersonLook, accent: AccentColor): Shape[] =>
           return { d: k.path(ring(x, y, 8, 4, 0, 360, 10).map(([px, py]) => rotate([px, py], [x, y], a + 90))), fill: colors.yellow, shadow: true };
         }),
       ];
+    case "police-cap":
+      return [
+        { d: k.path([[70, 26], [64, -4], [136, -4], [130, 26]]), fill: "#243a6b", shadow: true },
+        { d: k.path([[56, -8], [144, -8], [134, 3], [66, 3]]), fill: "#33508f", shadow: true },
+        { d: k.path([[69, 15], [131, 15], [131, 26], [69, 26]]), fill: colors.ink },
+        { d: k.path([[72, 25], [128, 25], [140, 34], [60, 34]]), fill: colors.ink, shadow: true },
+        { d: k.path(ring(100, 12, 5, 5.5, 0, 360, 8)), fill: colors.yellow },
+      ];
+    case "fire-helmet":
+      return [
+        { d: k.path([[44, 28], [156, 28], [164, 40], [36, 40]]), fill: "#a82a1c", shadow: true },
+        { d: k.path(ring(100, 30, 41, 40, 180, 360, 22).concat([[141, 30], [59, 30]])), fill: "#d23a22", shadow: true },
+        { d: k.path([[95, -12], [105, -12], [105, 30], [95, 30]]), fill: "#a82a1c" },
+        { d: k.path([[84, 6], [116, 6], [116, 22], [100, 30], [84, 22]]), fill: colors.yellow, shadow: true },
+        { d: k.path(ring(100, 16, 3.6, 3.6, 0, 360, 8)), fill: colors.ink },
+      ];
+    case "hard-hat":
+      return [
+        { d: k.path(ring(100, 30, 40, 38, 180, 360, 22).concat([[140, 30], [60, 30]])), fill: "#f0b92a", shadow: true },
+        { d: k.path([[93, -8], [107, -8], [107, 30], [93, 30]]), fill: "#d19a14" },
+        { d: k.path([[52, 26], [148, 26], [154, 34], [46, 34]]), fill: "#f0b92a", shadow: true },
+        { d: k.path([[60, 26], [140, 26], [141, 29], [59, 29]]), fill: "#d19a14" },
+      ];
+    case "army-helmet":
+      return [
+        { d: k.path(ring(100, 30, 42, 38, 180, 360, 22).concat([[142, 30], [58, 30]])), fill: "#5b6340", shadow: true },
+        { d: k.path(ring(78, 12, 9, 6, 0, 360, 10)), fill: "#3f452c" },
+        { d: k.path(ring(118, 8, 11, 6, 0, 360, 10)), fill: "#79845a" },
+        { d: k.path([[54, 24], [146, 24], [148, 32], [52, 32]]), fill: "#3f452c", shadow: true },
+        { d: k.path([[60, 32], [66, 32], [68, 58], [62, 58]]), fill: colors.ink },
+        { d: k.path([[134, 32], [140, 32], [138, 58], [132, 58]]), fill: colors.ink },
+      ];
     case "wig":
       return [
         { d: k.path(bumps(100, 22, 40, 26, 180, 360, 6, 0.12).concat([[140, 28], [60, 28]])), fill: "#ece6da", shadow: true },
@@ -273,13 +393,23 @@ const wigBack = (k: Cutter, look: PersonLook): Shape[] =>
   look.hat === "wig" ? [{ d: k.path([[68, 40], [132, 40], [138, 84], [62, 84]]), fill: "#ddd6c8", shadow: true }] : [];
 
 const build = (look: PersonLook, accent: AccentColor) => {
-  const k = new Cutter(`person-${look.hair}-${look.hat}-${look.outfit}`, 0.45);
+  const k = new Cutter(`person-${look.hair}-${look.hat}-${look.outfit}-${look.gender}-${look.age}`, 0.45);
   const hidden = HIDES_HAIR_TOP.includes(look.hat);
   const skin = SKIN_TONES[look.skin];
   return {
     body: outfitShapes(k, look, accent),
     back: [...wigBack(k, look), ...(look.hat === "wig" ? [] : backHair(k, look, hidden))],
-    neck: { d: k.path([[88, 60], [112, 60], [114, 82], [86, 82]]), fill: skin, shadow: true } as Shape,
+    neck: {
+      d: k.path(
+        look.gender === "woman"
+          ? [[91, 60], [109, 60], [110, 84], [90, 84]]
+          : look.age === "child"
+            ? [[89, 60], [111, 60], [113, 90], [87, 90]]
+            : [[86, 60], [114, 60], [116, 82], [84, 82]],
+      ),
+      fill: skin,
+      shadow: true,
+    } as Shape,
     head: { d: k.path(ring(HEAD.cx, HEAD.cy, HEAD.rx, HEAD.ry, 0, 360, 30), 0.3), fill: skin, shadow: true } as Shape,
     facial: facialShapes(k, look),
     front: look.hat === "wig" ? [] : frontHair(k, look, hidden),
@@ -318,6 +448,13 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
   const parts = React.useMemo(() => build(look, accent), [look, accent]);
   const featureInk = look.skin === "dark" || look.skin === "brown" ? "#120e0a" : colors.ink;
   const faceFill = SKIN_TONES[look.skin];
+  const woman = look.gender === "woman";
+  const child = look.age === "child";
+  const old = look.age === "old";
+  const hairInk = HAIR_TONES[look.hairColor];
+  const bodyFit = child ? "translate(100 128) scale(.86) translate(-100 -128)" : woman ? "translate(100 128) scale(.9 1) translate(-100 -128)" : "";
+  const headFit = child ? "translate(100 70) scale(1.12) translate(-100 -70)" : "";
+  const eye = child ? 4.4 : 3.3;
   return (
     <svg
       width={width}
@@ -326,9 +463,11 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
       style={{ display: "block", overflow: "visible" }}
     >
       <g transform={`translate(0 128) scale(1 ${chest}) translate(0 -128)`}>
+        <g transform={bodyFit}>
         {parts.body.map((s, i) => (
           <Layer key={`b-${i}`} shape={s} />
         ))}
+        </g>
         <g transform="translate(140 104) rotate(-6)">
           <circle cx={1.6} cy={2.2} r={16} fill={shade} />
           <circle r={16} fill={badge} />
@@ -337,7 +476,7 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
           </text>
         </g>
       </g>
-      <g transform={`translate(0 ${(1 - chest) * 40}) rotate(${tilt} 100 70)`}>
+      <g transform={`translate(0 ${(1 - chest) * 40}) rotate(${tilt} 100 70) ${headFit}`}>
         {parts.back.map((s, i) => (
           <Layer key={`k-${i}`} shape={s} />
         ))}
@@ -345,11 +484,22 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
         {[66, 134].map((x) => (
           <ellipse key={`ear-${x}`} cx={x} cy={46} rx={5.5} ry={8} fill={faceFill} stroke={shade} strokeWidth={0.8} />
         ))}
+        {woman ? [66, 134].map((x) => <circle key={`ring-${x}`} cx={x} cy={57} r={3.6} fill={colors.yellow} stroke={shade} strokeWidth={0.6} />) : null}
         <Layer shape={parts.head} />
         <path d="M98 48 L102 48 L104 57 L96 57 Z" fill="rgba(31,26,20,.16)" />
-        {[[82, 94], [106, 118]].map(([a, b]) => (
-          <path key={`brow-${a}`} d={`M${a} 37.5 L${b} 37.5 L${b} 40 L${a} 40.6 Z`} fill={HAIR_TONES[look.hairColor]} />
-        ))}
+        {child ? [[80, 54], [120, 54]].map(([cx, cy]) => <circle key={`cheek-${cx}`} cx={cx} cy={cy} r={5.4} fill="rgba(226,70,44,.3)" />) : null}
+        {woman
+          ? [[82, 94, 1], [118, 106, -1]].map(([a, b, d]) => (
+              <path key={`brow-${a}`} d={`M${a} 39 Q${(a + b) / 2} ${36.4 - d * 0.4} ${b} ${38 + d * 0.6}`} fill="none" stroke={hairInk} strokeWidth={1.7} strokeLinecap="round" />
+            ))
+          : [[82, 94], [106, 118]].map(([a, b]) => (
+              <path key={`brow-${a}`} d={`M${a} ${old ? 36.5 : 37.5} L${b} ${old ? 36.5 : 37.5} L${b} ${old ? 40.4 : 40} L${a} ${old ? 41 : 40.6} Z`} fill={hairInk} />
+            ))}
+        {old ? (
+          <g fill="none" stroke="rgba(31,26,20,.34)" strokeWidth={1.1} strokeLinecap="round">
+            <path d="M84 29 Q100 26 116 29 M86 33 Q100 30 114 33 M81 51 Q88 54 95 51 M105 51 Q112 54 119 51 M88 58 Q85 66 90 73 M112 58 Q115 66 110 73" />
+          </g>
+        ) : null}
         {blink ? (
           <>
             <rect x={84} y={44} width={9} height={2.2} fill={featureInk} />
@@ -357,15 +507,21 @@ export const PersonBust: React.FC<PersonBustProps> = ({ width, initials, badge, 
           </>
         ) : (
           <>
-            <circle cx={88.5 + shift} cy={45} r={3.3} fill={featureInk} />
-            <circle cx={111.5 + shift} cy={45} r={3.3} fill={featureInk} />
+            <circle cx={88.5 + shift} cy={45} r={eye} fill={featureInk} />
+            <circle cx={111.5 + shift} cy={45} r={eye} fill={featureInk} />
+            {child ? [[90, 43.6], [113, 43.6]].map(([cx, cy]) => <circle key={`glint-${cx}`} cx={cx + shift} cy={cy} r={1.3} fill={colors.cream} />) : null}
           </>
         )}
+        {woman ? <path d="M83 41.5 L79 38.6 M85.4 40.2 L83.4 36.6 M117 41.5 L121 38.6 M114.6 40.2 L116.6 36.6" stroke={featureInk} strokeWidth={1.5} strokeLinecap="round" /> : null}
         {parts.facial.map((s, i) => (
           <Layer key={`f-${i}`} shape={s} />
         ))}
         {look.facial === "beard" || look.facial === "goatee" ? <rect x={92} y={61} width={16} height={4} fill={faceFill} /> : null}
-        <rect x={93} y={61.5} width={14} height={2.6} fill={featureInk} transform="rotate(-2 100 62)" />
+        {woman ? (
+          <path d="M92 61 Q96 58.4 100 59.6 Q104 58.4 108 61 Q100 67 92 61 Z" fill="#c4372c" />
+        ) : (
+          <rect x={93} y={61.5} width={14} height={2.6} fill={featureInk} transform="rotate(-2 100 62)" />
+        )}
         {parts.front.map((s, i) => (
           <Layer key={`h-${i}`} shape={s} />
         ))}
