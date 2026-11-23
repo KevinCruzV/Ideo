@@ -39,5 +39,5 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] dessin d'un ronflement
 - [x] bassin qui bascule
 - [x] bras engourdi
-- [ ] mirror
-- [ ] planet Mars
+- [x] mirror
+- [x] planet Mars
