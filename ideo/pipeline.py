@@ -62,11 +62,12 @@ def voiced_scene(scene: dict) -> dict:
     return {k: v for k, v in scene.items() if k != "src"}
 
 
-def _voice_settings(lang: str) -> dict:
-    if config.engine() == "elevenlabs":
+def _voice_settings(lang: str, job: Path | None = None) -> dict:
+    chosen = config.engine(job)
+    if chosen == "elevenlabs":
         return {"engine": "elevenlabs", "voice": config.eleven_voice_id(), "model": config.eleven_model(),
                 **config.eleven_settings()}
-    if lang in voice.KYUTAI_LANGS and config.engine() == "kyutai":
+    if lang in voice.KYUTAI_LANGS and chosen == "kyutai":
         settings = {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
         hook = [config.kyutai_hook_temp(), config.kyutai_hook_padding_bonus()]
         if hook != [config.DEFAULT_HOOK_TEMP, config.DEFAULT_HOOK_PADDING]:
@@ -75,10 +76,10 @@ def _voice_settings(lang: str) -> dict:
     return {"engine": "edge", "voice": config.voice_for(lang), "rate": config.rate()}
 
 
-def part_hash(plan: dict, part: dict) -> str:
+def part_hash(plan: dict, part: dict, job: Path | None = None) -> str:
     content = {
         "lang": plan["lang"],
-        "voice": _voice_settings(plan["lang"]),
+        "voice": _voice_settings(plan["lang"], job),
         "total": len(plan["parts"]),
         "title": part["title"],
         "segments": voice.segments(plan, part),
@@ -155,7 +156,7 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
         n = part["n"]
         if only is not None and n != only:
             continue
-        digest = part_hash(plan, part)
+        digest = part_hash(plan, part, job)
         if _done(job, plan, n, digest) and not voice.stale(job, n) and assemble.mix_current(job, n):
             progress(job, f"OK partie {n:02d} : déjà rendue, inchangée")
         else:
@@ -194,7 +195,7 @@ def status(job: Path) -> str:
     if not md.exists() or md.stat().st_mtime < plan_path.stat().st_mtime:
         return f"fait : prepare ; suivant : check{note}"
     plan = common.load_json(plan_path)
-    todo = [p["n"] for p in plan["parts"] if not _done(job, plan, p["n"], part_hash(plan, p))]
+    todo = [p["n"] for p in plan["parts"] if not _done(job, plan, p["n"], part_hash(plan, p, job))]
     if todo:
         return f"fait : check ; suivant : produce (partie {todo[0]}){note}"
     return f"fait : produce ; suivant : rien, tout est dans {(job / 'out').resolve()}{note}"

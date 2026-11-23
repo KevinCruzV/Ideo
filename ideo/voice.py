@@ -150,10 +150,11 @@ def get_backend(log: Path | None = None) -> VoiceBackend:
     return EdgeTTSBackend(log)
 
 
-def choose_backend(lang: str, log: Path | None = None) -> VoiceBackend:
-    if config.engine() == "elevenlabs":
+def choose_backend(lang: str, log: Path | None = None, job: Path | None = None) -> VoiceBackend:
+    chosen = config.engine(job)
+    if chosen == "elevenlabs":
         return eleven.ElevenLabsBackend(log)
-    if lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed():
+    if lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed():
         return KyutaiBackend(log)
     return get_backend(log)
 
@@ -251,8 +252,9 @@ def stale(job: Path, n: int) -> list[str]:
     if part is None:
         return []
     lang = plan["lang"]
-    paid = config.engine() == "elevenlabs"
-    local = not paid and lang in KYUTAI_LANGS and config.engine() == "kyutai" and config.kyutai_installed()
+    chosen = config.engine(job)
+    paid = chosen == "elevenlabs"
+    local = not paid and lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed()
     out_dir = job / "parts" / f"{n:02d}"
     return [name for name, text in segments(plan, part)
             if (out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()
@@ -453,7 +455,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
     out_dir = job / "parts" / f"{n:02d}"
     out_dir.mkdir(parents=True, exist_ok=True)
     log = job / "logs" / f"voice-{n:02d}.log"
-    backend = backend or choose_backend(lang, log)
+    backend = backend or choose_backend(lang, log, job)
     items = segments(plan, part)
     paths = [out_dir / f"{name}.wav" for name, _ in items]
     kind = _kind(backend)

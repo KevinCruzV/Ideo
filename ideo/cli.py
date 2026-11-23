@@ -8,8 +8,8 @@ from ideo import codes, common, cost, countries, eleven, entretien, history, lea
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| photo <job> \"<nom de la personne>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien")
+         "| photo <job> \"<nom de la personne>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale")
 
 
 class UsageError(Exception):
@@ -145,6 +145,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     job = pipeline.resolve_job(arg)
     if cmd == "photo":
         return [photo.run(job, opts["name"])], 0
+    if cmd == "finale":
+        return [_finale(job)], 0
     if cmd == "musique" and opts.get("dernier"):
         name, seconds = music.take_latest(job)
         stamp = f"{int(seconds) // 60}:{int(seconds) % 60:02d}" if seconds else "durée inconnue"
@@ -196,6 +198,27 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
 
 
+ENGINE_NAMES = {"elevenlabs": "ElevenLabs", "kyutai": "locale Kyutai", "edge": "en ligne"}
+
+
+def _finale(job: Path) -> str:
+    from ideo import config, voice
+
+    final = config.final_engine()
+    if final == config.draft_engine():
+        raise common.IdeoError("aucune voix finale différente du brouillon : ajoute une clé ElevenLabs "
+                               "(python -m ideo.cle) ou choisis « engine » dans config.json.")
+    if not (job / "plan.json").exists():
+        raise common.IdeoError("plan.json est introuvable : écris d'abord le plan.")
+    plan = common.load_json(job / "plan.json")
+    config.mark_final(job)
+    cost = ""
+    if final == "elevenlabs":
+        total = sum(len(text) for part in plan["parts"] for _, text in voice.segments(plan, part))
+        cost = f", environ {total} caractères ElevenLabs"
+    return f"OK finale : voix {ENGINE_NAMES.get(final, final)}{cost}. Lance produce pour refaire la voix et le rendu."
+
+
 def _eleven_chars(plan: dict) -> str:
     from ideo import config, voice
 
@@ -204,7 +227,7 @@ def _eleven_chars(plan: dict) -> str:
     total = 0
     for part in plan["parts"]:
         total += sum(len(text) for _, text in voice.segments(plan, part))
-    return f", environ {total} caractères ElevenLabs"
+    return f", environ {total} caractères ElevenLabs pour la version finale"
 
 
 def _notice_tail() -> str:
@@ -240,6 +263,14 @@ def _learn_from_run(job: Path, pairs: list) -> list[str]:
     return [f"Leçon automatique : {lesson}" for lesson in (_safely(learn.auto_lessons) or [])]
 
 
+def _draft_note(job: Path) -> list[str]:
+    from ideo import config
+
+    if config.is_final(job) or config.final_engine() == config.draft_engine():
+        return []
+    return [f"Voix : brouillon gratuit, lance finale pour la voix {ENGINE_NAMES.get(config.final_engine(), config.final_engine())}"]
+
+
 def _voice_notes(job: Path, part: int | None) -> list[str]:
     notes = []
     characters = None
@@ -271,7 +302,7 @@ def _voice_notes(job: Path, part: int | None) -> list[str]:
 
 
 def _after_produce(job: Path, part: int | None) -> list[str]:
-    voice_notes = _safely(_voice_notes, job, part) or []
+    voice_notes = (_safely(_voice_notes, job, part) or []) + (_safely(_draft_note, job) or [])
     try:
         pairs = qc.run_coded(job, part)
         pieces = [qc.summary(job, [text for _, text in pairs])]

@@ -41,7 +41,7 @@ Règles pour toute la tâche :
 6. Lance tout de suite, en arrière-plan :
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo produce JOB`
    Attends la notification de fin. Si l'utilisateur demande où en est le rendu, lance `tail -n 3 JOB/logs/progress.log` et donne la réponse en une phrase.
-7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), la ou les couvertures (`.png`, à choisir comme couverture au moment de publier sur TikTok), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
+7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), la ou les couvertures (`.png`, à choisir comme couverture au moment de publier sur TikTok), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Si elle contient `Voix : brouillon gratuit`, dis en une phrase que cette version a une voix gratuite et que, quand la vidéo lui convient, il peut dire « version finale ». Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
 8. Entretien automatique. Si la ligne `OK produce` contient `Entretien à lancer :`, lance l'entretien toi-même, après avoir donné la vidéo à l'utilisateur, sans attendre qu'il le demande :
    - Dis-lui en une phrase : "Je lance l'entretien du skill en arrière-plan (<raison affichée>). Tu peux continuer."
    - Lance un sous-agent en arrière-plan avec l'outil Agent (ou Task), modèle `sonnet`, avec exactement cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/SKILL.md et fais l'entretien qu'il décrit, de l'étape 1 à l'étape 11. Tu es le modèle capable : fais le travail toi-même." (remplace le chemin par le vrai, celui du dossier de ce skill avec `entretien` à la place de `ideo`).
@@ -59,6 +59,13 @@ Quand l'utilisateur dit ce qui ne va pas (ou ce qui lui plaît) dans une vidéo 
    et dis à l'utilisateur que c'est noté pour une correction du code.
 3. Remplace toute apostrophe de la phrase par `’` avant de lancer la commande. Montre à l'utilisateur la ligne `OK learn : ...`.
 4. S'il veut aussi refaire cette vidéo : corrige `JOB/plan.json` avec Edit, puis reprends à l'étape 4.
+
+## "Version finale"
+
+Chaque vidéo sort d'abord avec une voix gratuite (brouillon). Quand l'utilisateur valide une vidéo ("version finale", "c'est bon, passe en ElevenLabs", "valide la vidéo") :
+1. Lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo finale JOB`. Recopie à l'utilisateur, en une phrase, la voix et le nombre de caractères de la ligne `OK finale`.
+2. Reprends à l'étape 6 (produce en arrière-plan), puis l'étape 7. Seuls la voix et le rendu sont refaits.
+Ne lance jamais `finale` de toi-même, ni pour une vidéo d'entraînement. Après `finale`, une correction du texte refait la voix payante des phrases modifiées : préviens l'utilisateur avant.
 
 ## "Approfondis ce point"
 
