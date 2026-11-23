@@ -93,6 +93,7 @@ def configure(settings):
 @pytest.fixture
 def eleven_job(job_with_plan, server, monkeypatch):
     configure({})
+    config.mark_final(job_with_plan)
     monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [])
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: 1.0)
     return job_with_plan
@@ -443,6 +444,7 @@ def test_choose_backend_picks_elevenlabs(server, tmp_path):
 def test_produce_line_carries_the_character_count(produce_job, server, monkeypatch, capsys):
     job = produce_job[0]
     configure({})
+    config.mark_final(job)
     monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [])
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: 1.0)
     plan = common.load_json(job / "plan.json")
@@ -456,6 +458,7 @@ def test_produce_line_carries_the_character_count(produce_job, server, monkeypat
 def test_produce_line_says_the_fallback(produce_job, server, monkeypatch, capsys):
     job, backend, _ = produce_job
     configure({})
+    config.mark_final(job)
     server.fail = (429, "quota")
     assert cli.main(["produce", str(job)]) == 0
     line = capsys.readouterr().out.strip().splitlines()[0]

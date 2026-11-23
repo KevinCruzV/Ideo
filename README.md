@@ -22,7 +22,9 @@ Conseil : lance la session avec le modèle le moins cher (`/model haiku`), Sonne
 
 ## La voix
 
-Avec une clé ElevenLabs, ideo utilise la voix ElevenLabs « Jessica » (réglages : stabilité 0,45, style 0,30, vitesse 1,0). Chaque vidéo consomme des caractères ElevenLabs, affichés par `prepare`, `cost`, `check` et `produce` : le compte gratuit en donne environ 10 000 par mois, soit 4 à 5 vidéos de 2 minutes. Si ElevenLabs échoue (quota, réseau), ideo passe sur la voix locale.
+Chaque vidéo sort d'abord en brouillon, avec une voix gratuite : la voix locale, ou la voix en ligne si elle manque. Quand la vidéo te convient, dis « version finale » : ideo lance `finale`, puis refait seulement la voix et le rendu avec la voix choisie dans `config.json` (`engine`), ElevenLabs par défaut quand une clé existe. Seule la version finale consomme des caractères ElevenLabs.
+
+ElevenLabs utilise la voix « Jessica » (réglages : stabilité 0,45, style 0,30, vitesse 1,0). Les caractères d'une version finale sont affichés par `prepare`, `cost`, `check`, `finale` et `produce` : le compte gratuit en donne environ 10 000 par mois, soit 3 à 4 vidéos finales de 2 à 3 minutes, sans droit d'usage commercial. Si ElevenLabs échoue (quota, réseau), ideo passe sur la voix locale.
 
 Sans clé, sur un Mac Apple Silicon, ideo utilise une voix locale, gratuite et sans internet une fois installée (environ 4,5 Go). Si elle manque, le skill le dit et l'installe tout seul pendant qu'il écrit le plan ; en cas d'échec ou sur un autre Mac, il utilise une voix en ligne. Chaque phrase produite est réécoutée automatiquement et refaite si elle ne correspond pas au texte.
 

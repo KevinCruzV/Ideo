@@ -179,13 +179,38 @@ def local_voice_missing(lang: str) -> bool:
     return _load().get("engine") != "edge"
 
 
-def engine() -> str:
+FINAL_FILE = "voix-finale.json"
+FREE_ENGINES = ("kyutai", "edge")
+
+
+def final_engine() -> str:
     chosen = _load().get("engine")
     if chosen:
         return chosen
     if eleven_key():
         return "elevenlabs"
     return "kyutai" if kyutai_available() else "edge"
+
+
+def draft_engine() -> str:
+    chosen = _load().get("engine")
+    if chosen in FREE_ENGINES:
+        return chosen
+    return "kyutai" if kyutai_available() else "edge"
+
+
+def is_final(job: Path) -> bool:
+    return (Path(job) / FINAL_FILE).exists()
+
+
+def mark_final(job: Path) -> None:
+    (Path(job) / FINAL_FILE).write_text(json.dumps({"engine": final_engine()}) + "\n", encoding="utf-8")
+
+
+def engine(job: Path | None = None) -> str:
+    if job is None or is_final(job):
+        return final_engine()
+    return draft_engine()
 
 
 def kyutai_voice() -> str:
