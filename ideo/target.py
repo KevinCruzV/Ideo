@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ideo import plan_check, speed
 
-TABLE = ((240, (45, 100)), (600, (90, 150)), (float("inf"), (120, 180)))
+TABLE = ((240, (65, 100)), (600, (90, 150)), (float("inf"), (120, 180)))
 HARD_MAX = 300
 
 

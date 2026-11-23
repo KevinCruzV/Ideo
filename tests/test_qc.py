@@ -140,15 +140,15 @@ def duration_alerts(job):
 def test_under_the_hard_minimum_is_an_alert(made):
     job, _ = made
     found = duration_alerts(job)
-    assert len(found) == 1 and "hors des bornes d'une vidéo (45 à 300 s)" in found[0] and "minimum de 45 s" in found[0]
+    assert len(found) == 1 and "hors des bornes d'une vidéo (65 à 300 s)" in found[0] and "minimum de 65 s" in found[0]
 
 
-def test_between_45_and_300_seconds_is_never_an_alert_even_under_the_advised_minimum(made):
+def test_between_65_and_300_seconds_is_never_an_alert_even_under_the_advised_minimum(made):
     job, _ = made
     common.save_json(job / "info.json", {"duration": 1800})
-    edit_timeline(job, lambda tl: tl.update(durationInFrames=60 * 30))
+    edit_timeline(job, lambda tl: tl.update(durationInFrames=120 * 30))
     assert duration_alerts(job) == []
-    edit_timeline(job, lambda tl: tl.update(durationInFrames=45 * 30))
+    edit_timeline(job, lambda tl: tl.update(durationInFrames=65 * 30))
     assert duration_alerts(job) == []
 
 

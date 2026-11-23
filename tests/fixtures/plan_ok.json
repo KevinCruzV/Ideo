@@ -62,7 +62,7 @@
         },
         {
           "type": "stack-list",
-          "say": "Heureusement il existe des gestes simples pour ralentir cette perte, comme revoir une information juste avant de l'oublier ou se tester soi-même plutôt que relire.",
+          "say": "Heureusement il existe des gestes simples pour ralentir cette perte, comme revoir une information juste avant de l'oublier ou se tester soi-même plutôt que relire. Ces petites habitudes prennent quelques minutes par jour et changent vraiment ce que nous retenons sur plusieurs semaines.",
           "props": {
             "items": [
               "revoir",

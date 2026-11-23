@@ -20,7 +20,7 @@ from ideo import codes
     ("S : tiret cadratin interdit dans « x ». Remplace-le", "tiret-cadratin"),
     ("S : « src » est manquant. Recopie le « mm:ss »", "src-invalide"),
     ("S : le son 1:10 n'est pas dans sfx.json. Repères disponibles", "sfx-invalide"),
-    ("Partie 1 : durée estimée 30 s, trop courte (minimum 45 s).", "plan-trop-court"),
+    ("Partie 1 : durée estimée 30 s, trop courte (minimum 65 s).", "plan-trop-court"),
     ("Partie 1 : durée estimée 400 s, trop longue (maximum 300 s).", "plan-trop-long"),
     ("Plan : le contenu tient en une seule vidéo (durée estimée totale 200 s).", "parties-fusionnables"),
     ("Partie 1 : 46 scènes, 45 au plus par vidéo. Retire", "trop-de-scenes"),

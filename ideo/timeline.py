@@ -272,7 +272,7 @@ def _build(job: Path, n: int, total: int) -> Path:
         "durationInFrames": frames,
         "lang": lang,
         "audio": "part.wav",
-        "watermark": "@ideovideos",
+        "watermark": "@idevideos",
         "chapter": {"part": n, "total": total, "title": part["title"], "label": i18n.t("part_label", lang)},
         "segments": segments,
         "captions": captions,

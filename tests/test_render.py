@@ -196,7 +196,7 @@ def job_with_timeline_fixture(job_sources):
     ]
     timeline = {
         "fps": 30, "width": 1080, "height": 1920, "durationInFrames": 120, "lang": "fr",
-        "audio": "part.wav", "watermark": "@ideovideos",
+        "audio": "part.wav", "watermark": "@idevideos",
         "chapter": {"part": 1, "total": 1, "title": "L'oubli", "label": "Partie"},
         "segments": [
             {"kind": "hook", "from": 0, "to": 45, "props": {"text": "Dis-moi pourquoi tu oublies"}, "items": []},
@@ -228,13 +228,13 @@ def test_real_duration_outside_bounds_is_flagged_in_progress_log(job_sources, mo
     monkeypatch.setattr(render, "probe_media", lambda p: dict(GOOD))
     render.render_part(job_sources, 1)
     log = (job_sources / "logs" / "progress.log").read_text(encoding="utf-8")
-    assert "ATTENTION partie 01 : durée réelle 4.0 s, hors de 45 à 300 s" in log
+    assert "ATTENTION partie 01 : durée réelle 4.0 s, hors de 65 à 300 s" in log
 
 
 def test_real_duration_inside_bounds_is_not_flagged(job_sources, monkeypatch):
-    prepare_render(job_sources, 1800)
+    prepare_render(job_sources, 2700)
     monkeypatch.setattr(common, "run", fake_run([]))
-    monkeypatch.setattr(render, "probe_media", lambda p: {**GOOD, "duration": 60.0})
+    monkeypatch.setattr(render, "probe_media", lambda p: {**GOOD, "duration": 90.0})
     render.render_part(job_sources, 1)
     progress = job_sources / "logs" / "progress.log"
     assert not progress.exists() or "ATTENTION" not in progress.read_text(encoding="utf-8")

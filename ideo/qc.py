@@ -170,7 +170,7 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
         alerts.append(("duree-hors-cible", f"{where} : durée finale {_sec(total)}, hors des bornes d'une vidéo "
                                            f"({plan_check.MIN_SECONDS} à {HARD_MAX} s). "
                                            + ("Coupe des scènes ou découpe en plusieurs parties." if total > HARD_MAX
-                                              else "La vidéo est plus courte que le minimum de 45 s.")))
+                                              else f"La vidéo est plus courte que le minimum de {plan_check.MIN_SECONDS} s.")))
     video = render.mp4_path(job, plan, n)
     if not video.exists() or video.stat().st_size == 0:
         alerts.append(("video-absente", f"{where} : la vidéo {video.name} est absente ou vide. Relance produce."))

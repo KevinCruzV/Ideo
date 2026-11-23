@@ -14,7 +14,7 @@ def test_useful_seconds_without_ranges():
 
 
 @pytest.mark.parametrize("useful,expected", [
-    (30, (45, 100)), (239, (45, 100)), (240, (90, 150)), (599, (90, 150)), (600, (120, 180)), (3000, (120, 180)),
+    (30, (65, 100)), (239, (65, 100)), (240, (90, 150)), (599, (90, 150)), (600, (120, 180)), (3000, (120, 180)),
 ])
 def test_bounds_by_useful_source_duration(useful, expected):
     assert target.bounds(useful) == expected
