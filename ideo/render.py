@@ -255,8 +255,7 @@ def write_sources(job: Path) -> Path:
     credit = _music_credit(job)
     if credit:
         lines += [credit, ""]
-    picture = photo.credit_line(job)
-    if picture:
+    for picture in photo.credit_lines(job):
         lines += [picture, ""]
     path = job / "out" / "sources.md"
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -169,23 +169,24 @@ def _share_looks(scenes: dict) -> dict:
     return out
 
 
-def _stage_photo(job: Path, out_dir: Path) -> str | None:
-    source = photo.image_path(job)
-    if source is None:
-        return None
-    for stale in out_dir.glob("photo.*"):
+def _stage_photo(job: Path, out_dir: Path) -> list[dict]:
+    for stale in out_dir.glob("photo*.*"):
         stale.unlink()
-    shutil.copyfile(source, out_dir / source.name)
-    return source.name
+    staged = photo.all_stored(job)
+    for entry in staged:
+        shutil.copyfile(Path(job) / entry["image"], out_dir / entry["image"])
+    return staged
 
 
-def _with_photo(scene: dict, staged: str | None) -> dict:
+def _with_photo(scene: dict, staged: list[dict]) -> dict:
     props = scene.get("props", {})
     if scene.get("type") != "person-card" or props.get("photo") is not True:
         return scene
-    if staged is None:
+    name = props.get("name")
+    found = photo.match(staged, name) if isinstance(name, str) else None
+    if found is None:
         return {**scene, "props": {k: v for k, v in props.items() if k != "photo"}}
-    return {**scene, "props": {**props, "photo": staged}}
+    return {**scene, "props": {**props, "photo": found["image"]}}
 
 
 def _first_variant(title: str, kind: str) -> int:

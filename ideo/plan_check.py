@@ -179,16 +179,17 @@ def _sfx_by_ts(sfx: list) -> dict:
 
 
 def _photo_errors(props: dict, where: str, ctx: dict) -> list[str]:
-    found = ctx.get("photo")
+    found = ctx.get("photos")
     if not found:
         return [f"{where} : « photo » demande une photo libre de droits dans le job : lance « ideo photo <job> \"<nom>\" » "
                 "et garde « photo » seulement si la réponse n'est pas « aucune photo libre ». Sinon retire « photo »."]
     if ctx.get("mood") == "dark":
         return [f"{where} : pas de photo dans un fait divers (« mood »: \"dark\"). Retire « photo » ou « mood »."]
     name = props.get("name")
-    wanted = set(_plain(found.get("person", "")).split())
-    if isinstance(name, str) and wanted and not wanted & set(_plain(name).split()):
-        return [f"{where} : la photo du job est celle de {found.get('person')}, pas de « {name} ». Retire « photo » sur cette carte."]
+    if isinstance(name, str) and photo.match(found, name) is None:
+        people = [p.get("person", "") for p in found]
+        who = f"la photo du job est celle de {people[0]}" if len(people) == 1 else f"les photos du job sont celles de {' et '.join(people)}"
+        return [f"{where} : {who}, pas de « {name} ». Retire « photo » sur cette carte ou lance « ideo photo <job> \"{name}\" »."]
     return []
 
 
@@ -515,7 +516,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
         "ends": end_ranges(job),
         "sponsor": sponsor,
         "grams": source_grams(words, COPY_GRAM),
-        "photo": photo.stored(job),
+        "photos": photo.all_stored(job),
         "mood": plan.get("mood"),
     }
     _check_channel([("series_title", plan.get("series_title"))], "Plan", ctx, errors)

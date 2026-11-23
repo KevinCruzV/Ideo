@@ -70,6 +70,7 @@ describe("photoSource", () => {
   test("accepte un nom de fichier image du job et rien d'autre", () => {
     expect(photoSource("photo.jpg")).toBe("photo.jpg");
     expect(photoSource("photo.png")).toBe("photo.png");
+    expect(photoSource("photo-marie-curie.jpg")).toBe("photo-marie-curie.jpg");
     expect(photoSource(true)).toBeNull();
     expect(photoSource("../secret.jpg")).toBeNull();
     expect(photoSource("http://x/y.jpg")).toBeNull();
