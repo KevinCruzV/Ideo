@@ -8,7 +8,7 @@ model: sonnet
 
 Ce skill tourne sur Sonnet. L'utilisateur n'intervient que pour donner ses retours après la vidéo : entre l'URL et la vidéo finie, ne lui demande que la musique (étape 5) : ni validation du plan, ni changement de modèle. Pose toutes tes questions avec l'outil AskUserQuestion, pour rester dans le même tour. Quand un travail demande un modèle plus capable, confie-le à un sous-agent avec l'outil Agent et le bon `model` :
 - Sonnet (toi) : tout, y compris l'entretien (étape 8).
-- Opus : seulement quand check échoue 3 fois de suite (étape 4).
+- Opus : seulement quand check échoue 3 fois de suite (étape 4), et pour relire l'entretien (étape 8).
 
 Règles pour toute la tâche :
 - Lis le guide (`plan-guide.md`), les leçons (`lecons.md`) et `transcript_compact.md` UNE seule fois chacun : chaque ligne est lue une fois, jamais deux. Pour la transcription, c'est un seul Read, ou les Read par morceaux que donne la ligne `OK prepare` (étape 2). Ne les relis jamais. Seule exception : l'étape 2 de "Approfondis ce point".
@@ -44,8 +44,9 @@ Règles pour toute la tâche :
 7. La ligne `OK produce : ...` liste des chemins séparés par ` ; `. Donne-les à l'utilisateur : la ou les vidéos (`.mp4`), `sources.md` et la ou les descriptions (`.txt`). Elle finit par `Contrôle : N alerte(s)` : s'il y en a, donne à l'utilisateur le chemin de `qc.md` et le nombre d'alertes, sans les corriger toi-même. Termine par : "Dis-moi ce qui ne va pas dans la vidéo, je le retiendrai pour les suivantes."
 8. Entretien automatique. Si la ligne `OK produce` contient `Entretien à lancer :`, lance l'entretien toi-même, après avoir donné la vidéo à l'utilisateur, sans attendre qu'il le demande :
    - Dis-lui en une phrase : "Je lance l'entretien du skill en arrière-plan (<raison affichée>). Tu peux continuer."
-   - Lance un sous-agent en arrière-plan avec l'outil Agent (ou Task), modèle `sonnet`, avec exactement cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/SKILL.md et fais l'entretien qu'il décrit, de l'étape 1 à l'étape 9. Tu es le modèle capable : fais le travail toi-même." (remplace le chemin par le vrai, celui du dossier de ce skill avec `entretien` à la place de `ideo`).
-   - Quand il a fini, recopie ses trois lignes de résumé à l'utilisateur. S'il échoue ou si tu ne peux pas lancer de sous-agent, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo entretien --echec 'entretien non lancé'` et dis à l'utilisateur de lancer "entretien ideo" avec le modèle Sonnet.
+   - Lance un sous-agent en arrière-plan avec l'outil Agent (ou Task), modèle `sonnet`, avec exactement cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/SKILL.md et fais l'entretien qu'il décrit, de l'étape 1 à l'étape 11. Tu es le modèle capable : fais le travail toi-même." (remplace le chemin par le vrai, celui du dossier de ce skill avec `entretien` à la place de `ideo`).
+   - Quand il a fini, si son résumé ne contient pas de ligne « Relecture », lance un sous-agent avec le modèle `opus` et cette consigne : "Lis /Users/<toi>/Desktop/ideo/skills/entretien/relecture.md et fais la relecture qu'il décrit. Branche de départ : <branche de départ>. Branche d'entretien : <branche d'entretien>." (les deux branches sont dans son résumé ; même remplacement du chemin).
+   - Recopie ensuite ses trois lignes de résumé à l'utilisateur, plus celles de la relecture. S'il échoue ou si tu ne peux pas lancer de sous-agent, lance `cd ~/Desktop/ideo && .venv/bin/python -m ideo entretien --echec 'entretien non lancé'` et dis à l'utilisateur de lancer "entretien ideo" avec le modèle Sonnet.
    Si la ligne contient seulement `Entretien conseillé :`, dis-le à l'utilisateur en une phrase et ne lance rien.
 
 ## Retours de l'utilisateur
