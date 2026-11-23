@@ -326,3 +326,26 @@ def test_captions_show_the_space_before_high_punctuation_and_anchors_still_work(
     seg = tl["segments"][4]
     assert seg["items"][0]["at"] == min(round((offsets[4]["start"] + 5 * (1.0 / 9)) * 30), seg["from"] + 9)
     assert seg["items"][0]["at"] > seg["from"] + 5
+
+
+def test_stamps_and_counters_take_turns_between_variants(job_with_offsets):
+    plan = common.load_json(job_with_offsets / "plan.json")
+    scenes = plan["parts"][0]["scenes"]
+    scenes[0].update(type="stamp", props={"text": "Un"}, items=[])
+    scenes[1].update(type="counter", props={"to": 5}, items=[])
+    scenes[2].update(type="stamp", props={"text": "Deux"}, items=[])
+    scenes[3].update(type="counter", props={"to": 9}, items=[])
+    common.save_json(job_with_offsets / "plan.json", plan)
+    first = build(job_with_offsets)
+    variants = {kind: [s["props"]["variant"] for s in first["segments"] if s.get("type") == kind] for kind in ("stamp", "counter")}
+    for kind, found in variants.items():
+        assert len(found) == 2 and found[0] != found[1]
+        assert all(v in range(timeline.VARIANTS) for v in found)
+    assert build(job_with_offsets)["segments"] == first["segments"]
+    saved = common.load_json(job_with_offsets / "plan.json")["parts"][0]["scenes"]
+    assert all("variant" not in s["props"] for s in saved)
+
+
+def test_other_scene_types_get_no_variant(job_with_offsets):
+    assert all("variant" not in s.get("props", {}) for s in build(job_with_offsets)["segments"]
+               if s.get("type") not in timeline.VARIED)

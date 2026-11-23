@@ -75,3 +75,9 @@ export const earlyItems = (items: TimelineItem[], from: number): TimelineItem[] 
 
 export const photoSource = (value: unknown): string | null =>
   typeof value === "string" && /^[\w-]+\.(jpe?g|png|webp)$/i.test(value) ? value : null;
+
+export const variantOf = (value: unknown, count: number): number => {
+  const n = num(value);
+  if (n === null || count <= 0) return 0;
+  return ((Math.round(n) % count) + count) % count;
+};

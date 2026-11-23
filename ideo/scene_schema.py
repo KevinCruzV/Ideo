@@ -2,6 +2,7 @@ import math
 import re
 import unicodedata
 
+TIMELINE_PROPS = frozenset({"variant"})
 TEXT = "text"
 NUMBER = "number"
 LABEL = "label"
