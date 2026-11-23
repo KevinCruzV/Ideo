@@ -15,3 +15,6 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-22] Pas de scène quote quand la phrase est lue par le présentateur de la vidéo : seule la vraie voix de la personne citée compte.
 - [2026-11-22] Le dessin montre exactement l’objet dont parle la phrase : un SMS ou un message, c’est un téléphone, jamais un écran de télé.
 - [2026-11-22] Accroche d’histoire : phrase pleine et forte, « Il a fait croire à tout un pays qu’il était innocent », pas « au pays ».
+- [2026-11-23] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
+- [2026-11-23] Pas plus de 2 scènes stamp et 2 scènes counter par vidéo : pour varier, prends un dessin (object-state, versus, shape-diagram, map, body) plutôt qu’une carte de texte.
+- [2026-11-23] Une personne historique connue (savant, chef d’État, artiste) a sa vraie photo sur sa person-card : lance ideo photo avant le plan, même hors biographie, jamais pour un fait divers.
