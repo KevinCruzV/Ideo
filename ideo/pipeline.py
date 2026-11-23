@@ -121,9 +121,10 @@ def _clean_extra_outputs(job: Path, plan: dict) -> None:
     numbers = {p["n"] for p in plan["parts"]}
     keep = {render.mp4_path(job, plan, n).name for n in numbers}
     keep |= {render.description_path(job, plan, n).name for n in numbers}
+    keep |= {render.cover_path(job, plan, n).name for n in numbers}
     out = job / "out"
     if out.is_dir():
-        for pattern in ("video.mp4", "partie-*.mp4", "description*.txt"):
+        for pattern in ("video.mp4", "partie-*.mp4", "description*.txt", "cover*.png"):
             for path in out.glob(pattern):
                 if path.name not in keep:
                     path.unlink()
@@ -171,7 +172,9 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
             render.render_part(job, n)
             progress(job, f"OK render-{n:02d}")
         render.write_description(job, n)
-        outputs += [render.mp4_path(job, plan, n), render.description_path(job, plan, n)]
+        cover = render.write_cover(job, n)
+        progress(job, f"OK cover-{n:02d}")
+        outputs += [render.mp4_path(job, plan, n), cover, render.description_path(job, plan, n)]
     outputs.append(render.write_sources(job))
     progress(job, "OK sources")
     return [p.resolve() for p in outputs]

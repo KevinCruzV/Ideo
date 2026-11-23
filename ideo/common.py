@@ -15,6 +15,7 @@ YOUTUBE_HOSTS = frozenset({
     "youtu.be", "youtube-nocookie.com", "www.youtube-nocookie.com",
 })
 PATH_PREFIXES = ("shorts", "live", "embed")
+WATERMARK = "@idevideos"
 
 
 class IdeoError(Exception):
