@@ -1,3 +1,4 @@
+import hashlib
 import math
 import re
 from pathlib import Path
@@ -13,6 +14,8 @@ PAUSE = 0.5
 MAX_GROUP = 4
 FIRST_ITEM_FRAMES = 9
 UNCAPPED = frozenset({"object-state"})
+VARIED = frozenset({"stamp", "counter"})
+VARIANTS = 3
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
 BEAT_GAP = 4 * FPS
@@ -185,6 +188,11 @@ def _with_photo(scene: dict, staged: str | None) -> dict:
     return {**scene, "props": {**props, "photo": staged}}
 
 
+def _first_variant(title: str, kind: str) -> int:
+    digest = hashlib.sha256(f"{kind}:{title}".encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % VARIANTS
+
+
 def build_timeline(job: Path, n: int, total: int) -> Path:
     job = Path(job)
     step = f"timeline-{n:02d}"
@@ -229,6 +237,7 @@ def _build(job: Path, n: int, total: int) -> Path:
     staged = _stage_photo(job, out_dir)
     segments = []
     captions = []
+    turns = {kind: _first_variant(part["title"], kind) for kind in VARIED}
     for entry, begin, finish in zip(offsets, starts, ends):
         name = entry["seg"]
         words_path = out_dir / f"{name}.words.json"
@@ -257,8 +266,12 @@ def _build(job: Path, n: int, total: int) -> Path:
                 if not items and scene["type"] not in UNCAPPED:
                     at = min(at, begin + FIRST_ITEM_FRAMES)
                 items.append({"el": item["el"], "at": at})
+            props = scene.get("props", {})
+            if scene["type"] in VARIED:
+                props = {**props, "variant": turns[scene["type"]] % VARIANTS}
+                turns[scene["type"]] += 1
             segment = {"kind": "scene", "type": scene["type"], "from": begin, "to": finish,
-                       "props": scene.get("props", {}), "items": items}
+                       "props": props, "items": items}
             limit = min(_frame(clip["start"]), finish) if clip else finish
             beats = beat_frames(scene["say"], seg_words, entry["start"], seg_dur, begin, limit, [i["at"] for i in items])
             if beats:
@@ -272,7 +285,7 @@ def _build(job: Path, n: int, total: int) -> Path:
         "durationInFrames": frames,
         "lang": lang,
         "audio": "part.wav",
-        "watermark": "@idevideos",
+        "watermark": common.WATERMARK,
         "chapter": {"part": n, "total": total, "title": part["title"], "label": i18n.t("part_label", lang)},
         "segments": segments,
         "captions": captions,

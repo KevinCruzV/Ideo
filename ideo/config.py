@@ -7,7 +7,7 @@ from ideo import common
 
 DEFAULT_RATE = "+0%"
 DEFAULT_SEUIL = 5
-DEFAULT_MUSIC_LEVEL = -27
+DEFAULT_MUSIC_LEVEL = -23
 KYUTAI_LANGS = ("fr", "en")
 ENGINES = ("kyutai", "edge", "elevenlabs")
 DEFAULT_ELEVEN_MODEL = "eleven_multilingual_v2"

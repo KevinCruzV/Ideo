@@ -11,6 +11,8 @@ WIDTH = 1080
 HEIGHT = 1920
 DURATION_TOLERANCE = 0.2
 EXCERPT_WORDS = 8
+COVER_FRAME = 59
+PICTO_KEYS = ("picto", "left_picto", "right_picto")
 
 
 def _plan(job: Path) -> dict:
@@ -32,6 +34,75 @@ def mp4_path(job: Path, plan: dict, n: int) -> Path:
 def description_path(job: Path, plan: dict, n: int) -> Path:
     name = "description.txt" if _single(plan) else f"description-{n:02d}.txt"
     return Path(job) / "out" / name
+
+
+def cover_path(job: Path, plan: dict, n: int) -> Path:
+    name = "cover.png" if _single(plan) else f"cover-{n:02d}.png"
+    return Path(job) / "out" / name
+
+
+def _picto_of(props: dict) -> str | None:
+    for key in PICTO_KEYS:
+        value = props.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    for cell in props.get("cells") or []:
+        if isinstance(cell, dict) and isinstance(cell.get("picto"), str) and cell["picto"].strip():
+            return cell["picto"].strip()
+    return None
+
+
+def cover_picto(part: dict) -> str | None:
+    for scene in part.get("scenes") or []:
+        props = scene.get("props") if isinstance(scene, dict) else None
+        found = _picto_of(props) if isinstance(props, dict) else None
+        if found:
+            return found
+    return None
+
+
+def cover_props(plan: dict, part: dict) -> dict:
+    lang = plan.get("lang") or "fr"
+    props = {
+        "title": part["title"],
+        "hook": part.get("hook") or "",
+        "picto": cover_picto(part),
+        "watermark": common.WATERMARK,
+        "part": part["n"],
+        "total": len(plan["parts"]),
+        "label": i18n.t("part_label", lang),
+    }
+    if plan.get("mood") == "dark":
+        props["mood"] = "dark"
+    return props
+
+
+def write_cover(job: Path, n: int) -> Path:
+    job = Path(job)
+    plan = _plan(job)
+    part = next((p for p in plan["parts"] if p["n"] == n), None)
+    if part is None:
+        raise common.IdeoError(f"partie {n} introuvable dans plan.json")
+    props = cover_props(plan, part)
+    part_dir = job / "parts" / f"{n:02d}"
+    part_dir.mkdir(parents=True, exist_ok=True)
+    props_path = part_dir / "cover.json"
+    out = cover_path(job, plan, n)
+    if out.exists() and props_path.exists() and common.load_json(props_path) == props:
+        return out
+    common.save_json(props_path, props)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.unlink(missing_ok=True)
+    log = job / "logs" / f"cover-{n:02d}.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    common.run(
+        [_pnpm(), "--dir", str(REPO / "render"), "exec", "remotion", "still", "Cover", str(out.resolve()),
+         f"--props={props_path.resolve()}", f"--frame={COVER_FRAME}"],
+        log,
+    )
+    if not out.exists():
+        raise common.IdeoError(f"la couverture n'a pas été produite : voir {log}")
+    return out
 
 
 def _pnpm() -> str:

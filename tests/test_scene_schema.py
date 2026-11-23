@@ -59,7 +59,8 @@ def test_schema_props_are_the_ones_the_component_reads(kind):
         if re.search(rf"props\.{shared}\b", path.read_text(encoding="utf-8")):
             read.add(shared)
     schema = scene_schema.SCHEMA[kind]
-    assert read == set(schema["required"]) | set(schema["optional"])
+    assert read - scene_schema.TIMELINE_PROPS == set(schema["required"]) | set(schema["optional"])
+    assert not scene_schema.TIMELINE_PROPS & (set(schema["required"]) | set(schema["optional"]))
 
 
 @pytest.mark.parametrize("kind", sorted(COMPONENTS))
@@ -268,3 +269,7 @@ def test_person_card_accepts_gender_age_and_job_and_rejects_others():
     for key, bad in (("gender", "ogre"), ("age", "ancient"), ("job", "mage")):
         errors = scene_schema.check_props("person-card", {"name": "N", key: bad}, "x")
         assert len(errors) == 1 and f"props.{key}" in errors[0]
+
+
+def test_a_plan_cannot_set_a_timeline_prop():
+    assert scene_schema.check_props("stamp", {"text": "Faux", "variant": 1}, "stamp") != []

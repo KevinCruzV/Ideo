@@ -246,3 +246,74 @@ def test_description_voices_label_follows_the_language(job_sources, lang, label)
     plan["lang"] = lang
     common.save_json(job_sources / "plan.json", plan)
     assert render.write_description(job_sources, 1) == f"L'oubli\n\n{label}Ebbinghaus\n"
+
+
+def fake_still(calls):
+    def run(cmd, log):
+        calls.append(cmd)
+        out = next(c for c in cmd if c.endswith(".png"))
+        Path(out).write_bytes(b"png")
+
+    return run
+
+
+def test_cover_props_take_title_hook_and_first_picto(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"][0]["props"].pop("picto", None)
+    plan["parts"][0]["scenes"][1]["props"]["picto"] = "brain"
+    plan["mood"] = "dark"
+    common.save_json(job_sources / "plan.json", plan)
+    props = render.cover_props(plan, plan["parts"][0])
+    assert props["title"] == plan["parts"][0]["title"]
+    assert props["hook"] == plan["parts"][0]["hook"]
+    assert props["picto"] == "brain"
+    assert props["watermark"] == common.WATERMARK
+    assert props["mood"] == "dark"
+    assert props["part"] == 1 and props["total"] == 1
+
+
+def test_cover_picto_also_comes_from_versus_and_grids():
+    part = {"scenes": [{"type": "versus", "props": {"left": "A", "right": "B", "right_picto": "flag:fr"}},
+                       {"type": "key-title", "props": {"picto": "sun"}}]}
+    assert render.cover_picto(part) == "flag:fr"
+    grid = {"scenes": [{"type": "icon-grid", "props": {"cells": [{"shape": "circle", "label": "x"}, {"picto": "eye", "label": "y"}]}}]}
+    assert render.cover_picto(grid) == "eye"
+    assert render.cover_picto({"scenes": [{"type": "stamp", "props": {"text": "x"}}]}) is None
+
+
+def test_cover_renders_a_still_of_the_cover_composition(job_sources, monkeypatch):
+    calls = []
+    monkeypatch.setattr(common, "run", fake_still(calls))
+    out = render.write_cover(job_sources, 1)
+    assert out == job_sources / "out" / "cover.png" and out.read_bytes() == b"png"
+    cmd = calls[0]
+    assert cmd[3:7] == ["exec", "remotion", "still", "Cover"]
+    assert f"--props={job_sources / 'parts' / '01' / 'cover.json'}" in cmd
+    assert f"--frame={render.COVER_FRAME}" in cmd
+
+
+def test_cover_is_not_rendered_again_when_nothing_changed(job_sources, monkeypatch):
+    calls = []
+    monkeypatch.setattr(common, "run", fake_still(calls))
+    render.write_cover(job_sources, 1)
+    render.write_cover(job_sources, 1)
+    assert len(calls) == 1
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["title"] = "Un autre titre"
+    common.save_json(job_sources / "plan.json", plan)
+    render.write_cover(job_sources, 1)
+    assert len(calls) == 2
+
+
+def test_several_parts_get_one_cover_each(job_sources, monkeypatch):
+    two_part_plan(job_sources)
+    monkeypatch.setattr(common, "run", fake_still([]))
+    assert render.write_cover(job_sources, 2) == job_sources / "out" / "cover-02.png"
+    props = common.load_json(job_sources / "parts" / "02" / "cover.json")
+    assert props["part"] == 2 and props["total"] == 2 and props["title"] == "La suite"
+
+
+def test_cover_without_output_is_an_error(job_sources, monkeypatch):
+    monkeypatch.setattr(common, "run", lambda cmd, log: None)
+    with pytest.raises(common.IdeoError, match="couverture"):
+        render.write_cover(job_sources, 1)

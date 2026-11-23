@@ -37,6 +37,15 @@ def produce_job(job_with_voice_fixtures, monkeypatch, fake_whisper):
         return out
 
     monkeypatch.setattr(render, "render_part", fake_render)
+
+    def fake_cover(job_path, n):
+        plan = common.load_json(job_path / "plan.json")
+        out = render.cover_path(job_path, plan, n)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(b"png")
+        return out
+
+    monkeypatch.setattr(render, "write_cover", fake_cover)
     return job, backend, renders
 
 
@@ -185,11 +194,11 @@ def test_produce_outputs_and_progress(produce_job, capsys):
     assert cli.main(["produce", str(job)]) == 0
     out = lines(capsys)
     assert len(out) == 1 and out[0].startswith("OK produce : ")
-    for name in ("video.mp4", "sources.md", "description.txt"):
+    for name in ("video.mp4", "cover.png", "sources.md", "description.txt"):
         assert str((job / "out" / name).resolve()) in out[0]
     assert renders == [1]
     progress = (job / "logs" / "progress.log").read_text(encoding="utf-8")
-    for step in ("voice-01", "assemble-01", "timeline-01", "render-01", "sources"):
+    for step in ("voice-01", "assemble-01", "timeline-01", "render-01", "cover-01", "sources"):
         assert f"OK {step}" in progress
     assert (job / "parts" / "01" / "plan.hash").exists()
 
