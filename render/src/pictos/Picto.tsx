@@ -1,13 +1,23 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { drift, entry, EntryOptions, paperTransform, SUPPORT_AT } from "../paper/motion";
-import { colors, shade } from "../theme";
+import { colors, PaperColor, shade } from "../theme";
 import { Beat, useBeat } from "../scenes/beats";
 import { FlagArt } from "./Flag";
 import { flagCode } from "./flags";
 import { pictoName, pictoPieces } from "./library";
 
 export const hasVisual = (value: unknown): boolean => pictoName(value) !== null || flagCode(value) !== null;
+
+export const pictoColors = (value: unknown): PaperColor[] => {
+  const key = pictoName(value);
+  return key ? [...new Set(pictoPieces(key).map((p) => p.c))] : [];
+};
+
+export const contrastPaper = (value: unknown, choices: readonly PaperColor[]): PaperColor => {
+  const used = new Set(pictoColors(value));
+  return choices.find((c) => !used.has(c)) ?? choices[0];
+};
 
 export const PictoArt: React.FC<{ name: unknown; size: number; style?: React.CSSProperties }> = ({ name, size, style }) => {
   const flag = flagCode(name);

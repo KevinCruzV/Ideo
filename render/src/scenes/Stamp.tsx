@@ -2,7 +2,7 @@ import React from "react";
 import { interpolate, spring, useCurrentFrame } from "remotion";
 import { PaperShape } from "../paper/PaperShape";
 import { PaperBacking } from "../paper/PaperStrip";
-import { Picto } from "../pictos/Picto";
+import { contrastPaper, Picto } from "../pictos/Picto";
 import { colors, fonts, onPaper } from "../theme";
 import { useAccent } from "./accent";
 import { str, variantOf } from "./coerce";
@@ -138,6 +138,8 @@ const StampBanner: React.FC<SceneProps> = ({ props, items, from, to }) => {
   );
 };
 
+export const NOTE_PAPERS = ["yellow", "blue", "red", "cream"] as const;
+
 const StampNote: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const beat = useBeat();
   const press = beat ? beat.wave : 0;
@@ -149,10 +151,11 @@ const StampNote: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const y = top + (STAGE_H - top - side) / 2;
   const x = BOX_CX - side / 2;
   const tilt = -3 + restTilt("stamp-note", 2);
+  const paper = contrastPaper(props.picto, NOTE_PAPERS);
   return (
     <Stage>
       <div style={{ position: "absolute", inset: 0, transform: `rotate(${2 * press}deg)` }}>
-        <PaperShape kind="square" color="yellow" size={side} x={x} y={y} rotate={tilt} enterAt={at - 2} seed="stamp-note" float={3} motion={{ dy: 120, spin: -8 }}>
+        <PaperShape kind="square" color={paper} size={side} x={x} y={y} rotate={tilt} enterAt={at - 2} seed="stamp-note" float={3} motion={{ dy: 120, spin: -8 }}>
           <div
             style={{
               width: side - 140,
@@ -164,7 +167,7 @@ const StampNote: React.FC<SceneProps> = ({ props, items, from, to }) => {
               fontSize: fit.size,
               lineHeight: 1.15,
               whiteSpace: "nowrap",
-              color: onPaper.yellow,
+              color: onPaper[paper],
               transform: `scale(${1 + 0.04 * press})`,
             }}
           >

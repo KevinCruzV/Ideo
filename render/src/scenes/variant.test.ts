@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { variantOf } from "./coerce";
 import { COUNTER_VARIANTS } from "./Counter";
-import { STAMP_VARIANTS } from "./Stamp";
+import { NOTE_PAPERS, STAMP_VARIANTS } from "./Stamp";
+import { contrastPaper, pictoColors } from "../pictos/Picto";
 
 describe("variants", () => {
   it("keeps any value inside the range", () => {
@@ -15,5 +16,16 @@ describe("variants", () => {
   it("offers three looks for stamp and counter, as the timeline expects", () => {
     expect(STAMP_VARIANTS.length).toBe(3);
     expect(COUNTER_VARIANTS).toBe(3);
+  });
+});
+
+describe("note paper", () => {
+  it("never takes a colour the drawing already uses", () => {
+    expect(pictoColors("lock")).toContain("yellow");
+    expect(contrastPaper("lock", NOTE_PAPERS)).not.toBe("yellow");
+    for (const name of ["sun", "clock", "lock", "brain", "coin", "fire"]) {
+      expect(pictoColors(name)).not.toContain(contrastPaper(name, NOTE_PAPERS));
+    }
+    expect(contrastPaper(undefined, NOTE_PAPERS)).toBe("yellow");
   });
 });
