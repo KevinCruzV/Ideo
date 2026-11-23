@@ -126,7 +126,7 @@ def test_part_too_short_reports_estimate(job_with_fixtures):
     n = expected_estimate(job_with_fixtures, says)
     assert short and short[0].startswith("Partie 1 : ")
     assert f"dur\u00e9e estim\u00e9e {n} s" in short[0]
-    assert f"Ajoute environ {45 - n} s" in short[0]
+    assert f"Ajoute environ {65 - n} s" in short[0]
 
 
 def test_part_too_long_reports_estimate(job_with_fixtures):

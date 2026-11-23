@@ -48,7 +48,7 @@ def test_sponsor_speech_does_not_count(tmp_path):
 
 def test_short_source_is_raised_to_the_minimum(tmp_path):
     est = cost.estimate(make_job(tmp_path, words=50, duration=30))
-    assert est["seconds"] == 45 and est["long"] is False
+    assert est["seconds"] == 65 and est["long"] is False
 
 
 def words_for(seconds):

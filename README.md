@@ -2,7 +2,7 @@
 
 Plugin Claude Code qui transforme une vidéo YouTube en vidéo verticale courte (1080x1920) qui l'explique : voix off, formes en papier découpé, sous-titres karaoké, et les vraies voix de la source sur les citations.
 
-Une seule vidéo par défaut (45 s à 5 min). Plusieurs parties seulement si le contenu dépasse 5 minutes.
+Une seule vidéo par défaut (1 min 05 à 5 min : TikTok ne rémunère que les vidéos de plus d'une minute). Plusieurs parties seulement si le contenu dépasse 5 minutes.
 
 ## Installation
 
