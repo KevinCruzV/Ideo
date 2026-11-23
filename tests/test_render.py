@@ -196,7 +196,7 @@ def job_with_timeline_fixture(job_sources):
     ]
     timeline = {
         "fps": 30, "width": 1080, "height": 1920, "durationInFrames": 120, "lang": "fr",
-        "audio": "part.wav", "watermark": "@ideovideos",
+        "audio": "part.wav", "watermark": "@idevideos",
         "chapter": {"part": 1, "total": 1, "title": "L'oubli", "label": "Partie"},
         "segments": [
             {"kind": "hook", "from": 0, "to": 45, "props": {"text": "Dis-moi pourquoi tu oublies"}, "items": []},
