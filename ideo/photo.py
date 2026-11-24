@@ -22,6 +22,7 @@ EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 FREE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by([ -]sa)?[ -]\d(\.\d)?\b)", re.IGNORECASE)
 BLOCKED = re.compile(r"\b(nc|nd|fair use|non-?free|gfdl only)\b", re.IGNORECASE)
 TAGS = re.compile(r"<[^>]+>")
+PARTICLES = frozenset({"de", "du", "des", "d", "la", "le", "les", "l", "von", "van", "der", "den", "di", "da", "del", "dos", "of", "the"})
 
 
 def free_license(name: str) -> bool:
@@ -110,7 +111,7 @@ def find(name: str, lang: str) -> dict | None:
 
 def _words(text: str) -> set[str]:
     plain = "".join(c for c in unicodedata.normalize("NFKD", (text or "").lower()) if not unicodedata.combining(c))
-    return set(re.findall(r"\w+", plain))
+    return set(re.findall(r"\w+", plain)) - PARTICLES
 
 
 def _slug(name: str) -> str:

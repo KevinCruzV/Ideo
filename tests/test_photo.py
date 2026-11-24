@@ -165,6 +165,9 @@ def test_a_card_gets_the_photo_with_the_best_name_overlap():
     assert photo.match(photos, "Albert Einstein") is None
     assert photo.match(photos[:1], "Mme Curie")["image"] == "photo-marie-curie.jpg"
     assert photo.match([], "Marie Curie") is None
+    gaulle = [{"person": "Charles de Gaulle", "image": "photo-charles-de-gaulle.jpg"}]
+    assert photo.match(gaulle, "Simone de Beauvoir") is None
+    assert photo.match(gaulle, "de Gaulle")["image"] == "photo-charles-de-gaulle.jpg"
 
 
 def test_network_failure_is_a_clear_error(job, monkeypatch):
