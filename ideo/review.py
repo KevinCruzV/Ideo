@@ -31,6 +31,9 @@ BODY_PARTS_WORDS = {
     "hands": "hands", "jambe": "legs", "jambes": "legs", "legs": "legs", "pied": "feet", "pieds": "feet", "feet": "feet",
     "poitrine": "chest", "chest": "chest",
 }
+_ARTICLES_EN = frozenset({"the", "a", "an", "your", "my", "his", "her", "their", "our", "its", "lower", "upper", "bad", "sore", "stiff"})
+_ARTICLES_FR = frozenset({"la", "une", "ma", "ta", "sa", "notre", "votre", "leur", "cette"})
+AMBIGUOUS_PARTS = {"back": _ARTICLES_EN, "head": _ARTICLES_EN, "feet": _ARTICLES_EN, "main": _ARTICLES_FR}
 POSTURE_WORDS = {
     "allonge": "lying-back", "allongee": "lying-back", "allonges": "lying-back", "allongees": "lying-back",
     "couche": "lying-back", "couchee": "lying-back", "couches": "lying-back", "lying": "lying-back", "laid": "lying-back",
@@ -170,7 +173,8 @@ def _tokens_of(say: str) -> list[str]:
 
 def _body_hits(say: str) -> tuple[list[str], list[str]]:
     tokens = _tokens_of(say)
-    parts = [BODY_PARTS_WORDS[t] for t in tokens if t in BODY_PARTS_WORDS]
+    parts = [BODY_PARTS_WORDS[t] for i, t in enumerate(tokens)
+             if t in BODY_PARTS_WORDS and (t not in AMBIGUOUS_PARTS or (i > 0 and tokens[i - 1] in AMBIGUOUS_PARTS[t]))]
     postures = [POSTURE_WORDS[t] for t in tokens if t in POSTURE_WORDS]
     postures += [pose for phrase, pose in POSTURE_PHRASES.items()
                  if any(tuple(tokens[i:i + len(phrase)]) == phrase for i in range(len(tokens)))]

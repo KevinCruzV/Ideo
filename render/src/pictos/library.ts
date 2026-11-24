@@ -86,6 +86,8 @@ export const PICTOS = [
   "knife",
   "coffin",
   "tombstone",
+  "mirror",
+  "mars",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -944,6 +946,24 @@ const DRAW: Record<PictoName, Draw> = {
     k.rect(4, 88, 92, 8, "ink"),
     k.poly([[10, 88], [18, 80], [26, 88]], "yellow"),
     k.poly([[74, 88], [82, 80], [90, 88]], "yellow"),
+  ],
+  mirror: (k) => [
+    k.rect(44, 66, 12, 28, "red"),
+    k.circle(50, 94, 6.5, "red"),
+    k.circle(50, 38, 35, "yellow"),
+    k.circle(50, 38, 27, "blue"),
+    k.bar(33, 28, 47, 14, 6, "cream"),
+    k.bar(30, 46, 56, 20, 4, "cream"),
+  ],
+  mars: (k) => [
+    k.circle(50, 52, 40, "red"),
+    k.arc(50, 52, 40, 220, 320, "cream"),
+    k.poly([[20, 56], [34, 50], [52, 58], [58, 70], [44, 76], [28, 70]], "ink"),
+    k.circle(70, 66, 6, "ink"),
+    k.circle(64, 84, 4, "ink"),
+    k.circle(72, 44, 3.5, "ink"),
+    k.star(14, 12, 6, 2.4, 4, "blue"),
+    k.star(90, 90, 5, 2, 4, "blue"),
   ],
 };
 

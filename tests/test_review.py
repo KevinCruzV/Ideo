@@ -481,6 +481,34 @@ def test_posture_defaults_and_zones_are_the_most_cited(job):
     assert line.count('{"part"') <= 4
 
 
+PHYSICS_SAYINGS = [
+    "The only fix is to drop the second clock. A mirror at the end sends the light back to a single clock.",
+    "He sped up the gear until the light came back through the next gap. His result was 313,000 kilometers per second.",
+    "But his light went out and came back. Nobody has ever timed it going in just one direction.",
+    "A camera shooting a trillion frames a second sees light bounce back. A fiber loop averages the trip.",
+    "Now suppose light needs all 20 minutes to reach Mars, then comes back instantly. The main point is the same delays.",
+]
+
+
+def test_back_as_an_adverb_is_not_a_body_part(job):
+    plan = plan_of(*[scene(say=s) for s in PHYSICS_SAYINGS])
+    plan["lang"] = "en"
+    assert "corps-sans-dessin" not in codes_of(plan, job)
+
+
+def test_ambiguous_words_count_only_after_a_determiner():
+    assert review._body_hits("He turned his back to the wall.")[0] == ["back"]
+    assert review._body_hits("The back hurts in the morning.")[0] == ["back"]
+    assert review._body_hits("The light came back at once.")[0] == []
+    assert review._body_hits("She raised her head slowly.")[0] == ["head"]
+    assert review._body_hits("Heads of state head to Paris.")[0] == []
+    assert review._body_hits("The main reason is simple.")[0] == []
+    assert review._body_hits("Elle serre sa main très fort.")[0] == ["hands"]
+    assert review._body_hits("Le plan principal est une main courante.")[0] == ["hands"]
+    assert review._body_hits("The wall is ten feet high.")[0] == []
+    assert review._body_hits("He stood on his feet.")[0] == ["feet"]
+
+
 def test_new_findings_have_automatic_lessons():
     from ideo import codes
 

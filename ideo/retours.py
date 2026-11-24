@@ -33,6 +33,8 @@ def _parse() -> dict:
                 sections[current or SIGNALES].append(line)
             elif OLD.match(line):
                 sections[current or SIGNALES].append("- [ ] [" + OLD.match(line).group(1))
+            elif line.startswith("  ") and line.strip() and sections.get(current):
+                sections[current].append(line.rstrip())
     return sections
 
 

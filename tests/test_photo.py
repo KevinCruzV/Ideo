@@ -15,13 +15,14 @@ class Wiki:
     def __init__(self, license_name="CC BY-SA 4.0", human=True, image=True, mime="image/jpeg"):
         self.meta = {**FREE_META, "LicenseShortName": {"value": license_name}}
         self.human, self.image, self.mime = human, image, mime
+        self.title = "Ada Lovelace"
         self.downloads = []
 
     def get_json(self, url):
         if "wikipedia.org" in url:
             if not self.image:
                 return {"query": {"pages": [{"title": "X", "missing": True}]}}
-            return {"query": {"pages": [{"title": "Ada Lovelace", "pageimage": "Ada.jpg", "pageprops": {"wikibase_item": "Q7"}}]}}
+            return {"query": {"pages": [{"title": self.title, "pageimage": "Ada.jpg", "pageprops": {"wikibase_item": "Q7"}}]}}
         if "wikidata.org" in url:
             kind = "Q5" if self.human else "Q42"
             claim = {"mainsnak": {"datavalue": {"value": {"id": kind}}}}
@@ -67,8 +68,8 @@ def test_only_free_licenses_are_accepted(name, ok):
 def test_a_free_photo_is_downloaded_with_its_credit(job, wiki):
     line = photo.run(job, "Ada Lovelace")
     assert line.startswith("OK photo : Ada Lovelace, CC BY-SA 4.0, Jeanne Martin")
-    assert (job / "photo.jpg").read_bytes().startswith(b"\xff\xd8")
-    data = common.load_json(job / "photo.json")
+    assert (job / "photo-ada-lovelace.jpg").read_bytes().startswith(b"\xff\xd8")
+    data = common.load_json(job / "photo-ada-lovelace.json")
     assert data["author"] == "Jeanne Martin" and data["license"] == "CC BY-SA 4.0"
     assert data["source_url"] == "https://commons.example/File:Ada.jpg"
     sources = (job / "out" / "sources.md").read_text(encoding="utf-8")
@@ -111,11 +112,62 @@ def test_a_dark_plan_never_gets_a_photo(job, wiki):
     assert wiki.downloads == []
 
 
-def test_a_new_search_replaces_the_previous_photo(job, wiki):
+def test_a_new_search_for_the_same_person_replaces_the_previous_photo(job, wiki):
     photo.run(job, "Ada Lovelace")
     wiki.image = False
-    assert photo.run(job, "Personne") == photo.NONE
-    assert photo.stored(job) is None and not list(job.glob("photo.*"))
+    assert photo.run(job, "Ada Lovelace") == photo.NONE
+    assert photo.all_stored(job) == [] and not list(job.glob("photo*.*"))
+
+
+def test_each_person_keeps_their_own_photo(job, wiki):
+    photo.run(job, "Ada Lovelace")
+    wiki.title = "Charles Babbage"
+    photo.run(job, "Charles Babbage")
+    assert sorted(p["person"] for p in photo.all_stored(job)) == ["Ada Lovelace", "Charles Babbage"]
+    assert (job / "photo-ada-lovelace.jpg").exists() and (job / "photo-charles-babbage.jpg").exists()
+    wiki.image = False
+    assert photo.run(job, "Quelqu'un") == photo.NONE
+    assert len(photo.all_stored(job)) == 2
+    wiki.image = True
+    wiki.title = "Charles Babbage"
+    photo.run(job, "charles BABBAGE")
+    assert len(photo.all_stored(job)) == 2
+
+
+def test_every_photo_has_its_credit(job, wiki):
+    photo.run(job, "Ada Lovelace")
+    wiki.title = "Charles Babbage"
+    photo.run(job, "Charles Babbage")
+    lines = photo.credit_lines(job)
+    assert len(lines) == 2 and lines[0].startswith("Photo : Ada Lovelace") and lines[1].startswith("Photo : Charles Babbage")
+    photo.write_credit(job)
+    photo.write_credit(job)
+    sources = (job / "out" / "sources.md").read_text(encoding="utf-8")
+    assert sources.count("Photo : ") == 2
+    common.save_json(job / "info.json", {"id": "abc"})
+    common.save_json(job / "plan.json", {"parts": [{"n": 1, "title": "T", "scenes": [{"type": "stamp", "say": "Un deux.", "src": "0:10"}]}]})
+    written = render.write_sources(job).read_text(encoding="utf-8")
+    assert "Photo : Ada Lovelace" in written and "Photo : Charles Babbage" in written
+
+
+def test_an_old_job_with_a_single_photo_file_still_works(job):
+    common.save_json(job / "photo.json", {"person": "Marie Curie", "title": "Marie Curie", "author": "A", "license": "CC0", "source_url": "u", "extension": "png"})
+    (job / "photo.png").write_bytes(b"png")
+    assert [p["image"] for p in photo.all_stored(job)] == ["photo.png"]
+    assert photo.credit_lines(job) == ["Photo : Marie Curie, A, CC0, u"]
+
+
+def test_a_card_gets_the_photo_with_the_best_name_overlap():
+    photos = [{"person": "Marie Curie", "image": "photo-marie-curie.jpg"}, {"person": "Pierre Curie", "image": "photo-pierre-curie.jpg"}]
+    assert photo.match(photos, "Pierre Curie")["image"] == "photo-pierre-curie.jpg"
+    assert photo.match(photos, "Marie Skłodowska-Curie")["image"] == "photo-marie-curie.jpg"
+    assert photo.match(photos, "Curie") is None
+    assert photo.match(photos, "Albert Einstein") is None
+    assert photo.match(photos[:1], "Mme Curie")["image"] == "photo-marie-curie.jpg"
+    assert photo.match([], "Marie Curie") is None
+    gaulle = [{"person": "Charles de Gaulle", "image": "photo-charles-de-gaulle.jpg"}]
+    assert photo.match(gaulle, "Simone de Beauvoir") is None
+    assert photo.match(gaulle, "de Gaulle")["image"] == "photo-charles-de-gaulle.jpg"
 
 
 def test_network_failure_is_a_clear_error(job, monkeypatch):
@@ -147,6 +199,14 @@ def test_check_refuses_photo_without_a_photo_in_the_job(job_with_fixtures):
     common.save_json(job_with_fixtures / "photo.json", {"person": "Hermann Ebbinghaus", "extension": "jpg"})
     (job_with_fixtures / "photo.jpg").write_bytes(b"x")
     assert not [e for e in plan_check.check_plan(job_with_fixtures) if "photo" in e]
+    common.save_json(job_with_fixtures / "photo-marie-curie.json", {"person": "Marie Curie", "extension": "jpg"})
+    (job_with_fixtures / "photo-marie-curie.jpg").write_bytes(b"x")
+    plan["parts"][0]["scenes"].append(person_scene(plan["parts"][0]["scenes"][0]["src"], photo=True, name="Marie Curie"))
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert not [e for e in plan_check.check_plan(job_with_fixtures) if "photo" in e]
+    plan["parts"][0]["scenes"].pop()
+    (job_with_fixtures / "photo-marie-curie.json").unlink()
+    (job_with_fixtures / "photo-marie-curie.jpg").unlink()
     plan["mood"] = "dark"
     common.save_json(job_with_fixtures / "plan.json", plan)
     assert any("pas de photo dans un fait divers" in e for e in plan_check.check_plan(job_with_fixtures))
@@ -168,16 +228,24 @@ def test_timeline_stages_the_photo_and_shares_the_look_between_cards():
     assert shared["seg_03"]["props"]["hat"] == "kepi" and shared["seg_03"]["props"]["facial"] == "moustache"
     assert "hat" not in shared["seg_04"]["props"]
     assert shared["seg_05"]["props"]["hat"] == "top-hat"
-    assert timeline._with_photo(shared["seg_01"], "photo.jpg")["props"]["photo"] == "photo.jpg"
-    assert "photo" not in timeline._with_photo(shared["seg_01"], None)["props"]
-    assert timeline._with_photo(shared["seg_03"], "photo.jpg") is shared["seg_03"]
+    staged = [{"person": "Hermann Ebbinghaus", "image": "photo.jpg"}, {"person": "Autre Personne", "image": "photo-autre.png"}]
+    assert timeline._with_photo(shared["seg_01"], staged)["props"]["photo"] == "photo.jpg"
+    assert "photo" not in timeline._with_photo(shared["seg_01"], [])["props"]
+    assert "photo" not in timeline._with_photo(shared["seg_01"], [staged[1]])["props"]
+    assert timeline._with_photo({**shared["seg_04"], "props": {"name": "Autre Personne", "photo": True}}, staged)["props"]["photo"] == "photo-autre.png"
+    assert timeline._with_photo(shared["seg_03"], staged) is shared["seg_03"]
 
 
-def test_the_photo_is_copied_next_to_the_part_audio(job, tmp_path):
+def test_the_photos_are_copied_next_to_the_part_audio(job, tmp_path):
     out = tmp_path / "part"
     out.mkdir()
-    assert timeline._stage_photo(job, out) is None
-    common.save_json(job / "photo.json", {"extension": "png"})
+    assert timeline._stage_photo(job, out) == []
+    common.save_json(job / "photo.json", {"person": "A B", "extension": "png"})
     (job / "photo.png").write_bytes(b"png")
-    assert timeline._stage_photo(job, out) == "photo.png"
-    assert (out / "photo.png").read_bytes() == b"png"
+    common.save_json(job / "photo-c-d.json", {"person": "C D", "extension": "jpg"})
+    (job / "photo-c-d.jpg").write_bytes(b"jpg")
+    (out / "photo-vieux.jpg").write_bytes(b"old")
+    staged = timeline._stage_photo(job, out)
+    assert sorted(p["image"] for p in staged) == ["photo-c-d.jpg", "photo.png"]
+    assert (out / "photo.png").read_bytes() == b"png" and (out / "photo-c-d.jpg").read_bytes() == b"jpg"
+    assert not (out / "photo-vieux.jpg").exists()

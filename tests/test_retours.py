@@ -84,3 +84,14 @@ def test_old_format_lines_are_migrated_as_unchecked_signals():
 def test_unreadable_file_never_raises(home):
     retours.path().mkdir()
     assert retours.unchecked() == [] and retours.count_unchecked() == 0
+
+
+def test_a_note_under_an_entry_survives_the_next_writes():
+    retours.add(retours.SIGNALES, "un défaut")
+    retours.path().write_text(text().replace("- [ ] un défaut", "- [ ] un défaut\n  Essai : rien n'a pu le reproduire."), encoding="utf-8")
+    retours.add(retours.SIGNALES, "un autre")
+    retours.add_wish("une carte")
+    retours.add_detected("code", "job", "message")
+    body = text()
+    assert "- [ ] un défaut\n  Essai : rien n'a pu le reproduire.\n- [ ] un autre" in body
+    assert retours.unchecked(retours.SIGNALES) == ["un défaut", "un autre"]

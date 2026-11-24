@@ -1,6 +1,8 @@
+import hashlib
 import html
 import json
 import re
+import unicodedata
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -20,6 +22,7 @@ EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 FREE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by([ -]sa)?[ -]\d(\.\d)?\b)", re.IGNORECASE)
 BLOCKED = re.compile(r"\b(nc|nd|fair use|non-?free|gfdl only)\b", re.IGNORECASE)
 TAGS = re.compile(r"<[^>]+>")
+PARTICLES = frozenset({"de", "du", "des", "d", "la", "le", "les", "l", "von", "van", "der", "den", "di", "da", "del", "dos", "of", "the"})
 
 
 def free_license(name: str) -> bool:
@@ -106,34 +109,50 @@ def find(name: str, lang: str) -> dict | None:
     return None
 
 
-def stored(job: Path) -> dict | None:
-    path = Path(job) / "photo.json"
-    if not path.exists():
+def _words(text: str) -> set[str]:
+    plain = "".join(c for c in unicodedata.normalize("NFKD", (text or "").lower()) if not unicodedata.combining(c))
+    return set(re.findall(r"\w+", plain)) - PARTICLES
+
+
+def _slug(name: str) -> str:
+    words = re.findall(r"[a-z0-9]+", "".join(c for c in unicodedata.normalize("NFKD", name.lower()) if not unicodedata.combining(c)))
+    return "-".join(words) or hashlib.sha1(name.encode("utf-8")).hexdigest()[:8]
+
+
+def all_stored(job: Path) -> list[dict]:
+    out = []
+    for meta in sorted(Path(job).glob("photo*.json")):
+        try:
+            data = common.load_json(meta)
+        except (OSError, ValueError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        image = meta.with_suffix(f".{data.get('extension', 'jpg')}")
+        if image.exists():
+            out.append({**data, "image": image.name})
+    return out
+
+
+def match(photos: list[dict], name: str) -> dict | None:
+    wanted = _words(name)
+    scored = sorted(((len(wanted & _words(p.get("person", ""))), i) for i, p in enumerate(photos)), reverse=True)
+    if not scored or scored[0][0] == 0 or (len(scored) > 1 and scored[1][0] == scored[0][0]):
         return None
-    try:
-        data = common.load_json(path)
-    except (OSError, ValueError):
-        return None
-    image = Path(job) / f"photo.{data.get('extension', 'jpg')}"
-    return data if isinstance(data, dict) and image.exists() else None
+    return photos[scored[0][1]]
 
 
-def image_path(job: Path) -> Path | None:
-    data = stored(job)
-    return Path(job) / f"photo.{data['extension']}" if data else None
-
-
-def credit_line(job: Path) -> str | None:
-    data = stored(job)
-    if not data:
-        return None
-    link = f" ({data['license_url']})" if data.get("license_url") else ""
-    return f"Photo : {data['title']}, {data['author']}, {data['license']}{link}, {data['source_url']}"
+def credit_lines(job: Path) -> list[str]:
+    lines = []
+    for data in all_stored(job):
+        link = f" ({data['license_url']})" if data.get("license_url") else ""
+        lines.append(f"Photo : {data['title']}, {data['author']}, {data['license']}{link}, {data['source_url']}")
+    return lines
 
 
 def write_credit(job: Path) -> None:
-    line = credit_line(job)
-    if not line:
+    credits = credit_lines(job)
+    if not credits:
         return
     path = Path(job) / "out" / "sources.md"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -141,7 +160,7 @@ def write_credit(job: Path) -> None:
     lines = [entry for entry in lines if not entry.startswith("Photo : ")]
     while lines and not lines[-1].strip():
         lines.pop()
-    path.write_text("\n".join(lines + ["", line, ""]), encoding="utf-8")
+    path.write_text("\n".join(lines + [""] + credits + [""]), encoding="utf-8")
 
 
 def _dark(job: Path) -> bool:
@@ -162,8 +181,11 @@ def run(job: Path, name: str) -> str:
         raise common.IdeoError("donne le nom de la personne : ideo photo <job> \"Prénom Nom\".")
     if _dark(job):
         raise common.IdeoError("pas de photo pour un fait divers : garde le portrait en papier découpé.")
-    for stale in job.glob("photo.*"):
-        stale.unlink()
+    slug = _slug(name)
+    for old in all_stored(job):
+        if _slug(old.get("person", "")) == slug:
+            (job / old["image"]).unlink(missing_ok=True)
+            (job / old["image"]).with_suffix(".json").unlink(missing_ok=True)
     lang_file = job / "lang.txt"
     lang = lang_file.read_text(encoding="utf-8").strip() if lang_file.exists() else "fr"
     try:
@@ -174,12 +196,12 @@ def run(job: Path, name: str) -> str:
         raise common.IdeoError(f"réponse illisible de Wikipédia ({err}).") from err
     if not found:
         return NONE
-    target = job / f"photo.{found['extension']}"
+    target = job / f"photo-{slug}.{found['extension']}"
     try:
         _download(found["file_url"], target)
     except OSError as err:
         target.unlink(missing_ok=True)
         raise common.IdeoError(f"le téléchargement de la photo a échoué ({err}).") from err
-    common.save_json(job / "photo.json", found)
+    common.save_json(target.with_suffix(".json"), found)
     write_credit(job)
     return f"OK photo : {found['title']}, {found['license']}, {found['author']}. Image : {target}. Crédit ajouté à {job / 'out' / 'sources.md'}"
