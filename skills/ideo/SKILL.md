@@ -57,7 +57,7 @@ Quand l'utilisateur dit ce qui ne va pas (ou ce qui lui plaît) dans une vidéo 
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo learn '<règle>'`
 2. Si elle porte sur l'image, le mouvement, la voix, le son, les sous-titres ou un bug, que le plan ne peut pas corriger : lance
    `cd ~/Desktop/ideo && .venv/bin/python -m ideo learn --bug '<constat en une phrase>' JOB`
-   et dis à l'utilisateur que c'est noté pour une correction du code.
+   et dis à l'utilisateur que c'est noté pour une correction du code. Puis lance l'entretien tout de suite, comme à l'étape 8 (mêmes sous-agents, même résumé), sans attendre le seuil de vidéos ou de retours et même si `OK produce` n'a pas affiché `Entretien à lancer`. Enregistre d'abord tous les bugs du message, puis lance un seul entretien. Si `config.json` contient `"entretien_auto": false`, ne lance rien : dis seulement qu'un entretien est conseillé.
 3. Remplace toute apostrophe de la phrase par `’` avant de lancer la commande. Montre à l'utilisateur la ligne `OK learn : ...`.
 4. S'il veut aussi refaire cette vidéo : corrige `JOB/plan.json` avec Edit, puis reprends à l'étape 4.
 

@@ -167,3 +167,11 @@ def test_skill_writing_guard_names_only_signs_that_check_really_prints():
     assert "formule « ce n'est pas X" in guard and "formule « ce n'est pas X, c'est Y »" in slop_source
     assert "trois phrases de trois mots" in guard and "trois phrases de trois mots ou moins" in slop_source
     assert "modèle `opus`" in guard and "Un seul sous-agent Opus par plan" in guard
+
+
+def test_skill_launches_the_entretien_right_after_a_bug_is_noted():
+    skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
+    feedback = skill.split("## Retours de l'utilisateur", 1)[1].split("## \"Version finale\"", 1)[0]
+    bug_rule = feedback.split("learn --bug", 1)[1].split("3. Remplace", 1)[0]
+    assert "lance l'entretien tout de suite, comme à l'étape 8" in bug_rule
+    assert "un seul entretien" in bug_rule and "entretien_auto" in bug_rule
