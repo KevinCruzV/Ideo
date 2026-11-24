@@ -150,3 +150,20 @@ def test_guide_and_skill_document_mood_and_photo():
     assert '"mood": "dark"' in guide and '"mood": "dark"' in skill
     assert 'ideo photo JOB' in guide and "ideo photo JOB" in skill and "aucune photo libre" in guide and "aucune photo libre" in skill
     assert "par acte" in guide and "par acte" in skill
+
+
+def test_skill_writing_guard_names_only_signs_that_check_really_prints():
+    from ideo import slop
+
+    skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
+    guard = skill.split("Garde d'écriture", 1)[1].split("Relecture :", 1)[0]
+    labels = [label for label, _ in slop.MESSAGES.values()]
+    assert all(label in guard for label in labels)
+    plan_check_source = (REPO / "ideo" / "plan_check.py").read_text(encoding="utf-8")
+    slop_source = (REPO / "ideo" / "slop.py").read_text(encoding="utf-8")
+    for sign in ("recopie la vidéo d'origine mot pour mot", "reprend des suites de {COPY_GRAM} mots", "tiret cadratin"):
+        assert sign in plan_check_source
+    assert "reprend des suites de 5 mots" in guard and "recopie la vidéo d'origine mot pour mot" in guard
+    assert "formule « ce n'est pas X" in guard and "formule « ce n'est pas X, c'est Y »" in slop_source
+    assert "trois phrases de trois mots" in guard and "trois phrases de trois mots ou moins" in slop_source
+    assert "modèle `opus`" in guard and "Un seul sous-agent Opus par plan" in guard
