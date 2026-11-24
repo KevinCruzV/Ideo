@@ -26,3 +26,27 @@ Quelques indicateurs à suivre :
 | Abonnements générés | Capacité à fidéliser |
 
 Ne pas juger Ideo sur une seule vidéo : chercher des tendances sur plusieurs publications.
+
+## Phase 3 : développer les autres plateformes
+
+Une fois le pipeline vertical suffisamment fiable :
+
+- `/ideo:tiktok`
+- `/ideo:short`
+- `/ideo:reels`
+- `/ideo:snapchat`
+
+Puis seulement après, développer `/ideo:youtube` pour les documentaires longs.
+
+## Deux entraînements à distinguer
+
+- **Entraîner Ideo techniquement** : améliorer ses scripts, ses prompts, ses scènes et son montage grâce aux retours.
+- **Entraîner sa stratégie éditoriale** : découvrir quels sujets, hooks, durées et styles fonctionnent réellement auprès des spectateurs.
+
+La stratégie éditoriale ne peut pas être validée uniquement en regardant les vidéos produites. Il faut les publier et observer les résultats.
+
+## Ligne de conduite
+
+Ne pas chercher encore à construire une usine à contenus. Faire d'abord d'Ideo un excellent producteur de vidéos TikTok, puis généraliser ce qui fonctionne aux autres plateformes.
+
+Ne pas confondre les premières mauvaises performances avec un échec du système : au début, on teste à la fois l'outil, les sujets et le positionnement.
