@@ -18,11 +18,7 @@ export const progressTicks = (
       return { weight: length, fill: clamp((frame - s.from + 1) / length) };
     });
   }
-  const ratio = clamp(frame / Math.max(1, durationInFrames - 1));
-  return Array.from({ length: Math.max(1, chapter.total) }, (_, i) => {
-    const part = i + 1;
-    return { weight: 1, fill: part < chapter.part ? 1 : part === chapter.part ? ratio : 0 };
-  });
+  return [{ weight: 1, fill: clamp(frame / Math.max(1, durationInFrames - 1)) }];
 };
 
 export const Progress: React.FC<{ chapter: Chapter; segments?: Tick[] }> = ({ chapter, segments = [] }) => {
