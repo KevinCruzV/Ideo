@@ -273,12 +273,22 @@ def test_cover_props_take_title_hook_and_first_picto(job_sources):
 
 
 def test_cover_picto_also_comes_from_versus_and_grids():
-    part = {"scenes": [{"type": "versus", "props": {"left": "A", "right": "B", "right_picto": "flag:fr"}},
+    part = {"scenes": [{"type": "versus", "props": {"left": "A", "right": "B", "right_picto": "eye"}},
                        {"type": "key-title", "props": {"picto": "sun"}}]}
-    assert render.cover_picto(part) == "flag:fr"
+    assert render.cover_picto(part) == "eye"
     grid = {"scenes": [{"type": "icon-grid", "props": {"cells": [{"shape": "circle", "label": "x"}, {"picto": "eye", "label": "y"}]}}]}
     assert render.cover_picto(grid) == "eye"
     assert render.cover_picto({"scenes": [{"type": "stamp", "props": {"text": "x"}}]}) is None
+
+
+def test_cover_prefers_the_subject_over_a_flag():
+    grid = {"scenes": [{"type": "icon-grid", "props": {"cells": [{"picto": "flag:ar", "label": "x"}, {"picto": "globe", "label": "y"}]}}]}
+    assert render.cover_picto(grid) == "globe"
+    later = {"scenes": [{"type": "versus", "props": {"left": "A", "right": "B", "left_picto": "flag:us", "right_picto": "flag:su"}},
+                        {"type": "key-title", "props": {"picto": "coin"}}]}
+    assert render.cover_picto(later) == "coin"
+    only_flags = {"scenes": [{"type": "versus", "props": {"left": "A", "right": "B", "left_picto": "flag:us", "right_picto": "flag:su"}}]}
+    assert render.cover_picto(only_flags) == "flag:us"
 
 
 def test_cover_renders_a_still_of_the_cover_composition(job_sources, monkeypatch):

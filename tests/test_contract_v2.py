@@ -178,6 +178,14 @@ def test_flags_are_accepted_wherever_a_picto_is():
     assert scene_schema.check_props("icon-grid", {"cells": [{"label": "a", "picto": "flag:in"}, {"label": "b", "picto": "globe"}]}, "x") == []
 
 
+def test_region_flags_are_accepted_and_unknown_regions_are_not():
+    for code in ("gb-sct", "gb-eng", "gb-wls", "gb-nir", "es-ct"):
+        assert scene_schema.is_flag(f"flag:{code}")
+        assert scene_schema.check_props("person-card", {"name": "N", "picto": f"flag:{code}"}, "x") == []
+    assert not scene_schema.is_flag("flag:gb-xx")
+    assert scene_schema.check_props("key-title", {"text": "T", "picto": "flag:gb-xx"}, "x") != []
+
+
 def test_special_flag_codes():
     for code in ("eu", "un", "su"):
         assert code in scene_schema.FLAGS

@@ -241,6 +241,10 @@ def test_flags_are_the_ones_the_render_knows():
     assert ts_list("pictos/flags.ts", "FLAGS") == scene_schema.FLAGS
 
 
+def test_region_flags_are_the_ones_the_render_knows():
+    assert ts_list("pictos/flags.ts", "REGION_FLAGS") == scene_schema.REGION_FLAGS
+
+
 @pytest.mark.parametrize("name,expected", [
     ("HAIRS", "HAIRS"), ("HAIR_COLORS", "HAIR_COLORS"), ("FACIALS", "FACIALS"), ("HATS", "HATS"), ("OUTFITS", "OUTFITS"),
     ("SKINS", "SKINS"), ("GENDERS", "GENDERS"), ("AGES", "AGES"), ("JOBS", "JOBS"),

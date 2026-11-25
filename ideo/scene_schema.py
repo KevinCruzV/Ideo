@@ -42,6 +42,7 @@ FLAGS = (
     "td", "tf", "tg", "th", "tj", "tk", "tl", "tm", "tn", "to", "tr", "tt", "tv", "tw", "tz", "ua", "ug", "um",
     "un", "us", "uy", "uz", "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "yt", "za", "zm", "zw",
 )
+REGION_FLAGS = ("es-ct", "gb-eng", "gb-nir", "gb-sct", "gb-wls")
 MAP_CODES = (
     "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",
     "bd", "be", "bf", "bg", "bh", "bi", "bj", "bl", "bm", "bn", "bo", "br", "bs", "bt", "bw", "by", "bz", "ca",
@@ -179,7 +180,7 @@ FLAG_PREFIX = "flag:"
 
 
 def is_flag(value) -> bool:
-    return isinstance(value, str) and value.startswith(FLAG_PREFIX) and value[len(FLAG_PREFIX):] in FLAGS
+    return isinstance(value, str) and value.startswith(FLAG_PREFIX) and value[len(FLAG_PREFIX):] in FLAGS + REGION_FLAGS
 
 
 def _flag_problems(props: dict) -> list[tuple[str, str]]:

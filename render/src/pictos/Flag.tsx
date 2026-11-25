@@ -7,7 +7,7 @@ import { FlagCode } from "./flags";
 
 const loadFiles = () => {
   try {
-    return require.context("flag-icons/flags/4x3", false, /^\.\/[a-z]{2}\.svg$/);
+    return require.context("flag-icons/flags/4x3", false, /^\.\/[a-z]{2}(-[a-z]{2,3})?\.svg$/);
   } catch {
     return null;
   }
