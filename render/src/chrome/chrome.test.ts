@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionTokens, captionWord, lineWidth } from "./Captions";
 import { chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
-import { layout } from "../theme";
+import { layout, visibleStageTop } from "../theme";
 import { progressTicks } from "./Progress";
 
 const single = { part: 1, total: 1, title: "L'oubli", label: "Partie" };
@@ -28,9 +28,9 @@ describe("chrome", () => {
     const fit = chapterFit(long);
     expect(fit.lines.length).toBeLessThanOrEqual(2);
     expect(fit.size).toBeLessThan(38);
-    expect(chapterBottom(long)).toBeLessThan(layout.stageTop);
+    expect(chapterBottom(long)).toBeLessThan(visibleStageTop);
     expect(chapterFit(single).size).toBe(38);
-    expect(chapterBottom(series)).toBeLessThan(layout.stageTop);
+    expect(chapterBottom(series)).toBeLessThan(visibleStageTop);
   });
 
   test("une vidéo seule a un trait par segment", () => {

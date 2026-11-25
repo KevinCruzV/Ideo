@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
-import { colors, layout } from "../theme";
+import { colors, content, layout } from "../theme";
 import { Chapter } from "../types";
 
 export type Tick = { from: number; to: number };
@@ -31,8 +31,8 @@ export const Progress: React.FC<{ chapter: Chapter; segments?: Tick[] }> = ({ ch
     <div
       style={{
         position: "absolute",
-        left: layout.contentLeft,
-        right: layout.width - layout.contentRight,
+        left: content.center - (content.width * layout.safeScale) / 2,
+        right: layout.width - content.center - (content.width * layout.safeScale) / 2,
         top: layout.progressTop,
         height: layout.progressHeight,
         display: "flex",

@@ -70,8 +70,9 @@ export const fonts = {
 export const layout = {
   width: 1080,
   height: 1920,
-  marginTop: 72,
-  marginSide: 56,
+  marginTop: 150,
+  marginSide: 100,
+  safeScale: 0.86,
   safeRight: 130,
   contentLeft: 64,
   contentRight: 950,
@@ -82,6 +83,9 @@ export const layout = {
   progressTop: 1546,
   progressHeight: 12,
 } as const;
+
+export const visibleStageTop =
+  (layout.stageTop + layout.stageBottom) / 2 - ((layout.stageBottom - layout.stageTop) / 2) * layout.safeScale;
 
 export const content = {
   left: layout.contentLeft,
