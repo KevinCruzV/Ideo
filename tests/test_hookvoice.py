@@ -100,8 +100,10 @@ def test_distance_to_the_targets():
 
 def test_ranking_puts_the_eliminatory_criteria_first():
     near = {"fidelity": 1.0, "formula": 0.7, "speed_ratio": 1.0, "rise": 8.0, "level": 3.0}
-    far = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 8.0, "level": 0.0}
+    far = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 1.0, "level": 0.0}
     assert hv.best([{"scores": near}, {"scores": far}]) == 1
+    slightly_high = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 10.5, "level": 3.0}
+    assert hv.best([{"scores": near}, {"scores": slightly_high}]) == 1
     both = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 8.0, "level": 3.0}
     assert hv.best([{"scores": far}, {"scores": both}]) == 1
     assert hv.best([{"scores": both}, {"scores": dict(both)}]) == 0

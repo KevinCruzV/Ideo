@@ -131,7 +131,7 @@ def evaluate(wav, spoken: str, heard: list[dict], lang: str, expected: str | Non
     return result
 
 
-def failed(scores: dict) -> list[str]:
+def _eliminatory(scores: dict) -> list[str]:
     out = []
     if scores["fidelity"] < FIDELITY_MIN:
         out.append("fidélité")
@@ -139,6 +139,11 @@ def failed(scores: dict) -> list[str]:
         out.append("formule trop longue")
     if scores["speed_ratio"] is not None and scores["speed_ratio"] < SPEED_RATIO_MIN:
         out.append("fin traînante")
+    return out
+
+
+def failed(scores: dict) -> list[str]:
+    out = _eliminatory(scores)
     rise = scores.get("rise")
     if rise is not None and not (RISE_TARGET[0] <= rise <= RISE_TARGET[1]):
         out.append("montée hors cible")
@@ -146,7 +151,7 @@ def failed(scores: dict) -> list[str]:
 
 
 def rank(scores: dict) -> tuple:
-    return (-len(failed(scores)), -distance(scores), scores["fidelity"])
+    return (-len(_eliminatory(scores)), -distance(scores), scores["fidelity"])
 
 
 def best(takes: list[dict]) -> int:
