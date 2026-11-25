@@ -2,9 +2,6 @@
 
 Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leçons avant d'écrire un plan : ajoute-les avec `python -m ideo learn "<leçon>"`.
 
-- [2026-11-22] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
-- [2026-11-22] (auto:plan-invalide) Relis le message de check et corrige exactement ce qu'il demande avant de relancer.
-- [2026-11-23] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
 - [2026-11-24] La couverture montre la photo de la première person-card avec photo, sinon le buste de la première person-card, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
 - [2026-11-24] Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
 - [2026-11-24] Sur un counter, ancre « to » sur un des premiers mots du say : le compte doit démarrer vite, pas à la fin de la phrase.
@@ -22,3 +19,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Quand l’accroche pose un mystère, la question au spectateur le relance au lieu de demander un simple avis : « Pour toi, qui a vraiment fait tomber X ? ».
 - [2026-11-25] Sur une scène « counter », ancre « label » peu après « to », jamais sur le tout dernier mot du say : sinon le nombre reste sans légende trop longtemps à l’écran.
 - [2026-11-25] Vidéo sur un programme ou un plan : finis la « question » en demandant quel autre programme le spectateur veut voir expliqué, pas une question d’opinion générale.
+- [2026-11-25] Chaque chip ou item affiché à l’écran doit être repris, même brièvement, dans le say : jamais un fait visible que la voix ne dit jamais.
