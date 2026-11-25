@@ -51,7 +51,7 @@ Mauvaises accroches :
 - "Le secret incroyable que personne ne veut te dire !" : promesse vide, aucun sujet.
 - "Dans cette vidéo, nous allons parler de la lumière et de ses propriétés." : pas de question, trop long.
 
-Question au spectateur (`question`, obligatoire) : chaque partie finit par une question courte posée au spectateur, juste avant l'appel à s'abonner que le code ajoute. Elle porte sur le sujet et parle de lui, pour donner envie de répondre en commentaire. 60 caractères au plus, finit par « ? ». Exemples : "Et toi, dans quelle position tu dors ?", "Et toi, tu relis tes cours ou tu les oublies ?". Pas de question générale ("Ça t'a plu ?") ni de quiz dont la réponse est dans la vidéo.
+Question au spectateur (`question`, obligatoire) : chaque partie finit par une question courte posée au spectateur, juste avant l'appel à s'abonner que le code ajoute. Elle porte sur le sujet et parle de lui, pour donner envie de répondre en commentaire. 60 caractères au plus, finit par « ? ». Exemples : "Et toi, dans quelle position tu dors ?", "Et toi, tu relis tes cours ou tu les oublies ?". Pas de question générale ("Ça t'a plu ?") ni de quiz dont la réponse est dans la vidéo. Quand la question demande son avis, commence-la par « Pour toi, » (« Pour toi, quel pays aurait pu dominer à sa place ? ») ; garde « Et toi, » pour une question sur ses habitudes.
 
 ## 4. Écrire pour la voix
 
@@ -61,6 +61,7 @@ Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
 - Santé, argent, droit : garde les nuances de la source ("souvent", "peut", "chez certains"). N'écris jamais un conseil comme une certitude ni une promesse de guérison, et laisse de côté une affirmation forte que la source ne justifie pas. Explique le mécanisme, laisse le spectateur choisir.
 - Sujets graves (morts, attentat, guerre, maladie) : ton sobre. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.
 - Dans `say` seulement : pas de parenthèses, pas d'abréviations d'unités ("nanomètres", pas "nm") ; les sigles connus se gardent ("OTAN", "BRICS", "ONU"), pas de symboles (%, €, &, /). Les textes à l'écran (`props`) peuvent en avoir.
+- Phrases complètes avec un verbe précis : « ses empereurs protègent leur frontière nord des peuples des steppes », pas « préfèrent garder leur frontière nord ».
 - Pas de longue énumération lue à voix haute : trois éléments au plus, les deux derniers reliés par « et » (« la variole, la rougeole et la grippe »).
 - En français, tutoie le spectateur.
 - Jamais de tiret cadratin. Utilise une virgule, deux-points ou un point.
@@ -175,7 +176,7 @@ Un exemple par type :
 - `speaker` = qui on entend dans l'extrait, comme la transcription le dit : "Prénom Nom", "Prénom Nom, média" ou le média seul. Les vidéos insèrent souvent des extraits d'ailleurs (journal télé, interview, discours) : l'indice est dans le texte autour ("comme l'a dit X", "sur telle antenne", "écoutez").
 - Si la transcription ne dit pas qui parle, ou parle seulement d'"un journal" ou d'"un reportage" sans nommer le média, mets `"speaker": ""`. Pas de crédit vaut mieux qu'un faux crédit. `speaker` n'est jamais le nom de la chaîne YouTube, ni le titre de la vidéo, ni un nom inventé.
 - Bon : le texte dit "comme l'expliquait Hubert Reeves sur France Inter" donne `"speaker": "Hubert Reeves, France Inter"`. Mauvais : `"speaker"` = le nom de la ligne `Chaîne :` de la transcription. Mauvais aussi : le nom du présentateur de la vidéo ("je suis Léa"). Une `quote` n'est jamais le présentateur qui lit un texte (lettre, article) : un extrait où la source passe la voix à quelqu'un d'autre, sinon mets le texte dans un `stamp` ou dans le `say`.
-- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo, seulement si le `say` parle de ce moment, et jamais sur un sujet grave (section 4). Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
+- Une ligne `[son 2:43 2.5s]` est un son de la vidéo source, sans parole. Pour le jouer après le `say` d'une scène, ajoute `"sfx": "2:43"` à cette scène (recopie le minutage qui suit `son`). Zéro à deux sons par vidéo (trois au plus pour la biographie d'un artiste musical), 10 secondes au plus chacun, seulement si le `say` parle de ce moment, et jamais sur un sujet grave (section 4). Jamais de `sfx` sur une scène `quote` : la citation joue déjà la vraie voix.
 
 Exemple : la transcription contient
 

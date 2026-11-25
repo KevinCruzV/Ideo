@@ -1,5 +1,5 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { useCurrentFrame, useVideoConfig } from "remotion";
 import { drift, entry, EntryOptions, paperTransform, SUPPORT_AT } from "../paper/motion";
 import { colors, PaperColor, shade } from "../theme";
 import { Beat, useBeat } from "../scenes/beats";
@@ -19,7 +19,13 @@ export const contrastPaper = (value: unknown, choices: readonly PaperColor[]): P
   return choices.find((c) => !used.has(c)) ?? choices[0];
 };
 
+export const TURN_DEG_PER_SECOND = 200;
+
+export const turnAngle = (frame: number, fps: number): number => (frame / fps) * TURN_DEG_PER_SECOND;
+
 export const PictoArt: React.FC<{ name: unknown; size: number; style?: React.CSSProperties }> = ({ name, size, style }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const flag = flagCode(name);
   if (flag) return <FlagArt code={flag} size={size} />;
   const key = pictoName(name);
@@ -28,12 +34,15 @@ export const PictoArt: React.FC<{ name: unknown; size: number; style?: React.CSS
   const off = Math.max(1.4, Math.min(2.4, 300 / size));
   return (
     <svg width={size} height={size} viewBox="-4 -4 108 108" style={{ display: "block", overflow: "visible", ...style }}>
-      {pieces.map((p, i) => (
-        <g key={i}>
-          <path d={p.d} fill={shade} fillRule="evenodd" transform={`translate(${off} ${off * 1.35})`} />
-          <path d={p.d} fill={colors[p.c]} fillRule="evenodd" />
-        </g>
-      ))}
+      {pieces.map((p, i) => {
+        const spin = p.turn ? `rotate(${turnAngle(frame, fps).toFixed(2)} ${p.turn[0]} ${p.turn[1]})` : "";
+        return (
+          <g key={i}>
+            <path d={p.d} fill={shade} fillRule="evenodd" transform={`translate(${off} ${off * 1.35}) ${spin}`} />
+            <path d={p.d} fill={colors[p.c]} fillRule="evenodd" transform={spin || undefined} />
+          </g>
+        );
+      })}
     </svg>
   );
 };

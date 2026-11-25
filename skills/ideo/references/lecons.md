@@ -2,9 +2,6 @@
 
 Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leçons avant d'écrire un plan : ajoute-les avec `python -m ideo learn "<leçon>"`.
 
-- [2026-11-22] Quand la question au spectateur demande son avis, commence-la par « Pour toi, » (« Pour toi, quel pays aurait pu dominer à sa place ? ») ; garde « Et toi, » pour une question sur ses habitudes.
-- [2026-11-22] Écris des phrases complètes avec un verbe précis : « ses empereurs protègent leur frontière nord des peuples des steppes », pas « préfèrent garder leur frontière nord ».
-- [2026-11-22] Dans une énumération lue à voix haute, relie les deux derniers éléments par « et » : « la variole, la rougeole et la grippe ».
 - [2026-11-22] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
 - [2026-11-22] (auto:plan-invalide) Relis le message de check et corrige exactement ce qu'il demande avant de relancer.
 - [2026-11-22] Entre deux sujets, fais une vraie transition, chaque fois différente : une question (« Et la Chine, alors ? »), une conséquence (« Résultat : ») ou un contraste (« Pendant ce temps, »).
@@ -29,3 +26,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Ne remets pas le nom et la photo du personnage principal déjà présenté dans la même vidéo : une fois suffit, et la scène suivante garde le ton de l’émotion.
 - [2026-11-25] Dans une biographie en plusieurs parties, l’accroche de chaque partie annonce la partie (« X, partie 2 : la chute et la fin ») sans révéler la fin.
 - [2026-11-25] Biographie d’un artiste musical : quand le say parle d’une chanson, joue un court extrait avec sfx (lignes [son] de la source), 3 au plus par vidéo.
+- [2026-11-25] Biographie d’un artiste musical : chaque chanson ou disque important a sa propre scène, avec le dessin d’un disque (vinyl), son titre et sa date, avant d’en raconter le succès.
