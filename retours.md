@@ -63,6 +63,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (h) : l'étape 1 de skills/entretien/SKILL.md ne distinguait pas les fichiers du skill ideo (ideo/, render/, skills/, tests/, docs/, musique/, racine) d'un fichier non suivi ailleurs sur le disque. Elle ignore maintenant explicitement ce qui est hors de ces dossiers avant de décider d'arrêter l'entretien.
 - [x] [2026-11-25] (5H0vaCYKZHU) Il faut une commande pour ajouter manuellement une photo (fichier local + source) à une person-card, en plus de la recherche automatique.
   Entretien du 2026-11-25 (h) : nouvelle commande `ideo photo-manuel <job> "<nom>" <fichier> "<source>"` (jpg, png ou webp) qui copie le fichier local dans le job et écrit son crédit dans out/sources.md, sur le même modèle de stockage que la recherche automatique (photo.add_manual). Relecture : refuse maintenant aussi un fait divers (« mood »: "dark") comme `ideo photo`, et lit le fichier avant d'oublier l'ancienne photo pour ne pas planter quand le fichier donné est déjà celui enregistré dans le job.
+- [ ] [2026-11-25] (bk6QIRZjMjA) La voix ElevenLabs se coupe par endroits : un mot commence puis s’interrompt, comme un fragment coupé au montage.
+- [ ] [2026-11-25] (bk6QIRZjMjA) ElevenLabs lit le début de la phrase suivante (next_text) en fin de segment, et le code garde ce mot ajouté : seg_03 « coup », seg_19 et seg_27 « tropique » (Anthropic), coupés au montage.
 
 ## Défauts détectés
 
@@ -85,6 +87,9 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] `voix-plate` (Wj8lKdCGpY0) Partie 1 : voix plate, l'accroche ou la fin est plate (seg_00_hook), score médian 2,13, les plus plats : seg_00_hook (1,78), seg_18 (1,83), seg_01 (2,00). Relance la voix de cette partie ou reformule ces phrases.
   Entretien du 2026-11-24 : scores relus (accroche 1,78 pour un seuil de 2,0, médiane 2,13) ; le seuil se juge à l'oreille et la voix de ce job se relance, pas de défaut de code trouvé. Non corrigé.
   Entretien du 2026-11-25 : seule l'accroche (1,78) était sous le seuil alors que l'accroche avait été choisie parmi 12 prises par ses propres critères (fidélité, formule, vitesse, montée, niveau) ; qc ne la signale plus comme plate quand ce choix a réussi ou a été fait à la main, la fin et les autres segments restent contrôlés.
+- [ ] `accroche-imparfaite` (bk6QIRZjMjA) Partie 1 : l'accroche reste imparfaite après 12 prises (fidélité, formule trop longue). Relance la voix de cette partie ou reformule l'accroche.
+- [ ] `voix-plate` (bk6QIRZjMjA) Partie 1 : voix plate, l'accroche ou la fin est plate (seg_00_hook), score médian 2,19, les plus plats : seg_01 (1,50), seg_25 (1,63), seg_09 (1,64). Relance la voix de cette partie ou reformule ces phrases.
+- [ ] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_03 : la voix s'écarte du texte (ressemblance 0,76). Relance la voix de cette partie ou reformule le texte.
 
 ## Dessins manquants
 

@@ -16,5 +16,8 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Dans une liste de faits, chaque fait a de l’impact et dit pourquoi il compte (« son premier grand succès »), pas seulement qu’il arrive.
 - [2026-11-25] Après un moment triste, la scène suivante reste grave (« Il ne s’en remettra pas »), pas légère.
 - [2026-11-25] Dans une biographie en plusieurs parties, l’accroche de chaque partie annonce la partie (« X, partie 2 : la chute et la fin ») sans révéler la fin.
+- [2026-11-25] Ne remets pas le nom et la photo du personnage principal déjà présenté dans la même vidéo : une fois suffit, et la scène suivante garde le ton de l’émotion.
+- [2026-11-25] Biographie en plusieurs parties : l’accroche de chaque partie suit « L’histoire de X, partie N : sous-titre », sans révéler la fin ; la couverture met « L’histoire de X » en gros jaune et le sous-titre en bande noire.
+- [2026-11-25] Biographie d’un artiste musical : quand le say parle d’une chanson, joue un court extrait avec sfx (lignes [son] de la source), 3 au plus par vidéo.
 - [2026-11-25] Biographie d’un artiste musical : chaque chanson ou disque important a sa propre scène, avec le dessin d’un disque (vinyl), son titre et sa date, avant d’en raconter le succès.
 - [2026-11-25] Ne choisis jamais un picto métaphorique qui ne montre pas l’objet exact (ex. satellite pour une galaxie de boutiques) : change de type de scène ou note-le dans wishes.
