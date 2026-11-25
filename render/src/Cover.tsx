@@ -124,57 +124,49 @@ export const Cover: React.FC<CoverProps> =({ title, hook, picto, photo, look, wa
           <Strips lines={sub.lines} size={sub.size} color="ink" align="flex-start" seed="cover-sub" tilt={1} style={{ marginTop: SUB_GAP }} />
         ) : null}
       </div>
+      {art === "photo" ? null : <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />}
+      {showsRings(art) ? <Rings accent={accent} ring={ring} artCy={artCy} /> : null}
       {art === "photo" ? (
-        <>
-          <Rings accent={accent} ring={ring} artCy={artCy} />
-          <div
-            style={{
-              position: "absolute",
-              left: layout.width / 2 - PHOTO_W / 2,
-              top: artCy - PHOTO_H / 2,
-              width: PHOTO_W,
-              height: PHOTO_H,
-              transform: `rotate(-2deg) scale(${PHOTO_SCALE})`,
-            }}
-          >
-            <PhotoFrame src={photo as string} seed="cover-photo" />
-          </div>
-        </>
+        <div
+          style={{
+            position: "absolute",
+            left: layout.width / 2 - PHOTO_W / 2,
+            top: artCy - PHOTO_H / 2,
+            width: PHOTO_W,
+            height: PHOTO_H,
+            transform: `rotate(-2deg) scale(${PHOTO_SCALE})`,
+          }}
+        >
+          <PhotoFrame src={photo as string} seed="cover-photo" />
+        </div>
       ) : art === "bust" ? (
-        <>
-          <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />
-          <Rings accent={accent} ring={ring} artCy={artCy} />
-          <div style={{ position: "absolute", left: layout.width / 2 - BUST_W / 2, top: artCy - BUST_H / 2 }}>
-            <PersonBust
-              width={BUST_W}
-              initials={initials(str(look?.name, "?"))}
-              badge={accent === "yellow" ? colors.red : colors.yellow}
-              badgeInk={onPaper[accent === "yellow" ? "red" : "yellow"]}
-              look={bustLook}
-              accent={accent}
-              view={CLOSE_VIEW}
-              seed="cover-bust"
-            />
-          </div>
-        </>
+        <div style={{ position: "absolute", left: layout.width / 2 - BUST_W / 2, top: artCy - BUST_H / 2 }}>
+          <PersonBust
+            width={BUST_W}
+            initials={initials(str(look?.name, "?"))}
+            badge={accent === "yellow" ? colors.red : colors.yellow}
+            badgeInk={onPaper[accent === "yellow" ? "red" : "yellow"]}
+            look={bustLook}
+            accent={accent}
+            view={CLOSE_VIEW}
+            seed="cover-bust"
+          />
+        </div>
       ) : (
-        <>
-          <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />
-          <div
-            style={{
-              position: "absolute",
-              left: layout.width / 2 - ART_SIZE / 2,
-              top: artCy - ART_SIZE / 2,
-              width: ART_SIZE,
-              height: ART_SIZE,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {art === "picto" ? <PictoArt name={picto} size={ART_SIZE} /> : <MascotHead size={ART_SIZE * 0.8} />}
-          </div>
-        </>
+        <div
+          style={{
+            position: "absolute",
+            left: layout.width / 2 - ART_SIZE / 2,
+            top: artCy - ART_SIZE / 2,
+            width: ART_SIZE,
+            height: ART_SIZE,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {art === "picto" ? <PictoArt name={picto} size={ART_SIZE} /> : <MascotHead size={ART_SIZE * 0.8} />}
+        </div>
       )}
       <Watermark text={watermark} />
     </AbsoluteFill>
