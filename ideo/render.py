@@ -73,7 +73,7 @@ def cover_picto(part: dict) -> str | None:
 
 
 def cover_photo(job: Path, part: dict) -> str | None:
-    stored = photo.all_stored(job)
+    stored = photo.of_kind(photo.all_stored(job), photo.PERSON)
     if not stored:
         return None
     for scene in part.get("scenes") or []:

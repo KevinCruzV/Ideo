@@ -88,7 +88,7 @@ Le spectateur repère vite un texte écrit par une IA. Dans `hook`, `say` et les
 - Pas de majuscules pour crier dans `say`, pas de guillemets pour souligner.
 - Un sujet qui agit : « les chercheurs ont mesuré », pas « il a été montré ».
 
-## 5. Les 15 types de scène
+## 5. Les 16 types de scène
 
 Recopie les noms de props et de `el` exactement : `check` refuse une prop inconnue, une prop manquante, une liste trop longue et un `el` qui n'existe pas. Les props marquées * sont obligatoires. Les autres sont facultatives : omets-les si la source ne donne rien, n'invente pas de valeur. `counter.to`, `counter.from` et `shape-diagram.values` sont des nombres sans guillemets. Les textes à l'écran peuvent contenir des chiffres. Ils sont courts : chaque texte a un plafond en caractères, espaces compris, donné entre crochets dans le tableau (par exemple [28 caractères] : 28 caractères au plus). `check` refuse un texte plus long, car il serait coupé à l'écran. Dans `el`, remplace N par un numéro : `chips.0`, jamais `chips.N`.
 
@@ -109,6 +109,7 @@ Recopie les noms de props et de `el` exactement : `check` refuse une prop inconn
 | `versus` | deux camps, deux options ou deux époques face à face | `left`*, `right`* [24 caractères chacun] ; `left_picto`, `right_picto` : un dessin par camp ; `kicker` (voir sous le tableau) | `left`, `right` |
 | `map` | où ça se passe : un pays, une région, une route entre des pays | `focus`* = `world`, `europe`, `africa`, `asia`, `north-america`, `south-america`, `middle-east`, `oceania` ou `arctic` ; `places`* : liste de `{code, label}` (6 max), `code` = code du pays à deux lettres comme pour les drapeaux, `label` [24 caractères] ; `route` : liste de 2 à 6 codes reliés dans l'ordre par un trait ; `kicker` | `places.0` à `places.5`, `route` |
 | `body` | le corps humain : une posture, un geste, ce qui se passe dans un organe | `pose`* = `standing`, `sitting`, `walking`, `running`, `lying-back`, `lying-starfish`, `lying-side-left`, `lying-side-right`, `lying-fetal` ou `lying-stomach` ; `setting` = `none`, `bed`, `chair`, `desk` ou `outdoor` ; `marks` : liste de `{part, label}` (4 max), `part` = `head`, `brain`, `neck`, `throat`, `shoulders`, `chest`, `heart`, `lungs`, `stomach`, `back`, `spine`, `hips`, `arms`, `hands`, `knees`, `legs` ou `feet`, `label` [28 caractères] ; `tone` = `good` (bleu), `bad` (rouge) ou `neutral` ; `kicker` | `marks.0` à `marks.3` |
+| `artwork` | une œuvre d'art citée (tableau, dessin, sculpture) | `title`* [48 caractères] : le titre de l'œuvre ; `artist` [40 caractères] ; `kicker` | `title`, `artist` |
 
 Deux props facultatives s'ajoutent aux types :
 - `kicker` [28 caractères], sur TOUS les types : une petite étiquette visible dès la première image de la scène. Mets-y la date, le lieu ou le nom de l'acte ("1991", "11 septembre 2001", "Irak, 2003", "Acte 2 : les BRICS"). Ce n'est pas un `el` : ne le mets pas dans `items`.
@@ -120,7 +121,7 @@ Personnages (`person-card`) : compose l'apparence de la personne avec ces props,
 - `facial` : `none`, `moustache`, `beard`, `goatee`, `sideburns` ; `glasses` : `true` ou `false`
 - `hat` : `none`, `cap`, `kepi`, `bicorne`, `crown`, `helmet`, `top-hat`, `beret`, `turban`, `laurel`, `wig`
 - `outfit` : `suit`, `uniform`, `robe`, `lab-coat`, `casual`, `toga`, `armor`, `dress` ; `skin` : `light`, `tan`, `brown`, `dark`
-Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dans une biographie ou une histoire, la personne principale a une `person-card` par acte, avec la même apparence à chaque fois, pour qu'on la revoie jusqu'au bout. Personne historique connue (savant, chef d'État, artiste), en biographie ou non, jamais fait divers ni personne privée : lance `ideo photo JOB "<nom>"` une fois par personne avant d'écrire le plan. Pour chaque réponse qui n'est pas « aucune photo libre », mets `"photo": true` sur les cartes de cette personne (le `name` de la carte reprend son nom), sinon garde le portrait en papier.
+Exemple : un savant aux cheveux blancs en bataille donne `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Dans une biographie ou une histoire, la personne principale a une `person-card` par acte, avec la même apparence à chaque fois, pour qu'on la revoie jusqu'au bout. Personne historique connue (savant, chef d'État, artiste), en biographie ou non, jamais fait divers ni personne privée : lance `ideo photo JOB "<nom>"` une fois par personne avant d'écrire le plan. Pour chaque réponse qui n'est pas « aucune photo libre », mets `"photo": true` sur les cartes de cette personne (le `name` de la carte reprend son nom), sinon garde le portrait en papier. Œuvre citée (le tableau d'un peintre) : lance aussi `ideo photo JOB "<titre>"` et n'écris la scène `artwork` que si l'image est trouvée, avec ce titre dans `title`.
 
 Drapeaux : partout où un `picto` est accepté, tu peux écrire `flag:` suivi du code du pays à deux lettres en minuscules : `flag:us`, `flag:cn`, `flag:ru`, `flag:in`, `flag:br`, `flag:za`, `flag:fr`, `flag:gb`, `flag:de`, `flag:jp`. Aussi `flag:eu` (Union européenne), `flag:un` (ONU) et `flag:su` (Union soviétique). Tous les pays ont leur drapeau, même s'ils ne sont pas dans ces exemples : écris leur code (`flag:iq` pour l'Irak, `flag:eg` pour l'Égypte). Pour une région, écris `flag:gb-sct` (Écosse), `flag:gb-eng` (Angleterre), `flag:gb-wls` (pays de Galles), `flag:gb-nir` (Irlande du Nord) ou `flag:es-ct` (Catalogne), pas le drapeau du pays voisin. Ne demande jamais un drapeau de pays dans `wishes`. Dès qu'un pays est nommé à l'écran, montre son drapeau. Quand un `say` cite trois pays ou plus (une alliance, un groupe, des pays visés), la scène est une `icon-grid` avec un drapeau et le nom du pays par cellule. Un `versus` entre deux pays a un drapeau de chaque côté.
 
@@ -156,6 +157,7 @@ Un exemple par type :
 {"type": "map", "say": "Ebbinghaus travaille à Berlin, en Allemagne, et ses résultats traversent vite l'Atlantique jusqu'aux États-Unis.", "props": {"kicker": "1885", "focus": "world", "places": [{"code": "de", "label": "Berlin"}, {"code": "us", "label": "États-Unis"}], "route": ["de", "us"]}, "items": [{"el": "places.0", "on": "Berlin"}, {"el": "route", "on": "traversent"}, {"el": "places.1", "on": "États-Unis"}], "src": "1:20"}
 {"type": "body", "say": "Quand tu dors, ton cerveau trie ce que tu as appris. Allongé sur le dos, ta respiration ralentit et ton cœur aussi.", "props": {"kicker": "Pendant la nuit", "pose": "lying-back", "setting": "bed", "tone": "good", "marks": [{"part": "brain", "label": "Il trie les souvenirs"}, {"part": "heart", "label": "Il ralentit"}]}, "items": [{"el": "marks.0", "on": "cerveau"}, {"el": "marks.1", "on": "cœur"}], "src": "5:20"}
 {"type": "versus", "say": "D'un côté, relire dix fois la même page. De l'autre, fermer le livre et se poser des questions.", "props": {"kicker": "Deux méthodes", "left": "Relire", "left_picto": "book", "right": "Se tester", "right_picto": "brain"}, "items": [{"el": "left", "on": "relire"}, {"el": "right", "on": "questions"}], "src": "5:58"}
+{"type": "artwork", "say": "En 1889, il peint La nuit étoilée depuis la fenêtre de l'asile où il vit.", "props": {"kicker": "1889", "title": "La nuit étoilée", "artist": "Vincent van Gogh"}, "items": [{"el": "title", "on": "peint"}, {"el": "artist", "on": "fenêtre"}], "src": "4:20"}
 ```
 
 ## 6. `items[].on` : quand un élément apparaît
@@ -356,7 +358,7 @@ Chaque ligne commence par l'endroit ("Plan", "Partie 1", "Partie 1, scène 4") e
 | `recopie la vidéo d'origine mot pour mot` | réécris ce champ avec tes mots et une autre construction, en gardant les chiffres et les faits (section 4) |
 | `reprend des suites de 5 mots` | réécris les scènes les plus proches de la source : regroupe, coupe, change l'ordre (section 4) |
 | `« scenes » doit être une liste` | mets au moins une scène dans la partie |
-| `type inconnu` | prends un des 15 types de la section 5 |
+| `type inconnu` | prends un des 16 types de la section 5 |
 | `prop inconnue` ou `manquante` | utilise seulement les props acceptées que l'erreur liste |
 | `« props.X » doit être` | donne à cette prop le format indiqué (nombre, liste, valeur permise) |
 | `« props.labels » a` | donne autant de `labels` que de `values` |

@@ -3,7 +3,7 @@ import re
 ERROR_PATTERNS = (
     ("wishes-invalides", r"« wishes"),
     ("mood-invalide", r"« mood »"),
-    ("photo-invalide", r"« photo » demande|pas de photo dans un fait divers|la photo du job est celle"),
+    ("photo-invalide", r"« photo » demande|pas de photo dans un fait divers|la photo du job est celle|l'image libre de droits d'une œuvre"),
     ("type-inconnu", r"type inconnu"),
     ("texte-trop-long", r"caractères, \d+ au plus"),
     ("drapeau-inconnu", r"n'est pas un drapeau connu"),

@@ -30,7 +30,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-24] (dAenp-6u9xU) Sur un counter, le cadre reste noir et vide tant que le chiffre n’est pas lancé : afficher le chiffre de départ dès la première image.
 - [x] [2026-11-25] (dAenp-6u9xU) Le drapeau écossais (flag:gb-sct) n’existe pas : seul le drapeau du Royaume-Uni est disponible pour un Écossais.
 - [x] [2026-11-25] (XBLXmwxSd-0) La couverture d’une biographie montre un dessin au lieu de la photo de la personne principale : quand une person-card a photo true, la couverture doit afficher cette photo.
-- [ ] [2026-11-25] (XBLXmwxSd-0) Quand une vidéo est coupée en parties, chaque vidéo montre les barres de progression de toutes les parties : il ne faut que la barre de la partie en cours.
+- [x] [2026-11-25] (XBLXmwxSd-0) Quand une vidéo est coupée en parties, chaque vidéo montre les barres de progression de toutes les parties : il ne faut que la barre de la partie en cours.
 - [ ] [2026-11-25] (XBLXmwxSd-0) Idée : pour la biographie d’un peintre, afficher une image de l’œuvre citée, avec des images libres de droits, sur le modèle des photos de personnes.
 
 ## Défauts détectés

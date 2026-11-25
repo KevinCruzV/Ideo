@@ -17,6 +17,9 @@ TIMEOUT = 30
 MAX_BYTES = 12 * 1024 * 1024
 WIDTH = 1200
 HUMAN = "Q5"
+ARTWORKS = frozenset({"Q3305213", "Q93184", "Q860861", "Q838948", "Q219423", "Q18761202"})
+PERSON = "person"
+ARTWORK = "artwork"
 NONE = "OK photo : aucune photo libre"
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 FREE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by([ -]sa)?[ -]\d(\.\d)?\b)", re.IGNORECASE)
@@ -63,13 +66,17 @@ def _page(lang: str, name: str) -> dict | None:
     return page
 
 
-def _is_human(item: str | None) -> bool:
+def _kind_of(item: str | None) -> str | None:
     if not item:
-        return False
+        return None
     data = _query(WIKIDATA, action="wbgetentities", ids=item, props="claims")
     claims = data.get("entities", {}).get(item, {}).get("claims", {}).get("P31", [])
     kinds = {c.get("mainsnak", {}).get("datavalue", {}).get("value", {}).get("id") for c in claims}
-    return HUMAN in kinds
+    if HUMAN in kinds:
+        return PERSON
+    if kinds & ARTWORKS:
+        return ARTWORK
+    return None
 
 
 def _file_info(filename: str) -> dict | None:
@@ -83,7 +90,8 @@ def _file_info(filename: str) -> dict | None:
 def find(name: str, lang: str) -> dict | None:
     for code in dict.fromkeys([lang, "en"]):
         page = _page(code, name)
-        if page is None or not _is_human(page.get("pageprops", {}).get("wikibase_item")):
+        kind = _kind_of(page.get("pageprops", {}).get("wikibase_item")) if page is not None else None
+        if kind is None:
             continue
         info = _file_info(page["pageimage"])
         if not info:
@@ -97,6 +105,7 @@ def find(name: str, lang: str) -> dict | None:
         if mime not in EXTENSIONS or not url:
             continue
         return {
+            "kind": kind,
             "person": name.strip(),
             "title": page.get("title", name),
             "author": _plain(meta.get("Artist", {}).get("value", "")) or "auteur inconnu",
@@ -132,6 +141,10 @@ def all_stored(job: Path) -> list[dict]:
         if image.exists():
             out.append({**data, "image": image.name})
     return out
+
+
+def of_kind(photos: list[dict], kind: str) -> list[dict]:
+    return [p for p in photos if p.get("kind", PERSON) == kind]
 
 
 def match(photos: list[dict], name: str) -> dict | None:
