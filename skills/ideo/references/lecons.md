@@ -5,7 +5,7 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-22] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
 - [2026-11-22] (auto:plan-invalide) Relis le message de check et corrige exactement ce qu'il demande avant de relancer.
 - [2026-11-23] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
-- [2026-11-24] La couverture montre la photo de la première person-card avec photo, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
+- [2026-11-24] La couverture montre la photo de la première person-card avec photo, sinon le buste de la première person-card, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
 - [2026-11-24] Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
 - [2026-11-24] Sur un counter, ancre « to » sur un des premiers mots du say : le compte doit démarrer vite, pas à la fin de la phrase.
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
