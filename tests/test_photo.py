@@ -197,6 +197,24 @@ def test_add_manual_replaces_the_previous_photo_of_the_same_person(job, tmp_path
     assert (job / "photo-jeanne-martin.jpg").read_bytes() == b"second"
 
 
+def test_add_manual_replaces_its_own_previously_stored_file(job, tmp_path):
+    first = tmp_path / "a.jpg"
+    first.write_bytes(b"first")
+    photo.add_manual(job, "Jeanne Martin", first, "source 1")
+    stored = job / "photo-jeanne-martin.jpg"
+    photo.add_manual(job, "Jeanne Martin", stored, "source 2")
+    assert stored.read_bytes() == b"first"
+    assert photo.all_stored(job)[0]["person"] == "Jeanne Martin"
+
+
+def test_add_manual_refuses_a_dark_plan(job, tmp_path):
+    common.save_json(job / "plan.json", {"mood": "dark", "parts": []})
+    local = tmp_path / "portrait.jpg"
+    local.write_bytes(b"\xff\xd8fake")
+    with pytest.raises(common.IdeoError, match="fait divers"):
+        photo.add_manual(job, "Jeanne Martin", local, "source")
+
+
 def test_every_photo_has_its_credit(job, wiki):
     photo.run(job, "Ada Lovelace")
     wiki.title = "Charles Babbage"

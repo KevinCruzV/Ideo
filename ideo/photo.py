@@ -2,7 +2,6 @@ import hashlib
 import html
 import json
 import re
-import shutil
 import time
 import unicodedata
 import urllib.parse
@@ -236,16 +235,19 @@ def add_manual(job: Path, name: str, file: Path, source: str, kind: str = PERSON
         raise common.IdeoError("donne le nom de la personne ou de la marque : ideo photo-manuel <job> \"<nom>\" <fichier> \"<source>\".")
     if not source:
         raise common.IdeoError("donne la source de la photo : ideo photo-manuel <job> \"<nom>\" <fichier> \"<source>\".")
+    if _dark(job):
+        raise common.IdeoError("pas de photo pour un fait divers : garde le portrait en papier découpé.")
     file = Path(file)
     if not file.is_file():
         raise common.IdeoError(f"fichier introuvable : {file}.")
     extension = MANUAL_EXTENSIONS.get(file.suffix.lower())
     if extension is None:
         raise common.IdeoError(f"format d'image non reconnu ({file.suffix or 'aucune extension'}) : utilise jpg, png ou webp.")
+    content = file.read_bytes()
     slug = _slug(name)
     _forget(job, slug)
     target = job / f"photo-{slug}.{extension}"
-    shutil.copyfile(file, target)
+    target.write_bytes(content)
     data = {"kind": kind, "person": name, "title": name, "author": "photo fournie par l'utilisateur",
             "license": "fournie par l'utilisateur", "license_url": "", "source_url": source, "extension": extension}
     common.save_json(target.with_suffix(".json"), data)

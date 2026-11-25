@@ -57,7 +57,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (5H0vaCYKZHU) L’entretien s’arrête à cause d’un fichier non suivi sans rapport avec le skill ideo (comme .claude-plugin/marketplace.json) : il doit ignorer ce qui est hors de ses propres dossiers.
   Entretien du 2026-11-25 (h) : l'étape 1 de skills/entretien/SKILL.md ne distinguait pas les fichiers du skill ideo (ideo/, render/, skills/, tests/, docs/, musique/, racine) d'un fichier non suivi ailleurs sur le disque. Elle ignore maintenant explicitement ce qui est hors de ces dossiers avant de décider d'arrêter l'entretien.
 - [x] [2026-11-25] (5H0vaCYKZHU) Il faut une commande pour ajouter manuellement une photo (fichier local + source) à une person-card, en plus de la recherche automatique.
-  Entretien du 2026-11-25 (h) : nouvelle commande `ideo photo-manuel <job> "<nom>" <fichier> "<source>"` (jpg, png ou webp) qui copie le fichier local dans le job et écrit son crédit dans out/sources.md, sur le même modèle de stockage que la recherche automatique (photo.add_manual).
+  Entretien du 2026-11-25 (h) : nouvelle commande `ideo photo-manuel <job> "<nom>" <fichier> "<source>"` (jpg, png ou webp) qui copie le fichier local dans le job et écrit son crédit dans out/sources.md, sur le même modèle de stockage que la recherche automatique (photo.add_manual). Relecture : refuse maintenant aussi un fait divers (« mood »: "dark") comme `ideo photo`, et lit le fichier avant d'oublier l'ancienne photo pour ne pas planter quand le fichier donné est déjà celui enregistré dans le job.
 
 ## Défauts détectés
 
