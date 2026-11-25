@@ -8,6 +8,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-24 : critères et nombre de prises relus dans hookvoice, la montée finale vient de la voix locale elle-même ; aucun réglage du code ne la produit sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 : critères relus à nouveau, rien d'autre à tenter sans écoute ; même cause que l'accroche imparfaite ci-dessous. Non corrigé.
   Entretien du 2026-11-25 (c) : trois entretiens ont relu les mêmes critères sans trouver de réglage ; la montée finale dépend de la voix locale et ne peut être jugée qu'en écoutant de nouvelles prises. Non corrigé.
+  Entretien du 2026-11-25 (d) : voice-hook.json est toujours absent du dossier de la partie, donc aucun critère raté à relire ; la montée finale dépend de la voix locale et ne se juge qu'en écoutant de nouvelles prises. Non corrigé.
 - [x] [2026-11-22] (9vgV2OuqmII) La voix ElevenLabs a ajouté un mot absent du texte (« préfèrent tout garder », scène 8) sans que le contrôle de fidélité le signale.
 - [x] [2026-11-22] (9vgV2OuqmII) La voix enchaîne sans pause la fin d’une énumération et la phrase suivante (« la grippe. Entre 1500 et 1650 », scène 7).
 - [x] [2026-11-22] (Wj8lKdCGpY0) Les sons de transition sont presque toujours les mêmes d’une scène à l’autre : ça devient redondant, il faut les varier.
@@ -17,6 +18,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-24 : le choix de la voix de l'extrait se juge à l'écoute et à la source, aucun contrôle automatique fiable trouvé. Non automatisé.
   Entretien du 2026-11-25 : la transcription du job ne distingue pas les voix (aucun champ de locuteur dans words.json), donc rien à comparer ; la leçon « pas de scène quote quand la phrase est lue par le présentateur » reste la seule garde. Non automatisé.
   Entretien du 2026-11-25 (c) : rien de nouveau, toujours aucune information de locuteur dans la transcription. Non automatisé.
+  Entretien du 2026-11-25 (d) : words.json de tous les jobs ne contient que w, s et e par mot (aucun champ de locuteur), donc rien à comparer pour savoir qui parle. Non automatisé.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Les person-cards se ressemblent toutes : il faut des personnages variés, hommes et femmes, et des tenues de métier (policier, pompier, médecin, juge, soldat…).
 - [x] [2026-11-22] (sSm_FQ3lsg4) object-state screen ressemble à une télé : il faut un objet téléphone pour les SMS et messages.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Les transitions visuelles entre les scènes sont toujours les mêmes : il faut plusieurs effets de transition, variés.
@@ -31,7 +33,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (dAenp-6u9xU) Le drapeau écossais (flag:gb-sct) n’existe pas : seul le drapeau du Royaume-Uni est disponible pour un Écossais.
 - [x] [2026-11-25] (XBLXmwxSd-0) La couverture d’une biographie montre un dessin au lieu de la photo de la personne principale : quand une person-card a photo true, la couverture doit afficher cette photo.
 - [x] [2026-11-25] (XBLXmwxSd-0) Quand une vidéo est coupée en parties, chaque vidéo montre les barres de progression de toutes les parties : il ne faut que la barre de la partie en cours.
-- [ ] [2026-11-25] (XBLXmwxSd-0) Idée : pour la biographie d’un peintre, afficher une image de l’œuvre citée, avec des images libres de droits, sur le modèle des photos de personnes.
+- [x] [2026-11-25] (XBLXmwxSd-0) Idée : pour la biographie d’un peintre, afficher une image de l’œuvre citée, avec des images libres de droits, sur le modèle des photos de personnes.
+  Entretien du 2026-11-25 (d) : nouvelle scène artwork (titre, artiste, image entière) ; ideo photo accepte maintenant le titre d'une œuvre (peinture, dessin, sculpture) et garde son image libre de droits, séparée des photos de personnes.
 
 ## Défauts détectés
 
@@ -39,10 +42,12 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-24 : le contrôle relancé sur la timeline actuelle de ce job (avec les temps forts) ne lève plus aucune alerte, le constat venait d'un ancien rendu. Non reproduit.
   Entretien du 2026-11-25 : qc relancé sur ce job, aucune alerte scene-figee (seule la durée de la vidéo diffère du plan). Toujours non reproduit.
   Entretien du 2026-11-25 (c) : contrôle des scènes rejoué sur la timeline et les offsets actuels de la partie 1, liste d'alertes vide. Toujours non reproduit.
+  Entretien du 2026-11-25 (d) : qc relancé sur ce job, une seule alerte (durée de la vidéo 176,0 s au lieu de 185,0 s), aucune alerte scene-figee. Toujours non reproduit.
 - [ ] `accroche-imparfaite` (7i3BBkUZ6PQ) Partie 1 : l'accroche reste imparfaite après 12 prises (fin traînante). Relance la voix de cette partie ou reformule l'accroche.
   Entretien du 2026-11-24 : même cause que le défaut signalé sur la montée finale de la voix locale, rien à corriger dans le code sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 : le dossier du job n'a plus de voice-hook.json, impossible de relire les critères ratés ; rien de nouveau à tenter sans nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 (c) : voice-hook.json toujours absent du dossier de la partie, même cause que la montée finale ci-dessus. Non corrigé.
+  Entretien du 2026-11-25 (d) : voice-hook.json toujours absent du dossier de la partie, même cause que la montée finale ci-dessus. Non corrigé.
 - [x] `voix-plate` (Wj8lKdCGpY0) Partie 1 : voix plate, l'accroche ou la fin est plate (seg_00_hook), score médian 2,13, les plus plats : seg_00_hook (1,78), seg_18 (1,83), seg_01 (2,00). Relance la voix de cette partie ou reformule ces phrases.
   Entretien du 2026-11-24 : scores relus (accroche 1,78 pour un seuil de 2,0, médiane 2,13) ; le seuil se juge à l'oreille et la voix de ce job se relance, pas de défaut de code trouvé. Non corrigé.
   Entretien du 2026-11-25 : seule l'accroche (1,78) était sous le seuil alors que l'accroche avait été choisie parmi 12 prises par ses propres critères (fidélité, formule, vitesse, montée, niveau) ; qc ne la signale plus comme plate quand ce choix a réussi ou a été fait à la main, la fin et les autres segments restent contrôlés.
