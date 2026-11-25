@@ -41,6 +41,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (e) : le disque du vinyl tourne maintenant sur lui-même (un tour en 1,8 s), la pochette reste fixe ; deux reflets crème de longueurs différentes rendent la rotation visible. Les autres dessins ne bougent pas.
 - [x] [2026-11-25] (XBLXmwxSd-0) Aucun extrait isolé d’une chanson citée : la source ne donne que des sons d’une seconde mêlés à la voix, donc la scène d’un disque reste muette.
   Entretien du 2026-11-25 (e) : cause trouvée, un même morceau de musique de 20 à 30 s était coupé en bouts de 1 à 5 s dès que son niveau passait un instant sous le seuil (37 repères au lieu de 20 sur ce job). La détection garde maintenant un seuil plus bas une fois le son lancé, relie les pauses d'une seconde et donne des sons jusqu'à 10 s. Une chanson jouée sous la voix du narrateur reste impossible à isoler.
+- [ ] [2026-11-25] (XBLXmwxSd-0) La couverture est trop chargée : le titre jaune est redit en noir par l’accroche en bas. Garder un seul gros titre, avec des bandes mêlant le jaune et le noir, sans le doublon.
 
 ## Défauts détectés
 
