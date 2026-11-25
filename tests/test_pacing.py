@@ -15,12 +15,26 @@ def quiet(seconds):
     return np.zeros(int(seconds * RATE), dtype=np.int16)
 
 
+def faint(seconds, amp):
+    return np.full(int(seconds * RATE), amp, dtype=np.int16)
+
+
 def test_leading_and_trailing_silence_are_trimmed_keeping_30_ms():
     pcm = np.concatenate([quiet(0.5), tone(1.0), quiet(0.8)])
     out, mapping = pacing.tighten(pcm)
     assert len(out) / RATE == pytest.approx(1.06, abs=0.015)
     assert mapping(0.5) == pytest.approx(0.03, abs=0.015)
     assert mapping(1.5) == pytest.approx(1.03, abs=0.015)
+
+
+def test_an_inner_cut_fades_out_and_in_instead_of_jumping_to_silence():
+    pcm = np.concatenate([tone(0.5), faint(1.0, 700), tone(0.5)])
+    out, _ = pacing.tighten(pcm)
+    cut = round(0.5 * RATE) + round(pacing.PAUSE * RATE / 2)
+    assert out[cut - 1] == 0
+    assert out[cut - 2] != 0
+    assert out[cut] == 0
+    assert out[cut + 1] != 0
 
 
 def test_long_inner_silence_becomes_500_ms():

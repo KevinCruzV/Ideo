@@ -7,6 +7,7 @@ FRAME = 480
 THRESHOLD_DB = -32.0
 EDGE_DB = -50.0
 KEEP_EDGE = 0.03
+DECLICK = 0.005
 LONG_PAUSE = 0.60
 PAUSE = 0.50
 SENTENCE_GAP = 0.30
@@ -63,6 +64,18 @@ def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
     return cuts
 
 
+def _fade(part: np.ndarray, fade_in: bool, fade_out: bool) -> np.ndarray:
+    n = min(round(DECLICK * RATE), len(part))
+    if not n or not (fade_in or fade_out):
+        return part
+    faded = part.astype(np.float64)
+    if fade_in:
+        faded[:n] *= np.linspace(0.0, 1.0, n)
+    if fade_out:
+        faded[-n:] *= np.linspace(1.0, 0.0, n)
+    return faded
+
+
 def tighten(pcm: np.ndarray) -> tuple[np.ndarray, Callable[[float], float]]:
     cuts = _cuts(pcm)
     if not cuts:
@@ -72,7 +85,8 @@ def tighten(pcm: np.ndarray) -> tuple[np.ndarray, Callable[[float], float]]:
         parts.append(pcm[cursor:a])
         cursor = b
     parts.append(pcm[cursor:])
-    out = np.concatenate(parts)
+    faded = [_fade(part, fade_in=i > 0, fade_out=i < len(parts) - 1) for i, part in enumerate(parts)]
+    out = np.concatenate(faded).astype(pcm.dtype)
 
     def mapping(t: float) -> float:
         x = t * RATE
