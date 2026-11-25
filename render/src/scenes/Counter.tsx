@@ -26,6 +26,9 @@ export const formatCount = (value: number, places: number): string =>
 
 export const COUNTER_VARIANTS = 3;
 
+export const numberIn = (frame: number): number =>
+  interpolate(frame, [-6, 0], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+
 export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
   const accent = useAccent();
@@ -51,7 +54,7 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const disc = 660;
   const wide = BOX_W - 40;
   const numberFit = fitText(widest, { maxWidth: variant === 0 ? disc - 70 : wide - 120, maxLines: 1, max: variant === 0 ? 250 : 230, min: 60 });
-  const numberIn = start !== 0 ? interpolate(frame, [-3, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : interpolate(frame - runAt, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const shownIn = numberIn(frame);
   const settle = interpolate(frame - runAt - runFor, [0, 4, 10], [1, 1.06, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   const figure = (color: string) => (
@@ -64,8 +67,8 @@ export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
         color,
         fontVariantNumeric: "tabular-nums",
         whiteSpace: "nowrap",
-        opacity: numberIn,
-        transform: `translateY(${(1 - numberIn) * 24}px) scale(${settle})`,
+        opacity: shownIn,
+        transform: `translateY(${(1 - shownIn) * 24}px) scale(${settle})`,
       }}
     >
       {shown}

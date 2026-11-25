@@ -41,23 +41,34 @@ def cover_path(job: Path, plan: dict, n: int) -> Path:
     return Path(job) / "out" / name
 
 
-def _picto_of(props: dict) -> str | None:
+COVER_SCAN = 3
+
+
+def _pictos_of(props: dict) -> list[str]:
+    found = []
     for key in PICTO_KEYS:
         value = props.get(key)
         if isinstance(value, str) and value.strip():
-            return value.strip()
+            found.append(value.strip())
     for cell in props.get("cells") or []:
         if isinstance(cell, dict) and isinstance(cell.get("picto"), str) and cell["picto"].strip():
-            return cell["picto"].strip()
-    return None
+            found.append(cell["picto"].strip())
+    return found
 
 
 def cover_picto(part: dict) -> str | None:
+    found = []
     for scene in part.get("scenes") or []:
         props = scene.get("props") if isinstance(scene, dict) else None
-        found = _picto_of(props) if isinstance(props, dict) else None
-        if found:
-            return found
+        if isinstance(props, dict):
+            found.append(_pictos_of(props))
+    for pictos in found[:COVER_SCAN]:
+        for picto in pictos:
+            if not picto.startswith("flag:"):
+                return picto
+    for pictos in found:
+        if pictos:
+            return pictos[0]
     return None
 
 

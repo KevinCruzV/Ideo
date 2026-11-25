@@ -16,10 +16,9 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-22] Le dessin montre exactement l’objet dont parle la phrase : un SMS ou un message, c’est un téléphone, jamais un écran de télé.
 - [2026-11-23] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
 - [2026-11-23] Une personne historique connue (savant, chef d’État, artiste) a sa vraie photo sur sa person-card : lance ideo photo avant le plan, une fois par personne, même hors biographie, jamais pour un fait divers.
-- [2026-11-24] La couverture reprend le premier picto du plan : en scène 1, fais une icon-grid dont la 1re cellule montre le sujet global (globe, pièces) et la 2e le pays de l’accroche (drapeau).
+- [2026-11-24] La couverture prend le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces), le drapeau du pays peut rester à côté.
 - [2026-11-24] Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
-- [2026-11-24] Sur un counter, ancre « to » sur un des premiers mots du say : le chiffre doit s’afficher vite, le cadre ne reste pas noir et vide jusqu’à la fin de la phrase.
+- [2026-11-24] Sur un counter, ancre « to » sur un des premiers mots du say : le compte doit démarrer vite, pas à la fin de la phrase.
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
 - [2026-11-25] Pas plus de deux scènes versus par vidéo : pour comparer, varie avec object-state, icon-grid, stack-list ou shape-diagram.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
-- [2026-11-25] Pour une personne d’une région sans drapeau propre (Écosse, Catalogne), ne mets pas le drapeau du pays voisin : laisse la carte sans picto.

@@ -10,6 +10,7 @@ export const SHEET_FLAGS = [
   "kr", "kp", "ca", "mx", "ar", "cl", "eg", "sa",
   "ir", "il", "ps", "tr", "ua", "pl", "se", "ch",
   "ng", "ke", "et", "au", "nz", "id", "vn", "cu",
+  "gb-sct", "gb-eng", "gb-wls", "gb-nir", "es-ct",
 ];
 
 const COLS = 8;

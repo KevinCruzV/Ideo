@@ -19,12 +19,14 @@ export const FLAGS = [
   "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "yt", "za", "zm", "zw",
 ] as const;
 
-export type FlagCode = (typeof FLAGS)[number];
+export const REGION_FLAGS = ["es-ct", "gb-eng", "gb-nir", "gb-sct", "gb-wls"] as const;
 
-const FLAG_SET: ReadonlySet<string> = new Set(FLAGS);
+export type FlagCode = (typeof FLAGS)[number] | (typeof REGION_FLAGS)[number];
+
+const FLAG_SET: ReadonlySet<string> = new Set<string>([...FLAGS, ...REGION_FLAGS]);
 
 export const flagCode = (value: unknown): FlagCode | null => {
   if (typeof value !== "string") return null;
-  const match = value.trim().toLowerCase().match(/^flag:([a-z]{2})$/);
+  const match = value.trim().toLowerCase().match(/^flag:([a-z]{2}(?:-[a-z]{2,3})?)$/);
   return match && FLAG_SET.has(match[1]) ? (match[1] as FlagCode) : null;
 };
