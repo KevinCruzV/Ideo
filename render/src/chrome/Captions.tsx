@@ -112,6 +112,8 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
         left: content.left,
         width: content.width,
         top: layout.captionTop,
+        transform: `scale(${layout.safeScale})`,
+        transformOrigin: "50% 0",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

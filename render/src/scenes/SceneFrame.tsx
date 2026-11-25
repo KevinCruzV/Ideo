@@ -16,7 +16,7 @@ export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: nu
 }) => {
   const frame = useCurrentFrame();
   const span = Math.max(1, duration);
-  const scale = 1 + DRIFT_SCALE * Math.min(1, frame / span);
+  const scale = layout.safeScale * (1 + DRIFT_SCALE * Math.min(1, frame / span));
   const exit = last ? 0 : interpolate(frame, [span - EXIT_FRAMES, span], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const kicker = str(props.kicker);
   return (

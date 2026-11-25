@@ -86,7 +86,10 @@ export const coverText = (
   return { head: head || title, sub, tag: namesPart(hook ?? "", label, part) ? null : partTag(label, part, total) };
 };
 
-export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, watermark, part, total, label, mood }) => {
+export const coverTitleTop = (titleH: number): number =>
+  Math.max(TITLE_TOP, (TITLE_TOP + ART_BOTTOM - (titleH + GAP + DISK)) / 2);
+
+export const Cover: React.FC<CoverProps> =({ title, hook, picto, photo, look, watermark, part, total, label, mood }) => {
   setMood(moodOf(mood));
   const accent = coverAccent(title);
   const text = coverText(title, hook, part, total, label);
@@ -97,13 +100,13 @@ export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, w
   const ring = accentCycle[(accentCycle.indexOf(accent) + 1) % accentCycle.length];
   const tagSpace = text.tag ? stripHeight(TAG_SIZE) + TAG_GAP : 0;
   const subSpace = sub.lines.length > 0 ? SUB_GAP + stripsHeight(sub.lines.length, sub.size) : 0;
-  const titleBottom = TITLE_TOP + tagSpace + stripsHeight(head.lines.length, head.size) + subSpace;
-  const artTop = titleBottom + GAP;
-  const artCy = Math.max(artTop + DISK / 2, (artTop + ART_BOTTOM) / 2);
+  const titleH = tagSpace + stripsHeight(head.lines.length, head.size) + subSpace;
+  const titleTop = coverTitleTop(titleH);
+  const artCy = titleTop + titleH + GAP + DISK / 2;
   return (
     <AbsoluteFill>
       <Background />
-      <div style={{ position: "absolute", left: content.left, top: TITLE_TOP, width: content.width }}>
+      <div style={{ position: "absolute", left: content.left, top: titleTop, width: content.width }}>
         {text.tag ? (
           <PaperStrip text={text.tag} color="ink" fontSize={TAG_SIZE} rotate={-3} seed="cover-tag" style={{ marginBottom: TAG_GAP }} />
         ) : null}
