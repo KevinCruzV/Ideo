@@ -132,6 +132,30 @@ def test_short_gaps_between_words_are_untouched():
     assert np.array_equal(pacing.gate_breaths(pcm, words), pcm)
 
 
+def test_the_start_of_the_next_sentence_left_after_a_silence_is_muted():
+    pcm = np.concatenate([tone(1.0), quiet(0.32), tone(0.08)])
+    out = pacing.drop_tail_fragment(pcm)
+    assert len(out) == len(pcm)
+    assert np.array_equal(out[:int(1.0 * RATE)], pcm[:int(1.0 * RATE)])
+    assert np.max(np.abs(out[int(1.3 * RATE):])) == 0
+
+
+def test_a_fragment_with_a_tiny_dip_inside_is_muted_too():
+    pcm = np.concatenate([tone(1.0), quiet(0.3), tone(0.06), quiet(0.01), tone(0.03)])
+    out = pacing.drop_tail_fragment(pcm)
+    assert np.max(np.abs(out[int(1.3 * RATE):])) == 0
+
+
+def test_a_real_last_word_after_a_pause_is_kept():
+    pcm = np.concatenate([tone(1.0), quiet(0.32), tone(0.5)])
+    assert np.array_equal(pacing.drop_tail_fragment(pcm), pcm)
+
+
+def test_a_short_end_without_silence_before_is_kept():
+    pcm = np.concatenate([tone(1.0), quiet(0.1), tone(0.08)])
+    assert np.array_equal(pacing.drop_tail_fragment(pcm), pcm)
+
+
 def test_without_words_the_audio_is_untouched():
     pcm = np.concatenate([breath(0.4), tone(1.0)])
     assert np.array_equal(pacing.gate_breaths(pcm, []), pcm)
