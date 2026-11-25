@@ -4,13 +4,6 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 
 - [2026-11-22] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
 - [2026-11-22] (auto:plan-invalide) Relis le message de check et corrige exactement ce qu'il demande avant de relancer.
-- [2026-11-22] Entre deux sujets, fais une vraie transition, chaque fois différente : une question (« Et la Chine, alors ? »), une conséquence (« Résultat : ») ou un contraste (« Pendant ce temps, »).
-- [2026-11-22] Histoire, fait divers, horreur ou biographie : l’accroche n’est pas une question mais « Voici l’histoire de… » ou une phrase choc pleine : « Il a fait croire à tout un pays qu’il était innocent ».
-- [2026-11-22] Fait divers, horreur, catastrophe : ton grave du début à la fin, jamais joyeux, pas de mascotte contente ni de formule légère.
-- [2026-11-22] Histoire, fait divers, horreur ou biographie : chaque chapitre s’ouvre sur une scène dont le say l’annonce (« une enfance difficile ») et le kicker le nomme avec l’année (« L’enfance, 1867 »).
-- [2026-11-22] Une histoire ne se condense pas : garde tous les moments qui font le fil, jusqu’à 300 s ou en plusieurs parties s’il le faut.
-- [2026-11-22] Pas de scène quote quand la phrase est lue par le présentateur de la vidéo : seule la vraie voix de la personne citée compte.
-- [2026-11-22] Le dessin montre exactement l’objet dont parle la phrase : un SMS ou un message, c’est un téléphone, jamais un écran de télé.
 - [2026-11-23] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
 - [2026-11-23] Une personne historique connue (savant, chef d’État, artiste) a sa vraie photo sur sa person-card : lance ideo photo avant le plan, une fois par personne, même hors biographie, jamais pour un fait divers.
 - [2026-11-24] La couverture montre la photo de la première person-card avec photo, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
