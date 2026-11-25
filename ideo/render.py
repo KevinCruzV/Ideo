@@ -77,7 +77,9 @@ def cover_photo(job: Path, part: dict) -> str | None:
     if not stored:
         return None
     for scene in part.get("scenes") or []:
-        props = scene.get("props") if isinstance(scene, dict) else None
+        if not isinstance(scene, dict):
+            continue
+        props = scene.get("props")
         if scene.get("type") != "person-card" or not isinstance(props, dict) or props.get("photo") is not True:
             continue
         name = props.get("name")
