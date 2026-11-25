@@ -72,3 +72,48 @@ def test_draft_note_only_while_a_better_voice_waits(job_with_plan, monkeypatch):
     assert cli._draft_note(job_with_plan) == ["Voix : brouillon gratuit, lance finale pour la voix ElevenLabs"]
     config.mark_final(job_with_plan)
     assert cli._draft_note(job_with_plan) == []
+
+
+def test_finale_keeps_the_voice_of_the_job_when_the_default_voice_changes(job_with_plan, monkeypatch):
+    paid(monkeypatch)
+    write({"engine": "elevenlabs", "elevenlabs_voice_id": "george", "elevenlabs_stability": 0.3})
+    config.mark_final(job_with_plan)
+    plan = common.load_json(job_with_plan / "plan.json")
+    part = plan["parts"][0]
+    before = pipeline.part_hash(plan, part, job_with_plan)
+    write({"engine": "elevenlabs", "elevenlabs_voice_id": "jessica", "elevenlabs_stability": 0.45})
+    assert config.eleven_voice_id(job_with_plan) == "george"
+    assert config.eleven_settings(job_with_plan)["stability"] == 0.3
+    assert config.eleven_voice_id() == "jessica"
+    assert pipeline.part_hash(plan, part, job_with_plan) == before
+    log = job_with_plan / "logs" / "v.log"
+    assert voice.choose_backend("fr", log, job_with_plan).voice == "george"
+
+
+def test_an_old_final_job_locks_its_voice_at_the_next_produce(job_with_plan, monkeypatch):
+    paid(monkeypatch)
+    (job_with_plan / config.FINAL_FILE).write_text('{"engine": "elevenlabs"}\n', encoding="utf-8")
+    write({"engine": "elevenlabs", "elevenlabs_voice_id": "george"})
+    config.lock_final_voice(job_with_plan)
+    write({"engine": "elevenlabs", "elevenlabs_voice_id": "jessica"})
+    assert config.eleven_voice_id(job_with_plan) == "george"
+
+
+def test_a_big_paid_redo_waits_for_payer(job_with_plan, monkeypatch):
+    paid(monkeypatch)
+    config.mark_final(job_with_plan)
+    pending = [("seg_01", "mot " * 200)]
+    voice.paid_guard(job_with_plan, 1, pending, "fr", False)
+    config.add_paid_characters(job_with_plan, 4000)
+    try:
+        voice.paid_guard(job_with_plan, 1, pending, "fr", False)
+    except common.IdeoError as err:
+        assert "--payer" in str(err) and "caractères ElevenLabs" in str(err)
+    else:
+        raise AssertionError("la dépense aurait dû être bloquée")
+    voice.paid_guard(job_with_plan, 1, pending, "fr", True)
+    voice.paid_guard(job_with_plan, 1, [("seg_01", "Une phrase corrigée.")], "fr", False)
+
+
+def test_cli_produce_accepts_payer():
+    assert cli.parse(["produce", "job", "--payer"])[3].get("payer") is True

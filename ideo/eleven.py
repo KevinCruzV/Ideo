@@ -93,9 +93,10 @@ class ElevenLabsBackend:
     local = False
     paid = True
 
-    def __init__(self, log: Path | None = None):
+    def __init__(self, log: Path | None = None, job: Path | None = None):
         self.log = log
-        self.voice = config.eleven_voice_id()
+        self.job = job
+        self.voice = config.eleven_voice_id(job)
         if not self.voice:
             raise common.IdeoError("ElevenLabs demande une voix : lance « python -m ideo voix-liste » pour voir celles de ton compte, "
                                    "puis mets son identifiant dans config.json sous « elevenlabs_voice_id ».")
@@ -103,10 +104,10 @@ class ElevenLabsBackend:
         self.request_ids: list[str] = []
 
     def _body(self, text: str, previous_text: str | None, next_text: str | None) -> dict:
-        settings = config.eleven_settings()
+        settings = config.eleven_settings(self.job)
         body = {
             "text": text,
-            "model_id": config.eleven_model(),
+            "model_id": config.eleven_model(self.job),
             "voice_settings": {"stability": settings["stability"], "similarity_boost": settings["similarity"],
                                "style": settings["style"], "speed": settings["speed"], "use_speaker_boost": True},
         }

@@ -111,15 +111,25 @@ def eleven_key() -> str | None:
             or _load().get("elevenlabs_api_key"))
 
 
-def eleven_voice_id() -> str | None:
-    return _load().get("elevenlabs_voice_id", DEFAULT_ELEVEN_VOICE)
+def _locked(job: Path | None) -> dict:
+    if job is None:
+        return {}
+    data = final_info(job)
+    return data if data.get("engine") == "elevenlabs" and data.get("voice") else {}
 
 
-def eleven_model() -> str:
-    return _load().get("elevenlabs_model", DEFAULT_ELEVEN_MODEL)
+def eleven_voice_id(job: Path | None = None) -> str | None:
+    return _locked(job).get("voice") or _load().get("elevenlabs_voice_id", DEFAULT_ELEVEN_VOICE)
 
 
-def eleven_settings() -> dict:
+def eleven_model(job: Path | None = None) -> str:
+    return _locked(job).get("model") or _load().get("elevenlabs_model", DEFAULT_ELEVEN_MODEL)
+
+
+def eleven_settings(job: Path | None = None) -> dict:
+    locked = _locked(job).get("settings")
+    if isinstance(locked, dict):
+        return {key: locked.get(key, default) for key, default in ELEVEN_DEFAULTS.items()}
     data = _load()
     return {key: data.get(f"elevenlabs_{key}", default) for key, default in ELEVEN_DEFAULTS.items()}
 
@@ -208,8 +218,49 @@ def is_final(job: Path) -> bool:
     return (Path(job) / FINAL_FILE).exists()
 
 
+def final_info(job: Path) -> dict:
+    path = Path(job) / FINAL_FILE
+    try:
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _save_final(job: Path, data: dict) -> None:
+    (Path(job) / FINAL_FILE).write_text(json.dumps(data, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _current_voice() -> dict:
+    return {"voice": eleven_voice_id(), "model": eleven_model(), "settings": eleven_settings()}
+
+
 def mark_final(job: Path) -> None:
-    (Path(job) / FINAL_FILE).write_text(json.dumps({"engine": final_engine()}) + "\n", encoding="utf-8")
+    engine_name = final_engine()
+    data = {"engine": engine_name}
+    if engine_name == "elevenlabs":
+        data.update(_current_voice())
+    _save_final(job, data)
+
+
+def lock_final_voice(job: Path) -> None:
+    data = final_info(job)
+    if data.get("engine") == "elevenlabs" and not data.get("voice"):
+        data.update(_current_voice())
+        _save_final(job, data)
+
+
+def paid_characters(job: Path) -> int:
+    value = final_info(job).get("characters", 0)
+    return value if isinstance(value, int) else 0
+
+
+def add_paid_characters(job: Path, count: int) -> None:
+    data = final_info(job)
+    if not data or count <= 0:
+        return
+    data["characters"] = paid_characters(job) + count
+    _save_final(job, data)
 
 
 def engine(job: Path | None = None) -> str:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, setup_voix
 
-USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
+USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] [--payer] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
          "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
 COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale")
@@ -107,6 +107,9 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
             raise UsageError("--part attend un numéro de partie, par exemple --part 2")
         part = int(rest[i + 1])
         rest = rest[:i] + rest[i + 2:]
+    if cmd == "produce" and "--payer" in rest:
+        rest = [r for r in rest if r != "--payer"]
+        opts["payer"] = True
     if cmd == "check" and "--sans-relecture" in rest:
         rest = [r for r in rest if r != "--sans-relecture"]
         opts["sans_relecture"] = True
@@ -193,7 +196,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         head = f"OK check : {what}, {stats['scenes']} scènes, environ {stats['seconds']} s{points}{_eleven_chars(plan)}. Relecture : {job / 'plan.md'}"
         return [head] + lines, 0
     if cmd == "produce":
-        outputs = pipeline.produce(job, part)
+        outputs = pipeline.produce(job, part, pay=bool(opts.get("payer")))
         review.reset(job)
         return [f"OK produce : {_paths(outputs)} ; {' ; '.join(_after_produce(job, part))}"], 0
     if cmd == "qc":

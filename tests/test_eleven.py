@@ -256,7 +256,7 @@ def test_the_key_never_reaches_a_file_of_the_job(eleven_job, server):
     import shutil
 
     shutil.rmtree(eleven_job / "parts")
-    voice.voice_part(eleven_job, 1, backend=eleven.ElevenLabsBackend(eleven_job / "logs" / "x.log"))
+    voice.voice_part(eleven_job, 1, backend=eleven.ElevenLabsBackend(eleven_job / "logs" / "x.log"), pay=True)
     assert KEY not in tree_text(eleven_job)
 
 
@@ -302,7 +302,7 @@ def test_at_most_one_retry_and_only_under_080(eleven_job, server, monkeypatch):
     scores = iter([0.3, 0.2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: next(scores))
-    voice.voice_part(eleven_job, 1)
+    voice.voice_part(eleven_job, 1, pay=True)
     assert len(server.requests) == 8
     quality = common.load_json(eleven_job / "parts" / "01" / "voice-quality.json")
     assert quality["seg_00_hook"] == 0.3
