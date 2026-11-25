@@ -100,6 +100,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_03 : la voix s'écarte du texte (ressemblance 0,76). Relance la voix de cette partie ou reformule le texte.
   Entretien du 2026-11-25 (g) : la ressemblance de 0,76 venait du mot « coup » lu en fin de segment ; il est maintenant coupé et la ressemblance recalculée sans lui.
 
+
 ## Dessins manquants
 
 - [x] carte du canal de Panama
