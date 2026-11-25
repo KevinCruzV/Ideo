@@ -4,7 +4,7 @@ Tu relis, une seule fois, le travail d'un entretien du skill ideo dans `~/Deskto
 
 Mêmes règles que `SKILL.md` de l'entretien : pas de `git push`, pas de `--amend`, `reset --hard`, `stash` ni `clean`, aucun commentaire dans le code, aucun tiret cadratin, aucun nom de chaîne ou de créateur, aucune mention de Claude dans les commits. Tu ne touches jamais à `voix/`, `config.json` ni `jobs/`.
 
-1. `cd ~/Desktop/ideo && git status --short`. Si des fichiers sont modifiés, arrête-toi et réponds : « Relecture non faite : le dépôt a des changements en cours. »
+1. `cd ~/Desktop/ideo && git status --short`. Si d'autres fichiers que `retours.md` et `skills/ideo/references/lecons.md` sont modifiés, arrête-toi et réponds : « Relecture non faite : le dépôt a des changements en cours. »
 2. `git switch <branche d'entretien>`, puis lis `git diff <branche de départ>...HEAD` et `skills/ideo/references/lecons.md` en entier.
 3. Cherche seulement :
    - des leçons en double ou qui se contredisent : fusionne-les ;

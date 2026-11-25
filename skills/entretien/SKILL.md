@@ -20,8 +20,8 @@ Règles pour tout l'entretien :
 
 1. Prépare :
    `cd ~/Desktop/ideo && git status --short && git branch --show-current && .venv/bin/python -m ideo entretien`
-   Si `git status` montre des fichiers modifiés que tu n'as pas faits, arrête-toi et lance l'étape 10 avec la raison "le dépôt a des changements en cours". Sinon lis `entretien.md` (une fois).
-2. Crée une branche de travail : `git switch -c entretien/<AAAA-MM-JJ>`. Note le nom de la branche de départ.
+   Les fichiers `retours.md` et `skills/ideo/references/lecons.md` peuvent être modifiés : `ideo learn` y écrit les retours de l'utilisateur après chaque vidéo. Ce n'est pas un blocage. Si `git status` montre un autre fichier modifié que tu n'as pas fait, arrête-toi et lance l'étape 10 avec la raison "le dépôt a des changements en cours". Sinon lis `entretien.md` (une fois).
+2. Crée une branche de travail : `git switch -c entretien/<AAAA-MM-JJ>`. Note le nom de la branche de départ. Si `retours.md` ou `lecons.md` étaient modifiés, committe-les seuls en premier sur cette branche, avant toute autre modification : `git add retours.md skills/ideo/references/lecons.md && git commit -m "docs: retours et leçons en attente"`.
 3. Vérifie le point de départ : `.venv/bin/python -m pytest -q` puis `cd render && command pnpm vitest run && command pnpm tsc --noEmit`. Si quelque chose échoue déjà, ta première tâche est de le réparer.
 4. Dessins manquants (rubrique du même nom, triée par nombre de demandes) : pour chaque dessin retenu,
    - choisis un nom anglais court en minuscules, absent de la liste ;
