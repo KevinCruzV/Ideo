@@ -5,6 +5,7 @@ import numpy as np
 RATE = 48000
 FRAME = 480
 THRESHOLD_DB = -32.0
+EDGE_DB = -50.0
 KEEP_EDGE = 0.03
 LONG_PAUSE = 0.60
 PAUSE = 0.50
@@ -14,20 +15,22 @@ CLOSERS = "»”\"')]"
 MIN_LETTERS = 3
 
 
-def _loud(pcm: np.ndarray) -> np.ndarray:
+def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
     count = -(-len(pcm) // FRAME)
     padded = np.zeros(count * FRAME, dtype=np.float64)
     padded[:len(pcm)] = pcm
     rms = np.sqrt((padded.reshape(count, FRAME) ** 2).mean(axis=1))
-    return rms > 32768.0 * 10 ** (THRESHOLD_DB / 20)
+    return rms > 32768.0 * 10 ** (db / 20)
 
 
 def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
     loud = _loud(pcm)
     if not loud.any():
         return []
-    first = int(np.argmax(loud))
-    last = len(loud) - 1 - int(np.argmax(loud[::-1]))
+    edge = _loud(pcm, EDGE_DB)
+    first = min(int(np.argmax(loud)), int(np.argmax(edge)))
+    last_loud = len(loud) - 1 - int(np.argmax(loud[::-1]))
+    last = max(last_loud, len(edge) - 1 - int(np.argmax(edge[::-1])))
     keep = round(KEEP_EDGE * RATE)
     start = max(0, first * FRAME - keep)
     end = min(len(pcm), (last + 1) * FRAME + keep)
@@ -37,7 +40,7 @@ def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
     side = round(PAUSE * RATE / 2)
     long_run = round(LONG_PAUSE * RATE)
     i = first
-    while i <= last:
+    while i <= last_loud:
         if loud[i]:
             i += 1
             continue
