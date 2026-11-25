@@ -979,12 +979,15 @@ const DRAW: Record<PictoName, Draw> = {
   vinyl: (k) => [
     k.rect(4, 10, 66, 80, "blue"),
     k.circle(22, 28, 9, "cream"),
-    k.circle(60, 50, 37, "ink"),
-    k.ring(60, 50, 31, 31, 2.2, "blue"),
-    k.ring(60, 50, 24, 24, 2.2, "blue"),
-    k.circle(60, 50, 13, "red"),
-    k.circle(60, 50, 3.5, "cream"),
-    k.arc(60, 50, 35, 200, 250, "cream"),
+    ...[
+      k.circle(60, 50, 37, "ink"),
+      k.ring(60, 50, 31, 31, 2.2, "blue"),
+      k.ring(60, 50, 24, 24, 2.2, "blue"),
+      k.circle(60, 50, 13, "red"),
+      k.circle(60, 50, 3.5, "cream"),
+      k.arc(60, 50, 35, 200, 250, "cream"),
+      k.arc(60, 50, 35, 300, 318, "cream"),
+    ].map((p): Piece => ({ ...p, turn: [60, 50] })),
   ],
   microphone: (k) => [
     k.arc(50, 44, 32, 0, 180, "ink", k.ovalPoints(50, 44, 25, 25, 0, 0, 180).reverse()),

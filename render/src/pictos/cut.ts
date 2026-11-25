@@ -2,7 +2,7 @@ import { signed } from "../paper/motion";
 
 export type Ink = "red" | "yellow" | "blue" | "ink" | "cream";
 
-export type Piece = { d: string; c: Ink };
+export type Piece = { d: string; c: Ink; turn?: Pt };
 
 export type Pt = [number, number];
 
