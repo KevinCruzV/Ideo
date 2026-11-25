@@ -180,10 +180,14 @@ def _stage_photo(job: Path, out_dir: Path) -> list[dict]:
 
 def _with_photo(scene: dict, staged: list[dict]) -> dict:
     props = scene.get("props", {})
+    if scene.get("type") == "artwork":
+        title = props.get("title")
+        found = photo.match(photo.of_kind(staged, photo.ARTWORK), title) if isinstance(title, str) else None
+        return {**scene, "props": {**props, "image": found["image"]}} if found else scene
     if scene.get("type") != "person-card" or props.get("photo") is not True:
         return scene
     name = props.get("name")
-    found = photo.match(staged, name) if isinstance(name, str) else None
+    found = photo.match(photo.of_kind(staged, photo.PERSON), name) if isinstance(name, str) else None
     if found is None:
         return {**scene, "props": {k: v for k, v in props.items() if k != "photo"}}
     return {**scene, "props": {**props, "photo": found["image"]}}

@@ -2,7 +2,7 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "durationInFrames": 2270,
+  "durationInFrames": 2370,
   "lang": "fr",
   "audio": null,
   "watermark": "Ideo",
@@ -648,9 +648,34 @@
       "type": "mascot"
     },
     {
-      "kind": "outro",
+      "kind": "scene",
       "from": 2170,
       "to": 2270,
+      "props": {
+        "title": "La nuit étoilée",
+        "artist": "Vincent van Gogh",
+        "kicker": "1889"
+      },
+      "items": [
+        {
+          "el": "title",
+          "at": 2176
+        },
+        {
+          "el": "artist",
+          "at": 2196
+        }
+      ],
+      "beats": [
+        2220,
+        2250
+      ],
+      "type": "artwork"
+    },
+    {
+      "kind": "outro",
+      "from": 2270,
+      "to": 2370,
       "props": {
         "text": "Abonne-toi pour la prochaine vidéo"
       },

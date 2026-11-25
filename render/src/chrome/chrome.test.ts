@@ -41,9 +41,16 @@ describe("chrome", () => {
     expect(ticks[2].fill).toBe(0);
   });
 
-  test("une série garde un trait par partie", () => {
+  test("une partie d'une série n'affiche que sa propre barre", () => {
     const ticks = progressTicks(series, segments, 179.5, 360);
-    expect(ticks.map((t) => t.fill)).toEqual([1, 0.5, 0]);
+    expect(ticks).toHaveLength(1);
+    expect(ticks[0].fill).toBeCloseTo(0.5, 2);
+  });
+
+  test("la dernière partie d'une série n'affiche aussi qu'une barre", () => {
+    const last = { ...series, part: 3 };
+    expect(progressTicks(last, segments, 0, 360)).toEqual([{ weight: 1, fill: 0 }]);
+    expect(progressTicks(last, segments, 359, 360)).toEqual([{ weight: 1, fill: 1 }]);
   });
 });
 

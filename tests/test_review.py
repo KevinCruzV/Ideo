@@ -67,6 +67,12 @@ def test_less_than_half_the_scenes_with_a_drawing(job):
     assert not only(drawn, job, "dessin")
 
 
+def test_an_artwork_scene_counts_as_a_drawing(job):
+    art = scene(kind="artwork", props={"title": "La nuit étoilée"})
+    plan = plan_of(*[art for _ in range(3)], scene())
+    assert not only(plan, job, "dessin")
+
+
 def test_longest_scenes_without_drawing_are_named(job):
     long_say = " ".join(["mot"] * 25)
     plan = plan_of(scene(), scene(say=long_say), scene(), scene(say=long_say + " de plus"))

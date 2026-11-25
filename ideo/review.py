@@ -9,7 +9,7 @@ from ideo.common import load_json
 LIMIT = 8
 MAX_PASSES = 3
 YEAR = re.compile(r"(?<!\d)(1\d{3}|20\d{2}|2100)(?!\d)")
-DRAWING_TYPES = frozenset({"object-state", "versus", "shape-diagram", "timeline", "mascot"})
+DRAWING_TYPES = frozenset({"object-state", "versus", "shape-diagram", "timeline", "mascot", "artwork"})
 LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
 LONG_SAY = 30
 BARE_WORDS = 3

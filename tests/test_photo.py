@@ -16,6 +16,7 @@ class Wiki:
         self.meta = {**FREE_META, "LicenseShortName": {"value": license_name}}
         self.human, self.image, self.mime = human, image, mime
         self.title = "Ada Lovelace"
+        self.kind_id = "Q5"
         self.downloads = []
 
     def get_json(self, url):
@@ -24,7 +25,7 @@ class Wiki:
                 return {"query": {"pages": [{"title": "X", "missing": True}]}}
             return {"query": {"pages": [{"title": self.title, "pageimage": "Ada.jpg", "pageprops": {"wikibase_item": "Q7"}}]}}
         if "wikidata.org" in url:
-            kind = "Q5" if self.human else "Q42"
+            kind = self.kind_id if self.human else "Q42"
             claim = {"mainsnak": {"datavalue": {"value": {"id": kind}}}}
             return {"entities": {"Q7": {"claims": {"P31": [claim]}}}}
         return {"query": {"pages": [{"imageinfo": [{"thumburl": "https://upload.example/ada.jpg", "url": "https://upload.example/o.jpg",
@@ -249,3 +250,84 @@ def test_the_photos_are_copied_next_to_the_part_audio(job, tmp_path):
     assert sorted(p["image"] for p in staged) == ["photo-c-d.jpg", "photo.png"]
     assert (out / "photo.png").read_bytes() == b"png" and (out / "photo-c-d.jpg").read_bytes() == b"jpg"
     assert not (out / "photo-vieux.jpg").exists()
+
+
+def artwork_scene(src, **props):
+    return {"type": "artwork", "say": "La nuit étoilée est peinte en 1889 par Vincent van Gogh.",
+            "props": {"title": "La nuit étoilée", "artist": "Vincent van Gogh", **props}, "items": [{"el": "title", "on": "étoilée"}], "src": src}
+
+
+def store(job, person, kind=None, image=None):
+    slug = person.lower().replace(" ", "-")
+    image = image or f"photo-{slug}.jpg"
+    data = {"person": person, "extension": "jpg"}
+    if kind:
+        data["kind"] = kind
+    common.save_json(job / f"photo-{slug}.json", data)
+    (job / image).write_bytes(b"x")
+
+
+def test_an_artwork_page_is_accepted_and_stored_as_an_artwork(job, wiki):
+    wiki.kind_id = "Q3305213"
+    wiki.title = "La nuit étoilée"
+    assert photo.run(job, "La nuit étoilée").startswith("OK photo : La nuit étoilée")
+    stored = photo.all_stored(job)
+    assert [(p["person"], p["kind"]) for p in stored] == [("La nuit étoilée", "artwork")]
+
+
+def test_a_person_page_is_stored_as_a_person(job, wiki):
+    photo.run(job, "Ada Lovelace")
+    assert photo.all_stored(job)[0]["kind"] == "person"
+
+
+def test_a_page_that_is_neither_a_person_nor_an_artwork_is_ignored(job, wiki):
+    wiki.human = False
+    assert photo.run(job, "Ada Lovelace") == photo.NONE
+
+
+def test_of_kind_keeps_old_photos_as_people():
+    photos = [{"person": "A", "image": "a.jpg"}, {"person": "B", "kind": "artwork", "image": "b.jpg"}, {"person": "C", "kind": "person", "image": "c.jpg"}]
+    assert [p["person"] for p in photo.of_kind(photos, "person")] == ["A", "C"]
+    assert [p["person"] for p in photo.of_kind(photos, "artwork")] == ["B"]
+
+
+def test_an_artwork_with_the_name_of_its_painter_never_takes_the_photo_of_the_person():
+    staged = [
+        {"person": "Vincent van Gogh", "image": "photo-vincent-van-gogh.jpg", "kind": "person"},
+        {"person": "Autoportrait de Vincent van Gogh", "image": "photo-autoportrait.jpg", "kind": "artwork"},
+    ]
+    card = person_scene("0:10", photo=True, name="Vincent van Gogh")
+    card["props"]["name"] = "Vincent van Gogh"
+    assert timeline._with_photo(card, staged)["props"]["photo"] == "photo-vincent-van-gogh.jpg"
+    art = artwork_scene("0:20", title="Autoportrait de Vincent van Gogh")
+    assert timeline._with_photo(art, staged)["props"]["image"] == "photo-autoportrait.jpg"
+
+
+def test_an_artwork_scene_without_a_stored_image_is_refused_by_check(job_with_fixtures):
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["parts"][0]["scenes"].append(artwork_scene(plan["parts"][0]["scenes"][0]["src"]))
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("l'image libre de droits d'une œuvre" in e for e in errors)
+    store(job_with_fixtures, "Vincent van Gogh")
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("l'image libre de droits d'une œuvre" in e for e in errors)
+    store(job_with_fixtures, "La nuit étoilée", kind="artwork")
+    assert not [e for e in plan_check.check_plan(job_with_fixtures) if "œuvre" in e or "image" in e]
+
+
+def test_a_person_card_ignores_a_stored_artwork_in_check(job_with_fixtures):
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["parts"][0]["scenes"].append(person_scene(plan["parts"][0]["scenes"][0]["src"], photo=True))
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    store(job_with_fixtures, "Hermann Ebbinghaus portrait", kind="artwork")
+    assert any("« photo » demande une photo libre" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+def test_the_cover_never_shows_an_artwork_as_the_face_of_the_person(job):
+    store(job, "Hermann Ebbinghaus portrait", kind="artwork")
+    store(job, "Hermann Ebbinghaus")
+    part = {"scenes": [person_scene("0:10", photo=True)]}
+    assert render.cover_photo(job, part) == "photo-hermann-ebbinghaus.jpg"
+    (job / "photo-hermann-ebbinghaus.json").unlink()
+    assert render.cover_photo(job, part) is None

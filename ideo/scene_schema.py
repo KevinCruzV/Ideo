@@ -105,6 +105,7 @@ SCHEMA = {
                      "photo": BOOL},
         "el": ("avatar", "name", "role"),
     },
+    "artwork": {"required": {"title": TEXT}, "optional": {"artist": TEXT}, "el": ("title", "artist")},
     "fact-chips": {"required": {"chips": text_list(6)}, "optional": {}, "el": ("chips.<i>",)},
     "stack-list": {"required": {"items": text_list(5)}, "optional": {}, "el": ("items.<i>",)},
     "counter": {"required": {"to": NUMBER}, "optional": {"from": NUMBER, "label": TEXT, "unit": TEXT}, "el": ("to", "label")},
@@ -153,6 +154,7 @@ PART_CAPS = {"hook": 60, "title": 40, "question": 60}
 TEXT_CAPS = {
     "key-title": {"text": 90, "accent": 40},
     "person-card": {"name": 48, "role": 100},
+    "artwork": {"title": 48, "artist": 40},
     "fact-chips": {"chips": 28},
     "stack-list": {"items": 60},
     "counter": {"label": 60, "unit": 4},

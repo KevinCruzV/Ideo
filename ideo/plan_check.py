@@ -6,7 +6,7 @@ from ideo.textmatch import SPLIT, anchor_text, closest_passage, copied_tokens, f
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
-    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body", "artwork",
 })
 MAX_PARTS = 8
 MAX_SCENES = 45
@@ -179,7 +179,7 @@ def _sfx_by_ts(sfx: list) -> dict:
 
 
 def _photo_errors(props: dict, where: str, ctx: dict) -> list[str]:
-    found = ctx.get("photos")
+    found = photo.of_kind(ctx.get("photos") or [], photo.PERSON)
     if not found:
         return [f"{where} : « photo » demande une photo libre de droits dans le job : lance « ideo photo <job> \"<nom>\" » "
                 "et garde « photo » seulement si la réponse n'est pas « aucune photo libre ». Sinon retire « photo »."]
@@ -190,6 +190,15 @@ def _photo_errors(props: dict, where: str, ctx: dict) -> list[str]:
         people = [p.get("person", "") for p in found]
         who = f"la photo du job est celle de {people[0]}" if len(people) == 1 else f"les photos du job sont celles de {' et '.join(people)}"
         return [f"{where} : {who}, pas de « {name} ». Retire « photo » sur cette carte ou lance « ideo photo <job> \"{name}\" »."]
+    return []
+
+
+def _artwork_errors(props: dict, where: str, ctx: dict) -> list[str]:
+    found = photo.of_kind(ctx.get("photos") or [], photo.ARTWORK)
+    title = props.get("title")
+    if not isinstance(title, str) or photo.match(found, title) is None:
+        return [f"{where} : une scène « artwork » demande l'image libre de droits d'une œuvre dans le job : lance « ideo photo <job> \"{title}\" » "
+                "et garde la scène seulement si la réponse n'est pas « aucune photo libre ». Sinon remplace-la par une autre scène."]
     return []
 
 
@@ -217,6 +226,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         errors.extend(scene_schema.check_props(kind, props, where))
     if kind == "person-card" and props.get("photo") is True:
         errors.extend(_photo_errors(props, where, ctx))
+    if kind == "artwork" and known:
+        errors.extend(_artwork_errors(props, where, ctx))
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
     _check_copy(say, where, "say", ctx, errors, part_state)
