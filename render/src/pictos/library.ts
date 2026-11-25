@@ -88,6 +88,9 @@ export const PICTOS = [
   "tombstone",
   "mirror",
   "mars",
+  "music-note",
+  "vinyl",
+  "microphone",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -964,6 +967,35 @@ const DRAW: Record<PictoName, Draw> = {
     k.circle(72, 44, 3.5, "ink"),
     k.star(14, 12, 6, 2.4, 4, "blue"),
     k.star(90, 90, 5, 2, 4, "blue"),
+  ],
+  "music-note": (k) => [
+    k.circle(50, 50, 45, "yellow"),
+    k.rect(40, 26, 7, 46, "ink"),
+    k.rect(74, 18, 7, 46, "ink"),
+    k.poly([[40, 26], [81, 14], [81, 32], [40, 44]], "red"),
+    k.oval(32, 72, 15, 11, "ink", -20),
+    k.oval(66, 64, 15, 11, "ink", -20),
+  ],
+  vinyl: (k) => [
+    k.rect(4, 10, 66, 80, "blue"),
+    k.circle(22, 28, 9, "cream"),
+    k.circle(60, 50, 37, "ink"),
+    k.ring(60, 50, 31, 31, 2.2, "blue"),
+    k.ring(60, 50, 24, 24, 2.2, "blue"),
+    k.circle(60, 50, 13, "red"),
+    k.circle(60, 50, 3.5, "cream"),
+    k.arc(60, 50, 35, 200, 250, "cream"),
+  ],
+  microphone: (k) => [
+    k.arc(50, 44, 32, 0, 180, "ink", k.ovalPoints(50, 44, 25, 25, 0, 0, 180).reverse()),
+    k.rect(46, 74, 8, 16, "blue"),
+    k.rect(26, 88, 48, 8, "blue"),
+    k.oval(50, 26, 20, 22, "red"),
+    k.rect(30, 26, 40, 26, "red"),
+    k.oval(50, 52, 20, 9, "red"),
+    k.rect(33, 20, 34, 4, "cream"),
+    k.rect(31, 30, 38, 4, "cream"),
+    k.rect(31, 40, 38, 4, "cream"),
   ],
 };
 

@@ -280,6 +280,19 @@ def test_flat_hook_or_outro_gives_the_alert_alone(made):
     assert plate_alerts(job) == []
 
 
+def test_hook_chosen_by_its_own_criteria_is_not_flagged_flat(made):
+    job, _ = made
+    hook_file = job / "parts" / "01" / "voice-hook.json"
+    prosody_file(job, lively(seg_00_hook=1.78))
+    common.save_json(hook_file, {"passed": True, "failed": [], "takes": 12, "chosen": 3})
+    assert plate_alerts(job) == []
+    common.save_json(hook_file, {"passed": False, "failed": ["fin traînante"], "takes": 12})
+    assert len(plate_alerts(job)) == 1
+    common.save_json(hook_file, {"passed": True, "failed": [], "takes": 12, "chosen": 3})
+    prosody_file(job, lively(seg_99_outro=1.78))
+    assert len(plate_alerts(job)) == 1
+
+
 def test_alert_gives_median_and_the_three_flattest(made):
     job, _ = made
     prosody_file(job, lively(seg_01=1.5, seg_02=1.6, seg_03=1.7, seg_04=1.9))
