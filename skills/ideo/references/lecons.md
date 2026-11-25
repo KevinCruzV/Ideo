@@ -22,3 +22,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
 - [2026-11-25] Pas plus de deux scènes versus par vidéo : pour comparer, varie avec object-state, icon-grid, stack-list ou shape-diagram.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
+- [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 30 mots en deux scènes.

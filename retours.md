@@ -49,3 +49,6 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] bras engourdi
 - [x] mirror
 - [x] planet Mars
+- [ ] note de musique
+- [ ] disque vinyle
+- [ ] micro
