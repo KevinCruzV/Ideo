@@ -79,6 +79,11 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [ ] [2026-11-25] (bk6QIRZjMjA) Sur iPhone, TikTok zoome et cache les bords : le titre et @idevideos passent sous la barre d’état, la scène versus est coupée à gauche et son texte de droite passe sous les boutons TikTok ; tout doit tenir dans la zone sûre.
 - [x] [2026-11-25] (5H0vaCYKZHU) Quand la person-card a une vraie photo, la couverture doit aussi avoir des ronds de couleur derrière et un cadre en papier autour de la photo, pas juste la photo seule sur fond vide.
   Entretien du 2026-11-25 (j) : le cadre en papier existait déjà (PhotoFrame), mais Cover.tsx ne dessinait les deux ronds de couleur que derrière le buste de secours (bust) ou le disque crème (picto, mascotte) : la branche photo n'avait aucun rond. Les deux mêmes ronds (showsRings) s'affichent maintenant aussi derrière la photo. Vérifié avec des images fixes avant/après sur la couverture du job (photo seule, puis photo avec ronds), et sur les couvertures bust et picto pour confirmer qu'elles n'ont pas changé.
+- [ ] [2026-11-25] (5H0vaCYKZHU) Même après le correctif de showsRings dans Cover.tsx, la couverture avec une vraie photo n’affiche toujours aucun rond de couleur derrière, seulement le cadre en papier : vérifier avec une image rendue, pas juste le test.
+- [ ] [2026-11-25] (vtb-jGwGrd8) L'audio se coupe bizarrement juste après la phrase qui dit « résultats décevants ».
+- [ ] [2026-11-25] (vtb-jGwGrd8) L'audio se coupe bizarrement sur la phrase qui dit que les PME paieraient moins d'impôt sur les sociétés.
+- [ ] [2026-11-25] (vtb-jGwGrd8) La voix ElevenLabs choisie pour cette vidéo ne plaît pas à l'utilisateur.
+- [ ] [2026-11-25] (vtb-jGwGrd8) L'audio a une coupure chelou vers la phrase qui dit « 100 milliards sur 5 ans ».
 
 ## Défauts détectés
 
