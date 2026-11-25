@@ -75,6 +75,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (bk6QIRZjMjA) Depuis la correction des fins de mots (seuil -50 dB), on entend la respiration de la voix ElevenLabs entre les phrases ; c’est pire qu’avant, surtout avec George en stabilité 0,30.
   Entretien du 2026-11-25 (h) : les segments .wav payés ne sont pas touchés ni regénérés. À l'assemblage, pour une voix ElevenLabs, pacing.gate_breaths coupe tout ce qui est hors des mots (repères de words.json) : avant le premier mot (garde 0,08 s), après le dernier (garde 0,15 s de queue douce), et dans les écarts de 0,25 s ou plus entre mots (garde 0,15 s après un mot, 0,08 s avant le suivant), avec des fondus de 10 ms ; la durée ne change pas, donc les repères restent justes. Une partie déjà assemblée est réassemblée une fois (marqueur breath_gate dans music.json). Un nouveau produce sur ce job ne rappelle pas ElevenLabs (test avec un service qui échoue s'il est appelé). À écouter sur la prochaine vidéo : si une inspiration reste collée à un mot, augmenter BREATH_LEAD.
 - [ ] [2026-11-25] (bk6QIRZjMjA) Sur iPhone, TikTok zoome et cache les bords : le titre et @idevideos passent sous la barre d’état, la scène versus est coupée à gauche et son texte de droite passe sous les boutons TikTok ; tout doit tenir dans la zone sûre.
+- [ ] [2026-11-25] (5H0vaCYKZHU) Quand la person-card a une vraie photo, la couverture doit aussi avoir des ronds de couleur derrière et un cadre en papier autour de la photo, pas juste la photo seule sur fond vide.
 
 ## Défauts détectés
 
