@@ -37,6 +37,7 @@ La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 ## 3. L'accroche (`hook`)
 
 Même format à chaque fois : une phrase de 6 à 10 mots, 60 caractères au plus (espaces compris), en général une question, qui donne envie de connaître la réponse. La phrase s'adapte au sujet. "Dis-moi pourquoi..." est la formule par défaut quand elle colle. Autres formules : "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". L'accroche doit être vraie et la vidéo doit y répondre. Aucun chiffre qui n'est pas dans la source. Avec plusieurs parties, ne reprends pas la même formule deux parties de suite.
+La couverture coupe l'accroche au premier « , » ou « : » : ce qui précède en gros titre, le reste sur une bande noire dessous. Pour une histoire, mets le sujet avant la coupure (« L'histoire de Marvin Gaye, partie 1 : de l'église à Motown ») ; sans coupure, l'accroche entière fait le titre.
 
 Bonnes accroches :
 - "Dis-moi pourquoi le ciel est bleu et pas violet ?"
