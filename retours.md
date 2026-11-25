@@ -45,6 +45,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (e) : cause trouvée, un même morceau de musique de 20 à 30 s était coupé en bouts de 1 à 5 s dès que son niveau passait un instant sous le seuil (37 repères au lieu de 20 sur ce job). La détection garde maintenant un seuil plus bas une fois le son lancé, relie les pauses d'une seconde et donne des sons jusqu'à 10 s. Une chanson jouée sous la voix du narrateur reste impossible à isoler.
 - [x] [2026-11-25] (XBLXmwxSd-0) La couverture est trop chargée : le titre jaune est redit en noir par l’accroche en bas. Garder un seul gros titre, avec des bandes mêlant le jaune et le noir, sans le doublon.
   Entretien du 2026-11-25 (f) : la couverture n'a plus qu'un titre. L'accroche est coupée au premier « , » ou « : » (une virgule collée à un chiffre ne coupe pas) : la première moitié en gros titre sur bande de couleur, la seconde en plus petit sur une bande noire dessous. Sans coupure, l'accroche entière fait le titre ; sans accroche, le titre de la partie. Le titre de la partie n'est plus affiché sur la couverture, la mention « Partie 1/2 » n'apparaît que si l'accroche ne nomme pas déjà la partie. La photo (ou le dessin) est plus grande et centrée dans l'espace restant.
+- [ ] [2026-11-25] (5H0vaCYKZHU) La recherche de photo doit laisser un vrai temps de recherche avant de conclure qu’aucune photo n’est disponible.
 
 ## Défauts détectés
 
