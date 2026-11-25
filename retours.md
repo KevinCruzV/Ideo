@@ -49,6 +49,10 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (f) : la couverture n'a plus qu'un titre. L'accroche est coupée au premier « , » ou « : » (une virgule collée à un chiffre ne coupe pas) : la première moitié en gros titre sur bande de couleur, la seconde en plus petit sur une bande noire dessous. Sans coupure, l'accroche entière fait le titre ; sans accroche, le titre de la partie. Le titre de la partie n'est plus affiché sur la couverture, la mention « Partie 1/2 » n'apparaît que si l'accroche ne nomme pas déjà la partie. La photo (ou le dessin) est plus grande et centrée dans l'espace restant.
 - [x] [2026-11-25] (5H0vaCYKZHU) La recherche de photo doit laisser un vrai temps de recherche avant de conclure qu’aucune photo n’est disponible.
   Entretien du 2026-11-25 (g) : cause trouvée, ideo photo ne tentait que le titre exact de la page (en langue de la vidéo puis en anglais) et abandonnait à la première coupure réseau. Il réessaie maintenant trois fois chaque requête (attentes de 2 et 4 s), puis, si le titre exact n'a pas de photo libre, cherche dans Wikipédia (jusqu'à 8 résultats, dans l'ordre, seulement ceux dont le titre contient tous les mots du nom demandé) et prend la première page qui a une photo libre.
+- [ ] [2026-11-25] (5H0vaCYKZHU) La couverture doit montrer le visage en papier découpé de la figure principale avec une direction artistique de ronds de couleurs différentes derrière, même sans photo réelle de toute la famille.
+- [ ] [2026-11-25] (5H0vaCYKZHU) Il faut pouvoir chercher et afficher le vrai logo des marques citées dans une vidéo, comme la recherche de photo pour les personnes.
+- [ ] [2026-11-25] (5H0vaCYKZHU) La scène versus affiche des ronds blancs parasites qu’il faut corriger.
+- [ ] [2026-11-25] (5H0vaCYKZHU) L’entretien s’arrête à cause d’un fichier non suivi sans rapport avec le skill ideo (comme .claude-plugin/marketplace.json) : il doit ignorer ce qui est hors de ses propres dossiers.
 
 ## Défauts détectés
 
