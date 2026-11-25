@@ -61,5 +61,33 @@ def added(text: str, heard: list[dict]) -> list[str]:
     return extra
 
 
+def keep_count(text: str, heard: list[dict]) -> int | None:
+    expected = _clean(_tokens(text))
+    owners, tokens = [], []
+    for i, w in enumerate(heard):
+        for t in _tokens(w["w"]):
+            owners.append(i)
+            tokens.append(t)
+    kept = [k for k, t in enumerate(tokens) if not _is_number(t, tokens, k)]
+    got = [tokens[k] for k in kept]
+    ops = difflib.SequenceMatcher(None, expected, got, autojunk=False).get_opcodes()
+    tail = []
+    for tag, i1, i2, j1, j2 in reversed(ops):
+        if tag == "insert" or (tag == "replace" and j2 - j1 > i2 - i1):
+            tail.append((tag, i1, i2, j1, j2))
+            if tag == "replace":
+                break
+        else:
+            break
+    last = ops[-1] if ops else None
+    if not tail or last is None or last[4] != len(got):
+        return None
+    tag, i1, i2, j1, j2 = tail[-1]
+    first_extra = j1 if tag == "insert" else j1 + (i2 - i1)
+    if first_extra <= 0:
+        return None
+    return owners[kept[first_extra - 1]] + 1
+
+
 def best(scores: list[float]) -> int:
     return max(range(len(scores)), key=lambda i: scores[i])

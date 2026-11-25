@@ -86,3 +86,16 @@ def test_an_abbreviation_is_not_a_sentence_end():
     pcm = np.concatenate([tone(1.0), quiet(0.05), tone(1.0)])
     out, _ = pacing.pause_sentences(pcm, words_of(("M.", 0.1, 1.0), ("Dupont", 1.05, 1.6)))
     assert len(out) == len(pcm)
+
+
+def test_the_soft_tail_of_the_last_word_is_kept():
+    pcm = np.concatenate([quiet(0.3), tone(1.0), tone(0.3, 400), quiet(0.8)])
+    out, mapping = pacing.tighten(pcm)
+    assert len(out) / RATE >= 1.0 + 0.3 * 0.9
+    assert mapping(1.6) == pytest.approx(1.33, abs=0.02)
+
+
+def test_the_soft_start_of_the_first_word_is_kept():
+    pcm = np.concatenate([quiet(0.5), tone(0.2, 400), tone(1.0), quiet(0.5)])
+    out, _ = pacing.tighten(pcm)
+    assert len(out) / RATE >= 1.2 * 0.9

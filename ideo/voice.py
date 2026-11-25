@@ -390,6 +390,82 @@ def _fallback_backend(lang: str, log: Path, failed: str = "local"):
     return get_backend(log)
 
 
+TRIM_TAIL = 0.12
+TRIM_FADE = 0.02
+
+
+def _cut_after(wav: Path, end: float, next_start: float | None) -> bool:
+    with wave.open(str(wav), "rb") as w:
+        rate, params = w.getframerate(), w.getparams()
+        pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
+    stop = end + TRIM_TAIL
+    if next_start is not None:
+        stop = min(stop, max(end, (end + next_start) / 2))
+    cut = int(stop * rate)
+    if cut >= len(pcm):
+        return False
+    kept = pcm[:cut].astype(np.float64)
+    fade = min(int(TRIM_FADE * rate), len(kept))
+    if fade:
+        kept[-fade:] *= np.linspace(1.0, 0.0, fade)
+    with wave.open(str(wav), "wb") as w:
+        w.setparams(params)
+        w.writeframes(kept.astype("<i2").tobytes())
+    return True
+
+
+OUTRO = "seg_99_outro"
+QUESTION_SPLIT = re.compile(r"^(.+?\?)\s+(\S.*)$", re.S)
+
+
+def _pieces(name: str, text: str) -> list[str]:
+    match = QUESTION_SPLIT.match(text) if name == OUTRO else None
+    return [match.group(1), match.group(2)] if match else [text]
+
+
+def _paid_piece(backend, name: str, text: str, lang: str, wav: Path, before, after, log: Path) -> tuple[list[dict], float]:
+    def take():
+        words = backend.synthesize(text, lang, wav, previous_text=before, next_text=after)
+        listened = retranscribe(wav, lang, log)
+        return (words or listened, fidelity.similarity(text, listened), wav.read_bytes(),
+                fidelity.added(text, listened), listened)
+
+    words, score, audio, extra, listened = take()
+    if score < eleven.RETRY_BELOW or extra:
+        reason = f"mot ajouté : {' '.join(extra)}" if extra else f"ressemblance {score:.2f}"
+        _log_line(log, f"voix : {name} refait une fois ({reason})")
+        words2, score2, audio2, extra2, listened2 = take()
+        if (len(extra2), -score2) <= (len(extra), -score):
+            words, score, audio, extra, listened = words2, score2, audio2, extra2, listened2
+    wav.write_bytes(audio)
+    if extra:
+        kept = fidelity.keep_count(text, listened)
+        if kept and _cut_after(wav, listened[kept - 1]["e"], listened[kept]["s"] if kept < len(listened) else None):
+            _log_line(log, f"voix : {name} coupe le mot ajouté en fin : {' '.join(extra)}")
+            words = [w for w in words if w["e"] <= listened[kept - 1]["e"] + 0.05] or words
+            extra = fidelity.added(text, listened[:kept])
+            score = fidelity.similarity(text, listened[:kept])
+    if extra:
+        _log_line(log, f"voix : {name} garde un mot ajouté : {' '.join(extra)}")
+        score = min(score, eleven.ADDED_WORD_SCORE)
+    return words, score
+
+
+def _join_wavs(paths: list[Path], target: Path) -> list[float]:
+    chunks, starts, cursor = [], [], 0.0
+    for path in paths:
+        with wave.open(str(path), "rb") as w:
+            params = w.getparams()
+            data = w.readframes(w.getnframes())
+        starts.append(cursor)
+        cursor += len(data) / 2 / params.framerate
+        chunks.append(data)
+    with wave.open(str(target), "wb") as w:
+        w.setparams(params)
+        w.writeframes(b"".join(chunks))
+    return starts
+
+
 def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str, str]], lang: str, out_dir: Path,
                  log: Path) -> tuple[dict, dict]:
     order = [name for name, _ in items]
@@ -401,24 +477,21 @@ def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str,
         before = spoken[order[index - 1]] if index else None
         after = spoken[order[index + 1]] if index + 1 < len(order) else None
         wav = out_dir / f"{name}.wav"
-
-        def take():
-            words = backend.synthesize(spoken[name], lang, wav, previous_text=before, next_text=after)
-            listened = retranscribe(wav, lang, log)
-            return (words or listened, fidelity.similarity(spoken[name], listened), wav.read_bytes(),
-                    fidelity.added(spoken[name], listened))
-
-        words, score, audio, extra = take()
-        if score < eleven.RETRY_BELOW or extra:
-            reason = f"mot ajouté : {' '.join(extra)}" if extra else f"ressemblance {score:.2f}"
-            _log_line(log, f"voix : {name} refait une fois ({reason})")
-            words2, score2, audio2, extra2 = take()
-            if (len(extra2), -score2) <= (len(extra), -score):
-                words, score, audio, extra = words2, score2, audio2, extra2
-        if extra:
-            _log_line(log, f"voix : {name} garde un mot ajouté : {' '.join(extra)}")
-            score = min(score, eleven.ADDED_WORD_SCORE)
-        wav.write_bytes(audio)
+        pieces = _pieces(name, spoken[name])
+        if len(pieces) == 1:
+            words, score = _paid_piece(backend, name, pieces[0], lang, wav, before, after, log)
+        else:
+            work = out_dir / f"{name}.pieces"
+            parts = [work / str(k) / f"{name}.wav" for k in range(len(pieces))]
+            for path in parts:
+                path.parent.mkdir(parents=True, exist_ok=True)
+            results = [_paid_piece(backend, name, piece, lang, path, before if k == 0 else None,
+                                   pieces[1] if k == 0 else after, log)
+                       for k, (piece, path) in enumerate(zip(pieces, parts))]
+            starts = _join_wavs(parts, wav)
+            shutil.rmtree(work)
+            words = [{**w, "s": w["s"] + at, "e": w["e"] + at} for (ws, _), at in zip(results, starts) for w in ws]
+            score = min(sc for _, sc in results)
         heard_by_name[name] = words
         scores[name] = score
         (out_dir / f"{name}.spoken.txt").write_text(spoken[name], encoding="utf-8")
@@ -493,6 +566,8 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
                 info["characters"] = before + backend.characters
                 _log_line(log, f"voix : ElevenLabs, {backend.characters} caractères envoyés ({info['characters']} pour la partie)")
             common.save_json(out_dir / "voice-info.json", info)
+            if kind != "local":
+                _forget_local_scores(out_dir, [name for name, _ in pending])
             if result["hook"]:
                 common.save_json(out_dir / "voice-hook.json", result["hook"])
             if result["scores"]:
@@ -509,6 +584,22 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
         _backfill_prosody(out_dir, [name for name, _ in items])
     common.mark(job, step, True, f"{len(paths)} segments")
     return paths
+
+
+def _forget_local_scores(out_dir: Path, names: list[str]) -> None:
+    if HOOK in names:
+        (out_dir / "voice-hook.json").unlink(missing_ok=True)
+    path = out_dir / "voice-prosody.json"
+    if not path.exists():
+        return
+    try:
+        kept = {k: v for k, v in common.load_json(path).items() if k not in names}
+    except (OSError, ValueError, AttributeError):
+        kept = {}
+    if kept:
+        common.save_json(path, kept)
+    else:
+        path.unlink()
 
 
 def _read_info(out_dir: Path) -> dict:
