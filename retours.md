@@ -35,6 +35,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (XBLXmwxSd-0) Quand une vidéo est coupée en parties, chaque vidéo montre les barres de progression de toutes les parties : il ne faut que la barre de la partie en cours.
 - [x] [2026-11-25] (XBLXmwxSd-0) Idée : pour la biographie d’un peintre, afficher une image de l’œuvre citée, avec des images libres de droits, sur le modèle des photos de personnes.
   Entretien du 2026-11-25 (d) : nouvelle scène artwork (titre, artiste, image entière) ; ideo photo accepte maintenant le titre d'une œuvre (peinture, dessin, sculpture) et garde son image libre de droits, séparée des photos de personnes.
+- [ ] [2026-11-25] (XBLXmwxSd-0) Le dessin vinyl ne tourne pas : dans une scène dédiée à un disque, le disque devrait tourner sur lui-même.
+- [ ] [2026-11-25] (XBLXmwxSd-0) Aucun extrait isolé d’une chanson citée : la source ne donne que des sons d’une seconde mêlés à la voix, donc la scène d’un disque reste muette.
 
 ## Défauts détectés
 
