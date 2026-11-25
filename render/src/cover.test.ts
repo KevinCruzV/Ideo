@@ -29,6 +29,13 @@ describe("cover", () => {
     expect(artKind(null, null)).toBe("mascot");
   });
 
+  it("draws the main person's face when the cover has no photo but a person-card look", () => {
+    expect(artKind(undefined, "sun", { name: "Marie Curie" })).toBe("bust");
+    expect(artKind(undefined, null, { name: "Marie Curie" })).toBe("bust");
+    expect(artKind("photo.jpg", null, { name: "Marie Curie" })).toBe("photo");
+    expect(artKind(undefined, "sun", null)).toBe("picto");
+  });
+
   it("scales the photo frame to the height of the disk", () => {
     expect(PHOTO_H * PHOTO_SCALE).toBeCloseTo(DISK, 0);
   });

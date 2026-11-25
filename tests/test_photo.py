@@ -427,6 +427,14 @@ def test_an_artwork_page_is_accepted_and_stored_as_an_artwork(job, wiki):
     assert [(p["person"], p["kind"]) for p in stored] == [("La nuit étoilée", "artwork")]
 
 
+def test_a_brand_page_is_accepted_and_stored_as_a_logo(job, wiki):
+    wiki.kind_id = "Q4830453"
+    wiki.title = "Nike"
+    assert photo.run(job, "Nike").startswith("OK photo : Nike")
+    stored = photo.all_stored(job)
+    assert [(p["person"], p["kind"]) for p in stored] == [("Nike", "logo")]
+
+
 def test_a_person_page_is_stored_as_a_person(job, wiki):
     photo.run(job, "Ada Lovelace")
     assert photo.all_stored(job)[0]["kind"] == "person"
@@ -443,6 +451,11 @@ def test_of_kind_keeps_old_photos_as_people():
     assert [p["person"] for p in photo.of_kind(photos, "artwork")] == ["B"]
 
 
+def test_of_kind_accepts_several_kinds_at_once():
+    photos = [{"person": "A", "kind": "logo", "image": "a.jpg"}, {"person": "B", "kind": "artwork", "image": "b.jpg"}, {"person": "C", "kind": "person", "image": "c.jpg"}]
+    assert [p["person"] for p in photo.of_kind(photos, ("artwork", "logo"))] == ["A", "B"]
+
+
 def test_an_artwork_with_the_name_of_its_painter_never_takes_the_photo_of_the_person():
     staged = [
         {"person": "Vincent van Gogh", "image": "photo-vincent-van-gogh.jpg", "kind": "person"},
@@ -455,6 +468,13 @@ def test_an_artwork_with_the_name_of_its_painter_never_takes_the_photo_of_the_pe
     assert timeline._with_photo(art, staged)["props"]["image"] == "photo-autoportrait.jpg"
 
 
+def test_an_artwork_scene_also_takes_the_image_of_a_stored_brand_logo():
+    staged = [{"person": "Nike", "image": "photo-nike.jpg", "kind": "logo"}]
+    art = artwork_scene("0:20", title="Nike")
+    art["props"].pop("artist", None)
+    assert timeline._with_photo(art, staged)["props"]["image"] == "photo-nike.jpg"
+
+
 def test_an_artwork_scene_without_a_stored_image_is_refused_by_check(job_with_fixtures):
     plan = common.load_json(job_with_fixtures / "plan.json")
     plan["parts"][0]["scenes"].append(artwork_scene(plan["parts"][0]["scenes"][0]["src"]))
@@ -465,6 +485,17 @@ def test_an_artwork_scene_without_a_stored_image_is_refused_by_check(job_with_fi
     errors = plan_check.check_plan(job_with_fixtures)
     assert any("l'image libre de droits d'une œuvre" in e for e in errors)
     store(job_with_fixtures, "La nuit étoilée", kind="artwork")
+    assert not [e for e in plan_check.check_plan(job_with_fixtures) if "œuvre" in e or "image" in e]
+
+
+def test_an_artwork_scene_accepts_a_stored_brand_logo(job_with_fixtures):
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    scene = artwork_scene(plan["parts"][0]["scenes"][0]["src"], title="Nike")
+    scene["props"].pop("artist", None)
+    plan["parts"][0]["scenes"].append(scene)
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert any("l'image libre de droits d'une œuvre" in e for e in plan_check.check_plan(job_with_fixtures))
+    store(job_with_fixtures, "Nike", kind="logo")
     assert not [e for e in plan_check.check_plan(job_with_fixtures) if "œuvre" in e or "image" in e]
 
 

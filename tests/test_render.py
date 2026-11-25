@@ -320,6 +320,37 @@ def test_cover_has_no_photo_without_a_photo_card_or_a_stored_photo(job_sources):
     assert "photo" not in render.cover_props(plan, plan["parts"][0], job_sources)
 
 
+def test_cover_look_comes_from_the_first_person_card(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append({
+        "type": "person-card", "say": "x",
+        "props": {"name": "Hermann Ebbinghaus", "role": "savant", "gender": "man", "age": "old", "hat": "top-hat"},
+    })
+    look = render.cover_look(plan["parts"][0])
+    assert look == {"name": "Hermann Ebbinghaus", "gender": "man", "age": "old", "hat": "top-hat"}
+
+
+def test_cover_look_is_none_without_a_person_card():
+    assert render.cover_look({"scenes": [{"type": "stamp", "props": {"text": "x"}}]}) is None
+
+
+def test_cover_props_fall_back_to_the_main_person_look_without_a_photo(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus", photo=False))
+    props = render.cover_props(plan, plan["parts"][0], job_sources)
+    assert "photo" not in props
+    assert props["look"] == {"name": "Hermann Ebbinghaus"}
+
+
+def test_cover_props_prefer_the_real_photo_over_a_drawn_look(job_sources):
+    store_photo(job_sources, "Hermann Ebbinghaus")
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus"))
+    props = render.cover_props(plan, plan["parts"][0], job_sources)
+    assert props["photo"] == "photo.jpg"
+    assert "look" not in props
+
+
 def test_cover_takes_the_first_person_who_has_a_photo(job_sources):
     store_photo(job_sources, "Hermann Ebbinghaus")
     store_photo(job_sources, "Marie Curie", "photo-marie-curie.jpg")

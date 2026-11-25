@@ -194,11 +194,12 @@ def _photo_errors(props: dict, where: str, ctx: dict) -> list[str]:
 
 
 def _artwork_errors(props: dict, where: str, ctx: dict) -> list[str]:
-    found = photo.of_kind(ctx.get("photos") or [], photo.ARTWORK)
+    found = photo.of_kind(ctx.get("photos") or [], (photo.ARTWORK, photo.LOGO))
     title = props.get("title")
     if not isinstance(title, str) or photo.match(found, title) is None:
-        return [f"{where} : une scène « artwork » demande l'image libre de droits d'une œuvre dans le job : lance « ideo photo <job> \"{title}\" » "
-                "et garde la scène seulement si la réponse n'est pas « aucune photo libre ». Sinon remplace-la par une autre scène."]
+        return [f"{where} : une scène « artwork » demande l'image libre de droits d'une œuvre ou le logo d'une marque dans le job : "
+                f"lance « ideo photo <job> \"{title}\" » et garde la scène seulement si la réponse n'est pas « aucune photo libre ». "
+                "Sinon remplace-la par une autre scène."]
     return []
 
 

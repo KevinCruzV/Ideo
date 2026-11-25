@@ -72,6 +72,23 @@ def cover_picto(part: dict) -> str | None:
     return None
 
 
+LOOK_KEYS = ("gender", "age", "job", "hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin")
+
+
+def cover_look(part: dict) -> dict | None:
+    for scene in part.get("scenes") or []:
+        if not isinstance(scene, dict) or scene.get("type") != "person-card":
+            continue
+        props = scene.get("props")
+        name = props.get("name") if isinstance(props, dict) else None
+        if not isinstance(name, str) or not name.strip():
+            continue
+        look = {"name": name.strip()}
+        look.update({key: props[key] for key in LOOK_KEYS if key in props})
+        return look
+    return None
+
+
 def cover_photo(job: Path, part: dict) -> str | None:
     stored = photo.of_kind(photo.all_stored(job), photo.PERSON)
     if not stored:
@@ -106,6 +123,10 @@ def cover_props(plan: dict, part: dict, job: Path | None = None) -> dict:
         picture = cover_photo(Path(job), part)
         if picture:
             props["photo"] = picture
+        else:
+            look = cover_look(part)
+            if look:
+                props["look"] = look
     return props
 
 
