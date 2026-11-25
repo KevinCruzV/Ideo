@@ -182,7 +182,7 @@ def _with_photo(scene: dict, staged: list[dict]) -> dict:
     props = scene.get("props", {})
     if scene.get("type") == "artwork":
         title = props.get("title")
-        found = photo.match(photo.of_kind(staged, photo.ARTWORK), title) if isinstance(title, str) else None
+        found = photo.match(photo.of_kind(staged, (photo.ARTWORK, photo.LOGO)), title) if isinstance(title, str) else None
         return {**scene, "props": {**props, "image": found["image"]}} if found else scene
     if scene.get("type") != "person-card" or props.get("photo") is not True:
         return scene

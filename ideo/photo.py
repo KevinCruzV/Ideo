@@ -21,8 +21,10 @@ MAX_BYTES = 12 * 1024 * 1024
 WIDTH = 1200
 HUMAN = "Q5"
 ARTWORKS = frozenset({"Q3305213", "Q93184", "Q860861", "Q838948", "Q219423", "Q18761202"})
+BRANDS = frozenset({"Q4830453", "Q783794", "Q431289", "Q891723", "Q6881511", "Q43229"})
 PERSON = "person"
 ARTWORK = "artwork"
+LOGO = "logo"
 NONE = "OK photo : aucune photo libre"
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 FREE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by([ -]sa)?[ -]\d(\.\d)?\b)", re.IGNORECASE)
@@ -85,6 +87,8 @@ def _kind_of(item: str | None) -> str | None:
         return PERSON
     if kinds & ARTWORKS:
         return ARTWORK
+    if kinds & BRANDS:
+        return LOGO
     return None
 
 
@@ -173,8 +177,9 @@ def all_stored(job: Path) -> list[dict]:
     return out
 
 
-def of_kind(photos: list[dict], kind: str) -> list[dict]:
-    return [p for p in photos if p.get("kind", PERSON) == kind]
+def of_kind(photos: list[dict], kind: str | tuple[str, ...]) -> list[dict]:
+    kinds = (kind,) if isinstance(kind, str) else tuple(kind)
+    return [p for p in photos if p.get("kind", PERSON) in kinds]
 
 
 def match(photos: list[dict], name: str) -> dict | None:
