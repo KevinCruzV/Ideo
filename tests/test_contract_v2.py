@@ -19,11 +19,13 @@ DARK_PICTOS = "blood-stain, chalk-outline, crime-tape, handcuffs, knife, coffin,
 
 SCIENCE_PICTOS = "mirror, mars"
 
+MUSIC_PICTOS = "music-note, vinyl, microphone"
+
 
 def test_pictos_are_the_52_names_of_the_contract_plus_the_health_and_sleep_ones():
-    expected = tuple(PICTOS_TEXT.split(", ")) + tuple(HEALTH_PICTOS.split(", ")) + tuple(SLEEP_PICTOS.split(", ")) + tuple(DARK_PICTOS.split(", ")) + tuple(SCIENCE_PICTOS.split(", "))
+    expected = tuple(PICTOS_TEXT.split(", ")) + tuple(HEALTH_PICTOS.split(", ")) + tuple(SLEEP_PICTOS.split(", ")) + tuple(DARK_PICTOS.split(", ")) + tuple(SCIENCE_PICTOS.split(", ")) + tuple(MUSIC_PICTOS.split(", "))
     assert scene_schema.PICTOS == expected
-    assert len(scene_schema.PICTOS) == 87 == len(set(scene_schema.PICTOS))
+    assert len(scene_schema.PICTOS) == 90 == len(set(scene_schema.PICTOS))
 
 
 KICKER_KINDS = {
