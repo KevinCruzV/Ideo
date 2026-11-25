@@ -291,6 +291,57 @@ def test_cover_prefers_the_subject_over_a_flag():
     assert render.cover_picto(only_flags) == "flag:us"
 
 
+def store_photo(job, person, image="photo.jpg"):
+    common.save_json(job / Path(image).with_suffix(".json").name, {"person": person, "extension": Path(image).suffix[1:]})
+    (job / image).write_bytes(b"jpg")
+
+
+def person_card(name, photo=True):
+    props = {"name": name, "role": "savant"}
+    if photo:
+        props["photo"] = True
+    return {"type": "person-card", "say": "x", "props": props}
+
+
+def test_cover_shows_the_photo_of_the_main_person(job_sources):
+    store_photo(job_sources, "Hermann Ebbinghaus")
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus"))
+    props = render.cover_props(plan, plan["parts"][0], job_sources)
+    assert props["photo"] == "photo.jpg"
+    assert "photo" not in render.cover_props(plan, plan["parts"][0])
+
+
+def test_cover_has_no_photo_without_a_photo_card_or_a_stored_photo(job_sources):
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus", photo=False))
+    assert "photo" not in render.cover_props(plan, plan["parts"][0], job_sources)
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus"))
+    assert "photo" not in render.cover_props(plan, plan["parts"][0], job_sources)
+
+
+def test_cover_takes_the_first_person_who_has_a_photo(job_sources):
+    store_photo(job_sources, "Hermann Ebbinghaus")
+    store_photo(job_sources, "Marie Curie", "photo-marie-curie.jpg")
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"] += [person_card("Marie Curie"), person_card("Hermann Ebbinghaus")]
+    assert render.cover_props(plan, plan["parts"][0], job_sources)["photo"] == "photo-marie-curie.jpg"
+
+
+def test_cover_still_can_read_the_photo_from_the_part_folder(job_sources, monkeypatch):
+    store_photo(job_sources, "Hermann Ebbinghaus")
+    plan = common.load_json(job_sources / "plan.json")
+    plan["parts"][0]["scenes"].append(person_card("Hermann Ebbinghaus"))
+    common.save_json(job_sources / "plan.json", plan)
+    calls = []
+    monkeypatch.setattr(common, "run", fake_still(calls))
+    render.write_cover(job_sources, 1)
+    part_dir = job_sources / "parts" / "01"
+    assert common.load_json(part_dir / "cover.json")["photo"] == "photo.jpg"
+    assert (part_dir / "photo.jpg").read_bytes() == b"jpg"
+    assert f"--public-dir={part_dir}" in calls[0]
+
+
 def test_cover_renders_a_still_of_the_cover_composition(job_sources, monkeypatch):
     calls = []
     monkeypatch.setattr(common, "run", fake_still(calls))
