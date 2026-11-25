@@ -2,6 +2,7 @@ import json
 import math
 import os
 import shutil
+import time
 import wave
 from pathlib import Path
 
@@ -142,6 +143,19 @@ def test_render_is_idempotent(job_sources, monkeypatch):
     timeline = job_sources / "parts" / "01" / "timeline.json"
     future = timeline.stat().st_mtime + 10
     os.utime(timeline, (future, future))
+    render.render_part(job_sources, 1)
+    assert len(calls) == 2
+
+
+def test_render_is_redone_when_the_render_code_changed_since(job_sources, monkeypatch):
+    calls = []
+    prepare_render(job_sources, 120)
+    monkeypatch.setattr(common, "run", fake_run(calls))
+    monkeypatch.setattr(render, "probe_media", lambda p: dict(GOOD))
+    render.render_part(job_sources, 1)
+    render.render_part(job_sources, 1)
+    assert len(calls) == 1
+    monkeypatch.setattr(render, "_render_src_version", lambda: time.time() + 3600)
     render.render_part(job_sources, 1)
     assert len(calls) == 2
 
@@ -393,6 +407,16 @@ def test_cover_is_not_rendered_again_when_nothing_changed(job_sources, monkeypat
     plan = common.load_json(job_sources / "plan.json")
     plan["parts"][0]["title"] = "Un autre titre"
     common.save_json(job_sources / "plan.json", plan)
+    render.write_cover(job_sources, 1)
+    assert len(calls) == 2
+
+
+def test_cover_is_rendered_again_when_the_render_code_changed_since(job_sources, monkeypatch):
+    calls = []
+    monkeypatch.setattr(common, "run", fake_still(calls))
+    render.write_cover(job_sources, 1)
+    assert len(calls) == 1
+    monkeypatch.setattr(render, "_render_src_version", lambda: time.time() + 3600)
     render.write_cover(job_sources, 1)
     assert len(calls) == 2
 

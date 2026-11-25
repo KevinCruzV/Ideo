@@ -41,6 +41,11 @@ def cover_path(job: Path, plan: dict, n: int) -> Path:
     return Path(job) / "out" / name
 
 
+def _render_src_version() -> float:
+    src = REPO / "render" / "src"
+    return max((p.stat().st_mtime for p in src.rglob("*") if p.is_file()), default=0.0)
+
+
 COVER_SCAN = 3
 
 
@@ -143,7 +148,12 @@ def write_cover(job: Path, n: int) -> Path:
         shutil.copyfile(job / props["photo"], part_dir / props["photo"])
     props_path = part_dir / "cover.json"
     out = cover_path(job, plan, n)
-    if out.exists() and props_path.exists() and common.load_json(props_path) == props:
+    if (
+        out.exists()
+        and props_path.exists()
+        and common.load_json(props_path) == props
+        and out.stat().st_mtime >= _render_src_version()
+    ):
         return out
     common.save_json(props_path, props)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -247,9 +257,12 @@ def _render(job: Path, n: int) -> Path:
         raise common.IdeoError(f"part.wav est introuvable : assemblez d'abord l'audio de la partie {n}.")
     out = mp4_path(job, plan, n)
     step = f"render-{n:02d}"
-    if out.exists() and out.stat().st_mtime >= timeline.stat().st_mtime and common.read_status(job)["steps"].get(
-        step, {}
-    ).get("ok"):
+    if (
+        out.exists()
+        and out.stat().st_mtime >= timeline.stat().st_mtime
+        and out.stat().st_mtime >= _render_src_version()
+        and common.read_status(job)["steps"].get(step, {}).get("ok")
+    ):
         return out
 
     pnpm = _pnpm()
