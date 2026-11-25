@@ -79,12 +79,12 @@ export const Versus: React.FC<SceneProps> = ({ props, items, from, to }) => {
                   float={3}
                   motion={{ dx: s.dx, dy: 0, spin: s.tilt * 3, from: 0.96 }}
                 />
-                <div style={{ position: "absolute", left: PANEL_W / 2 - picto * 0.62, top: panelH / 2 - picto * 0.62 - 10, width: picto * 1.24, height: picto * 1.24 }}>
-                  <PaperShape kind="circle" color="cream" size={picto * 1.24} enterAt={s.at + 2} seed={`vs-disc-${s.key}`} float={2} motion={{ dx: 0, dy: 0, spin: 0, from: 0.9 }} />
-                  {hasVisual(s.name) ? (
+                {hasVisual(s.name) ? (
+                  <div style={{ position: "absolute", left: PANEL_W / 2 - picto * 0.62, top: panelH / 2 - picto * 0.62 - 10, width: picto * 1.24, height: picto * 1.24 }}>
+                    <PaperShape kind="circle" color="cream" size={picto * 1.24} enterAt={s.at + 2} seed={`vs-disc-${s.key}`} float={2} motion={{ dx: 0, dy: 0, spin: 0, from: 0.9 }} />
                     <Picto name={s.name} size={picto} x={picto * 0.12} y={picto * 0.12} enterAt={s.at + 4} rotate={s.tilt * 2} seed={`vs-picto-${s.key}`} motion={{ dx: s.dx * 0.3, dy: 0 }} react={false} />
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
                 <div style={{ position: "absolute", left: -10, width: PANEL_W + 20, top: panelH + 30, display: "flex", justifyContent: "center" }}>
                   <Strips lines={s.fit.lines} size={s.fit.size} enterAt={s.at + 6} seed={`vs-label-${s.key}`} gap={8} motion={{ dx: s.dx * 0.3, dy: 0 }} />
                 </div>
