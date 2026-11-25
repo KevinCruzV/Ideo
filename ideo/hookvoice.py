@@ -139,6 +139,9 @@ def failed(scores: dict) -> list[str]:
         out.append("formule trop longue")
     if scores["speed_ratio"] is not None and scores["speed_ratio"] < SPEED_RATIO_MIN:
         out.append("fin traînante")
+    rise = scores.get("rise")
+    if rise is not None and not (RISE_TARGET[0] <= rise <= RISE_TARGET[1]):
+        out.append("montée hors cible")
     return out
 
 

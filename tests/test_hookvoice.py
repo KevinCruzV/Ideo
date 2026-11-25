@@ -81,6 +81,15 @@ def test_failed_criteria_and_unknowns():
     assert hv.failed({"fidelity": 0.90, "formula": 0.50, "speed_ratio": 0.85}) == []
 
 
+def test_failed_flags_a_final_rise_outside_the_target():
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": 8.0}) == []
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": 7.0}) == []
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": 10.0}) == []
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": 2.0}) == ["montée hors cible"]
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": 11.4}) == ["montée hors cible"]
+    assert hv.failed({"fidelity": 1.0, "formula": None, "speed_ratio": None, "rise": None}) == []
+
+
 def test_distance_to_the_targets():
     assert hv.distance({"rise": 8.0, "level": 3.0}) == 0
     assert hv.distance({"rise": 7.0, "level": 5.0}) == 0 and hv.distance({"rise": 10.0, "level": 2.0}) == 0
@@ -91,7 +100,7 @@ def test_distance_to_the_targets():
 
 def test_ranking_puts_the_eliminatory_criteria_first():
     near = {"fidelity": 1.0, "formula": 0.7, "speed_ratio": 1.0, "rise": 8.0, "level": 3.0}
-    far = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 1.0, "level": 0.0}
+    far = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 8.0, "level": 0.0}
     assert hv.best([{"scores": near}, {"scores": far}]) == 1
     both = {"fidelity": 1.0, "formula": 0.4, "speed_ratio": 1.0, "rise": 8.0, "level": 3.0}
     assert hv.best([{"scores": far}, {"scores": both}]) == 1
