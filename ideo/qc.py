@@ -123,12 +123,22 @@ def _flattest(scores: dict) -> str:
     return ", ".join(f"{name} ({_comma(score)})" for name, score in sorted(scores.items(), key=lambda p: p[1])[:3])
 
 
+def _hook_accepted(out_dir: Path) -> bool:
+    path = out_dir / "voice-hook.json"
+    try:
+        info = common.load_json(path) if path.exists() else {}
+    except (OSError, ValueError):
+        return False
+    return isinstance(info, dict) and (info.get("passed") is True or isinstance(info.get("chosen"), str))
+
+
 def _pitch_alerts(where: str, out_dir: Path) -> list[tuple[str, str]]:
     scores = _pitch_scores(out_dir)
     if not scores:
         return []
     flat = [n for n, s in scores.items() if s < prosody.FLAT]
-    edges = [n for n in BOUNDARY_SEGMENTS if n in scores and scores[n] < prosody.FLAT]
+    accepted = _hook_accepted(out_dir)
+    edges = [n for n in BOUNDARY_SEGMENTS if n in scores and scores[n] < prosody.FLAT and not (accepted and n == "seg_00_hook")]
     if len(flat) <= len(scores) * FLAT_SHARE and not edges:
         return []
     why = (f"{len(flat)} segments sur {len(scores)} sous {_comma(prosody.FLAT)}" if len(flat) > len(scores) * FLAT_SHARE
