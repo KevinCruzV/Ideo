@@ -8,8 +8,8 @@ from ideo import codes, common, cost, countries, eleven, entretien, history, lea
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| photo <job> \"<nom de la personne>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale")
+         "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale")
 
 
 class UsageError(Exception):
@@ -89,6 +89,10 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if len(rest) < 2 or rest[0].startswith("--"):
             raise UsageError(USAGE)
         return cmd, rest[0], None, {"name": " ".join(rest[1:])}
+    if cmd == "photo-manuel":
+        if len(rest) != 4:
+            raise UsageError(USAGE)
+        return cmd, rest[0], None, {"name": rest[1], "file": rest[2], "source": rest[3]}
     if cmd == "entretien":
         if not rest:
             return cmd, "", None, opts
@@ -145,6 +149,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     job = pipeline.resolve_job(arg)
     if cmd == "photo":
         return [photo.run(job, opts["name"])], 0
+    if cmd == "photo-manuel":
+        return [photo.add_manual(job, opts["name"], Path(opts["file"]), opts["source"])], 0
     if cmd == "finale":
         return [_finale(job)], 0
     if cmd == "musique" and opts.get("dernier"):
