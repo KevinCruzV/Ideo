@@ -20,6 +20,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-22] (sSm_FQ3lsg4) Fait divers, horreur, catastrophe : la direction artistique (couleurs, fonds, dessins) doit devenir sombre, pas les couleurs gaies habituelles.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Biographie ou histoire : il faut voir la tête de la personne principale, en grand et ressemblante, et la revoir au fil de l’histoire.
 - [ ] [2026-11-22] (sSm_FQ3lsg4) La citation utilisée est lue par le youtuber, pas par la personne citée : vérifier que la voix de l’extrait n’est pas celle du narrateur.
+  Entretien du 2026-11-25 (h) : assemble.quote_bounds cadre l'extrait sur le texte cité retrouvé dans la transcription de la source, sans savoir qui parle ; aucun repère de locuteur n'existe dans le dépôt, donc pas de test qui montre la cause. Non reproduit, à traiter avec un vrai cas de job.
   Entretien du 2026-11-24 : le choix de la voix de l'extrait se juge à l'écoute et à la source, aucun contrôle automatique fiable trouvé. Non automatisé.
   Entretien du 2026-11-25 : la transcription du job ne distingue pas les voix (aucun champ de locuteur dans words.json), donc rien à comparer ; la leçon « pas de scène quote quand la phrase est lue par le présentateur » reste la seule garde. Non automatisé.
   Entretien du 2026-11-25 (c) : rien de nouveau, toujours aucune information de locuteur dans la transcription. Non automatisé.
@@ -71,6 +72,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (g) : cause trouvée dans le resserrage des silences : la fin d'un segment était coupée au dernier instant plus fort que -32 dB (30 ms gardés), ce qui rognait la queue douce du dernier mot ; la fin des segments de ce job tombait à -33 dB, en plein mot. Le début et la fin gardent maintenant tout ce qui dépasse -50 dB. Les voix déjà générées de ce job sont à relancer pour en profiter.
 - [x] [2026-11-25] (bk6QIRZjMjA) La question finale au spectateur est lue d’un ton plat, sans montée sur le dernier mot (« Nvidia ») : elle doit sonner comme une vraie question, avec du mystère.
   Entretien du 2026-11-25 (g) : la question était lue dans le même appel que l'appel à s'abonner, donc suivie d'une autre phrase. Avec ElevenLabs elle est maintenant synthétisée seule (appel à s'abonner en next_text), puis les deux audios sont recollés et les repères décalés. Le ton réel reste à écouter sur la prochaine vidéo.
+- [x] [2026-11-25] (bk6QIRZjMjA) Depuis la correction des fins de mots (seuil -50 dB), on entend la respiration de la voix ElevenLabs entre les phrases ; c’est pire qu’avant, surtout avec George en stabilité 0,30.
+  Entretien du 2026-11-25 (h) : les segments .wav payés ne sont pas touchés ni regénérés. À l'assemblage, pour une voix ElevenLabs, pacing.gate_breaths coupe tout ce qui est hors des mots (repères de words.json) : avant le premier mot (garde 0,08 s), après le dernier (garde 0,15 s de queue douce), et dans les écarts de 0,25 s ou plus entre mots (garde 0,15 s après un mot, 0,08 s avant le suivant), avec des fondus de 10 ms ; la durée ne change pas, donc les repères restent justes. Une partie déjà assemblée est réassemblée une fois (marqueur breath_gate dans music.json). Un nouveau produce sur ce job ne rappelle pas ElevenLabs (test avec un service qui échoue s'il est appelé). À écouter sur la prochaine vidéo : si une inspiration reste collée à un mot, augmenter BREATH_LEAD.
 
 ## Défauts détectés
 
@@ -100,6 +103,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_03 : la voix s'écarte du texte (ressemblance 0,76). Relance la voix de cette partie ou reformule le texte.
   Entretien du 2026-11-25 (g) : la ressemblance de 0,76 venait du mot « coup » lu en fin de segment ; il est maintenant coupé et la ressemblance recalculée sans lui.
 - [ ] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_01 : la voix s'écarte du texte (ressemblance 0,79). Relance la voix de cette partie ou reformule le texte.
+  Entretien du 2026-11-25 (h) : fidelity.similarity gère bien les nombres écrits en chiffres ou en lettres (0,95 à 1,0 sur ce texte avec les deux transcriptions possibles) ; le 0,79 vient donc d'un vrai écart de lecture, à entendre. Sans relancer la voix payante (interdit ici), rien à corriger dans le code. Non corrigé.
 
 ## Dessins manquants
 

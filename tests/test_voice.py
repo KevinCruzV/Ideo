@@ -344,3 +344,20 @@ def test_old_plan_without_question_still_produces(job_with_plan):
     plan = common.load_json(job_with_plan / "plan.json")
     plan["parts"][0].pop("question")
     assert voice.segments(plan, plan["parts"][0])[-1] == ("seg_99_outro", "Si ça t'a plu, abonne-toi pour la prochaine !")
+
+
+def test_paid_voice_reuses_existing_segments_without_calling_the_service(job_with_plan, fake_backend, fake_whisper):
+    voice.voice_part(job_with_plan, 1, backend=fake_backend)
+    out_dir = job_with_plan / "parts" / "01"
+    for name in out_dir.glob("*.spoken.txt"):
+        name.unlink()
+
+    class Paid:
+        local = False
+        paid = True
+        characters = 0
+
+        def synthesize(self, *args, **kwargs):
+            raise AssertionError("un segment déjà payé ne doit pas être regénéré")
+
+    voice.voice_part(job_with_plan, 1, backend=Paid())

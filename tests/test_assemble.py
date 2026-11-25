@@ -135,3 +135,57 @@ def test_reach_target_lifts_a_quiet_part_to_minus_14(tmp_path):
     assert measured_lufs(quiet) < -30
     assemble.reach_target(quiet, tmp_path, tmp_path / "log")
     assert measured_lufs(quiet) == pytest.approx(-14.0, abs=0.5)
+
+
+def _breathy_segment(path, words_path):
+    import numpy as np
+
+    rate = 48000
+    rng = np.random.default_rng(2)
+    t = np.arange(rate)
+    tone = (8000 * np.sin(2 * np.pi * 440 * t / rate)).astype(np.int16)
+    breath = (rng.standard_normal(int(0.5 * rate)) * 600).astype(np.int16)
+    pcm = np.concatenate([breath, tone, breath, tone, breath])
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    common.save_json(words_path, [{"w": "un", "s": 0.5, "e": 1.5}, {"w": "deux", "s": 2.0, "e": 3.0}])
+    return pcm
+
+
+def test_paid_voice_breaths_are_muted_at_assembly_without_touching_the_segments(job_with_voice_fixtures):
+    import numpy as np
+
+    job = job_with_voice_fixtures
+    out_dir = job / "parts" / "01"
+    original = _breathy_segment(out_dir / "seg_01.wav", out_dir / "seg_01.words.json")
+    before = (out_dir / "seg_01.wav").read_bytes()
+    common.save_json(out_dir / "voice-info.json", {"engine": "elevenlabs"})
+    pcm = np.frombuffer(assemble._voice_pcm(out_dir, "seg_01"), dtype="<i2")
+    assert len(pcm) == len(original)
+    assert np.max(np.abs(pcm[:int(0.4 * 48000)])) == 0
+    assert np.max(np.abs(pcm[int(1.75 * 48000):int(1.9 * 48000)])) == 0
+    assert np.max(np.abs(pcm[int(3.3 * 48000):])) == 0
+    assert np.array_equal(pcm[int(0.6 * 48000):int(1.4 * 48000)], original[int(0.6 * 48000):int(1.4 * 48000)])
+    assert (out_dir / "seg_01.wav").read_bytes() == before
+
+
+def test_local_voice_segments_are_read_as_they_are(job_with_voice_fixtures):
+    job = job_with_voice_fixtures
+    out_dir = job / "parts" / "01"
+    _breathy_segment(out_dir / "seg_01.wav", out_dir / "seg_01.words.json")
+    common.save_json(out_dir / "voice-info.json", {"engine": "kyutai"})
+    assert assemble._voice_pcm(out_dir, "seg_01") == (out_dir / "seg_01.wav").read_bytes()[44:]
+
+
+def test_an_already_assembled_paid_part_is_reassembled_once_for_the_breath_gate(job_with_voice_fixtures):
+    job = job_with_voice_fixtures
+    out_dir = job / "parts" / "01"
+    assemble.assemble_part(job, 1)
+    common.save_json(out_dir / "voice-info.json", {"engine": "elevenlabs"})
+    assert not assemble._music_current(job, out_dir)
+    assemble.assemble_part(job, 1)
+    assert assemble._music_current(job, out_dir)
+    assert common.load_json(out_dir / "music.json")["breath_gate"] is True
