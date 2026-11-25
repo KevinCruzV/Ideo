@@ -5,7 +5,7 @@ from pathlib import Path
 from ideo import common, sfx as sfx_mod, target
 
 PAUSE = 1.2
-TRANSCRIPT_VERSION = 3
+TRANSCRIPT_VERSION = 4
 ADVICE_PREFIX = "Durée conseillée :"
 MAX_WORDS = 60
 SPONSOR_SPAN = 60.0
