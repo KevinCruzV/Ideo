@@ -13,6 +13,10 @@ SENTENCE_GAP = 0.30
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
 MIN_LETTERS = 3
+BREATH_TAIL = 0.15
+BREATH_LEAD = 0.08
+BREATH_MIN_GAP = 0.25
+BREATH_FADE = 0.01
 
 
 def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
@@ -113,3 +117,26 @@ def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Cal
         return (x + sum(length for at, length in inserts if x >= at)) / RATE
 
     return np.concatenate(parts), mapping
+
+
+def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
+    if not words or not len(pcm):
+        return pcm
+    tail, lead = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE)
+    fade = round(BREATH_FADE * RATE)
+    spans = [(0, round(words[0]["s"] * RATE) - lead)]
+    for word, after in zip(words, words[1:]):
+        if after["s"] - word["e"] >= BREATH_MIN_GAP:
+            spans.append((round(word["e"] * RATE) + tail, round(after["s"] * RATE) - lead))
+    spans.append((round(words[-1]["e"] * RATE) + tail, len(pcm)))
+    out = pcm.copy()
+    for a, b in spans:
+        a, b = max(0, a), min(len(pcm), b)
+        if b - a <= 2 * fade:
+            continue
+        out[a:b] = 0
+        if a > 0:
+            out[a:a + fade] = (pcm[a:a + fade] * np.linspace(1.0, 0.0, fade)).astype(pcm.dtype)
+        if b < len(pcm):
+            out[b - fade:b] = (pcm[b - fade:b] * np.linspace(0.0, 1.0, fade)).astype(pcm.dtype)
+    return out

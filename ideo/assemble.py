@@ -7,7 +7,9 @@ import tempfile
 import wave
 from pathlib import Path
 
-from ideo import common, music, textmatch, transitions, voice
+import numpy as np
+
+from ideo import common, music, pacing, textmatch, transitions, voice
 
 RATE = 48000
 GAP_HOOK = 0.60
@@ -87,6 +89,19 @@ def _read_wav(path: Path) -> bytes:
         raise common.IdeoError(f"{Path(path).name} est illisible : {err}") from err
 
 
+def _voice_pcm(out_dir: Path, name: str) -> bytes:
+    pcm = _read_wav(out_dir / f"{name}.wav")
+    words = out_dir / f"{name}.words.json"
+    try:
+        timed = common.load_json(words) if _gated(out_dir) and words.exists() else []
+    except (OSError, ValueError):
+        return pcm
+    if not timed:
+        return pcm
+    gated = pacing.gate_breaths(np.frombuffer(pcm, dtype="<i2"), timed)
+    return gated.astype("<i2").tobytes()
+
+
 def _silence(seconds: float) -> bytes:
     return bytes(2 * round(seconds * RATE))
 
@@ -155,13 +170,22 @@ def _cut(source: Path, start: float, end: float, work: Path, log: Path) -> bytes
     return pcm
 
 
+def _gated(out_dir: Path) -> bool:
+    try:
+        info = out_dir / "voice-info.json"
+        return bool(info.exists() and common.load_json(info).get("engine") == "elevenlabs")
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
 def _music_current(job: Path, out_dir: Path) -> bool:
     path = out_dir / "music.json"
     try:
         stored = common.load_json(path) if path.exists() else None
     except (OSError, ValueError):
         return False
-    return isinstance(stored, dict) and stored.get("signature") == music.signature(job)
+    return (isinstance(stored, dict) and stored.get("signature") == music.signature(job)
+            and bool(stored.get("breath_gate", False)) == _gated(out_dir))
 
 
 def mix_current(job: Path, n: int) -> bool:
@@ -248,7 +272,7 @@ def _assemble(job: Path, n: int) -> Path:
                 if gap > 0:
                     chunks.append(_silence(gap))
                     cursor += gap
-            pcm = _read_wav(out_dir / f"{name}.wav")
+            pcm = _voice_pcm(out_dir, name)
             entry = {"seg": name, "start": cursor, "end": cursor + _seconds(pcm), "clip": None}
             chunks.append(pcm)
             cursor = entry["end"]
@@ -302,6 +326,7 @@ def _assemble(job: Path, n: int) -> Path:
         if entry["clip"]:
             entry["clip"] = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in entry["clip"].items()}
     common.save_json(offsets_path, offsets)
+    music_info["breath_gate"] = _gated(out_dir)
     common.save_json(out_dir / "music.json", music_info)
     common.mark(job, f"assemble-{n:02d}", True, f"{len(offsets)} segments, {offsets[-1]['end']:.1f} s")
     return out_wav

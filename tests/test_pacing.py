@@ -99,3 +99,39 @@ def test_the_soft_start_of_the_first_word_is_kept():
     pcm = np.concatenate([quiet(0.5), tone(0.2, 400), tone(1.0), quiet(0.5)])
     out, _ = pacing.tighten(pcm)
     assert len(out) / RATE >= 1.2 * 0.9
+
+
+def breath(seconds):
+    rng = np.random.default_rng(1)
+    return (rng.standard_normal(int(seconds * RATE)) * 600).astype(np.int16)
+
+
+def test_a_breath_between_two_sentences_is_muted_but_the_word_tails_stay():
+    pcm = np.concatenate([tone(1.0), breath(0.6), tone(1.0)])
+    words = words_of(("fin.", 0.0, 1.0), ("Suite", 1.6, 2.6))
+    out = pacing.gate_breaths(pcm, words)
+    assert len(out) == len(pcm)
+    assert np.max(np.abs(out[int((1.0 + pacing.BREATH_TAIL + 0.03) * RATE):int((1.6 - pacing.BREATH_LEAD - 0.03) * RATE)])) == 0
+    assert np.array_equal(out[:int(1.0 * RATE)], pcm[:int(1.0 * RATE)])
+    assert np.array_equal(out[int(1.6 * RATE):], pcm[int(1.6 * RATE):])
+    assert np.any(out[int(1.0 * RATE):int((1.0 + pacing.BREATH_TAIL - 0.03) * RATE)] != 0)
+
+
+def test_a_breath_before_the_first_word_and_after_the_last_is_muted():
+    pcm = np.concatenate([breath(0.4), tone(1.0), breath(0.5)])
+    words = words_of(("Salut", 0.4, 1.4))
+    out = pacing.gate_breaths(pcm, words)
+    assert len(out) == len(pcm)
+    assert np.max(np.abs(out[:int((0.4 - pacing.BREATH_LEAD - 0.03) * RATE)])) == 0
+    assert np.max(np.abs(out[int((1.4 + pacing.BREATH_TAIL + 0.03) * RATE):])) == 0
+
+
+def test_short_gaps_between_words_are_untouched():
+    pcm = np.concatenate([tone(0.5), breath(0.1), tone(0.5)])
+    words = words_of(("a", 0.0, 0.5), ("b", 0.6, 1.1))
+    assert np.array_equal(pacing.gate_breaths(pcm, words), pcm)
+
+
+def test_without_words_the_audio_is_untouched():
+    pcm = np.concatenate([breath(0.4), tone(1.0)])
+    assert np.array_equal(pacing.gate_breaths(pcm, []), pcm)
