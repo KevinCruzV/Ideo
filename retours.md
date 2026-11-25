@@ -22,6 +22,9 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-23] (pTn6Ewhb27k) La musique est trop basse sous la voix : la monter de quelques dB par défaut.
 - [x] [2026-11-23] (pTn6Ewhb27k) Il manque un écran de début reconnaissable (titre et dessin) pour distinguer les vidéos dans le flux et sur le profil TikTok.
 - [x] [2026-11-23] (pTn6Ewhb27k) Une seule photo par vidéo : quand plusieurs personnes historiques connues apparaissent (Einstein et Fizeau), une seule peut avoir sa vraie photo.
+- [ ] [2026-11-24] (dAenp-6u9xU) La couverture montre le drapeau d’un pays au lieu d’un visuel du sujet global (terre, argent).
+- [ ] [2026-11-24] (dAenp-6u9xU) Sur un counter, le cadre reste noir et vide tant que le chiffre n’est pas lancé : afficher le chiffre de départ dès la première image.
+- [ ] [2026-11-25] (dAenp-6u9xU) Le drapeau écossais (flag:gb-sct) n’existe pas : seul le drapeau du Royaume-Uni est disponible pour un Écossais.
 
 ## Défauts détectés
 
