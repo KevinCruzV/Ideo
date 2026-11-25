@@ -90,10 +90,18 @@ def configure(settings):
                                                 encoding="utf-8")
 
 
+def drop_question(job):
+    plan = common.load_json(job / "plan.json")
+    for part in plan["parts"]:
+        part.pop("question", None)
+    common.save_json(job / "plan.json", plan)
+
+
 @pytest.fixture
 def eleven_job(job_with_plan, server, monkeypatch):
     configure({})
     config.mark_final(job_with_plan)
+    drop_question(job_with_plan)
     monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [])
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: 1.0)
     return job_with_plan
@@ -448,11 +456,11 @@ def test_produce_line_carries_the_character_count(produce_job, server, monkeypat
     monkeypatch.setattr(voice, "retranscribe", lambda wav, lang, log=None: [])
     monkeypatch.setattr(voice.fidelity, "similarity", lambda a, b: 1.0)
     plan = common.load_json(job / "plan.json")
-    total = sum(len(t) for _, t in voice.segments(plan, plan["parts"][0]))
+    total = sum(len(piece) for n, t in voice.segments(plan, plan["parts"][0]) for piece in voice._pieces(n, t))
     assert cli.main(["produce", str(job)]) == 0
     line = capsys.readouterr().out.strip().splitlines()[0]
     assert f" ; Voix : ElevenLabs, {total} caractères" in line and KEY not in line
-    assert len(server.requests) == 7
+    assert len(server.requests) == 8
 
 
 def test_produce_line_says_the_fallback(produce_job, server, monkeypatch, capsys):
@@ -498,3 +506,52 @@ def test_cost_and_check_estimate_the_characters(job_with_fixtures, server, capsy
     configure({"engine": "edge"})
     cli.main(["check", str(job_with_fixtures), "--sans-relecture"])
     assert "ElevenLabs" not in capsys.readouterr().out
+
+
+def test_a_word_read_from_the_next_sentence_is_cut_off_the_end(eleven_job, server, monkeypatch):
+    plan = common.load_json(eleven_job / "plan.json")
+    texts = dict(voice.segments(plan, plan["parts"][0]))
+
+    def listen(wav, lang, log=None):
+        words = texts[Path(wav).stem].split()
+        timed = [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(words)]
+        if Path(wav).stem == "seg_01":
+            timed.append({"w": "coup", "s": len(words) * 0.1 + 0.05, "e": len(words) * 0.1 + 0.3})
+        return timed
+
+    monkeypatch.setattr(voice, "retranscribe", listen)
+    voice.voice_part(eleven_job, 1)
+    quality = common.load_json(eleven_job / "parts" / "01" / "voice-quality.json")
+    assert quality["seg_01"] > eleven.ADDED_WORD_SCORE
+    log = (eleven_job / "logs" / "voice-01.log").read_text(encoding="utf-8")
+    assert "coupe le mot ajouté en fin : coup" in log and "garde un mot ajouté" not in log
+    with wave.open(str(eleven_job / "parts" / "01" / "seg_01.wav"), "rb") as w:
+        length = w.getnframes() / w.getframerate()
+    assert length < 0.7 * len(texts["seg_01"]) * 0.04
+
+
+def test_a_paid_voice_drops_the_hook_and_pitch_files_left_by_the_local_voice(eleven_job, server):
+    out_dir = eleven_job / "parts" / "01"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    common.save_json(out_dir / "voice-hook.json", {"passed": False, "failed": ["fidelity"], "takes": 12})
+    common.save_json(out_dir / "voice-prosody.json", {"seg_00_hook": 1.2, "seg_01": 1.4, "seg_99_outro": 1.9})
+    voice.voice_part(eleven_job, 1)
+    assert not (out_dir / "voice-hook.json").exists()
+    assert not (out_dir / "voice-prosody.json").exists()
+
+
+def test_the_final_question_is_voiced_on_its_own_then_the_subscribe_call(eleven_job, server):
+    plan = common.load_json(eleven_job / "plan.json")
+    plan["parts"][0]["question"] = "Pour toi, qui a gagné ?"
+    common.save_json(eleven_job / "plan.json", plan)
+    voice.voice_part(eleven_job, 1)
+    bodies = [r["body"] for r in server.requests]
+    assert len(bodies) == 8
+    question, call = bodies[-2], bodies[-1]
+    assert question["text"] == "Pour toi, qui a gagné ?" and question["next_text"] == call["text"]
+    assert "?" not in call["text"] and call["previous_request_ids"]
+    assert not (eleven_job / "parts" / "01" / "seg_99_outro.pieces").exists()
+    words = common.load_json(eleven_job / "parts" / "01" / "seg_99_outro.words.json")
+    full = voice.segments(common.load_json(eleven_job / "plan.json"), plan["parts"][0])[-1][1]
+    assert [w["w"] for w in words] == voice.align.script_words(full)
+    assert all(a["s"] <= b["s"] for a, b in zip(words, words[1:]))

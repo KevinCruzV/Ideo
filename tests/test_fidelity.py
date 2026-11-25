@@ -61,3 +61,15 @@ def test_numbers_and_a_changed_word_are_not_added_words():
     assert fidelity.added("Il a 3 enfants", [{"w": "Il a trois enfants"}]) == []
     assert fidelity.added("Il a mangé le gâteau", [{"w": "Il a goûté le gâteau"}]) == []
     assert fidelity.added("Il a mangé", [{"w": "Il a vraiment très mangé"}]) == ["vraiment", "tres"]
+
+
+def timed(text):
+    return [{"w": w, "s": i * 0.1, "e": i * 0.1 + 0.08} for i, w in enumerate(text.split())]
+
+
+def test_trailing_extra_words_are_counted_apart_from_the_words_to_keep():
+    assert fidelity.keep_count("Il a gagné le prix.", timed("Il a gagné le prix. coup")) == 5
+    assert fidelity.keep_count("Il a gagné le prix.", timed("Il a gagné le prix. tropique de")) == 5
+    assert fidelity.keep_count("Il a gagné le prix.", timed("Il a gagné le prix.")) is None
+    assert fidelity.keep_count("Il a gagné le prix.", timed("Il a tout gagné le prix.")) is None
+    assert fidelity.keep_count("Il a gagné 3 prix.", timed("Il a gagné trois prix. coup")) == 5
