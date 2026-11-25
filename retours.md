@@ -11,6 +11,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (d) : voice-hook.json est toujours absent du dossier de la partie, donc aucun critère raté à relire ; la montée finale dépend de la voix locale et ne se juge qu'en écoutant de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 (e) : voice-hook.json retrouvé dans kyutai/part-01 : 12 prises, prise M validée à l'oreille, montée de 12,74 demi-tons (au-dessus de la cible 7 à 10), fin à 0,63 de la vitesse du reste (seuil 0,85), formule 0,44 s, fidélité 1,0. Rien dans le code ne produit ces deux valeurs sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 (f) : rien de nouveau, mêmes critères relus (prise M, montée 12,74 demi-tons), aucun réglage du code ne change la voix sans nouvelle écoute. Non corrigé.
+  Entretien du 2026-11-25 (g) : rien de nouveau, la montée finale dépend de la voix locale et ne se juge qu'en écoutant de nouvelles prises. Non corrigé.
 - [x] [2026-11-22] (9vgV2OuqmII) La voix ElevenLabs a ajouté un mot absent du texte (« préfèrent tout garder », scène 8) sans que le contrôle de fidélité le signale.
 - [x] [2026-11-22] (9vgV2OuqmII) La voix enchaîne sans pause la fin d’une énumération et la phrase suivante (« la grippe. Entre 1500 et 1650 », scène 7).
 - [x] [2026-11-22] (Wj8lKdCGpY0) Les sons de transition sont presque toujours les mêmes d’une scène à l’autre : ça devient redondant, il faut les varier.
@@ -23,6 +24,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (d) : words.json de tous les jobs ne contient que w, s et e par mot (aucun champ de locuteur), donc rien à comparer pour savoir qui parle. Non automatisé.
   Entretien du 2026-11-25 (e) : rien de nouveau, la transcription ne donne toujours aucun locuteur et aucune empreinte de voix n'est disponible sans écouter. Non automatisé.
   Entretien du 2026-11-25 (f) : rien de nouveau, words.json ne contient toujours aucun locuteur. Non automatisé.
+  Entretien du 2026-11-25 (g) : rien de nouveau, aucun locuteur dans la transcription et aucune empreinte de voix sans écouter. Non automatisé.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Les person-cards se ressemblent toutes : il faut des personnages variés, hommes et femmes, et des tenues de métier (policier, pompier, médecin, juge, soldat…).
 - [x] [2026-11-22] (sSm_FQ3lsg4) object-state screen ressemble à une télé : il faut un objet téléphone pour les SMS et messages.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Les transitions visuelles entre les scènes sont toujours les mêmes : il faut plusieurs effets de transition, variés.
@@ -45,7 +47,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (e) : cause trouvée, un même morceau de musique de 20 à 30 s était coupé en bouts de 1 à 5 s dès que son niveau passait un instant sous le seuil (37 repères au lieu de 20 sur ce job). La détection garde maintenant un seuil plus bas une fois le son lancé, relie les pauses d'une seconde et donne des sons jusqu'à 10 s. Une chanson jouée sous la voix du narrateur reste impossible à isoler.
 - [x] [2026-11-25] (XBLXmwxSd-0) La couverture est trop chargée : le titre jaune est redit en noir par l’accroche en bas. Garder un seul gros titre, avec des bandes mêlant le jaune et le noir, sans le doublon.
   Entretien du 2026-11-25 (f) : la couverture n'a plus qu'un titre. L'accroche est coupée au premier « , » ou « : » (une virgule collée à un chiffre ne coupe pas) : la première moitié en gros titre sur bande de couleur, la seconde en plus petit sur une bande noire dessous. Sans coupure, l'accroche entière fait le titre ; sans accroche, le titre de la partie. Le titre de la partie n'est plus affiché sur la couverture, la mention « Partie 1/2 » n'apparaît que si l'accroche ne nomme pas déjà la partie. La photo (ou le dessin) est plus grande et centrée dans l'espace restant.
-- [ ] [2026-11-25] (5H0vaCYKZHU) La recherche de photo doit laisser un vrai temps de recherche avant de conclure qu’aucune photo n’est disponible.
+- [x] [2026-11-25] (5H0vaCYKZHU) La recherche de photo doit laisser un vrai temps de recherche avant de conclure qu’aucune photo n’est disponible.
+  Entretien du 2026-11-25 (g) : cause trouvée, ideo photo ne tentait que le titre exact de la page (en langue de la vidéo puis en anglais) et abandonnait à la première coupure réseau. Il réessaie maintenant trois fois chaque requête (attentes de 2 et 4 s), puis, si le titre exact n'a pas de photo libre, cherche dans Wikipédia (jusqu'à 8 résultats, dans l'ordre, seulement ceux dont le titre contient tous les mots du nom demandé) et prend la première page qui a une photo libre.
 
 ## Défauts détectés
 
@@ -56,6 +59,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (d) : qc relancé sur ce job, une seule alerte (durée de la vidéo 176,0 s au lieu de 185,0 s), aucune alerte scene-figee. Toujours non reproduit.
   Entretien du 2026-11-25 (e) : contrôle des scènes rejoué sans rien écrire : scène 1 de 81 à 307 images, items à 90 et 264, temps fort à 190, plus grand silence visuel 3,3 s, aucune alerte. Toujours non reproduit.
   Entretien du 2026-11-25 (f) : qc relancé sur ce job, une seule alerte (durée 176,0 s au lieu de 185,0 s), aucune alerte scene-figee. Toujours non reproduit.
+  Entretien du 2026-11-25 (g) : le dossier du job n'existe plus dans jobs/, rien à rejouer ; le contrôle (écart maximal entre deux apparitions, seuil 6 s) fonctionne comme prévu sur les tests. Toujours non reproduit.
 - [x] `accroche-imparfaite` (7i3BBkUZ6PQ) Partie 1 : l'accroche reste imparfaite après 12 prises (fin traînante). Relance la voix de cette partie ou reformule l'accroche.
   Entretien du 2026-11-24 : même cause que le défaut signalé sur la montée finale de la voix locale, rien à corriger dans le code sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 : le dossier du job n'a plus de voice-hook.json, impossible de relire les critères ratés ; rien de nouveau à tenter sans nouvelles prises. Non corrigé.
