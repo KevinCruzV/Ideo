@@ -99,7 +99,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (g) : même cause, les scores d'intonation venaient de la voix locale précédente ; qc ne les trouve plus dans ce job et ils sont maintenant effacés quand la voix payante refait un segment.
 - [x] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_03 : la voix s'écarte du texte (ressemblance 0,76). Relance la voix de cette partie ou reformule le texte.
   Entretien du 2026-11-25 (g) : la ressemblance de 0,76 venait du mot « coup » lu en fin de segment ; il est maintenant coupé et la ressemblance recalculée sans lui.
-
+- [ ] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_01 : la voix s'écarte du texte (ressemblance 0,79). Relance la voix de cette partie ou reformule le texte.
 
 ## Dessins manquants
 
