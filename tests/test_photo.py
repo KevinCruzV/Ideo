@@ -18,8 +18,13 @@ class Wiki:
         self.title = "Ada Lovelace"
         self.kind_id = "Q5"
         self.downloads = []
+        self.search = []
+        self.searches = 0
 
     def get_json(self, url):
+        if "wikipedia.org" in url and "gsrsearch" in url:
+            self.searches += 1
+            return {"query": {"pages": self.search}}
         if "wikipedia.org" in url:
             if not self.image:
                 return {"query": {"pages": [{"title": "X", "missing": True}]}}
@@ -35,6 +40,11 @@ class Wiki:
     def download(self, url, dest):
         self.downloads.append(url)
         dest.write_bytes(b"\xff\xd8fake")
+
+
+@pytest.fixture(autouse=True)
+def no_sleep(monkeypatch):
+    monkeypatch.setattr(photo.time, "sleep", lambda seconds: None)
 
 
 @pytest.fixture
@@ -178,6 +188,71 @@ def test_network_failure_is_a_clear_error(job, monkeypatch):
     monkeypatch.setattr(photo, "_get_json", boom)
     with pytest.raises(common.IdeoError, match="injoignable"):
         photo.run(job, "Ada Lovelace")
+
+
+def hit(title, index=1, image="Ada.jpg"):
+    page = {"title": title, "index": index, "pageprops": {"wikibase_item": "Q7"}}
+    if image:
+        page["pageimage"] = image
+    return page
+
+
+def test_a_search_finds_the_page_when_the_exact_title_has_no_image(job, wiki):
+    original = wiki.get_json
+
+    def get_json(url):
+        if "wikipedia.org" in url and "gsrsearch" not in url:
+            return {"query": {"pages": [{"title": "Gérard Mulliez", "missing": True}]}}
+        return original(url)
+
+    wiki.search = [hit("Gérard Mulliez (homonyme)", 2, None), hit("Gérard Mulliez", 1)]
+    photo._get_json = get_json
+    try:
+        line = photo.run(job, "Gérard Mulliez")
+    finally:
+        photo._get_json = original
+    assert line.startswith("OK photo : Gérard Mulliez") and wiki.searches >= 1
+    assert len(wiki.downloads) == 1
+
+
+def test_the_search_never_takes_a_page_with_another_name(job, wiki):
+    wiki.image = False
+    wiki.search = [hit("Albert Einstein")]
+    assert photo.run(job, "Gérard Mulliez") == photo.NONE
+    assert wiki.downloads == [] and wiki.searches >= 1
+
+
+def test_the_search_ranks_results_by_their_position(job, wiki):
+    wiki.image = False
+    wiki.search = [hit("Gérard Mulliez junior", 3, "Junior.jpg"), hit("Gérard Mulliez", 1, "Pere.jpg")]
+    seen = []
+    original = wiki.get_json
+
+    def get_json(url):
+        if "commons.wikimedia.org" in url:
+            seen.append(url)
+        return original(url)
+
+    photo._get_json = get_json
+    try:
+        photo.run(job, "Gérard Mulliez")
+    finally:
+        photo._get_json = original
+    assert "Pere.jpg" in seen[0]
+
+
+def test_a_network_hiccup_is_retried_before_giving_up(job, wiki, monkeypatch):
+    original = wiki.get_json
+    calls = {"n": 0}
+
+    def flaky(url):
+        calls["n"] += 1
+        if calls["n"] <= 2:
+            raise OSError("délai dépassé")
+        return original(url)
+
+    monkeypatch.setattr(photo, "_get_json", flaky)
+    assert photo.run(job, "Ada Lovelace").startswith("OK photo : Ada Lovelace")
 
 
 def test_command_line(monkeypatch):

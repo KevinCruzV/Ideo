@@ -2,6 +2,7 @@ import hashlib
 import html
 import json
 import re
+import time
 import unicodedata
 import urllib.parse
 import urllib.request
@@ -14,6 +15,8 @@ COMMONS = "https://commons.wikimedia.org/w/api.php"
 WIKIDATA = "https://www.wikidata.org/w/api.php"
 AGENT = "ideo-video-tool/1.0"
 TIMEOUT = 30
+ATTEMPTS = 3
+SEARCH_RESULTS = 8
 MAX_BYTES = 12 * 1024 * 1024
 WIDTH = 1200
 HUMAN = "Q5"
@@ -49,7 +52,13 @@ def _download(url: str, dest: Path) -> None:
 
 
 def _query(base: str, **params) -> dict:
-    return _get_json(f"{base}?{urllib.parse.urlencode({**params, 'format': 'json', 'formatversion': '2'})}")
+    url = f"{base}?{urllib.parse.urlencode({**params, 'format': 'json', 'formatversion': '2'})}"
+    for attempt in range(1, ATTEMPTS):
+        try:
+            return _get_json(url)
+        except OSError:
+            time.sleep(2 * attempt)
+    return _get_json(url)
 
 
 def _plain(value: str) -> str:
@@ -87,34 +96,55 @@ def _file_info(filename: str) -> dict | None:
     return infos[0] if infos else None
 
 
+def _search(lang: str, name: str) -> list[dict]:
+    data = _query(API.format(lang=lang), action="query", generator="search", gsrsearch=name, gsrlimit=str(SEARCH_RESULTS),
+                  prop="pageimages|pageprops", piprop="name", ppprop="wikibase_item")
+    pages = [p for p in data.get("query", {}).get("pages", []) if not p.get("missing") and p.get("pageimage")]
+    wanted = _words(name)
+    pages = [p for p in pages if wanted and wanted <= _words(p.get("title", ""))]
+    return sorted(pages, key=lambda p: p.get("index", 0))
+
+
+def _accept(page: dict, name: str) -> dict | None:
+    kind = _kind_of(page.get("pageprops", {}).get("wikibase_item"))
+    if kind is None:
+        return None
+    info = _file_info(page["pageimage"])
+    if not info:
+        return None
+    meta = info.get("extmetadata", {})
+    license_name = _plain(meta.get("LicenseShortName", {}).get("value", ""))
+    if not free_license(license_name):
+        return None
+    mime = info.get("mime", "")
+    url = info.get("thumburl") or info.get("url")
+    if mime not in EXTENSIONS or not url:
+        return None
+    return {
+        "kind": kind,
+        "person": name.strip(),
+        "title": page.get("title", name),
+        "author": _plain(meta.get("Artist", {}).get("value", "")) or "auteur inconnu",
+        "license": license_name,
+        "license_url": _plain(meta.get("LicenseUrl", {}).get("value", "")),
+        "source_url": info.get("descriptionurl") or info.get("url"),
+        "file_url": url,
+        "extension": EXTENSIONS[mime],
+    }
+
+
 def find(name: str, lang: str) -> dict | None:
-    for code in dict.fromkeys([lang, "en"]):
+    codes = list(dict.fromkeys([lang, "en"]))
+    for code in codes:
         page = _page(code, name)
-        kind = _kind_of(page.get("pageprops", {}).get("wikibase_item")) if page is not None else None
-        if kind is None:
-            continue
-        info = _file_info(page["pageimage"])
-        if not info:
-            continue
-        meta = info.get("extmetadata", {})
-        license_name = _plain(meta.get("LicenseShortName", {}).get("value", ""))
-        if not free_license(license_name):
-            continue
-        mime = info.get("mime", "")
-        url = info.get("thumburl") or info.get("url")
-        if mime not in EXTENSIONS or not url:
-            continue
-        return {
-            "kind": kind,
-            "person": name.strip(),
-            "title": page.get("title", name),
-            "author": _plain(meta.get("Artist", {}).get("value", "")) or "auteur inconnu",
-            "license": license_name,
-            "license_url": _plain(meta.get("LicenseUrl", {}).get("value", "")),
-            "source_url": info.get("descriptionurl") or info.get("url"),
-            "file_url": url,
-            "extension": EXTENSIONS[mime],
-        }
+        found = _accept(page, name) if page is not None else None
+        if found:
+            return found
+    for code in codes:
+        for page in _search(code, name):
+            found = _accept(page, name)
+            if found:
+                return found
     return None
 
 
