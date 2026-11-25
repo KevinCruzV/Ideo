@@ -53,14 +53,12 @@ def _download(url: str, dest: Path) -> None:
 
 def _query(base: str, **params) -> dict:
     url = f"{base}?{urllib.parse.urlencode({**params, 'format': 'json', 'formatversion': '2'})}"
-    for attempt in range(ATTEMPTS):
+    for attempt in range(1, ATTEMPTS):
         try:
             return _get_json(url)
         except OSError:
-            if attempt == ATTEMPTS - 1:
-                raise
-            time.sleep(2 * (attempt + 1))
-    raise OSError("recherche impossible")
+            time.sleep(2 * attempt)
+    return _get_json(url)
 
 
 def _plain(value: str) -> str:
