@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artKind, coverAccent, DISK, PHOTO_SCALE, partTag } from "./Cover";
+import { artKind, coverAccent, coverText, DISK, PHOTO_SCALE, partTag, splitHook } from "./Cover";
 import { PHOTO_H } from "./scenes/PhotoFrame";
 import { accentCycle } from "./theme";
 
@@ -31,5 +31,41 @@ describe("cover", () => {
 
   it("scales the photo frame to the height of the disk", () => {
     expect(PHOTO_H * PHOTO_SCALE).toBeCloseTo(DISK, 0);
+  });
+
+  it("splits the hook at its first comma or colon into a big title and a smaller line", () => {
+    expect(splitHook("L'histoire de Marvin Gaye, partie 1 : de l'église à Motown")).toEqual({
+      head: "L'histoire de Marvin Gaye",
+      sub: "partie 1 : de l'église à Motown",
+    });
+    expect(splitHook("Marvin Gaye : la chute, la fin")).toEqual({ head: "Marvin Gaye", sub: "la chute, la fin" });
+  });
+
+  it("keeps a hook without separator whole and never cuts inside a number", () => {
+    expect(splitHook("Dis-moi pourquoi le ciel est bleu ?")).toEqual({ head: "Dis-moi pourquoi le ciel est bleu ?", sub: null });
+    expect(splitHook("Pourquoi 1,5 milliard de personnes dorment mal ?")).toEqual({
+      head: "Pourquoi 1,5 milliard de personnes dorment mal ?",
+      sub: null,
+    });
+    expect(splitHook("Pourquoi, ")).toEqual({ head: "Pourquoi,", sub: null });
+    expect(splitHook("")).toEqual({ head: "", sub: null });
+  });
+
+  it("puts a single big title on the cover, the hook split in two, without repeating the video title", () => {
+    expect(coverText("Marvin Gaye : de l'église à Motown", "L'histoire de Marvin Gaye, partie 1 : de l'église à Motown", 1, 2, "Partie")).toEqual({
+      head: "L'histoire de Marvin Gaye",
+      sub: "partie 1 : de l'église à Motown",
+      tag: null,
+    });
+  });
+
+  it("keeps the part tag when the hook does not name the part, and falls back on the title without hook", () => {
+    expect(coverText("Le ciel", "Dis-moi pourquoi le ciel est bleu ?", 2, 3, "Partie")).toEqual({
+      head: "Dis-moi pourquoi le ciel est bleu ?",
+      sub: null,
+      tag: "Partie 2/3",
+    });
+    expect(coverText("Le ciel", "", 1, 1, "Partie")).toEqual({ head: "Le ciel", sub: null, tag: null });
+    expect(coverText("Le ciel", undefined, 1, 2, "Part")).toEqual({ head: "Le ciel", sub: null, tag: "Part 1/2" });
   });
 });
