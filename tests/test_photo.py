@@ -145,6 +145,76 @@ def test_each_person_keeps_their_own_photo(job, wiki):
     assert len(photo.all_stored(job)) == 2
 
 
+def test_add_manual_stores_a_local_photo_with_its_credit(job, tmp_path):
+    local = tmp_path / "portrait.jpg"
+    local.write_bytes(b"\xff\xd8fake")
+    result = photo.add_manual(job, "Jeanne Martin", local, "Collection personnelle, 2024")
+    assert result.startswith("OK photo : ")
+    stored = photo.all_stored(job)
+    assert len(stored) == 1 and stored[0]["person"] == "Jeanne Martin" and stored[0]["image"] == "photo-jeanne-martin.jpg"
+    assert (job / "photo-jeanne-martin.jpg").read_bytes() == b"\xff\xd8fake"
+    assert stored[0]["kind"] == photo.PERSON
+    lines = photo.credit_lines(job)
+    assert len(lines) == 1 and "Jeanne Martin" in lines[0] and "Collection personnelle, 2024" in lines[0]
+
+
+def test_add_manual_accepts_png_and_webp(job, tmp_path):
+    png = tmp_path / "logo.png"
+    png.write_bytes(b"\x89PNGfake")
+    photo.add_manual(job, "Marque X", png, "site officiel")
+    assert (job / "photo-marque-x.png").exists()
+
+
+def test_add_manual_refuses_an_unknown_extension(job, tmp_path):
+    bad = tmp_path / "scan.pdf"
+    bad.write_bytes(b"%PDF")
+    with pytest.raises(common.IdeoError, match="format"):
+        photo.add_manual(job, "Jeanne Martin", bad, "source")
+
+
+def test_add_manual_refuses_a_missing_file(job, tmp_path):
+    with pytest.raises(common.IdeoError, match="introuvable"):
+        photo.add_manual(job, "Jeanne Martin", tmp_path / "absent.jpg", "source")
+
+
+def test_add_manual_refuses_an_empty_name_or_source(job, tmp_path):
+    local = tmp_path / "portrait.jpg"
+    local.write_bytes(b"\xff\xd8fake")
+    with pytest.raises(common.IdeoError):
+        photo.add_manual(job, "  ", local, "source")
+    with pytest.raises(common.IdeoError):
+        photo.add_manual(job, "Jeanne Martin", local, "  ")
+
+
+def test_add_manual_replaces_the_previous_photo_of_the_same_person(job, tmp_path):
+    first = tmp_path / "a.jpg"
+    first.write_bytes(b"first")
+    second = tmp_path / "b.jpg"
+    second.write_bytes(b"second")
+    photo.add_manual(job, "Jeanne Martin", first, "source 1")
+    photo.add_manual(job, "jeanne martin", second, "source 2")
+    assert len(photo.all_stored(job)) == 1
+    assert (job / "photo-jeanne-martin.jpg").read_bytes() == b"second"
+
+
+def test_add_manual_replaces_its_own_previously_stored_file(job, tmp_path):
+    first = tmp_path / "a.jpg"
+    first.write_bytes(b"first")
+    photo.add_manual(job, "Jeanne Martin", first, "source 1")
+    stored = job / "photo-jeanne-martin.jpg"
+    photo.add_manual(job, "Jeanne Martin", stored, "source 2")
+    assert stored.read_bytes() == b"first"
+    assert photo.all_stored(job)[0]["person"] == "Jeanne Martin"
+
+
+def test_add_manual_refuses_a_dark_plan(job, tmp_path):
+    common.save_json(job / "plan.json", {"mood": "dark", "parts": []})
+    local = tmp_path / "portrait.jpg"
+    local.write_bytes(b"\xff\xd8fake")
+    with pytest.raises(common.IdeoError, match="fait divers"):
+        photo.add_manual(job, "Jeanne Martin", local, "source")
+
+
 def test_every_photo_has_its_credit(job, wiki):
     photo.run(job, "Ada Lovelace")
     wiki.title = "Charles Babbage"
@@ -259,6 +329,13 @@ def test_command_line(monkeypatch):
     assert cli.parse(["photo", "job1", "Ada", "Lovelace"]) == ("photo", "job1", None, {"name": "Ada Lovelace"})
     with pytest.raises(cli.UsageError):
         cli.parse(["photo", "job1"])
+
+
+def test_command_line_for_the_manual_photo(monkeypatch):
+    assert cli.parse(["photo-manuel", "job1", "Jeanne Martin", "portrait.jpg", "Collection personnelle"]) == (
+        "photo-manuel", "job1", None, {"name": "Jeanne Martin", "file": "portrait.jpg", "source": "Collection personnelle"})
+    with pytest.raises(cli.UsageError):
+        cli.parse(["photo-manuel", "job1", "Jeanne Martin", "portrait.jpg"])
 
 
 def person_scene(src, **props):
