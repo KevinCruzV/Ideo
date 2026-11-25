@@ -23,3 +23,10 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Pas plus de deux scènes versus par vidéo : pour comparer, varie avec object-state, icon-grid, stack-list ou shape-diagram.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
 - [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 30 mots en deux scènes.
+- [2026-11-25] Dans une biographie, annonce chaque période de la vie avant de la détailler (« une enfance difficile »), puis raconte les faits dans l’ordre.
+- [2026-11-25] Nomme toujours de quoi on parle : « signer un contrat d’enregistrement », « son premier disque », jamais « il ne peut pas signer » ni « le disque » sans les avoir introduits.
+- [2026-11-25] Quand quelqu’un change de nom ou de vie, dis qui le fait et pourquoi, sinon le spectateur ne comprend pas la raison.
+- [2026-11-25] Dans une liste de faits, chaque fait a de l’impact et dit pourquoi il compte (« son premier grand succès »), pas seulement qu’il arrive.
+- [2026-11-25] Ne remets pas le nom et la photo du personnage principal déjà présenté dans la même vidéo : une fois suffit, et la scène suivante garde le ton de l’émotion.
+- [2026-11-25] Dans une biographie en plusieurs parties, l’accroche de chaque partie annonce la partie (« X, partie 2 : la chute et la fin ») sans révéler la fin.
+- [2026-11-25] Biographie d’un artiste musical : quand le say parle d’une chanson, joue un court extrait avec sfx (lignes [son] de la source), 3 au plus par vidéo.
