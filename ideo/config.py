@@ -169,12 +169,17 @@ def kyutai_hook_padding_bonus() -> float:
     return _load().get("kyutai_hook_padding_bonus", DEFAULT_HOOK_PADDING)
 
 
+def local_voice_enabled() -> bool:
+    # "local_voice": false in config.json opts out of the local voice (never used, never auto-installed).
+    return _load().get("local_voice", True) is not False
+
+
 def kyutai_available() -> bool:
-    return apple_silicon() and kyutai_installed()
+    return local_voice_enabled() and apple_silicon() and kyutai_installed()
 
 
 def local_voice_missing(lang: str) -> bool:
-    if lang not in KYUTAI_LANGS or not apple_silicon() or kyutai_installed():
+    if lang not in KYUTAI_LANGS or not apple_silicon() or kyutai_installed() or not local_voice_enabled():
         return False
     return _load().get("engine") != "edge"
 

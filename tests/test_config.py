@@ -162,6 +162,7 @@ def test_available_also_needs_apple_silicon(monkeypatch, tmp_path):
     env = tmp_path / ".venv-voix2"
     make_env(env)
     monkeypatch.undo()
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))  # undo() dropped the isolation: don't read the real config.json
     monkeypatch.setattr(config, "KYUTAI_PYTHON", env / "bin" / "python")
     monkeypatch.setattr(platform, "machine", lambda: "arm64")
     assert config.kyutai_available() is True
@@ -206,3 +207,14 @@ def test_engine_defaults_to_elevenlabs_when_a_key_is_present(home, monkeypatch):
     assert config.engine() == "elevenlabs"
     write(home, {"engine": "kyutai"})
     assert config.engine() == "kyutai"
+
+
+def test_local_voice_opt_out(home, monkeypatch):
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
+    assert config.local_voice_missing("fr") is True
+    write(home, {"engine": "elevenlabs", "local_voice": False})
+    assert config.local_voice_enabled() is False
+    assert config.local_voice_missing("fr") is False
+    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
+    assert config.kyutai_available() is False

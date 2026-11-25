@@ -5,3 +5,4 @@ numpy>=2,<3
 pytest>=9,<10
 num2words>=0.5.13,<1
 python-dotenv>=1,<2
+av>=14,<17
