@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { coverAccent, partTag } from "./Cover";
+import { artKind, coverAccent, DISK, PHOTO_SCALE, partTag } from "./Cover";
+import { PHOTO_H } from "./scenes/PhotoFrame";
 import { accentCycle } from "./theme";
 
 describe("cover", () => {
@@ -18,5 +19,17 @@ describe("cover", () => {
   it("shows the part tag only for a series", () => {
     expect(partTag("Partie", 1, 1)).toBeNull();
     expect(partTag("Partie", 2, 3)).toBe("Partie 2/3");
+  });
+
+  it("shows the photo of the person when the cover has one, else the picto, else the mascot", () => {
+    expect(artKind("photo.jpg", "sun")).toBe("photo");
+    expect(artKind("photo-marie-curie.png", null)).toBe("photo");
+    expect(artKind(undefined, "sun")).toBe("picto");
+    expect(artKind("../photo.jpg", "sun")).toBe("picto");
+    expect(artKind(null, null)).toBe("mascot");
+  });
+
+  it("scales the photo frame to the height of the disk", () => {
+    expect(PHOTO_H * PHOTO_SCALE).toBeCloseTo(DISK, 0);
   });
 });

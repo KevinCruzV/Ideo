@@ -72,7 +72,24 @@ def cover_picto(part: dict) -> str | None:
     return None
 
 
-def cover_props(plan: dict, part: dict) -> dict:
+def cover_photo(job: Path, part: dict) -> str | None:
+    stored = photo.all_stored(job)
+    if not stored:
+        return None
+    for scene in part.get("scenes") or []:
+        if not isinstance(scene, dict):
+            continue
+        props = scene.get("props")
+        if scene.get("type") != "person-card" or not isinstance(props, dict) or props.get("photo") is not True:
+            continue
+        name = props.get("name")
+        found = photo.match(stored, name) if isinstance(name, str) else None
+        if found:
+            return found["image"]
+    return None
+
+
+def cover_props(plan: dict, part: dict, job: Path | None = None) -> dict:
     lang = plan.get("lang") or "fr"
     props = {
         "title": part["title"],
@@ -85,6 +102,10 @@ def cover_props(plan: dict, part: dict) -> dict:
     }
     if plan.get("mood") == "dark":
         props["mood"] = "dark"
+    if job is not None:
+        picture = cover_photo(Path(job), part)
+        if picture:
+            props["photo"] = picture
     return props
 
 
@@ -94,9 +115,11 @@ def write_cover(job: Path, n: int) -> Path:
     part = next((p for p in plan["parts"] if p["n"] == n), None)
     if part is None:
         raise common.IdeoError(f"partie {n} introuvable dans plan.json")
-    props = cover_props(plan, part)
+    props = cover_props(plan, part, job)
     part_dir = job / "parts" / f"{n:02d}"
     part_dir.mkdir(parents=True, exist_ok=True)
+    if props.get("photo"):
+        shutil.copyfile(job / props["photo"], part_dir / props["photo"])
     props_path = part_dir / "cover.json"
     out = cover_path(job, plan, n)
     if out.exists() and props_path.exists() and common.load_json(props_path) == props:
@@ -108,7 +131,7 @@ def write_cover(job: Path, n: int) -> Path:
     log.parent.mkdir(parents=True, exist_ok=True)
     common.run(
         [_pnpm(), "--dir", str(REPO / "render"), "exec", "remotion", "still", "Cover", str(out.resolve()),
-         f"--props={props_path.resolve()}", f"--frame={COVER_FRAME}"],
+         f"--props={props_path.resolve()}", f"--public-dir={part_dir.resolve()}", f"--frame={COVER_FRAME}"],
         log,
     )
     if not out.exists():

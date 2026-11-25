@@ -49,7 +49,7 @@ Tout est dans `jobs/<id de la vidéo>/` :
 - `plan.json` : le plan (tu peux modifier `hook` et `say` à la main, puis redemander le rendu)
 - `plan.md` : le plan lisible, à relire avant le rendu
 - `out/video.mp4` (ou `out/partie-01.mp4`, ...) : la vidéo
-- `out/cover.png` (ou `out/cover-01.png`, ...) : la couverture (titre, dessin, accroche), à choisir comme couverture au moment de publier
+- `out/cover.png` (ou `out/cover-01.png`, ...) : la couverture (titre, dessin ou photo de la personne principale, accroche), à choisir comme couverture au moment de publier
 - `out/sources.md` : les liens minutés vers les passages de la source
 - `out/description.txt` : la description à publier
 - `logs/progress.log` : l'avancement (`tail -f` pour suivre)
