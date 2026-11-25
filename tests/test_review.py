@@ -252,14 +252,17 @@ def test_icon_grid_without_any_picto_is_flagged_even_with_long_labels(job):
     assert not only(drawn, job, "noms nus")
 
 
-def test_more_than_three_versus_scenes(job):
+def test_more_than_two_versus_scenes(job):
     many = plan_of(*[scene(kind="versus" if i % 2 else "stamp", props={"left": "a", "right": "b"} if i % 2 else {"text": "t"})
                      for i in range(10)])
     found = [c for c, _ in review.coded(many, job, 120) if c == "trop-de-versus"]
     assert found
-    few = plan_of(*[scene(kind="versus" if i % 3 == 1 else "stamp", props={"left": "a", "right": "b"} if i % 3 == 1 else {"text": "t"})
-                    for i in range(9)])
-    assert "trop-de-versus" not in [c for c, _ in review.coded(few, job, 120)]
+    three = plan_of(*[scene(kind="versus" if i % 3 == 1 else "stamp", props={"left": "a", "right": "b"} if i % 3 == 1 else {"text": "t"})
+                      for i in range(9)])
+    assert "trop-de-versus" in [c for c, _ in review.coded(three, job, 120)]
+    two = plan_of(*[scene(kind="versus" if i % 3 == 1 else "stamp", props={"left": "a", "right": "b"} if i % 3 == 1 else {"text": "t"})
+                    for i in range(6)])
+    assert "trop-de-versus" not in [c for c, _ in review.coded(two, job, 120)]
 
 
 def test_counter_without_unit_when_say_talks_percent(job):
@@ -563,3 +566,28 @@ def test_picto_in_icon_grid_cells_counts_and_twice_is_fine(job):
 def test_flags_never_count_as_repeated_pictos(job):
     plan = plan_of(*[scene(props={"text": "x", "picto": "flag:fr"}) for _ in range(4)])
     assert "picto-repete" not in codes_of(plan, job)
+
+
+def test_person_card_introduced_late(job):
+    late = scene(kind="person-card", say="Dans une bibliothèque de Londres, Karl Marx étudie des rapports sur le travail.",
+                 props={"name": "Karl Marx"}, items=[{"el": "avatar", "on": "Karl"}, {"el": "name", "on": "Marx"}])
+    found = [c for c, _ in review.coded(plan_of(late), job, 120) if c == "carte-nom-tardif"]
+    assert found
+    assert "Commence le « say » par le nom" in only(plan_of(late), job, "Commence le « say » par le nom")[0]
+    early = scene(kind="person-card", say="Karl Marx étudie des rapports dans une bibliothèque de Londres.",
+                  props={"name": "Karl Marx"}, items=[{"el": "avatar", "on": "Karl"}, {"el": "name", "on": "Marx"}])
+    assert "carte-nom-tardif" not in [c for c, _ in review.coded(plan_of(early), job, 120)]
+    no_items = scene(kind="person-card", say="Dans une bibliothèque de Londres, Karl Marx étudie des rapports.", props={"name": "Karl Marx"})
+    assert "carte-nom-tardif" not in [c for c, _ in review.coded(plan_of(no_items), job, 120)]
+
+
+def test_counter_number_anchored_late(job):
+    late = scene(kind="counter", say=LONG_SAY_TEXT, props={"to": 20}, items=[{"el": "to", "on": "monde"}])
+    assert "compteur-tardif" in [c for c, _ in review.coded(plan_of(late), job, 120)]
+    assert only(plan_of(late), job, "Ancre « to » sur un des premiers mots")
+    early = scene(kind="counter", say=LONG_SAY_TEXT, props={"to": 20}, items=[{"el": "to", "on": "premier"}, {"el": "label", "on": "monde"}])
+    assert "compteur-tardif" not in [c for c, _ in review.coded(plan_of(early), job, 120)]
+    no_anchor = scene(kind="counter", say=LONG_SAY_TEXT, props={"to": 20})
+    assert "compteur-tardif" not in [c for c, _ in review.coded(plan_of(no_anchor), job, 120)]
+    other = scene(kind="stamp", say=LONG_SAY_TEXT, items=[{"el": "text", "on": "monde"}])
+    assert "compteur-tardif" not in [c for c, _ in review.coded(plan_of(other), job, 120)]

@@ -13,7 +13,9 @@ DRAWING_TYPES = frozenset({"object-state", "versus", "shape-diagram", "timeline"
 LIST_FIELDS = {"fact-chips": "chips", "stack-list": "items"}
 LONG_SAY = 30
 BARE_WORDS = 3
-MAX_VERSUS = 3
+MAX_VERSUS = 2
+PERSON_NAME_WORDS = 5
+COUNTER_EARLY_SHARE = 3
 MAX_SAME_PICTO = 2
 APPEARANCE = ("hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin", "gender", "age", "job")
 MIN_CITED = 3
@@ -214,6 +216,19 @@ def _say(scene: dict) -> str:
     return say if isinstance(say, str) else ""
 
 
+def _anchor_index(scene: dict, el: str) -> int | None:
+    items = scene.get("items")
+    if not isinstance(items, list):
+        return None
+    words = _say(scene).split()
+    for item in items:
+        if isinstance(item, dict) and item.get("el") == el:
+            anchor = textmatch.anchor_text(item.get("on"))
+            span = textmatch.find_span(words, anchor) if anchor else None
+            return span[0] if span else None
+    return None
+
+
 def _has_date(scene: dict) -> bool:
     props = scene.get("props") or {}
     if props.get("kicker"):
@@ -303,6 +318,21 @@ def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
             out.append((2, *_line("items-groupes-debut", _scene_where(n, i),
                                   "éléments groupés au début : tous les « items » sont ancrés dans la première moitié du « say », la fin de la scène reste figée",
                                   "Ancre le dernier élément sur un mot de la dernière phrase")))
+        if kind == "person-card":
+            for el in ("avatar", "name"):
+                at = _anchor_index(scene, el)
+                if at is not None and at >= PERSON_NAME_WORDS:
+                    out.append((2, *_line("carte-nom-tardif", _scene_where(n, i),
+                                          f"« {el} » n'apparaît qu'au mot {at + 1} du « say » : la carte reste incomplète pendant que le nom se fait attendre",
+                                          "Commence le « say » par le nom de la personne et ancre l'avatar sur ses premiers mots")))
+                    break
+        if kind == "counter":
+            at = _anchor_index(scene, "to")
+            total = len(say.split())
+            if at is not None and at * COUNTER_EARLY_SHARE >= total:
+                out.append((2, *_line("compteur-tardif", _scene_where(n, i),
+                                      f"le chiffre du compteur n'apparaît qu'au mot {at + 1} sur {total}, le cadre reste vide jusque-là",
+                                      "Ancre « to » sur un des premiers mots du « say »")))
         if kind == "shape-diagram" and props.get("shape") == "bar" and not props.get("unit"):
             out.append((2, *_line("barres-sans-unite", _scene_where(n, i), "un diagramme en barres sans unité",
                                  "Ajoute « unit » (par exemple « Md$ » ou « % ») pour que les valeurs aient un sens")))

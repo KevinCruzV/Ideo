@@ -27,7 +27,7 @@ export const formatCount = (value: number, places: number): string =>
 export const COUNTER_VARIANTS = 3;
 
 export const numberIn = (frame: number): number =>
-  interpolate(frame, [-6, 0], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  interpolate(frame, [-3, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
 export const Counter: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const frame = useCurrentFrame();
