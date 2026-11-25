@@ -10,7 +10,7 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-22] Entre deux sujets, fais une vraie transition, chaque fois différente : une question (« Et la Chine, alors ? »), une conséquence (« Résultat : ») ou un contraste (« Pendant ce temps, »).
 - [2026-11-22] Histoire, fait divers, horreur ou biographie : l’accroche n’est pas une question mais « Voici l’histoire de… » ou une phrase choc pleine : « Il a fait croire à tout un pays qu’il était innocent ».
 - [2026-11-22] Fait divers, horreur, catastrophe : ton grave du début à la fin, jamais joyeux, pas de mascotte contente ni de formule légère.
-- [2026-11-22] Histoire, fait divers, horreur ou biographie : découpe en chapitres, chacun ouvert par une scène dont le kicker donne le nom du chapitre, et l’année si le say en cite une (« L’enfance, 1867 »).
+- [2026-11-22] Histoire, fait divers, horreur ou biographie : chaque chapitre s’ouvre sur une scène dont le say l’annonce (« une enfance difficile ») et le kicker le nomme avec l’année (« L’enfance, 1867 »).
 - [2026-11-22] Une histoire ne se condense pas : garde tous les moments qui font le fil, jusqu’à 300 s ou en plusieurs parties s’il le faut.
 - [2026-11-22] Pas de scène quote quand la phrase est lue par le présentateur de la vidéo : seule la vraie voix de la personne citée compte.
 - [2026-11-22] Le dessin montre exactement l’objet dont parle la phrase : un SMS ou un message, c’est un téléphone, jamais un écran de télé.
@@ -23,9 +23,8 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Pas plus de deux scènes versus par vidéo : pour comparer, varie avec object-state, icon-grid, stack-list ou shape-diagram.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
 - [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 30 mots en deux scènes.
-- [2026-11-25] Dans une biographie, annonce chaque période de la vie avant de la détailler (« une enfance difficile »), puis raconte les faits dans l’ordre.
 - [2026-11-25] Nomme toujours de quoi on parle : « signer un contrat d’enregistrement », « son premier disque », jamais « il ne peut pas signer » ni « le disque » sans les avoir introduits.
-- [2026-11-25] Quand quelqu’un change de nom ou de vie, dis qui le fait et pourquoi, sinon le spectateur ne comprend pas la raison.
+- [2026-11-25] Quand quelqu’un change de nom ou de vie, dis qui le décide et pourquoi : « son label le rebaptise pour sonner plus américain », pas seulement « il prend un nouveau nom ».
 - [2026-11-25] Dans une liste de faits, chaque fait a de l’impact et dit pourquoi il compte (« son premier grand succès »), pas seulement qu’il arrive.
 - [2026-11-25] Ne remets pas le nom et la photo du personnage principal déjà présenté dans la même vidéo : une fois suffit, et la scène suivante garde le ton de l’émotion.
 - [2026-11-25] Dans une biographie en plusieurs parties, l’accroche de chaque partie annonce la partie (« X, partie 2 : la chute et la fin ») sans révéler la fin.
