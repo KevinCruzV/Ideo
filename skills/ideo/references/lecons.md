@@ -21,3 +21,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Biographie d’un artiste musical : quand le say parle d’une chanson, joue un court extrait avec sfx (lignes [son] de la source), 3 au plus par vidéo.
 - [2026-11-25] Biographie d’un artiste musical : chaque chanson ou disque important a sa propre scène, avec le dessin d’un disque (vinyl), son titre et sa date, avant d’en raconter le succès.
 - [2026-11-25] Ne choisis jamais un picto métaphorique qui ne montre pas l’objet exact (ex. satellite pour une galaxie de boutiques) : change de type de scène ou note-le dans wishes.
+- [2026-11-25] Quand l’accroche pose un mystère, la question au spectateur le relance au lieu de demander un simple avis : « Pour toi, qui a vraiment fait tomber X ? ».
