@@ -71,6 +71,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (g) : cause trouvée dans le resserrage des silences : la fin d'un segment était coupée au dernier instant plus fort que -32 dB (30 ms gardés), ce qui rognait la queue douce du dernier mot ; la fin des segments de ce job tombait à -33 dB, en plein mot. Le début et la fin gardent maintenant tout ce qui dépasse -50 dB. Les voix déjà générées de ce job sont à relancer pour en profiter.
 - [x] [2026-11-25] (bk6QIRZjMjA) La question finale au spectateur est lue d’un ton plat, sans montée sur le dernier mot (« Nvidia ») : elle doit sonner comme une vraie question, avec du mystère.
   Entretien du 2026-11-25 (g) : la question était lue dans le même appel que l'appel à s'abonner, donc suivie d'une autre phrase. Avec ElevenLabs elle est maintenant synthétisée seule (appel à s'abonner en next_text), puis les deux audios sont recollés et les repères décalés. Le ton réel reste à écouter sur la prochaine vidéo.
+- [ ] [2026-11-25] (bk6QIRZjMjA) Depuis la correction des fins de mots (seuil -50 dB), on entend la respiration de la voix ElevenLabs entre les phrases ; c’est pire qu’avant, surtout avec George en stabilité 0,30.
 
 ## Défauts détectés
 
