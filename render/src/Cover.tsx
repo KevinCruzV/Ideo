@@ -6,17 +6,22 @@ import { MascotHead } from "./mascot/Character";
 import { PaperStrip, stripHeight } from "./paper/PaperStrip";
 import { hasVisual, PictoArt } from "./pictos/Picto";
 import { Backdrop } from "./scenes/Backdrop";
-import { photoSource } from "./scenes/coerce";
+import { initials, photoSource, str } from "./scenes/coerce";
 import { PHOTO_H, PHOTO_W, PhotoFrame } from "./scenes/PhotoFrame";
+import { lookOf } from "./scenes/personLook";
+import { bustHeight, CLOSE_VIEW, PersonBust } from "./scenes/PersonBust";
 import { Strips, stripsHeight } from "./scenes/Strips";
 import { fitText } from "./text/fit";
-import { AccentColor, accentCycle, content, layout, moodOf, setMood } from "./theme";
+import { AccentColor, accentCycle, colors, content, layout, moodOf, onPaper, setMood } from "./theme";
+
+export type CoverLook = Record<string, unknown> & { name?: string };
 
 export type CoverProps = {
   title: string;
   hook?: string;
   picto?: string | null;
   photo?: string | null;
+  look?: CoverLook | null;
   watermark: string;
   part: number;
   total: number;
@@ -35,12 +40,17 @@ export const PHOTO_SCALE = DISK / PHOTO_H;
 export const TAG_SIZE = 52;
 export const TAG_GAP = 28;
 
-export type ArtKind = "photo" | "picto" | "mascot";
+export type ArtKind = "photo" | "bust" | "picto" | "mascot";
 
-export const artKind = (photo: unknown, picto: string | null | undefined): ArtKind => {
+export const artKind = (photo: unknown, picto: string | null | undefined, look?: CoverLook | null): ArtKind => {
   if (photoSource(photo)) return "photo";
+  if (look) return "bust";
   return hasVisual(picto) ? "picto" : "mascot";
 };
+
+const BUST_W = 420;
+const BUST_H = bustHeight(BUST_W, CLOSE_VIEW);
+const RING_SIZE = 150;
 
 export const coverAccent = (title: string): AccentColor => {
   let sum = 0;
@@ -76,13 +86,15 @@ export const coverText = (
   return { head: head || title, sub, tag: namesPart(hook ?? "", label, part) ? null : partTag(label, part, total) };
 };
 
-export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, watermark, part, total, label, mood }) => {
+export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, watermark, part, total, label, mood }) => {
   setMood(moodOf(mood));
   const accent = coverAccent(title);
   const text = coverText(title, hook, part, total, label);
   const head = fitText(text.head, { maxWidth: content.width - 40, maxLines: 3, max: 112, min: 68 });
   const sub = fitText(text.sub ?? "", { maxWidth: content.width - 40, maxLines: 2, max: 54, min: 38, prefer: true });
-  const art = artKind(photo, picto);
+  const art = artKind(photo, picto, look);
+  const bustLook = React.useMemo(() => lookOf(look ?? {}), [look]);
+  const ring = accentCycle[(accentCycle.indexOf(accent) + 1) % accentCycle.length];
   const tagSpace = text.tag ? stripHeight(TAG_SIZE) + TAG_GAP : 0;
   const subSpace = sub.lines.length > 0 ? SUB_GAP + stripsHeight(sub.lines.length, sub.size) : 0;
   const titleBottom = TITLE_TOP + tagSpace + stripsHeight(head.lines.length, head.size) + subSpace;
@@ -113,6 +125,24 @@ export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, waterma
         >
           <PhotoFrame src={photo as string} seed="cover-photo" />
         </div>
+      ) : art === "bust" ? (
+        <>
+          <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />
+          <Backdrop color={accent} size={RING_SIZE} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.55} cy={artCy - DISK / 2 + RING_SIZE * 0.45} seed="cover-ring-a" turn={5} />
+          <Backdrop color={ring} size={RING_SIZE * 0.75} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.45} cy={artCy + DISK / 2 - RING_SIZE * 0.5} seed="cover-ring-b" turn={-5} />
+          <div style={{ position: "absolute", left: layout.width / 2 - BUST_W / 2, top: artCy - BUST_H / 2 }}>
+            <PersonBust
+              width={BUST_W}
+              initials={initials(str(look?.name, "?"))}
+              badge={accent === "yellow" ? colors.red : colors.yellow}
+              badgeInk={onPaper[accent === "yellow" ? "red" : "yellow"]}
+              look={bustLook}
+              accent={accent}
+              view={CLOSE_VIEW}
+              seed="cover-bust"
+            />
+          </div>
+        </>
       ) : (
         <>
           <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />
