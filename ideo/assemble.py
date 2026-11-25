@@ -98,7 +98,7 @@ def _voice_pcm(out_dir: Path, name: str) -> bytes:
         return pcm
     if not timed:
         return pcm
-    gated = pacing.gate_breaths(np.frombuffer(pcm, dtype="<i2"), timed)
+    gated = pacing.gate_breaths(pacing.drop_tail_fragment(np.frombuffer(pcm, dtype="<i2")), timed)
     return gated.astype("<i2").tobytes()
 
 

@@ -17,6 +17,9 @@ BREATH_TAIL = 0.15
 BREATH_LEAD = 0.08
 BREATH_MIN_GAP = 0.25
 BREATH_FADE = 0.01
+FRAGMENT_DB = -60.0
+FRAGMENT_MAX = 0.25
+FRAGMENT_GAP = 0.20
 
 
 def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
@@ -117,6 +120,29 @@ def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Cal
         return (x + sum(length for at, length in inserts if x >= at)) / RATE
 
     return np.concatenate(parts), mapping
+
+
+def drop_tail_fragment(pcm: np.ndarray) -> np.ndarray:
+    sound = _loud(pcm, FRAGMENT_DB)
+    if not sound.any():
+        return pcm
+    last = len(sound) - 1 - int(np.argmax(sound[::-1]))
+    longest = round(FRAGMENT_MAX * RATE / FRAME)
+    needed = round(FRAGMENT_GAP * RATE / FRAME)
+    i = last
+    while True:
+        while i > 0 and sound[i - 1]:
+            i -= 1
+        gap_end = i
+        while i > 0 and not sound[i - 1]:
+            i -= 1
+        if i == 0 or last + 1 - gap_end > longest:
+            return pcm
+        if gap_end - i >= needed:
+            break
+    out = pcm.copy()
+    out[gap_end * FRAME:] = 0
+    return out
 
 
 def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
