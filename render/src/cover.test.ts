@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artKind, coverAccent, coverText, DISK, PHOTO_SCALE, partTag, splitHook } from "./Cover";
+import { artKind, coverAccent, coverText, DISK, PHOTO_SCALE, partTag, showsRings, splitHook } from "./Cover";
 import { PHOTO_H } from "./scenes/PhotoFrame";
 import { accentCycle } from "./theme";
 
@@ -38,6 +38,13 @@ describe("cover", () => {
 
   it("scales the photo frame to the height of the disk", () => {
     expect(PHOTO_H * PHOTO_SCALE).toBeCloseTo(DISK, 0);
+  });
+
+  it("puts colored rings behind a real photo or a bust, never behind a picto or the mascot", () => {
+    expect(showsRings("photo")).toBe(true);
+    expect(showsRings("bust")).toBe(true);
+    expect(showsRings("picto")).toBe(false);
+    expect(showsRings("mascot")).toBe(false);
   });
 
   it("splits the hook at its first comma or colon into a big title and a smaller line", () => {

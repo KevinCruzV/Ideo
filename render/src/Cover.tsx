@@ -48,6 +48,15 @@ export const artKind = (photo: unknown, picto: string | null | undefined, look?:
   return hasVisual(picto) ? "picto" : "mascot";
 };
 
+export const showsRings = (art: ArtKind): boolean => art === "photo" || art === "bust";
+
+const Rings: React.FC<{ accent: AccentColor; ring: AccentColor; artCy: number }> = ({ accent, ring, artCy }) => (
+  <>
+    <Backdrop color={accent} size={RING_SIZE} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.55} cy={artCy - DISK / 2 + RING_SIZE * 0.45} seed="cover-ring-a" turn={5} />
+    <Backdrop color={ring} size={RING_SIZE * 0.75} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.45} cy={artCy + DISK / 2 - RING_SIZE * 0.5} seed="cover-ring-b" turn={-5} />
+  </>
+);
+
 const BUST_W = 420;
 const BUST_H = bustHeight(BUST_W, CLOSE_VIEW);
 const RING_SIZE = 150;
@@ -116,23 +125,25 @@ export const Cover: React.FC<CoverProps> =({ title, hook, picto, photo, look, wa
         ) : null}
       </div>
       {art === "photo" ? (
-        <div
-          style={{
-            position: "absolute",
-            left: layout.width / 2 - PHOTO_W / 2,
-            top: artCy - PHOTO_H / 2,
-            width: PHOTO_W,
-            height: PHOTO_H,
-            transform: `rotate(-2deg) scale(${PHOTO_SCALE})`,
-          }}
-        >
-          <PhotoFrame src={photo as string} seed="cover-photo" />
-        </div>
+        <>
+          <Rings accent={accent} ring={ring} artCy={artCy} />
+          <div
+            style={{
+              position: "absolute",
+              left: layout.width / 2 - PHOTO_W / 2,
+              top: artCy - PHOTO_H / 2,
+              width: PHOTO_W,
+              height: PHOTO_H,
+              transform: `rotate(-2deg) scale(${PHOTO_SCALE})`,
+            }}
+          >
+            <PhotoFrame src={photo as string} seed="cover-photo" />
+          </div>
+        </>
       ) : art === "bust" ? (
         <>
           <Backdrop color="cream" size={DISK} cx={layout.width / 2} cy={artCy} seed="cover-disk" turn={0} />
-          <Backdrop color={accent} size={RING_SIZE} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.55} cy={artCy - DISK / 2 + RING_SIZE * 0.45} seed="cover-ring-a" turn={5} />
-          <Backdrop color={ring} size={RING_SIZE * 0.75} cx={layout.width / 2 - DISK / 2 + RING_SIZE * 0.45} cy={artCy + DISK / 2 - RING_SIZE * 0.5} seed="cover-ring-b" turn={-5} />
+          <Rings accent={accent} ring={ring} artCy={artCy} />
           <div style={{ position: "absolute", left: layout.width / 2 - BUST_W / 2, top: artCy - BUST_H / 2 }}>
             <PersonBust
               width={BUST_W}
