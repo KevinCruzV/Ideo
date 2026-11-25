@@ -189,7 +189,7 @@ La citation devient `"text": "Le ciel n'est pas peint en bleu, c'est de la lumi�
 
 Pour que la vidéo n'ait pas l'air générée :
 - Jamais deux fois de suite le même type de scène.
-- `key-title` : 1 fois par acte au plus. `mascot` : 4 fois au plus par vidéo, jamais deux de suite.
+- `key-title` : 1 fois par acte au plus. `mascot` : 4 fois au plus par vidéo, jamais deux de suite. `versus` : 2 fois au plus par vidéo.
 - Au moins une scène sur deux montre un dessin : un `picto`, un `object-state`, un `versus`, un `shape-diagram`, un `timeline`, une `map`, un `body` ou la `mascot`. Choisis le `picto` qui montre la chose dont parle la scène, pas un symbole vague.
 - Dès que le sujet touche au corps (santé, sommeil, sport, posture, organe) : des scènes `body`, avec la posture dont on parle et les zones concernées en `marks`. Dès qu'un lieu compte (un pays, un trajet, une frontière) : une `map`.
 - Dès qu'il y a deux camps, deux époques ou un avant et un après : `versus` ou `object-state`. Dès qu'il y a trois dates ou plus : `timeline`. Dès qu'il y a deux nombres à comparer : `shape-diagram` avec `unit`.
