@@ -120,9 +120,13 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [ ] [2026-11-26] (OscY9rX9O0A) Le filigrane est collé au titre en haut de l’écran : il faut un espace net entre les deux.
 - [ ] [2026-11-26] (OscY9rX9O0A) Le plan ne sait pas quels dessins ont servi dans les vidéos précédentes : la balance et les mêmes objets reviennent d’une vidéo à l’autre alors que la bibliothèque est grande.
 - [ ] [2026-11-26] (OscY9rX9O0A) Le type object-state n’a que 6 objets (écran, tableau, bocal, porte, balance, téléphone) : ajoute d’autres objets qui changent d’état pour varier les vidéos.
+  Entretien du 2026-11-26 (b) : demande de fonctionnalité (nouveaux objets dessinés et animés dans ObjectState.tsx, schéma, guide et contrôles), trop large pour cet entretien. Reporté au prochain.
 - [ ] [2026-11-26] (pmtWyMGtxvE) Pauses bizarres au milieu de la voix ElevenLabs finale à 2:03, 2:24, 2:28, 2:41 et 2:50.
+  Entretien du 2026-11-26 (b) : les cinq repères (2:03, 2:24, 2:28, 2:41, 2:50) tombent sur des débuts de scène (blanc de 0,5 s, 0,9 s en changement d'acte) ou sur des fins de phrase (0,45 s), toutes des pauses voulues par assemble et pacing ; aucun trou anormal dans les mots ni dans le son. Sans écoute, pas de cause trouvée. Non corrigé.
 - [ ] [2026-11-26] (pmtWyMGtxvE) Après la question de fin, l’appel à s’abonner enchaîne sans aucun blanc : il faut une courte pause pour laisser digérer la question.
+  Entretien du 2026-11-26 (b) : cause exacte non reproduite (le contrôle pause_sentences donne bien 0,45 s sur des données simulées, y compris avec un « ? » entendu comme mot à part). Mesure sur le son du job : 0,28 s de blanc entre « règles ? » et « Si ça t'a plu ». La question et l'appel sont synthétisés séparément puis collés : _join_wavs pose maintenant un blanc fixe de 0,35 s entre les deux morceaux (JOIN_PAUSE). À vérifier à l'écoute sur la prochaine vidéo. Non coché.
 - [ ] [2026-11-26] (pmtWyMGtxvE) La voix ElevenLabs respecte moins bien la ponctuation que la voix Edge : les pauses aux virgules et aux points sont moins marquées.
+  Entretien du 2026-11-26 (b) : pacing.pause_sentences ajoute un blanc aux fins de phrase (0,45 s) et aux deux-points, volontairement pas aux virgules (deux tests le fixent, après le retour « trop IA »). Ajouter un blanc aux virgules reviendrait sur cette décision sans pouvoir écouter. Non corrigé.
 
 ## Défauts détectés
 
