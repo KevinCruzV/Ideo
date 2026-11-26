@@ -453,6 +453,7 @@ def _write_md(job: Path, plan: dict, clips_by_part: list, stats: dict) -> None:
 
 MOODS = ("dark",)
 PAPERS = ("creme", "kraft", "journal", "millimetre", "album")
+TONS = ("dynamique", "pose")
 
 
 def _check_mood(plan: dict, errors: list[str]) -> None:
@@ -467,6 +468,11 @@ WISH_CAP = 40
 def _check_paper(plan: dict, errors: list[str]) -> None:
     if "paper" in plan and plan["paper"] not in PAPERS:
         errors.append("Plan : « paper » doit valoir creme, kraft, journal, millimetre ou album, ou être absent.")
+
+
+def _check_ton(plan: dict, errors: list[str]) -> None:
+    if "ton" in plan and plan["ton"] not in TONS:
+        errors.append("Plan : « ton » doit valoir dynamique ou pose, ou être absent.")
 
 
 def _check_wishes(plan: dict, errors: list[str]) -> None:
@@ -518,6 +524,7 @@ def _analyze(job: Path) -> tuple[list[str], dict | None]:
     _check_wishes(plan, errors)
     _check_mood(plan, errors)
     _check_paper(plan, errors)
+    _check_ton(plan, errors)
     parts = plan.get("parts")
     if not isinstance(parts, list):
         errors.append("Plan : « parts » doit être une liste de parties.")

@@ -130,3 +130,18 @@ def test_a_big_paid_redo_waits_for_payer(job_with_plan, monkeypatch):
 
 def test_cli_produce_accepts_payer():
     assert cli.parse(["produce", "job", "--payer"])[3].get("payer") is True
+
+
+def test_la_voix_finale_suit_le_ton_du_plan(job_with_plan, monkeypatch):
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "cle-de-test")
+    write({"engine": "elevenlabs", "elevenlabs_voice_id": "manon", "elevenlabs_stability": 0.3,
+           "elevenlabs_pose": {"voice_id": "nicolas", "stability": 0.45, "style": 0.3, "speed": 1.0}})
+    config.mark_final(job_with_plan)
+    assert config.final_info(job_with_plan)["voice"] == "manon"
+    assert config.final_info(job_with_plan)["settings"]["stability"] == 0.3
+    plan = common.load_json(job_with_plan / "plan.json")
+    plan["ton"] = "pose"
+    common.save_json(job_with_plan / "plan.json", plan)
+    config.mark_final(job_with_plan)
+    info = config.final_info(job_with_plan)
+    assert info["voice"] == "nicolas" and info["settings"]["stability"] == 0.45 and info["settings"]["speed"] == 1.0

@@ -584,3 +584,14 @@ def test_paper_valide_est_accepte(job_with_fixtures):
         plan["paper"] = paper
         common.save_json(job_with_fixtures / "plan.json", plan)
         assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_ton_inconnu_est_refuse(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["ton"] = "pose"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    plan["ton"] = "calme"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert any("« ton »" in e for e in plan_check.check_plan(job_with_fixtures))

@@ -224,22 +224,34 @@ def _save_final(job: Path, data: dict) -> None:
     (Path(job) / FINAL_FILE).write_text(json.dumps(data, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def _current_voice() -> dict:
-    return {"voice": eleven_voice_id(), "model": eleven_model(), "settings": eleven_settings()}
+def _plan_ton(job: Path) -> str | None:
+    try:
+        return json.loads((Path(job) / "plan.json").read_text(encoding="utf-8")).get("ton")
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def _current_voice(job: Path | None = None) -> dict:
+    voice = {"voice": eleven_voice_id(), "model": eleven_model(), "settings": eleven_settings()}
+    pose = _load().get("elevenlabs_pose")
+    if job is not None and isinstance(pose, dict) and pose.get("voice_id") and _plan_ton(job) == "pose":
+        voice["voice"] = pose["voice_id"]
+        voice["settings"] = {key: pose.get(key, default) for key, default in ELEVEN_DEFAULTS.items()}
+    return voice
 
 
 def mark_final(job: Path) -> None:
     engine_name = final_engine()
     data = {"engine": engine_name}
     if engine_name == "elevenlabs":
-        data.update(_current_voice())
+        data.update(_current_voice(job))
     _save_final(job, data)
 
 
 def lock_final_voice(job: Path) -> None:
     data = final_info(job)
     if data.get("engine") == "elevenlabs" and not data.get("voice"):
-        data.update(_current_voice())
+        data.update(_current_voice(job))
         _save_final(job, data)
 
 
