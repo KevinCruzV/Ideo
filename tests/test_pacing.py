@@ -246,3 +246,7 @@ def test_un_deux_points_deja_suivi_d_une_pause_ne_bouge_pas():
     heard = words_of(("Le", 0.0, 1.0), ("but :", 1.0, 2.0), ("échapper", 2.5, 3.5))
     out, _ = pacing.pause_sentences(pcm, heard)
     assert len(out) == len(pcm)
+
+
+def test_la_respiration_apres_et_toi_reste_courte():
+    assert pacing.LEAD_GAP <= 0.12
