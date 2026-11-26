@@ -1,19 +1,23 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { cutEdge } from "../paper/motion";
-import { accentAt, AccentSpan, colors, content, dimmed, fonts, layout, onPaper, shade, SHADOW_X, SHADOW_Y } from "../theme";
+import { colors, content, fonts, layout, shade } from "../theme";
 import { textWidth } from "../text/fit";
 import { str } from "../scenes/coerce";
 import { CaptionGroup } from "../types";
 
-export const CAPTION_MAX = 70;
-export const CAPTION_MIN = 46;
-export const CAPTION_ONE_LINE_MIN = 56;
-export const CAPTION_ROW = content.width;
-export const CAPTION_LINE = 1.2;
-export const CAPTION_TWO_LINE_MAX = 58;
-const PAD = 0.2;
+export const CAPTION_MAX = 104;
+export const CAPTION_MIN = 60;
+export const CAPTION_ONE_LINE_MIN = 80;
+export const CAPTION_ROW = content.width - 60;
+export const CAPTION_LINE = 1.15;
+export const CAPTION_TWO_LINE_MAX = 84;
+const PAD = 0.14;
 const GAP = 0.04;
+const LABEL_PAD_Y = 0.14;
+const LABEL_PAD_X = 0.3;
+const LABEL_SHADOW = 9;
+export const CAPTION_AHEAD = 0.45;
 
 export const captionWord = (word: string): string => str(word);
 
@@ -95,14 +99,17 @@ export const currentWordIndex = (group: CaptionGroup, frame: number): number => 
   return index;
 };
 
-export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[] }> = ({ groups, accents = [] }) => {
+export const captionTilt = (from: number): number => (Math.floor(from / 7) % 2 === 0 ? -2 : 2);
+
+export const Captions: React.FC<{ groups: CaptionGroup[] }> = ({ groups }) => {
   const frame = useCurrentFrame();
   const group = groups.find((g) => frame >= g.from && frame < g.to);
   if (!group) return null;
   const words = captionTokens(group.words);
   const active = currentWordIndex({ ...group, words }, frame);
-  const accent = accentAt(accents, frame);
   const { size, lines } = captionLayout(words.map((w) => w.w));
+  const pop = interpolate(frame - group.from, [0, 4], [0.86, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const edge = cutEdge(`caption-${group.from}`, 0.8);
   let index = 0;
 
   return (
@@ -115,44 +122,46 @@ export const Captions: React.FC<{ groups: CaptionGroup[]; accents?: AccentSpan[]
         transform: `scale(${layout.safeScale})`,
         transformOrigin: "50% 0",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontFamily: fonts.text,
-        fontWeight: 800,
-        fontSize: size,
-        lineHeight: CAPTION_LINE,
+        justifyContent: "center",
       }}
     >
-      {lines.map((line, li) => (
-        <div key={`line-${li}`} style={{ display: "flex", gap: size * GAP, whiteSpace: "nowrap" }}>
-          {line.map((text) => {
-            const i = index++;
-            const word = words[i];
-            const isActive = i === active;
-            const pop = isActive ? interpolate(frame - word.from, [0, 3], [0.9, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : 1;
-            const edge = cutEdge(`${group.from}-${i}`, 1.6);
-            return (
-              <span key={`${group.from}-${i}`} style={{ position: "relative", display: "inline-block", padding: `0 ${size * PAD}px`, transform: `scale(${pop})` }}>
-                {isActive ? (
-                  <span style={{ position: "absolute", inset: `${size * 0.04}px 0 ${size * 0.02}px`, transform: `rotate(${i % 2 ? 1.2 : -1.2}deg)` }}>
-                    <span style={{ position: "absolute", inset: 0, transform: `translate(${SHADOW_X}px, ${SHADOW_Y}px)`, background: shade, clipPath: edge }} />
-                    <span style={{ position: "absolute", inset: 0, background: colors[accent], clipPath: edge }} />
+      <div style={{ position: "relative", transform: `rotate(${captionTilt(group.from)}deg) scale(${pop})` }}>
+        <div style={{ position: "absolute", inset: 0, transform: `translate(${LABEL_SHADOW * 0.8}px, ${LABEL_SHADOW}px)`, background: shade, clipPath: edge }} />
+        <div style={{ position: "absolute", inset: 0, background: colors.ink, clipPath: edge }} />
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: `${size * LABEL_PAD_Y}px ${size * LABEL_PAD_X}px`,
+            fontFamily: fonts.text,
+            fontWeight: 800,
+            fontSize: size,
+            lineHeight: CAPTION_LINE,
+          }}
+        >
+          {lines.map((line, li) => (
+            <div key={`line-${li}`} style={{ display: "flex", gap: size * GAP, whiteSpace: "nowrap" }}>
+              {line.map((text) => {
+                const i = index++;
+                return (
+                  <span
+                    key={`${group.from}-${i}`}
+                    style={{
+                      padding: `0 ${size * PAD}px`,
+                      color: i === active ? colors.yellow : colors.cream,
+                      opacity: i > active ? CAPTION_AHEAD : 1,
+                    }}
+                  >
+                    {text}
                   </span>
-                ) : null}
-                <span
-                  style={{
-                    position: "relative",
-                    color: isActive ? onPaper[accent] : colors.fg,
-                    opacity: i > active ? dimmed : 1,
-                  }}
-                >
-                  {text}
-                </span>
-              </span>
-            );
-          })}
+                );
+              })}
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };

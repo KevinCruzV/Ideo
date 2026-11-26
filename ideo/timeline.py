@@ -11,14 +11,14 @@ FPS = 30
 WIDTH = 1080
 HEIGHT = 1920
 PAUSE = 0.5
-MAX_GROUP = 4
+MAX_GROUP = 2
 FIRST_ITEM_FRAMES = 9
 UNCAPPED = frozenset({"object-state"})
 VARIED = frozenset({"stamp", "counter"})
 VARIANTS = 3
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
-BEAT_GAP = 4 * FPS
+BEAT_GAP = round(2.5 * FPS)
 BEAT_MARGIN = 20
 FINAL_PUNCT = (".", "!", "?", "…", ";", ":")
 APOSTROPHES = re.compile("['’‘ʼ`´]")
@@ -281,6 +281,8 @@ def _build(job: Path, n: int, total: int) -> Path:
             beats = beat_frames(scene["say"], seg_words, entry["start"], seg_dur, begin, limit, [i["at"] for i in items])
             if beats:
                 segment["beats"] = beats
+            if scene.get("break") is True:
+                segment["break"] = True
             segments.append(segment)
 
     timeline = {

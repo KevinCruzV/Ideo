@@ -9,6 +9,7 @@ import { fitText, splitKey } from "../text/fit";
 import type { SceneProps } from "./registry";
 import { areaTop, BOX_CX, BOX_L, BOX_W, Stage, STAGE_H } from "./Stage";
 import { Strips } from "./Strips";
+import { BRAND_WIDE, fonts, nextAccent } from "../theme";
 
 const TEXT_W = BOX_W - 20;
 
@@ -18,7 +19,7 @@ export const Hook: React.FC<SceneProps> = ({ props, from, to }) => {
   const text = str(props.text, "…");
   const { before, key, after } = splitKey(text, str(props.accent) || undefined);
   const head = fitText(before, { maxWidth: TEXT_W, maxLines: 3, max: 92, min: 56 });
-  const word = fitText(key, { maxWidth: TEXT_W, maxLines: 1, max: after ? 170 : 190, min: 64 });
+  const word = fitText(key, { maxWidth: TEXT_W / BRAND_WIDE, maxLines: 1, max: after ? 170 : 190, min: 64 });
   const tail = fitText(after, { maxWidth: TEXT_W, maxLines: 4, max: 84, min: 56 });
   const top = areaTop(props);
   const duration = Math.max(1, to - from);
@@ -27,7 +28,7 @@ export const Hook: React.FC<SceneProps> = ({ props, from, to }) => {
 
   return (
     <Stage>
-      <Backdrop color={accent} size={820} cx={BOX_CX + 150} cy={top + (STAGE_H - top) / 2 - 30} seed="hook-disk" turn={12} />
+      <Backdrop color={nextAccent(accent)} size={820} cx={BOX_CX + 150} cy={top + (STAGE_H - top) / 2 - 30} seed="hook-disk" turn={12} />
       <FitBox area={areaFor(top + 10, BOX_L, BOX_W)}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 26, width: TEXT_W, transform: `rotate(${lean * 0.3}deg)` }}>
           <Strips lines={head.lines} size={head.size} enterAt={0} align="flex-start" seed="hook-head" tilt={-1} motion={{ dx: -60, dy: 0 }} />
@@ -36,6 +37,8 @@ export const Hook: React.FC<SceneProps> = ({ props, from, to }) => {
               text={word.lines[0]}
               color="ink"
               fontSize={word.size}
+              family={fonts.brand}
+              weight={900}
               enterAt={8}
               rotate={-2.5}
               seed="hook-key"

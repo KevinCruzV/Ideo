@@ -23,6 +23,8 @@ TRIM = 0.06
 GAP_HOOK = 0.60 + TRIM
 GAP_SCENE = 0.50 + TRIM
 GAP_BREAK = 0.90 + TRIM
+GAP_SUSPENSE = 2.0 + TRIM
+MAX_SUSPENSE = 2
 COPY_GRAM = 5
 COPY_RUN = 10
 COPY_SHARE = 0.20
@@ -32,8 +34,11 @@ def pause_seconds(scenes: list) -> float:
     def broken(scene) -> bool:
         return isinstance(scene, dict) and scene.get("break") is True
 
+    def held(scene) -> bool:
+        return isinstance(scene, dict) and scene.get("suspense") is True
+
     total = GAP_BREAK if broken(scenes[0]) else GAP_HOOK
-    total += sum(GAP_BREAK if broken(s) else GAP_SCENE for s in scenes[1:])
+    total += sum(GAP_SUSPENSE if held(s) else GAP_BREAK if broken(s) else GAP_SCENE for s in scenes[1:])
     return total + GAP_SCENE
 
 
@@ -235,6 +240,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
 
     if "break" in scene and not isinstance(scene["break"], bool):
         errors.append(f"{where} : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le.")
+    if "suspense" in scene and not isinstance(scene["suspense"], bool):
+        errors.append(f"{where} : « suspense » doit être true ou false (silence de 2 s avant une révélation). Retire-le ou corrige-le.")
 
     items = scene.get("items", [])
     if not isinstance(items, list):
@@ -402,6 +409,11 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
         errors.append(f"{where} : {len(scenes)} scènes, {MAX_SCENES} au plus par vidéo. Retire ou fusionne {len(scenes) - MAX_SCENES} scène(s), ou découpe en plusieurs parties.")
     for k, scene in enumerate(scenes, 1):
         _check_scene(scene, f"{where}, scène {k}", ctx, errors, state)
+    held = [k for k, scene in enumerate(scenes, 1) if isinstance(scene, dict) and scene.get("suspense") is True]
+    if held[:1] == [1]:
+        errors.append(f"{where}, scène 1 : pas de « suspense » sur la première scène, l'accroche vient d'être dite. Retire-le.")
+    if len(held) > MAX_SUSPENSE:
+        errors.append(f"{where} : {len(held)} scènes avec « suspense », {MAX_SUSPENSE} au plus par vidéo (scènes {', '.join(map(str, held))}). Garde les révélations les plus fortes.")
     state["seconds"] += pause_seconds(scenes)
     copied, total_tokens = state["copy"]
     if total_tokens and copied / total_tokens > COPY_SHARE:

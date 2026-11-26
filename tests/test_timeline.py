@@ -54,13 +54,13 @@ def test_anchor_occurring_twice_first_wins():
     assert timeline.anchor_frame(words, "chat", 0.0, 2.0, "chat et chat") == 6
 
 
-def test_caption_groups_2_to_4_words_and_break_on_pause():
+def test_caption_groups_1_to_2_words_and_break_on_pause():
     words = [{"w": f"m{i}", "s": i * 0.3, "e": i * 0.3 + 0.2} for i in range(5)]
     words += [{"w": "apres", "s": 3.0, "e": 3.2}, {"w": "la", "s": 3.3, "e": 3.5}, {"w": "pause", "s": 3.6, "e": 3.9}]
     groups = timeline.caption_groups(words)
     sizes = [len(g["words"]) for g in groups]
-    assert sizes == [3, 2, 3]
-    assert all(1 <= s <= 4 for s in sizes)
+    assert sizes == [2, 2, 1, 2, 1]
+    assert [g["words"][0]["w"] for g in groups][3] == "apres"
 
 
 def test_caption_groups_break_on_final_punctuation():
@@ -233,19 +233,19 @@ def test_sentence_starts_become_beats_except_the_first():
 
 
 def test_no_sentence_break_no_beat_in_a_short_scene():
-    say = "Une seule phrase assez courte pour tenir"
+    say = "Une seule phrase courte"
     seg = words_at([(w, i * 0.4) for i, w in enumerate(align.script_words(say))])
-    assert timeline.beat_frames(say, seg, 0.0, 3.0, 0, 90, []) == []
+    assert timeline.beat_frames(say, seg, 0.0, 2.0, 0, 60, []) == []
 
 
-def test_midpoint_beat_in_any_gap_over_four_seconds_on_a_word_start():
+def test_midpoint_beat_in_any_gap_over_two_and_a_half_seconds_on_a_word_start():
     say = "un deux trois quatre cinq six sept huit neuf dix onze douze treize"
     seg = words_at([(w, i * 1.0) for i, w in enumerate(align.script_words(say))])
     beats = timeline.beat_frames(say, seg, 0.0, 13.0, 0, 390, [])
     starts = {round(i * 30) for i in range(13)}
     assert beats and all(b in starts for b in beats)
     points = [0] + beats + [390]
-    assert all(b - a <= 120 for a, b in zip(points, points[1:]))
+    assert all(b - a <= timeline.BEAT_GAP for a, b in zip(points, points[1:]))
     assert beats == sorted(beats)
 
 

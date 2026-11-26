@@ -158,9 +158,10 @@ def test_three_says_starting_with_the_same_word(job):
 
 
 def test_chopped_rhythm(job):
-    plan = plan_of(*[scene() for _ in range(10)])
+    plan = plan_of(*[scene() for _ in range(16)])
     assert only(plan, job, "par minute", seconds=60)
     assert not only(plan, job, "par minute", seconds=120)
+    assert not only(plan_of(*[scene() for _ in range(12)]), job, "par minute", seconds=60)
 
 
 def test_skimming_the_whole_source_in_little_time(job):

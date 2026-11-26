@@ -66,6 +66,8 @@ export const fonts = {
   brand: "'Unbounded', sans-serif",
 } as const;
 
+export const BRAND_WIDE = 1.3;
+
 
 export const layout = {
   width: 1080,
@@ -97,6 +99,8 @@ export const content = {
 export type AccentColor = "red" | "yellow" | "blue";
 
 export const accentCycle: readonly AccentColor[] = ["red", "yellow", "blue"];
+
+export const nextAccent = (accent: AccentColor): AccentColor => accentCycle[(accentCycle.indexOf(accent) + 1) % accentCycle.length];
 
 export const accentForIndex = (index: number): AccentColor => {
   const i = Number.isFinite(index) ? Math.abs(Math.trunc(index)) : 0;

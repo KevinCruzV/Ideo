@@ -55,10 +55,11 @@ describe("chrome", () => {
 });
 
 describe("sous-titres", () => {
-  test("un groupe court tient sur une ligne, grand", () => {
-    expect(captionSize(["Dis-moi", "pourquoi", "tu"])).toBe(CAPTION_MAX);
-    expect(captionSize(["Dis-moi", "pourquoi", "tu", "oublies"])).toBeGreaterThanOrEqual(56);
-    expect(captionLayout(["Dis-moi", "pourquoi", "tu", "oublies"]).lines).toHaveLength(1);
+  test("un groupe de deux mots tient sur une ligne, en très grand", () => {
+    expect(captionSize(["cinq", "missiles"])).toBe(CAPTION_MAX);
+    expect(captionSize(["Dis-moi", "pourquoi"])).toBeGreaterThanOrEqual(90);
+    expect(captionLayout(["les", "États-Unis"]).lines).toHaveLength(1);
+    expect(captionSize(["incompréhensiblement"])).toBeGreaterThanOrEqual(72);
   });
 
   test("un mot composé reste entier", () => {

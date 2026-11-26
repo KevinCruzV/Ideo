@@ -189,3 +189,13 @@ def test_an_already_assembled_paid_part_is_reassembled_once_for_the_breath_gate(
     assemble.assemble_part(job, 1)
     assert assemble._music_current(job, out_dir)
     assert common.load_json(out_dir / "music.json")["breath_gate"] is True
+
+
+def test_suspense_scene_gets_a_two_second_silence(job_with_voice_fixtures):
+    job = job_with_voice_fixtures
+    plan = common.load_json(job / "plan.json")
+    plan["parts"][0]["scenes"][2]["suspense"] = True
+    common.save_json(job / "plan.json", plan)
+    assemble.assemble_part(job, 1)
+    offsets = common.load_json(job / "parts" / "01" / "offsets.json")
+    assert offsets[3]["start"] - offsets[2]["end"] == pytest.approx(assemble.GAP_SUSPENSE, abs=0.01)
