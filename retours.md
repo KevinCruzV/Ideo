@@ -167,3 +167,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] note de musique
 - [x] disque vinyle
 - [x] micro
+- [ ] bracelet électronique
+- [ ] hémicycle de l'Assemblée
+- [ ] agence de notation
+- [ ] Conseil constitutionnel
