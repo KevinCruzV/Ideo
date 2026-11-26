@@ -95,11 +95,16 @@ def test_removed_scenes_leave_no_stale_voice_files(produce_job):
     part_dir = job / "parts" / "01"
     (part_dir / "seg_42.wav").write_bytes(b"x")
     (part_dir / "seg_42.words.json").write_text("[]", encoding="utf-8")
+    common.save_json(part_dir / "voice-quality.json", {"seg_42": 0.4, "seg_02": 0.95})
+    common.save_json(part_dir / "voice-prosody.json", {"seg_42": 0.1, "seg_02": 2.5})
     edit_first_say(job, "Aujourd'hui nous allons voir pourquoi notre mémoire laisse filer presque tout ce que "
                         "nous venons de lire ou d'apprendre, en quelques jours à peine seulement.")
     assert cli.main(["produce", str(job)]) == 0
     assert not (part_dir / "seg_42.wav").exists() and not (part_dir / "seg_42.words.json").exists()
     assert (part_dir / "seg_01.wav").exists()
+    for name in ("voice-quality.json", "voice-prosody.json"):
+        scores = common.load_json(part_dir / name)
+        assert "seg_42" not in scores and "seg_02" in scores
 
 
 def test_a_refused_payment_keeps_the_paid_voice(produce_job, server, monkeypatch, capsys):

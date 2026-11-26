@@ -14,6 +14,7 @@ PART_STEPS = ("voice", "assemble", "timeline", "render")
 ASSEMBLY_FILES = ("part.wav", "offsets.json", "timeline.json", "music.json")
 VOICE_FILES = ("voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json")
 PART_FILES = ASSEMBLY_FILES + VOICE_FILES
+SCORE_FILES = ("voice-quality.json", "voice-prosody.json")
 RENDER_CODE = ("align", "assemble", "countries", "i18n", "music", "pacing", "photo", "render", "scene_schema", "sfx",
                "timeline", "transitions")
 VOICE_CODE = ("align", "eleven", "fidelity", "hookvoice", "lexicon", "numbers", "pacing", "prosody", "textmatch", "voice")
@@ -156,6 +157,20 @@ def keeps_voice(job: Path, plan: dict, n: int) -> bool:
     return info.get("engine") == "elevenlabs" and _voice_settings(plan["lang"], job)["engine"] == "elevenlabs"
 
 
+def _keep_scores(path: Path, names: set[str]) -> None:
+    if not path.exists():
+        return
+    try:
+        data = common.load_json(path)
+    except (OSError, ValueError):
+        data = None
+    kept = {k: v for k, v in data.items() if k in names} if isinstance(data, dict) else {}
+    if kept:
+        common.save_json(path, kept)
+    else:
+        path.unlink()
+
+
 def invalidate(job: Path, n: int, keep_voice: bool = False, wanted: list[str] | None = None) -> None:
     part_dir = _part_dir(job, n)
     for path in [part_dir / name for name in ASSEMBLY_FILES]:
@@ -168,6 +183,8 @@ def invalidate(job: Path, n: int, keep_voice: bool = False, wanted: list[str] | 
                     shutil.rmtree(path)
                 else:
                     path.unlink(missing_ok=True)
+        for name in SCORE_FILES:
+            _keep_scores(part_dir / name, names)
     else:
         for path in list(part_dir.glob("seg_*")) + [part_dir / name for name in VOICE_FILES]:
             path.unlink(missing_ok=True)
