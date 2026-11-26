@@ -179,6 +179,7 @@ def test_engine_failure_falls_back_to_edge_and_says_so(kyutai, job_with_plan, mo
 
 
 def test_missing_output_file_falls_back(kyutai, job_with_plan, monkeypatch, fake_backend, fake_whisper):
+    (common._root() / "config.json").write_text('{"engine": "kyutai"}', encoding="utf-8")
     kyutai.skip = ("seg_02",)
     monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
     voice.voice_part(job_with_plan, 1)
