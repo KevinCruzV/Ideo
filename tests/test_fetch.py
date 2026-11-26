@@ -71,8 +71,9 @@ def test_fetch_success_writes_outputs_and_is_idempotent(tmp_path, monkeypatch):
     assert common.read_status(job)["steps"]["fetch"]["ok"] is True
     ytdlp = calls[0]
     assert ytdlp[-2:] == ["--", CANONICAL]
-    assert ytdlp[:5] == [fetch.sys.executable, "-m", "yt_dlp", "--no-playlist", "--no-progress"]
-    assert ["-f", "bestaudio[ext=m4a]/bestaudio", "-x", "--audio-format", "m4a", "--write-info-json"] == ytdlp[5:11]
+    assert ytdlp[:6] == [fetch.sys.executable, "-m", "yt_dlp", "--no-playlist", "--newline", "--progress-delta"]
+    assert ytdlp[6] == "10"
+    assert ["-f", "bestaudio[ext=m4a]/bestaudio", "-x", "--audio-format", "m4a", "--write-info-json"] == ytdlp[7:13]
     assert ytdlp[ytdlp.index("-o") + 1] == str(job / ".fetch-tmp" / "audio.%(ext)s")
     ffmpeg_cmd = calls[1]
     assert ffmpeg_cmd[0] == "/usr/bin/ffmpeg"
