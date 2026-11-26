@@ -13,6 +13,10 @@ NUMBER_WORDS = frozenset({
 })
 SPELLED = frozenset(NUMBER_WORDS - {"et", "un", "une", "one", "six", "cent"})
 NUMERIC = re.compile(r"^\d+$")
+SENTENCE_END = (".", "!", "?", "…")
+CLOSERS = "»”\"')]"
+NAME_MATCH = 0.7
+NAME_WINDOW = 3
 
 
 def _tokens(text: str) -> list[str]:
@@ -22,6 +26,43 @@ def _tokens(text: str) -> list[str]:
         if n:
             out.append(n)
     return out
+
+
+def _names(text: str) -> list[str]:
+    out = []
+    initial = True
+    for chunk in text.split():
+        for k, part in enumerate(textmatch.SPLIT.split(chunk)):
+            n = textmatch.normalize(part)
+            letters = [c for c in part if c.isalpha()]
+            if n and letters and letters[0].isupper() and len(letters) >= 3 and not (initial and k == 0):
+                out.append(n)
+        initial = chunk.rstrip(CLOSERS).endswith(SENTENCE_END)
+    return out
+
+
+def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None) -> tuple[list[str], list[int] | None]:
+    tokens = list(tokens)
+    owners = list(owners) if owners is not None else None
+    wanted = set(names)
+    for name in names:
+        if tokens.count(name) >= names.count(name):
+            continue
+        best = None
+        for size in range(1, NAME_WINDOW + 1):
+            for k in range(len(tokens) - size + 1):
+                window = tokens[k:k + size]
+                if name in window or (size == 1 and window[0] in wanted):
+                    continue
+                score = difflib.SequenceMatcher(None, name, "".join(window)).ratio()
+                if score >= NAME_MATCH and (best is None or score > best[0]):
+                    best = (score, k, size)
+        if best:
+            _, k, size = best
+            tokens[k:k + size] = [name]
+            if owners is not None:
+                owners[k:k + size] = [owners[k]]
+    return tokens, owners
 
 
 def _is_number(token: str, around: list[str], i: int) -> bool:
@@ -39,9 +80,14 @@ def _clean(tokens: list[str]) -> list[str]:
     return [t for i, t in enumerate(tokens) if not _is_number(t, tokens, i)]
 
 
+def _compare(text: str, heard: list[dict]) -> tuple[list[str], list[str]]:
+    names = _names(text)
+    got, _ = _fold(names, _tokens(" ".join(w["w"] for w in heard)))
+    return _clean(_tokens(text)), _clean(got)
+
+
 def similarity(text: str, heard: list[dict]) -> float:
-    expected = _clean(_tokens(text))
-    got = _clean(_tokens(" ".join(w["w"] for w in heard)))
+    expected, got = _compare(text, heard)
     if not expected:
         return 1.0
     if not got:
@@ -50,8 +96,7 @@ def similarity(text: str, heard: list[dict]) -> float:
 
 
 def added(text: str, heard: list[dict]) -> list[str]:
-    expected = _clean(_tokens(text))
-    got = _clean(_tokens(" ".join(w["w"] for w in heard)))
+    expected, got = _compare(text, heard)
     extra: list[str] = []
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, expected, got, autojunk=False).get_opcodes():
         if tag == "insert":
@@ -68,6 +113,7 @@ def keep_count(text: str, heard: list[dict]) -> int | None:
         for t in _tokens(w["w"]):
             owners.append(i)
             tokens.append(t)
+    tokens, owners = _fold(_names(text), tokens, owners)
     kept = [k for k, t in enumerate(tokens) if not _is_number(t, tokens, k)]
     got = [tokens[k] for k in kept]
     ops = difflib.SequenceMatcher(None, expected, got, autojunk=False).get_opcodes()
