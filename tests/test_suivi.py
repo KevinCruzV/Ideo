@@ -114,3 +114,31 @@ def test_run_voit_la_sortie_d_un_script_python_au_fil_de_l_eau(tmp_path, monkeyp
     script = "import time\nfor i in range(4):\n    print(i)\n    time.sleep(0.8)\n"
     common.run([sys.executable, "-c", script], log)
     assert log.read_text(encoding="utf-8").split() == ["0", "1", "2", "3"]
+
+
+def test_run_arrete_la_commande_si_python_est_interrompu(tmp_path, monkeypatch):
+    import subprocess
+
+    made = []
+    real = subprocess.Popen
+
+    def spy(*args, **kwargs):
+        proc = real(*args, **kwargs)
+        made.append(proc)
+        return proc
+
+    monkeypatch.setattr(common.subprocess, "Popen", spy)
+    calls = {"n": 0}
+    real_monotonic = common.time.monotonic
+
+    def interrupt():
+        calls["n"] += 1
+        if calls["n"] > 2:
+            raise KeyboardInterrupt
+        return real_monotonic()
+
+    monkeypatch.setattr(common.time, "monotonic", interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        common.run(["sleep", "30"], tmp_path / "x.log")
+    monkeypatch.setattr(common.time, "monotonic", real_monotonic)
+    assert made and made[0].poll() is not None
