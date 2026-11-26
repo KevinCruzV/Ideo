@@ -2,9 +2,6 @@
 
 Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leçons avant d'écrire un plan : ajoute-les avec `python -m ideo learn "<leçon>"`.
 
-- [2026-11-24] La couverture montre la photo de la première person-card avec photo, sinon le buste de la première person-card, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
-- [2026-11-24] Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
-- [2026-11-24] Sur un counter, ancre « to » sur un des premiers mots du say : le compte doit démarrer vite, pas à la fin de la phrase.
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
 - [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 30 mots en deux scènes.
