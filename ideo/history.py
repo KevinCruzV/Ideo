@@ -116,6 +116,25 @@ def recent_music(job, count: int = 3) -> list[str]:
     return out
 
 
+def note_drawings(job, names: list) -> None:
+    data = load()
+    entry = _entry(data, job)
+    entry["drawings"] = sorted({n for n in names if isinstance(n, str) and n})
+    _save(data)
+
+
+def recent_drawings(job, videos: int = 3) -> dict[str, int]:
+    data = load()
+    name = Path(str(job)).name
+    counts: dict[str, int] = {}
+    for other in [o for o in reversed(data["order"]) if o != name][:videos]:
+        used = data["jobs"][other].get("drawings")
+        for drawing in set(used) if isinstance(used, list) else ():
+            if isinstance(drawing, str):
+                counts[drawing] = counts.get(drawing, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+
 def new_wishes(job, wishes: list) -> list:
     data = load()
     entry = _entry(data, job)

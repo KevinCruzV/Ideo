@@ -615,3 +615,25 @@ def test_dix_huit_scenes_par_minute_ne_sont_pas_hachees(job):
     plan = plan_of(*[scene() for _ in range(36)])
     assert not only(plan, job, "rythme haché", seconds=120)
     assert only(plan_of(*[scene() for _ in range(50)]), job, "rythme haché", seconds=120)
+
+
+def _drawn(*pictos, obj=None):
+    scenes = [scene(props={"text": "x", "picto": p}) for p in pictos]
+    if obj:
+        scenes.append(scene(kind="object-state", props={"object": obj, "states": ["a", "b"]}))
+    return plan_of(*scenes)
+
+
+def test_drawings_of_a_plan_lists_pictos_and_objects_but_not_flags():
+    plan = _drawn("knife", "flag:fr", "knife", obj="scale")
+    assert review.drawings_of(plan) == ["knife", "object:scale"]
+
+
+def test_drawing_used_in_two_of_the_last_three_videos_is_flagged(job):
+    from ideo import history
+    history.note_drawings("a", ["object:scale", "globe"])
+    history.note_drawings("b", ["object:scale"])
+    history.note_drawings("c", ["globe"])
+    found = [t for c, t in review.coded(_drawn("coin", "globe", obj="scale"), job, 120) if c == "dessin-deja-vu"]
+    assert len(found) == 1 and "object:scale" in found[0] and "globe" in found[0]
+    assert "dessin-deja-vu" not in codes_of(_drawn("coin", "knife"), job)
