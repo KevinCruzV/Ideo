@@ -170,7 +170,9 @@ def test_prepare_writes_progress_log_and_one_line(tmp_path, monkeypatch, capsys)
     assert out[0].split(" Coût estimé : ")[1].startswith("lecture au moins ~")
     assert "bruit" not in captured.out and "bruit" not in captured.err
     progress = (job / "logs" / "progress.log").read_text(encoding="utf-8").splitlines()
-    assert [line.split(" ")[2:4] for line in progress] == [["OK", "fetch"], ["OK", "transcribe"], ["OK", "transcript"]]
+    assert [line.split(" ")[2:4] for line in progress] == [
+        ["DÉBUT", "fetch"], ["OK", "fetch"], ["DÉBUT", "transcribe"], ["OK", "transcribe"],
+        ["DÉBUT", "transcript"], ["OK", "transcript"]]
 
 
 def test_prepare_bad_url_is_an_error_line(tmp_path, monkeypatch, capsys):

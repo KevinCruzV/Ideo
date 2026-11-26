@@ -52,7 +52,7 @@ Tout est dans `jobs/<id de la vidéo>/` :
 - `out/cover.png` (ou `out/cover-01.png`, ...) : la couverture (titre, dessin ou photo de la personne principale, accroche), à choisir comme couverture au moment de publier
 - `out/sources.md` : les liens minutés vers les passages de la source
 - `out/description.txt` : la description à publier
-- `logs/progress.log` : l'avancement (`tail -f` pour suivre)
+- `logs/progress.log` : le début, la fin et la durée de chaque étape. `python -m ideo suivi <job>` dit l'étape en cours, son avancement (images rendues pour le rendu) et signale un blocage. Une commande muette pendant 10 minutes est arrêtée et l'étape échoue avec un message clair.
 
 ## Coût
 
