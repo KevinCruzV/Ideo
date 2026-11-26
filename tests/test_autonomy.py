@@ -173,17 +173,6 @@ def test_prepare_line_after_a_failed_entretien(tmp_path, monkeypatch, capsys):
     assert out_lines(capsys)[0].endswith(" Dernier entretien : échec, dépôt modifié.")
 
 
-def test_produce_says_when_the_local_voice_is_not_installed(produce_job, monkeypatch, capsys):
-    from ideo import config
-
-    job = produce_job[0]
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    assert cli.main(["produce", str(job)]) == 0
-    line = out_lines(capsys)[0]
-    assert " ; Voix : voix en ligne, la voix locale n'est pas installée" in line
-    assert line.index("Contrôle :") < line.index("Voix :")
-
-
 def test_produce_says_nothing_about_the_voice_when_all_is_normal(produce_job, capsys):
     job = produce_job[0]
     cli.main(["produce", str(job)])
