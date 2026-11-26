@@ -16,7 +16,9 @@ NUMERIC = re.compile(r"^\d+$")
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
 NAME_MATCH = 0.7
+OPENER_MATCH = 0.6
 NAME_WINDOW = 3
+SPLIT_MIN = 6
 
 
 def _tokens(text: str) -> list[str]:
@@ -41,7 +43,18 @@ def _names(text: str) -> list[str]:
     return out
 
 
-def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None) -> tuple[list[str], list[int] | None]:
+def _opener(text: str) -> list[str]:
+    chunks = text.split()
+    if not chunks:
+        return []
+    first = textmatch.SPLIT.split(chunks[0])[0]
+    letters = [c for c in first if c.isalpha()]
+    n = textmatch.normalize(first)
+    return [n] if n and len(letters) >= 3 and letters[0].isupper() else []
+
+
+def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None, smallest: int = 1,
+          match: float = NAME_MATCH) -> tuple[list[str], list[int] | None]:
     tokens = list(tokens)
     owners = list(owners) if owners is not None else None
     wanted = set(names)
@@ -49,20 +62,32 @@ def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None) 
         if tokens.count(name) >= names.count(name):
             continue
         best = None
-        for size in range(1, NAME_WINDOW + 1):
+        for size in range(smallest, NAME_WINDOW + 1):
             for k in range(len(tokens) - size + 1):
                 window = tokens[k:k + size]
                 if name in window or (size == 1 and window[0] in wanted):
                     continue
                 score = difflib.SequenceMatcher(None, name, "".join(window)).ratio()
-                if score >= NAME_MATCH and (best is None or score > best[0]):
+                if score >= match and (best is None or score > best[0]):
                     best = (score, k, size)
         if best:
             _, k, size = best
             tokens[k:k + size] = [name]
             if owners is not None:
-                owners[k:k + size] = [owners[k]]
+                owners[k:k + size] = [owners[k + size - 1]]
     return tokens, owners
+
+
+def _settle(text: str, tokens: list[str], owners: list[int] | None = None) -> tuple[list[str], list[int] | None]:
+    names = _names(text)
+    tokens, owners = _fold(names, tokens, owners)
+    head = owners[:NAME_WINDOW] if owners is not None else None
+    start, head = _fold(_opener(text), tokens[:NAME_WINDOW], head, smallest=2, match=OPENER_MATCH)
+    tokens = start + tokens[NAME_WINDOW:]
+    if owners is not None:
+        owners = head + owners[NAME_WINDOW:]
+    words = [t for t in _tokens(text) if len(t) >= SPLIT_MIN and t not in names]
+    return _fold(words, tokens, owners, smallest=2, match=1.0)
 
 
 def _is_number(token: str, around: list[str], i: int) -> bool:
@@ -81,8 +106,7 @@ def _clean(tokens: list[str]) -> list[str]:
 
 
 def _compare(text: str, heard: list[dict]) -> tuple[list[str], list[str]]:
-    names = _names(text)
-    got, _ = _fold(names, _tokens(" ".join(w["w"] for w in heard)))
+    got, _ = _settle(text, _tokens(" ".join(w["w"] for w in heard)))
     return _clean(_tokens(text)), _clean(got)
 
 
@@ -113,7 +137,7 @@ def keep_count(text: str, heard: list[dict]) -> int | None:
         for t in _tokens(w["w"]):
             owners.append(i)
             tokens.append(t)
-    tokens, owners = _fold(_names(text), tokens, owners)
+    tokens, owners = _settle(text, tokens, owners)
     kept = [k for k, t in enumerate(tokens) if not _is_number(t, tokens, k)]
     got = [tokens[k] for k in kept]
     ops = difflib.SequenceMatcher(None, expected, got, autojunk=False).get_opcodes()
