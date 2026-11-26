@@ -4,7 +4,7 @@ import { Sheet } from "../paper/Sheet";
 import { layout } from "../theme";
 import { str } from "./coerce";
 import { Kicker } from "./Kicker";
-import { framingAt } from "./punch";
+import { framingAt, PUNCH_ORIGIN_Y } from "./punch";
 import { BOX_CX, Stage } from "./Stage";
 
 export const EXIT_FRAMES = 6;
@@ -30,17 +30,26 @@ export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: nu
         position: "absolute",
         inset: 0,
         opacity: 1 - exit,
-        transform: `translate(${f.x - 70 * exit * exit}px, ${f.y}px) rotate(${f.r}deg) scale(${scale * (1 + f.s)})`,
-        transformOrigin: `${BOX_CX}px ${(layout.stageTop + layout.stageBottom) / 2}px`,
+        transform: `translate(${f.x}px, ${f.y}px) rotate(${f.r}deg) scale(${1 + f.s})`,
+        transformOrigin: `${BOX_CX}px ${PUNCH_ORIGIN_Y}px`,
       }}
     >
-      <Sheet index={index} />
-      {children}
-      {kicker ? (
-        <Stage>
-          <Kicker text={kicker} />
-        </Stage>
-      ) : null}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: `translateX(${-70 * exit * exit}px) scale(${scale})`,
+          transformOrigin: `${BOX_CX}px ${(layout.stageTop + layout.stageBottom) / 2}px`,
+        }}
+      >
+        <Sheet index={index} />
+        {children}
+        {kicker ? (
+          <Stage>
+            <Kicker text={kicker} />
+          </Stage>
+        ) : null}
+      </div>
     </div>
   );
 };

@@ -39,7 +39,7 @@ Limites :
 - Personnage historique ou connu : la vraie photo (`ideo photo`) reste utilisée. Dans les scènes, elle est encadrée sur la feuille (carte de personnage). Sur la cover, elle est épinglée sous le titre sans le recouvrir. Les deux cas ont été rendus avec une image de test.
 
 **Rythme :**
-- **Recadrage :** l'image se recadre net à chaque élément qui apparaît (`render/src/scenes/punch.ts`), et change au moins toutes les 2,5 s (`BEAT_GAP`).
+- **Recadrage :** l'image se recadre net à chaque élément qui apparaît (`render/src/scenes/punch.ts`), et change au moins toutes les 2,5 s (`BEAT_GAP`). Le zoom part du haut de la scène, pour ne jamais passer sous la pastille de chapitre ni sur les sous-titres.
 - **Carton de chapitre :** carton plein écran avec le `kicker` au début de chaque scène `"break": true`.
 - **Suspense :** `"suspense": true` donne 2 s de silence avant une révélation, deux au plus par vidéo. C'est vérifié par `check`, géré dans l'assemblage audio et exempté dans `qc`.
 - **Plafond de `check` :** le « rythme haché » n'est signalé qu'au-delà de 15 scènes/min, au lieu de 9.
@@ -50,7 +50,7 @@ Images : `scenes-avant.jpg`, `scenes-apres.jpg`, `covers.jpg`, `fonds-compares.j
 ## 3. Reste à faire
 
 1. **Faire une vraie vidéo de bout en bout sur le Mac** (`prepare` → plan → `produce`), puis la mesurer avec `python -m ideo rythme <job>`. Rien n'a encore été vérifié sur une vraie voix : sous-titres de 1 à 2 mots, recadrages, carton de chapitre, silence de suspense. Objectif : au moins 15 plans/min.
-2. **Vérifier une cover et une carte de personnage avec une vraie photo d'archive.** Le cadrage a été validé avec une image de test, pas avec une vraie photo.
+2. ~~**Vérifier une cover et une carte de personnage avec une vraie photo d'archive**~~ : fait (Marvin Gaye, Jensen Huang, Karl Marx, Berry Gordy, Tammi Terrell, Dario Amodei). Cela a révélé un défaut corrigé : le recadrage le plus serré faisait passer la date de la carte sous la pastille de chapitre. Le zoom part maintenant du haut de la scène et ne remonte jamais.
 3. **Carton de chapitre quand le `kicker` n'est qu'une date** (« 1991 ») : le carton affiche alors juste la date. Décider s'il faut prendre le nom de l'acte ailleurs.
 4. **Si les recadrages ne suffisent pas,** demander des scènes plus courtes dans `plan-guide.md`. Le repère actuel est 6-9 s, soit 18-26 mots ; on pourrait passer à 4-6 s. Cela coûte plus de tokens au moment d'écrire le plan.
 5. ~~**Outil `rythme` sur les vidéos très sombres**~~ : fait (éclaircissement automatique). Reste à remesurer la vidéo Tupac.

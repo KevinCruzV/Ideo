@@ -1,3 +1,5 @@
+import { visibleStageTop } from "../theme";
+
 export const PUNCH_FRAMES = 5;
 export const PUNCH_MIN_GAP = 24;
 export const PUNCH_LEAD = 18;
@@ -7,10 +9,14 @@ export type Framing = { s: number; x: number; y: number; r: number };
 
 export const FRAMINGS: readonly Framing[] = [
   { s: 0, x: 0, y: 0, r: 0 },
-  { s: 0.07, x: -18, y: -26, r: -0.6 },
+  { s: 0.07, x: -18, y: 4, r: -0.6 },
   { s: 0.035, x: 16, y: 12, r: 0.5 },
-  { s: 0.09, x: 8, y: -34, r: -0.4 },
+  { s: 0.09, x: 8, y: 6, r: -0.4 },
 ];
+
+export const PUNCH_ORIGIN_Y = visibleStageTop;
+
+export const punchedY = (y: number, f: Framing): number => PUNCH_ORIGIN_Y + (y - PUNCH_ORIGIN_Y) * (1 + f.s) + f.y;
 
 export const punchCuts = (frames: number[], duration: number): number[] => {
   const cuts: number[] = [];
