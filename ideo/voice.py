@@ -179,14 +179,25 @@ def spoken_for(text: str, lang: str, local: bool, name: str = "", plain: bool = 
     return spoken, normalized.units
 
 
-def _with_colons(heard: list[dict], text: str, duration: float) -> list[dict]:
-    ends = [w["e"] for w in align.align_words(align.script_words(text), heard, duration)
-            if w["w"].rstrip(pacing.CLOSERS).endswith(":")]
-    if not ends:
+TRAILING_MARKS = re.compile(r"[\s\u00a0]*[,;:.!?…»”\"')\]]+$")
+
+
+def _with_punctuation(heard: list[dict], text: str, duration: float) -> list[dict]:
+    marks = []
+    for w in align.align_words(align.script_words(text), heard, duration):
+        found = TRAILING_MARKS.search(w["w"])
+        if found:
+            marks.append((w["e"], found.group(0)))
+    if not marks:
         return heard
-    return [{**w, "w": w["w"].rstrip(",") + "\u00a0:"}
-            if not w["w"].rstrip(pacing.CLOSERS).endswith(":") and any(abs(w["e"] - e) < 0.02 for e in ends) else w
-            for w in heard]
+    out = []
+    for w in heard:
+        mark = next((m for e, m in marks if abs(w["e"] - e) < 0.02), None)
+        written = TRAILING_MARKS.search(w["w"])
+        if mark and (not written or ":" in mark and ":" not in written.group(0)):
+            w = {**w, "w": TRAILING_MARKS.sub("", w["w"]) + mark}
+        out.append(w)
+    return out
 
 
 def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None, units: list | None = None) -> list[dict]:
@@ -195,9 +206,11 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
         if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (pacing.RATE, 1, 2):
             raise common.IdeoError(f"{wav.name} doit être en 48 kHz mono 16 bits : relancez la voix.")
         pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
-    tight, mapping = pacing.tighten(pcm, heard)
+    marked = _with_punctuation(heard, spoken or text, len(pcm) / pacing.RATE)
+    tight, mapping = pacing.tighten(pcm, marked)
     heard = pacing.remap(heard, mapping)
-    tight, spread = pacing.pause_sentences(tight, _with_colons(heard, spoken or text, len(tight) / pacing.RATE))
+    marked = pacing.remap(marked, mapping)
+    tight, spread = pacing.pause_sentences(tight, marked)
     heard = pacing.remap(heard, spread)
     if len(tight) != len(pcm):
         with wave.open(str(wav), "wb") as w:

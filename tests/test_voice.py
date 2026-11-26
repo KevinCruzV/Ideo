@@ -385,3 +385,23 @@ def test_finish_segment_reprend_le_deux_points_du_texte_ecrit(tmp_path):
         duration = w.getnframes() / rate
     assert duration == pytest.approx(2.0 + pacing.COLON_GAP, abs=0.02)
     assert words[2]["s"] == pytest.approx(1.0 + pacing.COLON_GAP, abs=0.02)
+
+
+def test_finish_segment_garde_la_pause_de_fin_de_phrase_avec_des_mots_sans_ponctuation(tmp_path):
+    import numpy as np
+
+    wav = tmp_path / "s.wav"
+    rate = 48000
+    t = np.arange(rate)
+    tone = 8000 * np.sin(2 * np.pi * 440 * t / rate)
+    pcm = np.concatenate([tone, np.zeros(int(0.54 * rate)), tone]).astype("<i2")
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    heard = [{"w": "quoi", "s": 0.0, "e": 1.0}, {"w": "Moi", "s": 1.54, "e": 2.54}]
+    voice.finish_segment(wav, "C'est quoi ? Moi", heard)
+    with wave.open(str(wav), "rb") as w:
+        duration = w.getnframes() / rate
+    assert duration >= 2.0 + 0.45 - 0.02
