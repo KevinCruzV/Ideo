@@ -143,36 +143,12 @@ def test_size_is_rounded_to_the_half_gigabyte(gigabytes, text):
     assert setup_voix.size_text(gigabytes) == text
 
 
-def test_install_note_only_when_the_local_voice_is_missing_and_possible(env):
-    assert setup_voix.install_note("fr") == f" Voix locale : à installer (environ {setup_voix.size_text()} Go)."
-    assert setup_voix.install_note("de") == ""
-    (env.root / "config.json").write_text('{"engine": "edge"}', encoding="utf-8")
-    assert setup_voix.install_note("fr") == ""
-
-
 def test_install_note_is_empty_when_installed_or_not_apple_silicon(env, monkeypatch):
     monkeypatch.setattr(config, "kyutai_installed", lambda: True)
     assert setup_voix.install_note("fr") == ""
     monkeypatch.setattr(config, "kyutai_installed", lambda: False)
     monkeypatch.setattr(config, "apple_silicon", lambda: False)
     assert setup_voix.install_note("fr") == ""
-
-
-def test_prepare_line_ends_with_the_install_note(env, monkeypatch, capsys):
-    from ideo import compact, fetch, transcribe
-
-    url = "https://www.youtube.com/watch?v=abcdefghijk"
-    monkeypatch.setattr(fetch, "fetch", lambda u: common.job_dir(u))
-    monkeypatch.setattr(transcribe, "transcribe", lambda job: [{"w": "a", "s": 0, "e": 1}] * 300)
-    monkeypatch.setattr(compact, "prepare_transcript", lambda job: {"words": 300, "paragraphs": 7, "sfx": 1, "lang": "fr"})
-    assert cli.main(["prepare", url]) == 0
-    line = capsys.readouterr().out.strip().splitlines()[0]
-    assert line.endswith(" Voix locale : à installer (environ 4,5 Go).")
-    (env.root / ".venv-voix2" / "ready").parent.mkdir(parents=True, exist_ok=True)
-    (env.root / ".venv-voix2" / "ready").write_text("", encoding="utf-8")
-    (env.root / ".venv-voix2" / "bin").mkdir(parents=True, exist_ok=True)
-    cli.main(["prepare", url])
-    assert "Voix locale" not in capsys.readouterr().out
 
 
 def test_setup_skill_explains_where_to_put_the_music():

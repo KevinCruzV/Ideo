@@ -104,22 +104,6 @@ def test_entretien_keys_wrong_types(home, content):
         config.entretien_auto()
 
 
-def test_engine_defaults_to_kyutai_only_when_available(monkeypatch):
-    monkeypatch.setattr(config, "kyutai_available", lambda: True)
-    assert config.engine() == "kyutai"
-    monkeypatch.setattr(config, "kyutai_available", lambda: False)
-    assert config.engine() == "edge"
-
-
-def test_engine_key_overrides_the_default(home, monkeypatch):
-    monkeypatch.setattr(config, "kyutai_available", lambda: False)
-    write(home, {"engine": "kyutai"})
-    assert config.engine() == "kyutai"
-    monkeypatch.setattr(config, "kyutai_available", lambda: True)
-    write(home, {"engine": "edge"})
-    assert config.engine() == "edge"
-
-
 @pytest.mark.parametrize("content", [{"engine": "autre"}, {"engine": 3}, {"kyutai_voice": ""}, {"kyutai_voice": 3},
                                      {"kyutai_padding_bonus": "1"}, {"kyutai_padding_bonus": 3}, {"kyutai_padding_bonus": -2.5},
                                      {"kyutai_padding_bonus": True}])
@@ -170,22 +154,6 @@ def test_available_also_needs_apple_silicon(monkeypatch, tmp_path):
     assert config.kyutai_available() is False
 
 
-def test_local_voice_missing(monkeypatch, home):
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
-    assert config.local_voice_missing("fr") is True and config.local_voice_missing("en") is True
-    assert config.local_voice_missing("de") is False
-    write(home, {"engine": "edge"})
-    assert config.local_voice_missing("fr") is False
-    write(home, {"engine": "kyutai"})
-    assert config.local_voice_missing("fr") is True
-    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
-    assert config.local_voice_missing("fr") is False
-    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
-    monkeypatch.setattr(config, "apple_silicon", lambda: False)
-    assert config.local_voice_missing("fr") is False
-
-
 def test_hook_settings_defaults_and_keys(home):
     assert config.kyutai_hook_temp() == 0.95 and config.kyutai_hook_padding_bonus() == -0.4
     write(home, {"kyutai_hook_temp": 1.0, "kyutai_hook_padding_bonus": 0.5})
@@ -201,20 +169,13 @@ def test_hook_settings_wrong_values(home, content):
         config.engine()
 
 
-def test_engine_defaults_to_elevenlabs_when_a_key_is_present(home, monkeypatch):
+def test_moteur_edge_par_defaut_et_elevenlabs_avec_une_cle(home, monkeypatch):
     monkeypatch.setattr(config, "kyutai_available", lambda: True)
-    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_test")
-    assert config.engine() == "elevenlabs"
+    assert config.engine() == "edge"
     write(home, {"engine": "kyutai"})
-    assert config.engine() == "kyutai"
-
-
-def test_local_voice_opt_out(home, monkeypatch):
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    monkeypatch.setattr(config, "kyutai_installed", lambda: False)
-    assert config.local_voice_missing("fr") is True
-    write(home, {"engine": "elevenlabs", "local_voice": False})
-    assert config.local_voice_enabled() is False
-    assert config.local_voice_missing("fr") is False
-    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
-    assert config.kyutai_available() is False
+    assert config.engine() == "edge"
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_test")
+    write(home, {})
+    assert config.engine() == "elevenlabs"
+    write(home, {"engine": "edge"})
+    assert config.engine() == "edge"

@@ -154,8 +154,6 @@ def choose_backend(lang: str, log: Path | None = None, job: Path | None = None) 
     chosen = config.engine(job)
     if chosen == "elevenlabs":
         return eleven.ElevenLabsBackend(log, job)
-    if lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed():
-        return KyutaiBackend(log)
     return get_backend(log)
 
 
@@ -396,8 +394,6 @@ def _kind(backend) -> str:
 
 
 def _fallback_backend(lang: str, log: Path, failed: str = "local"):
-    if failed == "paid" and lang in KYUTAI_LANGS and config.kyutai_installed() and config.apple_silicon():
-        return KyutaiBackend(log)
     return get_backend(log)
 
 

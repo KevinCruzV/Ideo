@@ -341,26 +341,6 @@ def test_missing_key_falls_back_to_the_local_voice(eleven_job, monkeypatch, fake
     assert info["engine"] == "edge" and "ELEVENLABS_API_KEY" in info["fallback"]
 
 
-def test_failure_falls_back_to_kyutai_when_installed(eleven_job, server, monkeypatch):
-    server.fail = (402, "quota")
-    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    made = {}
-
-    class FakeLocal:
-        local = True
-
-        def __init__(self, log=None):
-            made["used"] = True
-
-    monkeypatch.setattr(voice, "KyutaiBackend", FakeLocal)
-    monkeypatch.setattr(voice, "_settle_local", lambda backend, pending, lang, out_dir, log, key: (_ for _ in ()).throw(
-        common.IdeoError("moteur local en panne")))
-    with pytest.raises(common.IdeoError, match="moteur local en panne"):
-        voice.voice_part(eleven_job, 1)
-    assert made["used"] is True
-
-
 def test_nothing_is_redone_when_the_text_has_not_changed(eleven_job, server):
     voice.voice_part(eleven_job, 1)
     server.requests.clear()

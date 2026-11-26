@@ -189,9 +189,7 @@ def kyutai_available() -> bool:
 
 
 def local_voice_missing(lang: str) -> bool:
-    if lang not in KYUTAI_LANGS or not apple_silicon() or kyutai_installed() or not local_voice_enabled():
-        return False
-    return _load().get("engine") != "edge"
+    return False
 
 
 FINAL_FILE = "voix-finale.json"
@@ -200,17 +198,12 @@ FREE_ENGINES = ("kyutai", "edge")
 
 def final_engine() -> str:
     chosen = _load().get("engine")
-    if chosen:
-        return chosen
-    if eleven_key():
+    if chosen == "elevenlabs" or (not chosen and eleven_key()):
         return "elevenlabs"
-    return "kyutai" if kyutai_available() else "edge"
+    return "edge"
 
 
 def draft_engine() -> str:
-    chosen = _load().get("engine")
-    if chosen in FREE_ENGINES:
-        return chosen
     return "edge"
 
 

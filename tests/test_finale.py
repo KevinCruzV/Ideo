@@ -20,10 +20,17 @@ def test_a_draft_job_uses_the_free_voice_even_with_elevenlabs_configured(job_wit
     assert config.engine(job_with_plan) == "edge"
 
 
-def test_kyutai_reste_possible_pour_le_brouillon_si_on_le_demande(job_with_plan, monkeypatch):
+def test_kyutai_n_est_plus_jamais_choisi(job_with_plan, monkeypatch):
     write({"engine": "kyutai"})
     monkeypatch.setattr(config, "kyutai_available", lambda: True)
-    assert config.engine(job_with_plan) == "kyutai"
+    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
+    monkeypatch.setattr(config, "apple_silicon", lambda: True)
+    assert config.engine(job_with_plan) == "edge"
+    assert config.engine() == "edge"
+    log = job_with_plan / "logs" / "v.log"
+    assert isinstance(voice.choose_backend("fr", log, job_with_plan), voice.EdgeTTSBackend)
+    assert isinstance(voice._fallback_backend("fr", log, "paid"), voice.EdgeTTSBackend)
+    assert not config.local_voice_missing("fr")
 
 
 def test_finale_switches_the_job_to_the_configured_voice(job_with_plan, monkeypatch):
