@@ -124,7 +124,7 @@ def run(cmd: list[str], log: Path) -> None:
     try:
         with log.open("ab") as f:
             proc = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                    start_new_session=True)
+                                    start_new_session=True, env={**os.environ, "PYTHONUNBUFFERED": "1"})
             size, quiet_since = log.stat().st_size, time.monotonic()
             while True:
                 try:

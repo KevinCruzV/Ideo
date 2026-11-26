@@ -104,3 +104,13 @@ def test_commande_suivi(tmp_path, monkeypatch, capsys):
     assert cli.main(["suivi", str(job)]) == 0
     out = capsys.readouterr().out.strip().splitlines()
     assert len(out) == 1 and out[0].startswith("OK suivi : terminé")
+
+
+def test_run_voit_la_sortie_d_un_script_python_au_fil_de_l_eau(tmp_path, monkeypatch):
+    import sys
+
+    monkeypatch.setattr(common, "STALL_SECONDS", 1.5)
+    log = tmp_path / "x.log"
+    script = "import time\nfor i in range(4):\n    print(i)\n    time.sleep(0.8)\n"
+    common.run([sys.executable, "-c", script], log)
+    assert log.read_text(encoding="utf-8").split() == ["0", "1", "2", "3"]
