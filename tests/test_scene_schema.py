@@ -77,7 +77,7 @@ def test_guide_table_lists_schema_props(kind):
     ("counter", {"to": "2300 mots"}, "« props.to » doit être un nombre"),
     ("fact-chips", {"chips": ["a"] * 7}, "« props.chips » doit être une liste de 1 à 6 textes"),
     ("fact-chips", {"chips": []}, "liste de 1 à 6 textes"),
-    ("object-state", {"object": "fridge", "states": ["a"]}, "une de ces valeurs : screen, board, jar, door, scale, phone"),
+    ("object-state", {"object": "fridge", "states": ["a"]}, "une de ces valeurs : screen, board, jar, door, scale, phone, battery, gauge, lights, plant"),
     ("icon-grid", {"cells": [{"shape": "star", "label": "a"}]}, "objets avec « shape », « label »"),
     ("icon-grid", {"cells": [{"label": "a", "icon": "x"}]}, "objets avec"),
     ("timeline", {"marks": [{"label": "a"}]}, "« props.marks »"),
@@ -277,3 +277,9 @@ def test_person_card_accepts_gender_age_and_job_and_rejects_others():
 
 def test_a_plan_cannot_set_a_timeline_prop():
     assert scene_schema.check_props("stamp", {"text": "Faux", "variant": 1}, "stamp") != []
+
+
+def test_new_objects_that_change_state_are_accepted():
+    for name in ("battery", "gauge", "lights", "plant"):
+        assert scene_schema.check_props("object-state", {"object": name, "states": ["a", "b", "c"]}, "x") == []
+    assert scene_schema.OBJECTS[-4:] == ("battery", "gauge", "lights", "plant")
