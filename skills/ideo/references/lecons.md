@@ -3,9 +3,8 @@
 Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leçons avant d'écrire un plan : ajoute-les avec `python -m ideo learn "<leçon>"`.
 
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
-- [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
+- [2026-11-25] Le texte d’un key-title ne recopie pas le say : say « Le même panier coûte 12 € de plus », écran « +12 € », pas la phrase entière ; sinon prends un autre type de scène.
 - [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 20 mots en deux scènes.
-- [2026-11-25] Nomme et explique tout avant de t’en servir : « signer un contrat d’enregistrement », pas « il ne peut pas signer » ; un terme comme « achat impulsif » s’explique dans une scène précédente.
 - [2026-11-25] Quand quelqu’un change de nom ou de vie, dis qui le décide et pourquoi : « son label le rebaptise pour sonner plus américain », pas seulement « il prend un nouveau nom ».
 - [2026-11-25] Dans une liste de faits, chaque fait a de l’impact et dit pourquoi il compte (« son premier grand succès »), pas seulement qu’il arrive.
 - [2026-11-25] Après un moment triste, la scène suivante reste grave (« Il ne s’en remettra pas »), pas légère.
@@ -18,7 +17,6 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Vidéo sur un programme ou un plan : finis la « question » en demandant quel autre programme le spectateur veut voir expliqué, pas une question d’opinion générale.
 - [2026-11-25] Chaque chip ou item affiché à l’écran doit être repris, même brièvement, dans le say : jamais un fait visible que la voix ne dit jamais.
 - [2026-11-26] Sur une scène versus, mets un dessin (picto) de chaque côté : jamais deux colonnes de texte seules.
-- [2026-11-26] L’accroche (hook) reprend le titre choc choisi, celui de la couverture, jamais une autre formule ; le title en haut de l’écran peut en être une version raccourcie pour tenir en 40 caractères.
 - [2026-11-26] Une comparaison entre enseignes ou produits s’annonce d’abord (« Comparons le même panier ») et reste nuancée : cite aussi des produits équivalents au prix proche.
 - [2026-11-26] Ne finis pas une phrase du say sur un mot très court (« plus », « là ») : la voix y remonte le ton.
 - [2026-11-26] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
@@ -28,7 +26,7 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] (auto:premier-element-tardif) Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.
 - [2026-11-26] Ne prends une scène body que pour parler du corps (posture, organe, santé) ; pour des métiers ou des tâches, prends une liste de tâches (fact-chips, stack-list) ou des pictos.
 - [2026-11-26] Ne prends un object-state (balance, bocal, écran) que si la scène parle vraiment de cet objet, jamais un téléphone pour une comparaison ; sinon une liste ou un picto précis, pour varier les vidéos.
-- [2026-11-26] Quand la source donne le nom d’un phénomène (achat compensatoire, fatigue de décision), dis ce nom dans le say et explique-le en quelques mots, au lieu d’un mot vague comme « achat inutile ».
-- [2026-11-26] Le titre et l’accroche sont toujours choc : une question ou une affirmation qui interpelle et oppose (« X ou Y, qui … le plus ? »), jamais une formule plate ; en biographie, le sous-titre est choc.
+- [2026-11-26] Nomme et explique tout avant de t’en servir : « signer un contrat d’enregistrement », pas « il ne peut pas signer » ; « achat compensatoire » expliqué en quelques mots, pas « achat inutile ».
+- [2026-11-26] Titre de couverture choc (« X ou Y, qui … le plus ? »), jamais plat ; l’accroche le reprend tel quel, le title peut le raccourcir à 40 caractères ; en biographie, le sous-titre est choc.
 - [2026-11-26] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
 - [2026-11-26] Ne dis jamais « l’auteur » ou « le présentateur » dans le say : un avis de la source se dit comme un pari ou une prédiction, sans dire qui le dit.
