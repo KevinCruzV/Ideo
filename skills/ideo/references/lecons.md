@@ -31,3 +31,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] Quand la source donne le nom d’un phénomène (achat compensatoire, fatigue de décision), dis ce nom dans le say et explique-le en quelques mots, au lieu d’un mot vague comme « achat inutile ».
 - [2026-11-26] Le titre et l’accroche sont toujours choc : une question ou une affirmation qui interpelle et oppose (« X ou Y, qui … le plus ? »), jamais une formule plate ou descriptive.
 - [2026-11-26] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
+- [2026-11-26] Ne prends un object-state (balance, bocal, porte, écran) que si la scène parle vraiment de cet objet ; sinon, un picto précis ou un autre type de scène, pour varier d’une vidéo à l’autre.
