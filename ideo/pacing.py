@@ -10,7 +10,13 @@ KEEP_EDGE = 0.03
 DECLICK = 0.005
 LONG_PAUSE = 0.60
 PAUSE = 0.50
-SENTENCE_GAP = 0.30
+SENTENCE_GAP = 0.45
+LEAD_GAP = 0.25
+LEAD_WORDS = 3
+MID_MAX = 0.30
+MID_KEEP = 0.20
+MID_SLACK = 0.10
+PHRASE_MARKS = (",", ";", ":", ".", "!", "?", "…")
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
 MIN_LETTERS = 3
@@ -31,7 +37,26 @@ def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
     return rms > 32768.0 * 10 ** (db / 20)
 
 
-def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
+def _joined(words: list[dict]) -> list[dict]:
+    out: list[dict] = []
+    for w in words:
+        if out and not any(c.isalnum() for c in w["w"]):
+            out[-1] = {"w": out[-1]["w"] + w["w"], "s": out[-1]["s"], "e": max(out[-1]["e"], w["e"])}
+        else:
+            out.append(dict(w))
+    return out
+
+
+def _mid_phrase(words: list[dict]) -> list[tuple[float, float]]:
+    spans = []
+    for word, after in zip(_joined(words), _joined(words)[1:]):
+        if not word["w"].rstrip(CLOSERS).endswith(PHRASE_MARKS) and after["s"] - word["e"] > MID_MAX:
+            spans.append((word["e"] - MID_SLACK, after["s"] + MID_SLACK))
+    return spans
+
+
+def _cuts(pcm: np.ndarray, words: list[dict] | None = None) -> list[tuple[int, int]]:
+    inside = _mid_phrase(words) if words else []
     loud = _loud(pcm)
     if not loud.any():
         return []
@@ -45,8 +70,6 @@ def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
     cuts = []
     if start > 0:
         cuts.append((0, start))
-    side = round(PAUSE * RATE / 2)
-    long_run = round(LONG_PAUSE * RATE)
     i = first
     while i <= last_loud:
         if loud[i]:
@@ -56,7 +79,10 @@ def _cuts(pcm: np.ndarray) -> list[tuple[int, int]]:
         while not loud[j]:
             j += 1
         a, b = i * FRAME, j * FRAME
-        if b - a > long_run:
+        mid = any(lo <= a / RATE and b / RATE <= hi for lo, hi in inside)
+        limit, keep_pause = (MID_MAX, MID_KEEP) if mid else (LONG_PAUSE, PAUSE)
+        if b - a > round(limit * RATE):
+            side = round(keep_pause * RATE / 2)
             cuts.append((a + side, b - side))
         i = j
     if end < len(pcm):
@@ -76,8 +102,8 @@ def _fade(part: np.ndarray, fade_in: bool, fade_out: bool) -> np.ndarray:
     return faded
 
 
-def tighten(pcm: np.ndarray) -> tuple[np.ndarray, Callable[[float], float]]:
-    cuts = _cuts(pcm)
+def tighten(pcm: np.ndarray, words: list[dict] | None = None) -> tuple[np.ndarray, Callable[[float], float]]:
+    cuts = _cuts(pcm, words)
     if not cuts:
         return pcm, lambda t: t
     parts, cursor = [], 0
@@ -113,14 +139,28 @@ def _ends_sentence(word: str) -> bool:
     return text.endswith(SENTENCE_END) and sum(c.isalpha() for c in text) >= MIN_LETTERS
 
 
+def _lead_comma(word: str, position: int) -> bool:
+    return position <= LEAD_WORDS and word.rstrip(CLOSERS).endswith(",") and sum(c.isalpha() for c in word) >= 2
+
+
 def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
     inserts: list[tuple[int, int]] = []
-    for word, after in zip(words, words[1:]):
+    joined = _joined(words)
+    position = 0
+    for word, after in zip(joined, joined[1:]):
+        position += 1
         gap = after["s"] - word["e"]
-        if not _ends_sentence(word["w"]) or not 0 <= gap < SENTENCE_GAP:
+        if _ends_sentence(word["w"]):
+            wanted = SENTENCE_GAP
+            position = 0
+        elif _lead_comma(word["w"], position):
+            wanted = LEAD_GAP
+        else:
+            continue
+        if not 0 <= gap < wanted:
             continue
         at = word["e"] + (gap / 2 if gap > 0.02 else 0.0)
-        inserts.append((min(len(pcm), round(at * RATE)), round((SENTENCE_GAP - gap) * RATE)))
+        inserts.append((min(len(pcm), round(at * RATE)), round((wanted - gap) * RATE)))
     if not inserts:
         return pcm, lambda t: t
     parts, cursor = [], 0

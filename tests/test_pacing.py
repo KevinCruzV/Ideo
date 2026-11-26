@@ -89,7 +89,8 @@ def test_a_sentence_end_followed_too_quickly_gets_a_pause():
 
 def test_commas_long_gaps_and_the_last_word_are_left_alone():
     pcm = np.concatenate([tone(1.0), quiet(0.18), tone(1.0), quiet(0.5), tone(0.5)])
-    heard = words_of(("Chine,", 0.1, 1.0), ("alors", 1.18, 2.1), ("nord.", 2.1, 2.2), ("Europe", 2.7, 3.2))
+    heard = words_of(("Le", 0.0, 0.1), ("nord", 0.1, 0.2), ("de", 0.2, 0.3), ("Chine,", 0.3, 1.0), ("alors", 1.18, 2.1),
+                     ("nord.", 2.1, 2.2), ("Europe", 2.7, 3.2))
     out, mapping = pacing.pause_sentences(pcm, heard)
     assert len(out) == len(pcm) and mapping(2.0) == 2.0
     out, _ = pacing.pause_sentences(pcm, words_of(("fin.", 0.1, 1.0)))
@@ -173,3 +174,60 @@ def test_a_short_end_without_silence_before_is_kept():
 def test_without_words_the_audio_is_untouched():
     pcm = np.concatenate([breath(0.4), tone(1.0)])
     assert np.array_equal(pacing.gate_breaths(pcm, []), pcm)
+
+
+def test_the_pause_between_sentences_is_a_real_one():
+    assert pacing.SENTENCE_GAP >= 0.45
+
+
+def test_a_question_mark_alone_still_ends_the_sentence():
+    pcm = np.concatenate([tone(1.0), quiet(0.05), tone(1.0)])
+    heard = words_of(("achat", 0.1, 0.9), ("?", 0.9, 1.0), ("Abonne-toi", 1.05, 1.6))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    assert len(out) / RATE == pytest.approx(len(pcm) / RATE + (pacing.SENTENCE_GAP - 0.05), abs=0.01)
+    assert mapping(1.05) > 1.05 + 0.3
+
+
+def test_a_short_word_before_a_lone_mark_is_still_not_a_sentence_end():
+    pcm = np.concatenate([tone(1.0), quiet(0.05), tone(1.0)])
+    heard = words_of(("là", 0.1, 0.9), ("!", 0.9, 1.0), ("Alors", 1.05, 1.6))
+    out, _ = pacing.pause_sentences(pcm, heard)
+    assert len(out) == len(pcm)
+
+
+def test_a_lead_in_word_with_a_comma_gets_a_breath():
+    pcm = np.concatenate([tone(0.6), quiet(0.02), tone(1.0)])
+    heard = words_of(("Et", 0.0, 0.2), ("toi,", 0.2, 0.6), ("qui", 0.62, 1.0), ("veux", 1.0, 1.4), ("voir", 1.4, 1.62))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    assert len(out) / RATE == pytest.approx(len(pcm) / RATE + (pacing.LEAD_GAP - 0.02), abs=0.01)
+    assert mapping(0.62) == pytest.approx(0.62 + pacing.LEAD_GAP - 0.02, abs=0.01)
+
+
+def test_a_comma_deep_in_a_sentence_gets_no_extra_pause():
+    pcm = np.concatenate([tone(2.0), quiet(0.02), tone(1.0)])
+    heard = words_of(("Il", 0.0, 0.4), ("voit", 0.4, 0.8), ("les", 0.8, 1.2), ("gens,", 1.2, 2.0), ("puis", 2.02, 2.6))
+    out, _ = pacing.pause_sentences(pcm, heard)
+    assert len(out) == len(pcm)
+
+
+def test_a_stall_in_the_middle_of_a_phrase_is_cut_short():
+    pcm = np.concatenate([tone(0.8), quiet(0.45), tone(0.8)])
+    heard = words_of(("soit", 0.0, 0.4), ("les", 0.4, 0.8), ("chiffres", 1.25, 1.6), ("ne", 1.6, 2.05))
+    out, mapping = pacing.tighten(pcm, heard)
+    assert len(out) / RATE == pytest.approx(0.8 + pacing.MID_KEEP + 0.8, abs=0.04)
+    assert mapping(1.25) == pytest.approx(0.8 + pacing.MID_KEEP, abs=0.04)
+
+
+def test_the_same_gap_after_a_comma_or_a_full_stop_is_left_alone():
+    pcm = np.concatenate([tone(0.8), quiet(0.45), tone(0.8)])
+    for last in ("les,", "les.", "les ?"):
+        heard = words_of(("soit", 0.0, 0.4), (last, 0.4, 0.8), ("chiffres", 1.25, 1.6))
+        out, _ = pacing.tighten(pcm, heard)
+        assert len(out) == len(pcm)
+
+
+def test_a_long_stall_in_a_phrase_keeps_only_the_short_pause():
+    pcm = np.concatenate([tone(0.8), quiet(1.2), tone(0.8)])
+    heard = words_of(("soit", 0.0, 0.4), ("les", 0.4, 0.8), ("chiffres", 2.0, 2.4))
+    out, _ = pacing.tighten(pcm, heard)
+    assert len(out) / RATE == pytest.approx(0.8 + pacing.MID_KEEP + 0.8, abs=0.04)
