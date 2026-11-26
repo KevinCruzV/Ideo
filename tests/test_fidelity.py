@@ -134,3 +134,10 @@ def test_a_word_split_into_unrelated_words_still_counts():
 
 def test_keep_count_follows_the_split_words():
     assert fidelity.keep_count("Alors qui encaisse.", timed("Alors qui en caisse. coup")) == 4
+
+
+def test_a_dropped_first_word_does_not_swallow_words_further_on():
+    text = "Pourtant les prix baissent pour tous."
+    words = heard("les prix baissent pour tous")
+    assert fidelity.similarity(text, words) > 0.9
+    assert fidelity.added(text, words) == []

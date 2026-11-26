@@ -43,17 +43,14 @@ def _names(text: str) -> list[str]:
     return out
 
 
-def _openers(text: str) -> list[str]:
-    out = []
-    initial = True
-    for chunk in text.split():
-        parts = textmatch.SPLIT.split(chunk)
-        letters = [c for c in parts[0] if c.isalpha()]
-        n = textmatch.normalize(parts[0])
-        if initial and n and len(letters) >= 3 and letters[0].isupper():
-            out.append(n)
-        initial = chunk.rstrip(CLOSERS).endswith(SENTENCE_END)
-    return out
+def _opener(text: str) -> list[str]:
+    chunks = text.split()
+    if not chunks:
+        return []
+    first = textmatch.SPLIT.split(chunks[0])[0]
+    letters = [c for c in first if c.isalpha()]
+    n = textmatch.normalize(first)
+    return [n] if n and len(letters) >= 3 and letters[0].isupper() else []
 
 
 def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None, smallest: int = 1,
@@ -84,7 +81,11 @@ def _fold(names: list[str], tokens: list[str], owners: list[int] | None = None, 
 def _settle(text: str, tokens: list[str], owners: list[int] | None = None) -> tuple[list[str], list[int] | None]:
     names = _names(text)
     tokens, owners = _fold(names, tokens, owners)
-    tokens, owners = _fold(_openers(text), tokens, owners, smallest=2, match=OPENER_MATCH)
+    head = owners[:NAME_WINDOW] if owners is not None else None
+    start, head = _fold(_opener(text), tokens[:NAME_WINDOW], head, smallest=2, match=OPENER_MATCH)
+    tokens = start + tokens[NAME_WINDOW:]
+    if owners is not None:
+        owners = head + owners[NAME_WINDOW:]
     words = [t for t in _tokens(text) if len(t) >= SPLIT_MIN and t not in names]
     return _fold(words, tokens, owners, smallest=2, match=1.0)
 

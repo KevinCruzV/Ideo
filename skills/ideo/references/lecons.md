@@ -27,8 +27,8 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] (auto:liste-nue) N'écris jamais une liste de simples noms : ajoute un chiffre ou un détail à chaque entrée, ou prends un dessin.
 - [2026-11-26] (auto:premier-element-tardif) Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.
 - [2026-11-26] Ne prends une scène body que pour parler du corps (posture, organe, santé) ; pour des métiers ou des tâches, prends une liste de tâches (fact-chips, stack-list) ou des pictos.
-- [2026-11-26] Un object-state montre l’objet dont parle vraiment la scène : jamais un téléphone ou un écran pour une comparaison qui n’en parle pas ; prends alors une liste ou des pictos.
+- [2026-11-26] Ne prends un object-state (balance, bocal, écran) que si la scène parle vraiment de cet objet, jamais un téléphone pour une comparaison ; sinon une liste ou un picto précis, pour varier les vidéos.
 - [2026-11-26] Quand la source donne le nom d’un phénomène (achat compensatoire, fatigue de décision), dis ce nom dans le say et explique-le en quelques mots, au lieu d’un mot vague comme « achat inutile ».
-- [2026-11-26] Le titre et l’accroche sont toujours choc : une question ou une affirmation qui interpelle et oppose (« X ou Y, qui … le plus ? »), jamais une formule plate ou descriptive.
+- [2026-11-26] Le titre et l’accroche sont toujours choc : une question ou une affirmation qui interpelle et oppose (« X ou Y, qui … le plus ? »), jamais une formule plate ; en biographie, le sous-titre est choc.
 - [2026-11-26] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
-- [2026-11-26] Ne prends un object-state (balance, bocal, porte, écran) que si la scène parle vraiment de cet objet ; sinon, un picto précis ou un autre type de scène, pour varier d’une vidéo à l’autre.
+- [2026-11-26] Ne dis jamais « l’auteur » ou « le présentateur » dans le say : un avis de la source se dit comme un pari ou une prédiction, sans dire qui le dit.
