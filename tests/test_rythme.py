@@ -108,6 +108,22 @@ def test_plans_from_video_merges_a_flash_into_one_cut(tmp_path):
     assert len(rythme.plans_from_video(video)) == 2
 
 
+def test_plans_from_video_eclaircit_une_video_sombre(tmp_path):
+    first, second = tmp_path / "nuit.mp4", tmp_path / "ombre.mp4"
+    make_video(first, 1, "0x0c0c0c")
+    make_video(second, 1, "0x24201c")
+    video = tmp_path / "sombre.mp4"
+    concat_videos([first, second], video, tmp_path)
+    assert rythme.luminosite(video) < rythme.SOMBRE
+    assert len(rythme.plans_from_video(video, seuil=0.25)) == 2
+
+
+def test_luminosite_dune_video_claire(tmp_path):
+    video = tmp_path / "blanc.mp4"
+    make_video(video, 1, "white")
+    assert rythme.luminosite(video) > rythme.SOMBRE
+
+
 def test_words_from_video_reuses_whisper(monkeypatch, tmp_path):
     video = tmp_path / "clip.mp4"
     make_video_with_audio(video, 1)

@@ -25,7 +25,7 @@ Conclusions :
 
 Limites :
 - **Échantillon réduit :** 5 vidéos de référence.
-- **Vidéos très sombres :** la détection de coupes ffmpeg sous-compte les changements entre deux plans sombres (Tupac : 10 plans/min mesurés, environ 19 à l'œil).
+- **Vidéos très sombres :** la détection de coupes ffmpeg sous-comptait les changements entre deux plans sombres (Tupac : 10 plans/min mesurés, environ 19 à l'œil). Depuis, `rythme` éclaircit l'image avant le filtre de scène quand la luminosité moyenne est sous 60 sur 255 ; pas encore remesuré sur Tupac.
 - **Ponctuation :** Whisper ponctue mal un débit sans pause (Sorcières), donc la longueur des phrases n'y est pas fiable.
 
 ## 2. Ce qui a changé dans Ideo (PR #37)
@@ -53,9 +53,9 @@ Images : `scenes-avant.jpg`, `scenes-apres.jpg`, `covers.jpg`, `fonds-compares.j
 2. **Vérifier une cover et une carte de personnage avec une vraie photo d'archive.** Le cadrage a été validé avec une image de test, pas avec une vraie photo.
 3. **Carton de chapitre quand le `kicker` n'est qu'une date** (« 1991 ») : le carton affiche alors juste la date. Décider s'il faut prendre le nom de l'acte ailleurs.
 4. **Si les recadrages ne suffisent pas,** demander des scènes plus courtes dans `plan-guide.md`. Le repère actuel est 6-9 s, soit 18-26 mots ; on pourrait passer à 4-6 s. Cela coûte plus de tokens au moment d'écrire le plan.
-5. **Outil `rythme` sur les vidéos très sombres :** améliorer la détection de coupes, par exemple en éclaircissant l'image avant le filtre de scène.
-6. **Données de test :** `render/fixtures/*.json` contiennent encore des sous-titres de 3 à 4 mots, générés avec l'ancien réglage. Les régénérer pour que les images de test reflètent le rendu réel.
-7. **Rendu des images de test dans un conteneur cloud :** `render/scripts/stills.mjs` télécharge Chrome depuis remotion.media, ce qui est bloqué. Il faudrait une option pour passer `browserExecutable` (par exemple `/opt/pw-browsers/chromium_headless_shell`). Sur le Mac, rien ne change.
+5. ~~**Outil `rythme` sur les vidéos très sombres**~~ : fait (éclaircissement automatique). Reste à remesurer la vidéo Tupac.
+6. ~~**Données de test**~~ : fait, sous-titres de 1 à 2 mots.
+7. ~~**Rendu des images de test dans un conteneur cloud**~~ : fait, `node scripts/stills.mjs --browser <chemin>` ou `REMOTION_BROWSER_EXECUTABLE`.
 8. **Revoir et fusionner la PR #37.**
 
 ## 4. Environnement cloud

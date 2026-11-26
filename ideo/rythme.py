@@ -11,6 +11,9 @@ SEUIL_SCENE = 0.15
 FUSION = 0.4
 PAUSE_MIN = 0.3
 PTS_TIME = re.compile(r"pts_time:([\d.]+)")
+YAVG = re.compile(r"YAVG=([\d.]+)")
+SOMBRE = 60
+ECLAIRCIR = "lutyuv=y=gammaval(0.5),"
 
 
 @dataclass
@@ -47,13 +50,24 @@ def _ffmpeg() -> str:
     return binary
 
 
+def luminosite(video: Path) -> float:
+    result = subprocess.run(
+        [_ffmpeg(), "-nostdin", "-hide_banner", "-nostats", "-i", str(video), "-vf",
+         "fps=2,signalstats,metadata=print:key=lavfi.signalstats.YAVG", "-f", "null", "-"],
+        capture_output=True, text=True, stdin=subprocess.DEVNULL,
+    )
+    valeurs = [float(v) for v in YAVG.findall(result.stderr)]
+    return sum(valeurs) / len(valeurs) if valeurs else 255.0
+
+
 def plans_from_video(video: Path, seuil: float = SEUIL_SCENE) -> list[tuple[float, float]]:
     video = Path(video)
     duree = render.probe_media(video)["duration"]
+    eclaircir = ECLAIRCIR if luminosite(video) < SOMBRE else ""
     result = subprocess.run(
-        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(video), "-vf",
-         f"select='gt(scene,{seuil})',showinfo", "-f", "null", "-"],
-        capture_output=True, text=True,
+        [_ffmpeg(), "-nostdin", "-hide_banner", "-nostats", "-i", str(video), "-vf",
+         f"{eclaircir}select='gt(scene,{seuil})',showinfo", "-f", "null", "-"],
+        capture_output=True, text=True, stdin=subprocess.DEVNULL,
     )
     cuts: list[float] = []
     for t in sorted({float(t) for t in PTS_TIME.findall(result.stderr) if FUSION <= float(t) < duree - FUSION}):
