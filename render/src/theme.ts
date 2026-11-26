@@ -102,7 +102,7 @@ export type AccentColor = "red" | "yellow" | "blue";
 export const accentCycle: readonly AccentColor[] = ["red", "yellow", "blue"];
 
 export const GROUNDS: Record<"light" | Mood, { toward: PaperColor; amount: number }> = {
-  light: { toward: "cream", amount: 0.28 },
+  light: { toward: "cream", amount: 0.15 },
   dark: { toward: "ink", amount: 0.35 },
 };
 let ground = GROUNDS.light;
