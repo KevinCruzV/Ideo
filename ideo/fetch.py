@@ -50,7 +50,7 @@ def _cleanup(tmp: Path) -> None:
 
 def _ytdlp(url: str, tmp: Path, sponsorblock: bool) -> list[str]:
     cmd = [
-        sys.executable, "-m", "yt_dlp", "--no-playlist", "--no-progress",
+        sys.executable, "-m", "yt_dlp", "--no-playlist", "--newline", "--progress-delta", "10",
         "-f", "bestaudio[ext=m4a]/bestaudio",
         "-x", "--audio-format", "m4a",
         "--write-info-json",

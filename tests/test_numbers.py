@@ -161,3 +161,16 @@ def test_montant_sans_le_mot_euros_dans_une_phrase_en_euros(amounts_only):
 def test_une_decimale_ou_une_phrase_sans_euros_reste_un_nombre():
     assert "trente-deux euros" not in numbers.normalize("Le score passe à 32,72 points.", "fr").text
     assert "euros" not in numbers.normalize("Il coûte 10 euros, soit 21,7 de plus.", "fr").text.split("soit")[1]
+
+
+@pytest.mark.parametrize("text,wrong", [
+    ("La dette atteint 3,05 milliards de dollars.", "trois dollars"),
+    ("Il gagne 1,25 milliard d'euros, soit 12,50 euros par jour.", "un euro vingt-cinq"),
+    ("Il court en 9,58 secondes et touche 250 000 euros.", "neuf euros"),
+    ("Le marathon fait 42,19 kilomètres pour 10 euros.", "quarante-deux euros"),
+    ("La taxe passe à 3,25 pour cent, soit 40 euros.", "trois euros"),
+    ("Le score moyen est de 2,15 buts. Le billet coûte 30 euros.", "deux euros"),
+])
+def test_un_nombre_qui_n_est_pas_un_prix_reste_un_nombre(text, wrong):
+    for amounts_only in (True, False):
+        assert wrong not in numbers.normalize(text, "fr", amounts_only).text

@@ -121,10 +121,13 @@ def run(cmd: list[str], log: Path) -> None:
     log = Path(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     stalled = False
-    try:
-        with log.open("ab") as f:
+    with log.open("ab") as f:
+        try:
             proc = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                                     start_new_session=True, env={**os.environ, "PYTHONUNBUFFERED": "1"})
+        except FileNotFoundError:
+            raise IdeoError(f"Commande introuvable : {cmd[0]}") from None
+        try:
             size, quiet_since = log.stat().st_size, time.monotonic()
             while True:
                 try:
@@ -132,7 +135,7 @@ def run(cmd: list[str], log: Path) -> None:
                     break
                 except subprocess.TimeoutExpired:
                     pass
-                now_size = log.stat().st_size
+                now_size = log.stat().st_size if log.exists() else size
                 if now_size != size:
                     size, quiet_since = now_size, time.monotonic()
                 elif time.monotonic() - quiet_since > STALL_SECONDS:
@@ -140,8 +143,9 @@ def run(cmd: list[str], log: Path) -> None:
                     _stop(proc)
                     code = proc.returncode
                     break
-    except FileNotFoundError:
-        raise IdeoError(f"Commande introuvable : {cmd[0]}") from None
+        except BaseException:
+            _stop(proc)
+            raise
     if stalled:
         minutes = max(1, round(STALL_SECONDS / 60))
         with log.open("a", encoding="utf-8") as f:

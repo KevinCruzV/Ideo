@@ -33,6 +33,8 @@ TOKEN = re.compile(r"^(?P<pre>[«\u00a0\"“(\[‘']*)(?P<num>\d[\d.,]*\d|\d)(?P
 GROUP = re.compile(r"^(?P<num>\d{3}(?:,\d+)?)(?P<suf>[%€$]?)(?P<post>[^\w%€$]*)$")
 CURRENCY_WORDS = {"euros": "€", "euro": "€", "dollars": "$", "dollar": "$"}
 TWO_DECIMALS = re.compile(r",\d{2}$")
+PRICE_NEXT = frozenset({"chez", "contre", "à", "au", "aux", "et", "ou", "puis", "dans", "sur", "avec", "sans", "en", "le", "la", "les", "un", "une", "soit"})
+SENTENCE_END = (".", "!", "?", "…")
 CENTS = {"en": ("cent", "cents")}
 AND = {"en": "and"}
 HEAD = re.compile(r"^\d{1,3}$")
@@ -170,7 +172,9 @@ def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False, im
         spoken_amount = _amount(value, raw, suf, lang)
         if spoken_amount:
             return _decorate(spoken_amount, pre, post), consumed
-    if implied and isinstance(value, float) and not suf and TWO_DECIMALS.search(raw) and not (key and key[0] in UNITS.get(lang, {})):
+    after = re.sub(r"[^\w]", "", nxt.lower()) if nxt else ""
+    priced = post or not after or after in PRICE_NEXT
+    if implied and isinstance(value, float) and not suf and TWO_DECIMALS.search(raw) and priced:
         spoken_amount = _amount(value, raw, implied, lang)
         if spoken_amount:
             return _decorate(spoken_amount, pre, post), consumed
@@ -200,17 +204,33 @@ def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False, im
     return _decorate(result, pre, post), consumed
 
 
+def _bare_word(word: str) -> str:
+    return re.sub(r"[^\w]", "", re.sub(r"^[dl][\'’]", "", word.lower()))
+
+
+def _implied_currency(words: list[str]) -> list[str | None]:
+    out: list[str | None] = []
+    sentence: list[str] = []
+    for word in words + [""]:
+        sentence.append(word)
+        if not word or word.rstrip("»”\"')]").endswith(SENTENCE_END):
+            found = next((CURRENCY_WORDS[_bare_word(w)] for w in sentence if _bare_word(w) in CURRENCY_WORDS), None)
+            out.extend([found] * len(sentence))
+            sentence = []
+    return out[:len(words)]
+
+
 def normalize(text: str, lang: str, amounts_only: bool = False) -> Normalized:
     if lang not in COVERED or not re.search(r"\d", text):
         return Normalized(text, None)
     words = align.script_words(text)
-    implied = next((CURRENCY_WORDS[w] for w in (re.sub(r"[^\w]", "", x.lower()) for x in words) if w in CURRENCY_WORDS), None)
+    implied_at = _implied_currency(words)
     units: list = []
     spoken: list[str] = []
     changed = False
     i = 0
     while i < len(words):
-        converted = _convert(words, i, lang, amounts_only, implied)
+        converted = _convert(words, i, lang, amounts_only, implied_at[i])
         if converted:
             said, used = converted
             units.append({"orig": used, "said": len(said), "numeric": True})
