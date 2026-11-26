@@ -7,7 +7,7 @@ export type Support = Paper | "ticket" | "clipping" | "postit" | "none";
 const MONEY = new Set(["€", "cts"]);
 const PRICED = new Set(["counter", "shape-diagram"]);
 const CLIPPED = new Set(["quote", "timeline"]);
-const BARE = new Set(["stamp", "mascot"]);
+const BARE = new Set(["stamp"]);
 
 export const paperOf = (value: unknown, dark: boolean): Paper =>
   PAPERS.includes(value as Paper) ? (value as Paper) : dark ? "journal" : "creme";

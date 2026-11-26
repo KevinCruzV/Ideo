@@ -14,7 +14,7 @@ describe("support de chaque scène", () => {
 
   test("citation et frise sur une coupure, phrase-clé sur un post-it sauf la première scène", () => {
     const s = supportsFor([seg("hook"), scene("key-title"), scene("quote"), scene("stack-list"), scene("timeline"), scene("key-title"), scene("mascot")], "creme");
-    expect(s).toEqual(["creme", "creme", "clipping", "creme", "clipping", "postit", "none"]);
+    expect(s).toEqual(["creme", "creme", "clipping", "creme", "clipping", "postit", "creme"]);
   });
 
   test("jamais deux fois de suite le même support spécial", () => {
