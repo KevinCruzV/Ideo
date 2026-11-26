@@ -181,6 +181,16 @@ def spoken_for(text: str, lang: str, local: bool, name: str = "", plain: bool = 
     return spoken, normalized.units
 
 
+def _with_colons(heard: list[dict], text: str, duration: float) -> list[dict]:
+    ends = [w["e"] for w in align.align_words(align.script_words(text), heard, duration)
+            if w["w"].rstrip(pacing.CLOSERS).endswith(":")]
+    if not ends:
+        return heard
+    return [{**w, "w": w["w"].rstrip(",") + "\u00a0:"}
+            if not w["w"].rstrip(pacing.CLOSERS).endswith(":") and any(abs(w["e"] - e) < 0.02 for e in ends) else w
+            for w in heard]
+
+
 def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None, units: list | None = None) -> list[dict]:
     wav = Path(wav)
     with wave.open(str(wav), "rb") as w:
@@ -189,7 +199,7 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
         pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
     tight, mapping = pacing.tighten(pcm, heard)
     heard = pacing.remap(heard, mapping)
-    tight, spread = pacing.pause_sentences(tight, heard)
+    tight, spread = pacing.pause_sentences(tight, _with_colons(heard, spoken or text, len(tight) / pacing.RATE))
     heard = pacing.remap(heard, spread)
     if len(tight) != len(pcm):
         with wave.open(str(wav), "wb") as w:

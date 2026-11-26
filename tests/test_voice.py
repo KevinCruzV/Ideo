@@ -361,3 +361,27 @@ def test_paid_voice_reuses_existing_segments_without_calling_the_service(job_wit
             raise AssertionError("un segment déjà payé ne doit pas être regénéré")
 
     voice.voice_part(job_with_plan, 1, backend=Paid())
+
+
+def test_finish_segment_reprend_le_deux_points_du_texte_ecrit(tmp_path):
+    import numpy as np
+
+    from ideo import pacing
+
+    wav = tmp_path / "s.wav"
+    rate = 48000
+    t = np.arange(rate)
+    tone = 8000 * np.sin(2 * np.pi * 440 * t / rate)
+    pcm = np.concatenate([tone, tone]).astype("<i2")
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    heard = [{"w": "la", "s": 0.0, "e": 0.3}, {"w": "réduflation", "s": 0.3, "e": 1.0},
+             {"w": "le", "s": 1.0, "e": 1.3}, {"w": "pot", "s": 1.3, "e": 2.0}]
+    words = voice.finish_segment(wav, "la réduflation : le pot", heard)
+    with wave.open(str(wav), "rb") as w:
+        duration = w.getnframes() / rate
+    assert duration == pytest.approx(2.0 + pacing.COLON_GAP, abs=0.02)
+    assert words[2]["s"] == pytest.approx(1.0 + pacing.COLON_GAP, abs=0.02)
