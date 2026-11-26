@@ -13,7 +13,7 @@ import { cleanItems, earlyItems, str } from "./scenes/coerce";
 import { punchCuts } from "./scenes/punch";
 import { resolveScene } from "./scenes/registry";
 import { SceneFrame } from "./scenes/SceneFrame";
-import { colors, moodOf, segmentAccent, setMood } from "./theme";
+import { groundOf, moodOf, segmentAccent, setMood } from "./theme";
 import { Timeline } from "./types";
 
 export const Short: React.FC<Timeline> = (timeline) => {
@@ -37,7 +37,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
         const kicker = str(props.kicker);
         return (
           <Sequence key={`${segment.kind}-${i}`} from={segment.from} durationInFrames={duration} layout="none">
-            <Background color={colors[accents[i].accent]} />
+            <Background color={groundOf(accents[i].accent)} />
             <AccentContext.Provider value={accents[i].accent}>
               <BeatsContext.Provider value={beats}>
               <SceneFrame props={props} duration={duration} last={i === count - 1} index={i} cuts={cuts}>

@@ -58,6 +58,7 @@ export const setMood = (mood?: Mood): void => {
   Object.assign(onPaper, palette.onPaper);
   shade = palette.shade;
   dimmed = mood === "dark" ? 0.55 : 0.38;
+  ground = GROUNDS[mood ?? "light"];
   shadow = `${SHADOW_X}px ${SHADOW_Y}px 0 ${shade}`;
 };
 
@@ -99,6 +100,21 @@ export const content = {
 export type AccentColor = "red" | "yellow" | "blue";
 
 export const accentCycle: readonly AccentColor[] = ["red", "yellow", "blue"];
+
+export const GROUNDS: Record<"light" | Mood, { toward: PaperColor; amount: number }> = {
+  light: { toward: "cream", amount: 0.45 },
+  dark: { toward: "ink", amount: 0.35 },
+};
+let ground = GROUNDS.light;
+
+const channels = (hex: string): number[] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+export const mixHex = (a: string, b: string, t: number): string =>
+  `#${channels(a)
+    .map((v, i) => Math.round(v + (channels(b)[i] - v) * t).toString(16).padStart(2, "0"))
+    .join("")}`;
+
+export const groundOf = (accent: AccentColor): string => mixHex(colors[accent], colors[ground.toward], ground.amount);
 
 export const nextAccent = (accent: AccentColor): AccentColor => accentCycle[(accentCycle.indexOf(accent) + 1) % accentCycle.length];
 

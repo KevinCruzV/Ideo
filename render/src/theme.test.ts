@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { accentAt, accentForIndex, colors, dimmed, moodOf, onPaper, palettes, PaperColor, segmentAccent, setMood, shade } from "./theme";
+import { accentAt, accentForIndex, colors, dimmed, groundOf, mixHex, moodOf, onPaper, palettes, PaperColor, segmentAccent, setMood, shade } from "./theme";
 
 describe("accent", () => {
   test("rotation rouge, jaune, bleu par index de segment", () => {
@@ -84,5 +84,22 @@ describe("humeur sombre", () => {
     setMood(undefined);
     expect(colors.background).toBe(palettes.light.colors.background);
     expect(shade).toBe(palettes.light.shade);
+  });
+});
+
+describe("fond des scènes", () => {
+  const light = (hex: string) => [1, 3, 5].reduce((sum, i) => sum + parseInt(hex.slice(i, i + 2), 16), 0);
+
+  test("mélange deux couleurs", () => {
+    expect(mixHex("#000000", "#ffffff", 0.5)).toBe("#808080");
+    expect(mixHex("#e2462c", "#e2462c", 0.3)).toBe("#e2462c");
+  });
+
+  test("adoucit la couleur de la scène en clair, l'assombrit en ambiance sombre", () => {
+    setMood();
+    expect(light(groundOf("blue"))).toBeGreaterThan(light(colors.blue));
+    setMood("dark");
+    expect(light(groundOf("blue"))).toBeLessThan(light(colors.blue));
+    setMood();
   });
 });

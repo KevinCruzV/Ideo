@@ -10,7 +10,7 @@ import { PHOTO_H, PHOTO_W, PhotoFrame } from "./scenes/PhotoFrame";
 import { lookOf } from "./scenes/personLook";
 import { bustHeight, CLOSE_VIEW, PersonBust } from "./scenes/PersonBust";
 import { fitText } from "./text/fit";
-import { AccentColor, accentCycle, colors, fonts, layout, moodOf, onPaper, setMood, shade } from "./theme";
+import { AccentColor, accentCycle, colors, fonts, groundOf, layout, moodOf, onPaper, setMood, shade } from "./theme";
 
 export type CoverLook = Record<string, unknown> & { name?: string };
 
@@ -143,7 +143,7 @@ export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, w
   const edge = tornEdge("cover-sheet");
   return (
     <AbsoluteFill>
-      <Background color={colors[accent]} />
+      <Background color={groundOf(accent)} />
       {text.tag ? (
         <div style={{ position: "absolute", left: SHEET_X + 24, top: sheetY - 110, background: colors.ink, color: colors.cream, fontFamily: fonts.brand, fontWeight: 700, fontSize: TAG_SIZE * 0.7, letterSpacing: 2, padding: "10px 24px", borderRadius: 999, transform: "rotate(-3deg)" }}>
           {text.tag.toUpperCase()}
