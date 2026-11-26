@@ -19,6 +19,7 @@ export type Chapter = { part: number; total: number; title: string; label: strin
 
 export type Timeline = {
   mood?: "dark";
+  paper?: string;
   fps: number;
   width: number;
   height: number;
