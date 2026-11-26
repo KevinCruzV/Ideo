@@ -272,6 +272,24 @@ def test_finish_segment_adds_a_pause_after_a_sentence_that_runs_into_the_next(tm
     assert words[1]["s"] - words[0]["e"] >= pacing.SENTENCE_GAP - 0.02
 
 
+def test_finish_segment_pauses_after_a_question_mark_heard_as_a_word_of_its_own(tmp_path):
+    import numpy as np
+
+    wav = tmp_path / "s.wav"
+    rate = 48000
+    t = np.arange(rate)
+    tone = 8000 * np.sin(2 * np.pi * 440 * t / rate)
+    pcm = np.concatenate([tone, tone]).astype("<i2")
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm.tobytes())
+    heard = [{"w": "règles", "s": 0.0, "e": 0.85}, {"w": "?", "s": 0.85, "e": 1.0}, {"w": "Si", "s": 1.0, "e": 2.0}]
+    words = voice.finish_segment(wav, "règles ? Si", heard)
+    assert words[1]["s"] - words[0]["e"] >= pacing.SENTENCE_GAP - 0.02
+
+
 def plan_with_numbers(job, say="En 1998, il y avait 3 000 personnes et 8 % de pluie."):
     plan = common.load_json(job / "plan.json")
     plan["parts"][0]["scenes"][0]["say"] = say
@@ -405,3 +423,23 @@ def test_finish_segment_garde_la_pause_de_fin_de_phrase_avec_des_mots_sans_ponct
     with wave.open(str(wav), "rb") as w:
         duration = w.getnframes() / rate
     assert duration >= 2.0 + 0.45 - 0.02
+
+
+def test_the_question_and_the_subscribe_call_are_joined_with_a_pause(tmp_path):
+    import numpy as np
+
+    parts = []
+    for k in range(2):
+        path = tmp_path / f"p{k}.wav"
+        with wave.open(str(path), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(48000)
+            w.writeframes((np.ones(48000) * 1000).astype("<i2").tobytes())
+        parts.append(path)
+    target = tmp_path / "joined.wav"
+    starts = voice._join_wavs(parts, target)
+    with wave.open(str(target), "rb") as w:
+        total = w.getnframes() / 48000
+    assert starts[1] == pytest.approx(1.0 + voice.JOIN_PAUSE)
+    assert total == pytest.approx(2.0 + voice.JOIN_PAUSE)

@@ -110,3 +110,34 @@ def test_a_misread_first_word_of_a_sentence_still_counts():
     assert exact == 1.0
     assert fidelity.similarity(text, heard("Pourtan le panier coûte moins cher Selon Leclerc le prix baisse")) < exact
     assert fidelity.similarity(text, heard("Pourtant le panier coûte moins cher Celon Leclerc le prix baisse")) < exact
+
+
+def test_a_word_heard_as_two_words_is_not_an_added_word():
+    text = "Alors qui encaisse ? Au début de la chaîne, les producteurs de lait."
+    words = heard("Alors qui en caisse Au début de la chaîne les producteurs de lait")
+    assert fidelity.similarity(text, words) == 1.0
+    assert fidelity.added(text, words) == []
+
+
+def test_a_name_opening_the_text_heard_as_two_words_is_not_an_added_word():
+    text = "Leclerc ou Aldi, qui vole le plus les Français ?"
+    words = heard("Le claire ou Haldi qui vole le plus les Français")
+    assert fidelity.similarity(text, words) == 1.0
+    assert fidelity.added(text, words) == []
+
+
+def test_a_word_split_into_unrelated_words_still_counts():
+    text = "Alors qui encaisse ? Au début de la chaîne, les producteurs de lait."
+    assert fidelity.similarity(text, heard("Alors qui en mange Au début de la chaîne les producteurs de lait")) < 1.0
+    assert fidelity.added(text, heard("Alors qui en mange Au début de la chaîne les producteurs de lait")) != []
+
+
+def test_keep_count_follows_the_split_words():
+    assert fidelity.keep_count("Alors qui encaisse.", timed("Alors qui en caisse. coup")) == 4
+
+
+def test_a_dropped_first_word_does_not_swallow_words_further_on():
+    text = "Pourtant les prix baissent pour tous."
+    words = heard("les prix baissent pour tous")
+    assert fidelity.similarity(text, words) > 0.9
+    assert fidelity.added(text, words) == []

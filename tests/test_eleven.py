@@ -542,3 +542,13 @@ def test_the_paid_voice_gets_decimal_amounts_spelled_out_but_other_numbers_as_di
     assert spoken == "Il paie vingt-sept euros quatre-vingt-douze en 1998."
     assert sum(u["said"] for u in units) == len(spoken.split())
     assert voice.spoken_for("Il paie 5 € en 1998.", "fr", False, "seg_01", plain=True) == ("Il paie 5 € en 1998.", None)
+
+
+def test_the_subscribe_call_follows_the_final_question_after_a_pause(eleven_job, server):
+    plan = common.load_json(eleven_job / "plan.json")
+    plan["parts"][0]["question"] = "Pour toi, qui a gagné ?"
+    common.save_json(eleven_job / "plan.json", plan)
+    voice.voice_part(eleven_job, 1)
+    words = common.load_json(eleven_job / "parts" / "01" / "seg_99_outro.words.json")
+    at = next(i for i, w in enumerate(words) if w["w"].endswith("?"))
+    assert words[at + 1]["s"] - words[at]["e"] >= 0.4

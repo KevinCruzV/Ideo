@@ -5,6 +5,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 ## Défauts signalés
 
 - [ ] [2026-11-21] (7i3BBkUZ6PQ) Accroche : la voix locale fait rarement monter le dernier mot comme une vraie question ; sur 80 prises, aucune n'avait à la fois un « Dis-moi » court et questionnant, une fin à la bonne vitesse et une montée finale juste (cible : montée interne de 7 à 10 demi-tons).
+  Entretien du 2026-11-26 (b) : rien de nouveau, job présent mais sans voice-hook.json ; aucune montée finale ne se règle sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-24 : critères et nombre de prises relus dans hookvoice, la montée finale vient de la voix locale elle-même ; aucun réglage du code ne la produit sans écouter de nouvelles prises. Non corrigé.
   Entretien du 2026-11-25 : critères relus à nouveau, rien d'autre à tenter sans écoute ; même cause que l'accroche imparfaite ci-dessous. Non corrigé.
   Entretien du 2026-11-25 (c) : trois entretiens ont relu les mêmes critères sans trouver de réglage ; la montée finale dépend de la voix locale et ne peut être jugée qu'en écoutant de nouvelles prises. Non corrigé.
@@ -22,6 +23,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-22] (sSm_FQ3lsg4) Fait divers, horreur, catastrophe : la direction artistique (couleurs, fonds, dessins) doit devenir sombre, pas les couleurs gaies habituelles.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Biographie ou histoire : il faut voir la tête de la personne principale, en grand et ressemblante, et la revoir au fil de l’histoire.
 - [ ] [2026-11-22] (sSm_FQ3lsg4) La citation utilisée est lue par le youtuber, pas par la personne citée : vérifier que la voix de l’extrait n’est pas celle du narrateur.
+  Entretien du 2026-11-26 (b) : words.json du job ne contient toujours que w, s et e par mot, aucun locuteur. Non automatisé.
   Entretien du 2026-11-25 (h) : assemble.quote_bounds cadre l'extrait sur le texte cité retrouvé dans la transcription de la source, sans savoir qui parle ; aucun repère de locuteur n'existe dans le dépôt, donc pas de test qui montre la cause. Non reproduit, à traiter avec un vrai cas de job.
   Entretien du 2026-11-24 : le choix de la voix de l'extrait se juge à l'écoute et à la source, aucun contrôle automatique fiable trouvé. Non automatisé.
   Entretien du 2026-11-25 : la transcription du job ne distingue pas les voix (aucun champ de locuteur dans words.json), donc rien à comparer ; la leçon « pas de scène quote quand la phrase est lue par le présentateur » reste la seule garde. Non automatisé.
@@ -89,11 +91,13 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (vtb-jGwGrd8) L'audio se coupe bizarrement sur la phrase qui dit que les PME paieraient moins d'impôt sur les sociétés.
   Entretien du 2026-11-25 (k) : même cause et même correctif que la coupure sur « résultats décevants » ci-dessus (tighten() de pacing.py, fondu de 5 ms ajouté à chaque bord de coupe).
 - [ ] [2026-11-25] (vtb-jGwGrd8) La voix ElevenLabs choisie pour cette vidéo ne plaît pas à l'utilisateur.
+  Entretien du 2026-11-26 (b) : préférence de voix, pas un défaut de code. Non automatisé.
   Entretien du 2026-11-25 (k) : préférence de voix, pas un défaut de code ; aucun contrôle automatique ne peut juger qu'une voix « ne plaît pas ». Seul un changement de voix dans config.json (elevenlabs_voice_id) peut répondre à ce retour. Non automatisé.
   Entretien du 2026-11-26 : préférence de voix, pas un défaut de code. Non automatisé.
 - [x] [2026-11-25] (vtb-jGwGrd8) L'audio a une coupure chelou vers la phrase qui dit « 100 milliards sur 5 ans ».
   Entretien du 2026-11-25 (k) : même cause et même correctif que la coupure sur « résultats décevants » ci-dessus (tighten() de pacing.py, fondu de 5 ms ajouté à chaque bord de coupe).
 - [ ] [2026-11-25] (vtb-jGwGrd8) La voix choisie sonne trop « IA », pas naturelle.
+  Entretien du 2026-11-26 (b) : rien de nouveau, le choix de la voix se juge à l'écoute. Non corrigé.
   Entretien du 2026-11-26 : les respirations (pause entre phrases à 0,45 s, souffle après « Et toi, », arrêts au milieu d'une phrase raccourcis) étaient des indices « IA » nets ; le choix de la voix et de ses réglages (stabilité 0,45, style 0,30) ne se juge qu'à l'écoute. Non corrigé.
 - [x] [2026-11-26] Les montants décimaux (27,92 €) sont lus « vingt-sept virgule neuf deux » au lieu de « vingt-sept euros quatre-vingt-douze ».
   Entretien du 2026-11-26 : cause trouvée dans numbers._convert : un nombre à virgule suivi de « € » ou « $ » était épelé comme un décimal ordinaire (« virgule neuf deux »). Il est maintenant dit « vingt-sept euros quatre-vingt-douze » (et « twenty-seven dollars and ninety-two cents » en anglais), y compris avec un séparateur de milliers (« 1 234,56 € ») et avec le mot « euros » au lieu du signe. La voix payante, qui reçoit les chiffres tels quels, reçoit maintenant les seuls montants décimaux épelés (numbers.normalize(amounts_only=True)), le reste des nombres restant en chiffres.
@@ -113,10 +117,21 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-26 : cause trouvée dans fidelity : « Leclerc » réentendu « Le clerc », « Aldi » réentendu « Haldi » comptaient comme des erreurs de lecture. Les mots à majuscule du texte sont maintenant rapprochés d'un mot ou d'un groupe de 2 à 3 mots réentendus qui leur ressemble (ressemblance des lettres d'au moins 0,7, jamais un mot qui existe tel quel ailleurs dans le texte, jamais le premier mot d'une phrase pour ne pas masquer une vraie erreur de lecture) avant la comparaison. Un nom absent reste compté. Les scores déjà stockés dans les jobs ne sont pas recalculés.
 - [x] [2026-11-26] La ligne OK produce ne permet pas de savoir si la vidéo livrée est la dernière version : une ancienne vidéo a été présentée comme corrigée.
   Entretien du 2026-11-26 : la ligne OK produce contient maintenant « Version : vidéo refaite à 14:32 » (ou « partie 2 refaite … ; partie 1 inchangée (rendue …) »), ou « Version : AUCUNE nouvelle vidéo, celle-ci date de 12:05 (rien n'a changé depuis) » quand rien n'a été refait ; une date s'ajoute quand la vidéo n'est pas du jour. Le skill ideo (étape 7) demande de recopier cette ligne et de ne jamais présenter comme corrigée une vidéo « AUCUNE nouvelle vidéo ».
+- [ ] [2026-11-26] (OscY9rX9O0A) Le filigrane est collé au titre en haut de l’écran : il faut un espace net entre les deux.
+- [ ] [2026-11-26] (OscY9rX9O0A) Le plan ne sait pas quels dessins ont servi dans les vidéos précédentes : la balance et les mêmes objets reviennent d’une vidéo à l’autre alors que la bibliothèque est grande.
+- [ ] [2026-11-26] (OscY9rX9O0A) Le type object-state n’a que 6 objets (écran, tableau, bocal, porte, balance, téléphone) : ajoute d’autres objets qui changent d’état pour varier les vidéos.
+  Entretien du 2026-11-26 (b) : demande de fonctionnalité (nouveaux objets dessinés et animés dans ObjectState.tsx, schéma, guide et contrôles), trop large pour cet entretien. Reporté au prochain.
+- [ ] [2026-11-26] (pmtWyMGtxvE) Pauses bizarres au milieu de la voix ElevenLabs finale à 2:03, 2:24, 2:28, 2:41 et 2:50.
+  Entretien du 2026-11-26 (b) : les cinq repères (2:03, 2:24, 2:28, 2:41, 2:50) tombent sur des débuts de scène (blanc de 0,5 s, 0,9 s en changement d'acte) ou sur des fins de phrase (0,45 s), toutes des pauses voulues par assemble et pacing ; aucun trou anormal dans les mots ni dans le son. Sans écoute, pas de cause trouvée. Non corrigé.
+- [ ] [2026-11-26] (pmtWyMGtxvE) Après la question de fin, l’appel à s’abonner enchaîne sans aucun blanc : il faut une courte pause pour laisser digérer la question.
+  Entretien du 2026-11-26 (b) : cause exacte non reproduite (le contrôle pause_sentences donne bien 0,45 s sur des données simulées, y compris avec un « ? » entendu comme mot à part). Mesure sur le son du job : 0,28 s de blanc entre « règles ? » et « Si ça t'a plu ». La question et l'appel sont synthétisés séparément puis collés : _join_wavs pose maintenant un blanc fixe de 0,35 s entre les deux morceaux (JOIN_PAUSE). À vérifier à l'écoute sur la prochaine vidéo. Non coché.
+- [ ] [2026-11-26] (pmtWyMGtxvE) La voix ElevenLabs respecte moins bien la ponctuation que la voix Edge : les pauses aux virgules et aux points sont moins marquées.
+  Entretien du 2026-11-26 (b) : pacing.pause_sentences ajoute un blanc aux fins de phrase (0,45 s) et aux deux-points, volontairement pas aux virgules (deux tests le fixent, après le retour « trop IA »). Ajouter un blanc aux virgules reviendrait sur cette décision sans pouvoir écouter. Non corrigé.
 
 ## Défauts détectés
 
 - [ ] `scene-figee` (ZcOLpOS-QcY) Partie 1, scène 1 (à 2,9 s) : rien n'apparaît pendant 6,3 s. Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux.
+  Entretien du 2026-11-26 (b) : contrôle des scènes rejoué sur la timeline actuelle du job, liste d'alertes vide. Toujours non reproduit.
   Entretien du 2026-11-24 : le contrôle relancé sur la timeline actuelle de ce job (avec les temps forts) ne lève plus aucune alerte, le constat venait d'un ancien rendu. Non reproduit.
   Entretien du 2026-11-25 : qc relancé sur ce job, aucune alerte scene-figee (seule la durée de la vidéo diffère du plan). Toujours non reproduit.
   Entretien du 2026-11-25 (c) : contrôle des scènes rejoué sur la timeline et les offsets actuels de la partie 1, liste d'alertes vide. Toujours non reproduit.
@@ -148,7 +163,9 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-25 (h) : fidelity.similarity gère bien les nombres écrits en chiffres ou en lettres (0,95 à 1,0 sur ce texte avec les deux transcriptions possibles) ; le 0,79 vient donc d'un vrai écart de lecture, à entendre. Sans relancer la voix payante (interdit ici), rien à corriger dans le code. Non corrigé.
   Entretien du 2026-11-26 : le texte de seg_01 est « Jensen Huang quitte Nvidia le 12 novembre 2026… » : des noms propres, le cas corrigé par la ligne « qc signale à tort un écart sur les noms propres » ci-dessus (fidelity). Le score stocké est déjà remonté à 0,89 avec la voix actuelle de ce job ; le défaut ne se reproduit plus.
 - [ ] `voix-infidele` (tiB3XBScn90) Partie 1, segment seg_09 : la voix s'écarte du texte (ressemblance 0,74). Relance la voix de cette partie ou reformule le texte.
+  Entretien du 2026-11-26 (b) : seg_09 vaut 0,92 dans voice-quality.json ; le 0,74 venait d'un passage de voix locale, remplacé depuis par ElevenLabs. Les vraies alertes de ce job étaient seg_00_hook et seg_20 (0,79) : « Leclerc » en début de texte entendu « Le claire » et « encaisse » entendu « en caisse » comptaient comme mots ajoutés. fidelity replie maintenant un mot entendu en deux morceaux (le premier mot du texte avec une ressemblance de 0,6 s'il est entendu en tête, ailleurs seulement si les morceaux recomposent exactement le mot), et keep_count s'arrête sur le dernier morceau. Seg_09 non reproduit.
 - [ ] `voix-plate` (tiB3XBScn90) Partie 1 : voix plate, 9 segments sur 27 sous 2,00, score médian 2,30, les plus plats : seg_16 (1,58), seg_08 (1,59), seg_03 (1,70). Relance la voix de cette partie ou reformule ces phrases.
+  Entretien du 2026-11-26 (b) : voice-prosody.json absent de la partie, effacé quand ElevenLabs a refait la voix ; le constat venait de la voix locale précédente. Non reproduit.
 
 ## Dessins manquants
 
@@ -167,3 +184,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] note de musique
 - [x] disque vinyle
 - [x] micro
+- [x] bracelet électronique
+- [x] hémicycle de l'Assemblée
+- [x] agence de notation
+- [x] Conseil constitutionnel
