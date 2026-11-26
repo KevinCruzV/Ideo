@@ -566,3 +566,21 @@ def test_suspense_must_be_a_boolean(job_with_fixtures):
 
 def test_soixante_dix_scenes_courtes_sont_permises():
     assert plan_check.MAX_SCENES >= 70
+
+
+def test_paper_inconnu_est_refuse(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["paper"] = "carton"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    errors = [e for e in plan_check.check_plan(job_with_fixtures) if "« paper »" in e]
+    assert errors and "kraft" in errors[0]
+
+
+def test_paper_valide_est_accepte(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    for paper in plan_check.PAPERS:
+        plan["paper"] = paper
+        common.save_json(job_with_fixtures / "plan.json", plan)
+        assert plan_check.check_plan(job_with_fixtures) == []

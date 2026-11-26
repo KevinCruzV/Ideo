@@ -8,7 +8,7 @@ import shutil
 
 import numpy as np
 
-from ideo import align, common, i18n, photo, textmatch, voice
+from ideo import align, plan_check, common, i18n, photo, textmatch, voice
 
 FPS = 30
 WIDTH = 1080
@@ -325,6 +325,8 @@ def _build(job: Path, n: int, total: int) -> Path:
     }
     if plan.get("mood") == "dark":
         timeline["mood"] = "dark"
+    if plan.get("paper") in plan_check.PAPERS:
+        timeline["paper"] = plan["paper"]
     path = out_dir / "timeline.json"
     common.save_json(path, timeline)
     return path

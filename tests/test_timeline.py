@@ -386,3 +386,11 @@ def test_les_scenes_avec_un_extrait_audio_portent_son_onde(job_with_offsets):
         assert seg["from"] <= audio["from"] < audio["to"] <= seg["to"]
         assert len(audio["levels"]) == audio["to"] - audio["from"]
     assert all("audio" not in s for s in tl["segments"] if s["kind"] != "scene")
+
+
+def test_paper_passe_dans_la_timeline(job_with_offsets):
+    assert "paper" not in build(job_with_offsets)
+    plan = common.load_json(job_with_offsets / "plan.json")
+    plan["paper"] = "journal"
+    common.save_json(job_with_offsets / "plan.json", plan)
+    assert build(job_with_offsets)["paper"] == "journal"
