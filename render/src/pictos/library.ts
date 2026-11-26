@@ -91,6 +91,10 @@ export const PICTOS = [
   "music-note",
   "vinyl",
   "microphone",
+  "ankle-monitor",
+  "hemicycle",
+  "credit-rating",
+  "constitution",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -999,6 +1003,45 @@ const DRAW: Record<PictoName, Draw> = {
     k.rect(33, 20, 34, 4, "cream"),
     k.rect(31, 30, 38, 4, "cream"),
     k.rect(31, 40, 38, 4, "cream"),
+  ],
+  "ankle-monitor": (k) => [
+    k.rect(18, 4, 26, 62, "yellow"),
+    k.poly([[14, 64], [48, 64], [70, 74], [70, 92], [10, 92], [10, 74]], "ink"),
+    k.rect(12, 46, 38, 13, "blue"),
+    k.rect(36, 40, 24, 26, "ink"),
+    k.circle(48, 53, 6, "red"),
+    k.arc(62, 53, 19, -55, 55, "red", k.ovalPoints(62, 53, 14, 14, 0, -55, 55).reverse()),
+    k.arc(62, 53, 31, -55, 55, "red", k.ovalPoints(62, 53, 26, 26, 0, -55, 55).reverse()),
+  ],
+  hemicycle: (k) => [
+    ...[
+      [41, 15, 4.6],
+      [30, 11, 4.4],
+      [19, 7, 4],
+    ].flatMap(([r, n, size]) =>
+      Array.from({ length: n }, (_, i) => {
+        const a = Math.PI + (i * Math.PI) / (n - 1);
+        const t = i / (n - 1);
+        return k.circle(50 + r * Math.cos(a), 74 + r * Math.sin(a), size, t < 0.36 ? "blue" : t < 0.64 ? "yellow" : "red");
+      }),
+    ),
+    k.rect(4, 84, 92, 9, "ink"),
+    k.rect(42, 70, 16, 14, "ink"),
+  ],
+  "credit-rating": (k) => [
+    k.rect(8, 6, 84, 56, "blue"),
+    k.star(28, 34, 15, 6.5, 5, "yellow"),
+    k.star(50, 34, 15, 6.5, 5, "yellow"),
+    k.star(72, 34, 15, 6.5, 5, "cream"),
+    k.arrow(50, 64, 50, 98, 11, 22, "red"),
+  ],
+  constitution: (k) => [
+    k.rect(82, 14, 8, 72, "cream"),
+    k.rect(12, 8, 72, 84, "blue"),
+    k.rect(12, 8, 11, 84, "ink"),
+    k.rect(34, 18, 40, 11, "yellow"),
+    k.rect(34, 34, 40, 4, "cream"),
+    k.poly([[30, 66], [39, 57], [48, 66], [70, 42], [79, 51], [48, 84]], "red"),
   ],
 };
 
