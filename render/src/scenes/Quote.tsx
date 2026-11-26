@@ -11,6 +11,7 @@ import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips } from "./Strips";
 import { enterFor } from "./timing";
 import { useBeat } from "./beats";
+import { AudioWave, useSegmentAudio } from "../chrome/AudioWave";
 
 const MARK = 160;
 
@@ -21,6 +22,7 @@ export const Quote: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const text = fitText(str(props.text, "…"), { maxWidth: BOX_W, maxLines: 8, max: 80, min: 56 });
   const speaker = fitText(str(props.speaker), { maxWidth: BOX_W - 100, maxLines: 1, max: 54, min: 44 });
   const textAt = enterFor("text", items, from, to);
+  const audio = useSegmentAudio();
 
   return (
     <Stage>
@@ -30,7 +32,12 @@ export const Quote: React.FC<SceneProps> = ({ props, items, from, to }) => {
             <PaperShape kind="square" color={accent} size={MARK} x={6} y={0} rotate={-8 - 12 * kick} seed="quote-mark" float={3} style={{ scale: String(1 + 0.18 * kick) }}>
               <span style={{ fontFamily: fonts.text, fontWeight: 800, fontSize: 180, lineHeight: 1, marginTop: 26, color: onPaper[accent] }}>«</span>
             </PaperShape>
-            <Picto name={props.picto} size={190} x={BOX_W - 200} y={-20} rotate={6} />
+            {audio ? null : <Picto name={props.picto} size={190} x={BOX_W - 200} y={-20} rotate={6} />}
+            {audio ? (
+              <div style={{ position: "absolute", left: MARK + 40, top: 10 }}>
+                <AudioWave levels={audio.levels} start={audio.start} accent={accent} width={BOX_W - MARK - 60} height={MARK - 20} />
+              </div>
+            ) : null}
           </div>
           <Strips lines={text.lines} size={text.size} enterAt={textAt} stagger={3} align="flex-start" seed="quote-text" gap={10} motion={{ dx: -40, dy: 0 }} />
           {speaker.lines.length > 0 ? (

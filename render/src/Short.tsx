@@ -1,5 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
+import { SegmentAudioContext, SfxWave } from "./chrome/AudioWave";
 import { Background } from "./chrome/Background";
 import { Captions } from "./chrome/Captions";
 import { ChapterCard } from "./chrome/ChapterCard";
@@ -39,11 +40,13 @@ export const Short: React.FC<Timeline> = (timeline) => {
           <Sequence key={`${segment.kind}-${i}`} from={segment.from} durationInFrames={duration} layout="none">
             <Background color={groundOf(accents[i].accent)} />
             <AccentContext.Provider value={accents[i].accent}>
+              <SegmentAudioContext.Provider value={segment.audio && Array.isArray(segment.audio.levels) ? { kind: segment.audio.kind, start: segment.audio.from - segment.from, levels: segment.audio.levels } : null}>
               <BeatsContext.Provider value={beats}>
               <SceneFrame props={props} duration={duration} last={i === count - 1} index={i} cuts={cuts}>
                 <Scene props={props} items={segment.type === "object-state" ? cleanItems(segment.items) : earlyItems(cleanItems(segment.items), segment.from)} from={segment.from} to={segment.to} />
               </SceneFrame>
               </BeatsContext.Provider>
+              </SegmentAudioContext.Provider>
             </AccentContext.Provider>
             {segment.break === true && kicker ? <ChapterCard text={kicker} accent={accents[i].accent} duration={duration} /> : null}
           </Sequence>
@@ -54,6 +57,13 @@ export const Short: React.FC<Timeline> = (timeline) => {
           <Wipe color={accents[i + 1].accent} seed={`wipe-${i}`} kind={wipeKind(i)} />
         </Sequence>
       ))}
+      {timeline.segments.map((segment, i) =>
+        segment.audio && segment.audio.kind !== "quote" && Array.isArray(segment.audio.levels) && segment.audio.to > segment.audio.from ? (
+          <Sequence key={`wave-${i}`} from={segment.audio.from} durationInFrames={segment.audio.to - segment.audio.from} layout="none">
+            <SfxWave levels={segment.audio.levels} accent={accents[i].accent} />
+          </Sequence>
+        ) : null,
+      )}
       <ChapterLabel chapter={timeline.chapter} />
       <Watermark text={timeline.watermark} />
       <Progress chapter={timeline.chapter} segments={timeline.segments} />
