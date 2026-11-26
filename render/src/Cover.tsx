@@ -87,6 +87,9 @@ export const SHEET_PAD_X = 64;
 export const SHEET_PAD_Y = 84;
 export const HEAD_LINE = 1.02;
 export const ART_OVERLAP = 150;
+export const PHOTO_OVERLAP = 40;
+
+export const artOverlap = (art: ArtKind): number => (art === "photo" ? PHOTO_OVERLAP : ART_OVERLAP);
 export const ART_RIGHT = 40;
 const LABEL_MAX_W = 640;
 
@@ -95,18 +98,20 @@ export const coverHeadFit = (head: string) =>
 
 export const coverSheetHeight = (lines: number, size: number): number => lines * size * HEAD_LINE + 2 * SHEET_PAD_Y;
 
-export const coverLayout = (sheetH: number, artH: number): { sheetY: number; artTop: number } => {
-  const total = sheetH - ART_OVERLAP + artH;
+export const coverLayout = (sheetH: number, artH: number, overlap = ART_OVERLAP): { sheetY: number; artTop: number } => {
+  const total = sheetH - overlap + artH;
   const sheetY = Math.round(Math.max(CROP_TOP, (CROP_TOP + CROP_BOTTOM - total) / 2));
-  return { sheetY, artTop: sheetY + sheetH - ART_OVERLAP };
+  return { sheetY, artTop: sheetY + sheetH - overlap };
 };
 
 const Art: React.FC<{ art: ArtKind; photo?: string | null; picto?: string | null; look?: CoverLook | null; accent: AccentColor }> = ({ art, photo, picto, look, accent }) => {
   const bustLook = React.useMemo(() => lookOf(look ?? {}), [look]);
   if (art === "photo") {
     return (
-      <div style={{ width: PHOTO_W, height: PHOTO_H, transform: `scale(${PHOTO_SCALE})`, transformOrigin: "0 0" }}>
-        <PhotoFrame src={photo as string} seed="cover-photo" />
+      <div style={{ position: "relative", width: PHOTO_W * PHOTO_SCALE, height: PHOTO_H * PHOTO_SCALE }}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: PHOTO_W, height: PHOTO_H, transform: `scale(${PHOTO_SCALE})`, transformOrigin: "0 0" }}>
+          <PhotoFrame src={photo as string} seed="cover-photo" />
+        </div>
       </div>
     );
   }
@@ -139,7 +144,7 @@ export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, w
   const art = artKind(photo, picto, look);
   const box = artBox(art);
   const sheetH = coverSheetHeight(head.lines.length, head.size);
-  const { sheetY, artTop } = coverLayout(sheetH, box.h);
+  const { sheetY, artTop } = coverLayout(sheetH, box.h, artOverlap(art));
   const edge = tornEdge("cover-sheet");
   return (
     <AbsoluteFill>

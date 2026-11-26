@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artKind, coverAccent, coverHeadFit, coverLayout, coverSheetHeight, coverText, DISK, PHOTO_SCALE, partTag, splitHook } from "./Cover";
+import { artKind, artOverlap, coverAccent, coverHeadFit, coverLayout, coverSheetHeight, coverText, DISK, PHOTO_SCALE, partTag, splitHook } from "./Cover";
 import { PHOTO_H } from "./scenes/PhotoFrame";
 import { accentCycle } from "./theme";
 
@@ -46,6 +46,13 @@ describe("cover", () => {
     const { sheetY, artTop } = coverLayout(coverSheetHeight(head.lines.length, head.size), DISK);
     expect(sheetY).toBeGreaterThanOrEqual(240);
     expect(artTop + DISK).toBeLessThanOrEqual(1920 - 240);
+  });
+
+  it("lets a real photo barely touch the title sheet so the title stays readable", () => {
+    expect(artOverlap("photo")).toBeLessThan(artOverlap("picto"));
+    const sheetH = coverSheetHeight(1, 132);
+    const { sheetY, artTop } = coverLayout(sheetH, DISK, artOverlap("photo"));
+    expect(artTop).toBeGreaterThanOrEqual(sheetY + sheetH - 40);
   });
 
   it("splits the hook at its first comma or colon into a big title and a smaller line", () => {

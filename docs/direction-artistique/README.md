@@ -31,11 +31,12 @@ Limites :
 ## 2. Ce qui a changé dans Ideo (PR #37)
 
 **Direction artistique « papier découpé abouti »** (choisie parmi 3 maquettes de cover) :
-- Fond plein cadre en version **pastel** de la couleur de la scène. Il change à chaque scène, et il est assombri en ambiance sombre. La version vive prenait trop de place : voir `fonds-compares.jpg`.
+- Fond plein cadre en version **adoucie** de la couleur de la scène (28 % de crème, `GROUNDS` dans `render/src/theme.ts`). Il change à chaque scène, et il est assombri en ambiance sombre. La version vive prenait trop de place, la version à 45 % était trop pastel : voir `fonds-compares.jpg`, dont la ligne du bas montre l'ancien réglage à 45 %.
 - Le contenu est posé sur une feuille crème déchirée et scotchée (`render/src/paper/Sheet.tsx`). Le texte n'est jamais posé directement sur la couleur.
 - Les mots-clés (accroche, titres, étiquettes) sont en Unbounded.
 - Sous-titres : 1 à 2 mots (`MAX_GROUP = 2`), très gros, dans une étiquette noire, avec le mot prononcé en jaune.
 - Cover : titre géant sur la feuille, suite de l'accroche dans une étiquette noire, dessin qui déborde, le tout centré dans le recadrage 3:4 de la grille du profil.
+- Personnage historique ou connu : la vraie photo (`ideo photo`) reste utilisée. Dans les scènes, elle est encadrée sur la feuille (carte de personnage). Sur la cover, elle est épinglée sous le titre sans le recouvrir. Les deux cas ont été rendus avec une image de test.
 
 **Rythme :**
 - **Recadrage :** l'image se recadre net à chaque élément qui apparaît (`render/src/scenes/punch.ts`), et change au moins toutes les 2,5 s (`BEAT_GAP`).
@@ -49,7 +50,7 @@ Images : `scenes-avant.jpg`, `scenes-apres.jpg`, `covers.jpg`, `fonds-compares.j
 ## 3. Reste à faire
 
 1. **Faire une vraie vidéo de bout en bout sur le Mac** (`prepare` → plan → `produce`), puis la mesurer avec `python -m ideo rythme <job>`. Rien n'a encore été vérifié sur une vraie voix : sous-titres de 1 à 2 mots, recadrages, carton de chapitre, silence de suspense. Objectif : au moins 15 plans/min.
-2. **Cover avec une vraie photo de personne :** seuls les cas dessin, buste dessiné, série et ambiance sombre ont été rendus, pas le cas photo.
+2. **Vérifier une cover et une carte de personnage avec une vraie photo d'archive.** Le cadrage a été validé avec une image de test, pas avec une vraie photo.
 3. **Carton de chapitre quand le `kicker` n'est qu'une date** (« 1991 ») : le carton affiche alors juste la date. Décider s'il faut prendre le nom de l'acte ailleurs.
 4. **Si les recadrages ne suffisent pas,** demander des scènes plus courtes dans `plan-guide.md`. Le repère actuel est 6-9 s, soit 18-26 mots ; on pourrait passer à 4-6 s. Cela coûte plus de tokens au moment d'écrire le plan.
 5. **Outil `rythme` sur les vidéos très sombres :** améliorer la détection de coupes, par exemple en éclaircissant l'image avant le filtre de scène.
