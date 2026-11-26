@@ -9,7 +9,7 @@ SCENE_TYPES = frozenset({
     "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body", "artwork",
 })
 MAX_PARTS = 8
-MAX_SCENES = 45
+MAX_SCENES = 80
 MIN_SECONDS = 65
 MAX_SECONDS = 300
 OUTRO_SECONDS = 3.0

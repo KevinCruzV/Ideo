@@ -44,7 +44,7 @@ LESSONS = {
     "trop-de-versus": "Garde 2 scènes versus au plus par vidéo : compare avec object-state, icon-grid, stack-list ou shape-diagram.",
     "carte-nom-tardif": "Sur une person-card, commence le say par le nom de la personne et ancre l'avatar sur ses premiers mots.",
     "compteur-tardif": "Sur un counter, ancre to sur un des premiers mots du say pour que le chiffre s'affiche vite.",
-    "say-trop-long": "Coupe tout say de plus de 30 mots en deux scènes.",
+    "say-trop-long": "Coupe tout say de plus de 20 mots en deux scènes.",
     "say-trop-court": "Donne au moins 8 mots à chaque say : fusionne les scènes trop courtes avec leurs voisines.",
     "sans-kicker": "Mets un kicker (date, lieu ou acte) sur les scènes qui changent de moment ou de lieu.",
     "debuts-identiques": "Varie le premier mot de trois say qui se suivent.",

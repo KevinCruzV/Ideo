@@ -4,7 +4,7 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 
 - [2026-11-25] Sur une person-card, le say commence par le nom de la personne et l’avatar s’ancre sur ses premiers mots ; le lien avec la scène précédente vient après le nom.
 - [2026-11-25] Le texte à l’écran d’un key-title ne redit pas gros la phrase des sous-titres : dis autre chose, ou prends un autre type de scène.
-- [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 30 mots en deux scènes.
+- [2026-11-25] (auto:say-trop-long) Coupe tout say de plus de 20 mots en deux scènes.
 - [2026-11-25] Nomme et explique tout avant de t’en servir : « signer un contrat d’enregistrement », pas « il ne peut pas signer » ; un terme comme « achat impulsif » s’explique dans une scène précédente.
 - [2026-11-25] Quand quelqu’un change de nom ou de vie, dis qui le décide et pourquoi : « son label le rebaptise pour sonner plus américain », pas seulement « il prend un nouveau nom ».
 - [2026-11-25] Dans une liste de faits, chaque fait a de l’impact et dit pourquoi il compte (« son premier grand succès »), pas seulement qu’il arrive.

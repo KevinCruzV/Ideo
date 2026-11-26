@@ -14,10 +14,10 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook`, de `question` et de tous les `say` divisés par 3,0 (3,2 en anglais), plus 0,5 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 65 et 300 s : TikTok ne rémunère que les vidéos de plus d'une minute.
 - Juge toi-même la longueur, avant d'écrire, en comptant les idées :
   1. Liste dans ta tête les idées sans lesquelles on ne comprend pas la réponse à l'accroche. En général 3 à 6.
-  2. Chaque idée demande 3 à 4 scènes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
+  2. Chaque idée demande 6 à 8 scènes courtes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
   3. Longueur = nombre d'idées x 25 s environ. 4 idées font une vidéo d'environ 100 s, 6 idées environ 150 s.
   4. Si le total dépasse 180 s, retire l'idée la moins utile plutôt que de raccourcir chaque scène. Si une idée ne tient pas en 3 scènes, donne-lui-en une de plus.
-- Repère : une scène dure 6 à 9 s (18 à 26 mots). 45 scènes au plus.
+- Repère : une scène dure 3 à 4 s (9 à 13 mots) : l'image change au moins 15 fois par minute, comme les vidéos courtes qui retiennent. 80 scènes au plus.
 - Une idée par scène. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
 - Suspense : sur une ou deux révélations fortes (le chiffre qui choque, le retournement), ajoute `"suspense": true` à la scène qui révèle, à côté de `"type"` : la voix se tait 2 s juste avant. Deux scènes au plus par vidéo, jamais la première, jamais sur un sujet grave (section 4).
 
@@ -58,7 +58,7 @@ Question au spectateur (`question`, obligatoire) : chaque partie finit par une q
 ## 4. Écrire pour la voix
 
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
-- Un `say` = 2 ou 3 phrases courtes, 16 à 28 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
+- Un `say` = 1 ou 2 phrases courtes, 9 à 13 mots, 20 au plus. Une phrase = 15 mots au plus. Une idée qui demande plus de mots se coupe en deux scènes qui se suivent, avec chacune son visuel.
 - Nombres : écris-les en chiffres dans `say` comme à l'écran ("en 2001", "3 000 personnes", "8 %", "1,3 milliard", "le 51e") : le code les fait dire en toutes lettres à la voix. Seules les fractions s'écrivent en lettres ("un tiers", "la moitié").
 - Santé, argent, droit : garde les nuances de la source ("souvent", "peut", "chez certains"). N'écris jamais un conseil comme une certitude ni une promesse de guérison, et laisse de côté une affirmation forte que la source ne justifie pas. Explique le mécanisme, laisse le spectateur choisir.
 - Sujets graves (morts, attentat, guerre, maladie, fait divers, horreur, catastrophe) : ton sobre et grave du début à la fin, jamais joyeux, aucune formule légère. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.

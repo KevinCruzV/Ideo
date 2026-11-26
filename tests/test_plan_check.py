@@ -562,3 +562,7 @@ def test_suspense_must_be_a_boolean(job_with_fixtures):
     plan["parts"][0]["scenes"][2]["suspense"] = "oui"
     write(job_with_fixtures, plan)
     assert any("« suspense » doit être true ou false" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+def test_soixante_dix_scenes_courtes_sont_permises():
+    assert plan_check.MAX_SCENES >= 70
