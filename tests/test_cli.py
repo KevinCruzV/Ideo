@@ -424,3 +424,17 @@ def test_changing_the_music_redoes_assembly_and_render_but_not_the_voice(produce
     (common._root() / "config.json").write_text(json.dumps({"music_dir": str(folder), "music_level_db": -26}), encoding="utf-8")
     cli.main(["produce", str(job)])
     assert len(renders) == rendered + 3 and len(backend.calls) == calls
+
+
+def test_prepare_lists_the_drawings_of_the_last_videos(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("IDEO_HOME", str(tmp_path))
+    from ideo import history
+    history.note_drawings("a", ["object:scale", "knife"])
+    history.note_drawings("b", ["object:scale"])
+    url = "https://www.youtube.com/watch?v=abcdefghijk"
+    monkeypatch.setattr(fetch, "fetch", lambda u: common.job_dir(u))
+    monkeypatch.setattr(transcribe, "transcribe", lambda job: [{"w": "a", "s": 0, "e": 1}] * 300)
+    monkeypatch.setattr(compact, "prepare_transcript", lambda job: {"words": 300, "paragraphs": 7, "sfx": 1, "lang": "fr"})
+    assert cli.main(["prepare", url]) == 0
+    out = capsys.readouterr().out.strip()
+    assert "à éviter : object:scale, knife." in out

@@ -76,6 +76,7 @@ LESSONS = {
     "pays-cites-sans-drapeaux": "Quand un say cite 3 pays ou plus, montre leurs drapeaux avec une icon-grid : une cellule par pays, picto flag:<code>.",
     "route-sans-carte": "Quand un say décrit une route ou un trajet entre des pays, fais une scène map avec route : [codes des pays].",
     "corps-sans-dessin": "Quand une vidéo parle du corps ou d'une posture, fais une scène body avec pose et marks sur les zones citées.",
+    "dessin-deja-vu": "Choisis des dessins que les 3 dernières vidéos n'ont pas utilisés : la ligne OK prepare les liste.",
     "personnage-sans-apparence": "Donne à chaque person-card une apparence : gender, age, job (police, doctor, judge...) ou hair, outfit, hat.",
     "personnages-identiques": "Deux personnes différentes n'ont jamais la même apparence : varie gender, age, job, hair, hat, outfit.",
     "picto-repete": "Un même picto revient au plus 2 fois par vidéo : varie les dessins.",

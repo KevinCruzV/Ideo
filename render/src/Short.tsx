@@ -69,7 +69,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
           </Sequence>
         ) : null,
       )}
-      <ChapterLabel chapter={timeline.chapter} />
+      <ChapterLabel chapter={timeline.chapter} watermark={timeline.watermark} />
       <Watermark text={timeline.watermark} />
       <Progress chapter={timeline.chapter} segments={timeline.segments} />
       <Captions groups={timeline.captions} />

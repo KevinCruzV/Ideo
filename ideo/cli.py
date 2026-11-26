@@ -159,7 +159,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
-                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_notice_tail()}"], 0
+                f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_drawings_tail(job)}{_notice_tail()}"], 0
     if cmd == "rythme":
         return _rythme(arg, opts), 0
     job = pipeline.resolve_job(arg)
@@ -189,6 +189,7 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         stats = result["stats"]
         plan = stats["plan"]
         _safely(history.note_plan, job, stats["lang"], stats["source"], stats["scenes"])
+        _safely(history.note_drawings, job, review.drawings_of(plan))
         flag_pairs = []
         for wish in _safely(history.new_wishes, job, plan.get("wishes") or []) or []:
             hit = countries.flag_wish(wish)
@@ -221,6 +222,14 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     if cmd == "suivi":
         return [f"OK suivi : {suivi.rapport(job)}"], 0
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
+
+
+def _drawings_tail(job) -> str:
+    seen = _safely(history.recent_drawings, job) or {}
+    names = [name for name in seen][:12]
+    if not names:
+        return ""
+    return f" Dessins déjà utilisés dans les 3 dernières vidéos, à éviter : {', '.join(names)}."
 
 
 def _rythme(arg: str, opts: dict) -> list[str]:

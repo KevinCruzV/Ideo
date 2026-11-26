@@ -3,7 +3,7 @@ import math
 import re
 from pathlib import Path
 
-from ideo import countries, plan_check, scene_schema, slop, target, textmatch
+from ideo import countries, history, plan_check, scene_schema, slop, target, textmatch
 from ideo.common import load_json
 
 LIMIT = 8
@@ -17,6 +17,7 @@ MAX_VERSUS = 2
 PERSON_NAME_WORDS = 5
 COUNTER_EARLY_SHARE = 3
 MAX_SAME_PICTO = 2
+REUSED_DRAWING = 2
 APPEARANCE = ("hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin", "gender", "age", "job")
 MIN_CITED = 3
 ROUTE_WORDS = frozenset({"route", "routes", "trajet", "trajets", "chemin", "chemins", "traverse", "traversent", "traversant",
@@ -277,6 +278,17 @@ def _pictos_of(scene: dict) -> list[str]:
     return [v for v in found if isinstance(v, str) and v and not v.startswith(scene_schema.FLAG_PREFIX)]
 
 
+def drawings_of(plan: dict) -> list[str]:
+    found: set[str] = set()
+    for part in plan.get("parts") or []:
+        for scene in part.get("scenes") or []:
+            found.update(name.strip().lower() for name in _pictos_of(scene))
+            props = scene.get("props")
+            if scene.get("type") == "object-state" and isinstance(props, dict) and isinstance(props.get("object"), str):
+                found.add(f"object:{props['object']}")
+    return sorted(found)
+
+
 def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
     for code, where, finding, todo in slop.findings(part, n, lang):
         out.append((3, *_line(code, where, finding, todo)))
@@ -454,6 +466,11 @@ def coded(plan: dict, job: Path, seconds: int) -> list[tuple[str, str]]:
         if seconds < SURVEY_MINIMUM_SHARE * low and _coverage(plan, float(duration)) > SURVEY_SHARE:
             scored.append((1, *_line("survol", "Plan", f"durée estimée {seconds} s, bien sous les {low} s conseillés, alors que les « src » couvrent plus de {round(SURVEY_SHARE * 100)} % de la source",
                                     "Tu survoles toute la source : garde moins de sujets et explique bien chacun, une vidéo courte convient")))
+    seen = history.recent_drawings(job)
+    reused = [n for n in drawings_of(plan) if seen.get(n, 0) >= REUSED_DRAWING]
+    if reused:
+        scored.append((3, *_line("dessin-deja-vu", "Plan", f"dessins déjà utilisés dans {REUSED_DRAWING} des 3 dernières vidéos : {', '.join(reused[:4])}",
+                                "Remplace-les par d'autres dessins de la liste ou d'un autre type de scène, pour varier d'une vidéo à l'autre")))
     kickers = any(isinstance(s.get("props"), dict) and s["props"].get("kicker")
                   for p in plan["parts"] for s in p["scenes"])
     if not kickers:
