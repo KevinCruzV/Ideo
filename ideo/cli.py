@@ -4,13 +4,13 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix
+from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] [--payer] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
          "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"] "
-         "| rythme <job ou fichier vidéo> [--seuil 0.3]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale", "rythme")
+         "| rythme <job ou fichier vidéo> [--seuil 0.3] | suivi <job>")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale", "rythme", "suivi")
 
 
 class UsageError(Exception):
@@ -218,6 +218,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return [f"OK qc : {qc.summary(job, alerts)}"] + [f"ALERTE : {a}" for a in alerts], 0
     if cmd == "status":
         return [f"OK status : {pipeline.status(job)}"], 0
+    if cmd == "suivi":
+        return [f"OK suivi : {suivi.rapport(job)}"], 0
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
 
 

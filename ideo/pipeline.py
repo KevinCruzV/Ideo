@@ -5,7 +5,7 @@ import shutil
 import time
 from pathlib import Path
 
-from ideo import assemble, common, config, compact, fetch, plan_check, render, timeline, transcribe, voice
+from ideo import assemble, common, config, compact, fetch, plan_check, render, suivi, timeline, transcribe, voice
 
 PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json", "transcript_compact.md")
 AUDIO_FILES = ("source.wav", "source.m4a")
@@ -39,16 +39,19 @@ def progress(job: Path, line: str) -> None:
 
 def prepare(url: str) -> tuple[Path, dict]:
     job = common.job_dir(url).resolve()
-    fetch.fetch(url)
-    progress(job, "OK fetch : audio et métadonnées")
-    words = transcribe.transcribe(job)
-    progress(job, f"OK transcribe : {len(words)} mots")
-    info = compact.prepare_transcript(job)
-    refusal = voice.unsupported(info["lang"])
-    if refusal:
-        common.mark(job, "transcript", False, refusal)
-        raise common.IdeoError(refusal)
-    progress(job, f"OK transcript : {info['paragraphs']} paragraphes, {info['sfx']} sons")
+    with suivi.etape(job, "fetch") as step:
+        fetch.fetch(url)
+        step.detail = "audio et métadonnées"
+    with suivi.etape(job, "transcribe") as step:
+        words = transcribe.transcribe(job)
+        step.detail = f"{len(words)} mots"
+    with suivi.etape(job, "transcript") as step:
+        info = compact.prepare_transcript(job)
+        refusal = voice.unsupported(info["lang"])
+        if refusal:
+            common.mark(job, "transcript", False, refusal)
+            raise common.IdeoError(refusal)
+        step.detail = f"{info['paragraphs']} paragraphes, {info['sfx']} sons"
     return job, info
 
 
@@ -284,21 +287,21 @@ def produce(job: Path, only: int | None = None, pay: bool = False) -> list[Path]
                 _part_dir(job, n).mkdir(parents=True, exist_ok=True)
                 (_part_dir(job, n) / "plan.hash").write_text(digest, encoding="utf-8")
                 (_part_dir(job, n) / "voice.hash").write_text(voice_hash(plan, job), encoding="utf-8")
-            voice.voice_part(job, n, pay=pay)
-            progress(job, f"OK voice-{n:02d}")
-            assemble.assemble_part(job, n)
-            progress(job, f"OK assemble-{n:02d}")
-            timeline.build_timeline(job, n, len(parts))
-            progress(job, f"OK timeline-{n:02d}")
-            render.render_part(job, n)
-            progress(job, f"OK render-{n:02d}")
+            with suivi.etape(job, f"voice-{n:02d}"):
+                voice.voice_part(job, n, pay=pay)
+            with suivi.etape(job, f"assemble-{n:02d}"):
+                assemble.assemble_part(job, n)
+            with suivi.etape(job, f"timeline-{n:02d}"):
+                timeline.build_timeline(job, n, len(parts))
+            with suivi.etape(job, f"render-{n:02d}"):
+                render.render_part(job, n)
             REDONE.add(n)
         render.write_description(job, n)
-        cover = render.write_cover(job, n)
-        progress(job, f"OK cover-{n:02d}")
+        with suivi.etape(job, f"cover-{n:02d}"):
+            cover = render.write_cover(job, n)
         outputs += [render.mp4_path(job, plan, n), cover, render.description_path(job, plan, n)]
-    outputs.append(render.write_sources(job))
-    progress(job, "OK sources")
+    with suivi.etape(job, "sources"):
+        outputs.append(render.write_sources(job))
     return [p.resolve() for p in outputs]
 
 
