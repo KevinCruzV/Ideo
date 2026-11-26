@@ -1,7 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { Background } from "./chrome/Background";
-import { Watermark } from "./chrome/Watermark";
 import { MascotHead } from "./mascot/Character";
 import { tornEdge } from "./paper/Sheet";
 import { hasVisual, PictoArt } from "./pictos/Picto";
@@ -20,7 +19,6 @@ export type CoverProps = {
   picto?: string | null;
   photo?: string | null;
   look?: CoverLook | null;
-  watermark: string;
   part: number;
   total: number;
   label: string;
@@ -135,7 +133,7 @@ const Art: React.FC<{ art: ArtKind; photo?: string | null; picto?: string | null
 const artBox = (art: ArtKind): { w: number; h: number } =>
   art === "photo" ? { w: PHOTO_W * PHOTO_SCALE, h: DISK } : art === "bust" ? { w: BUST_W, h: BUST_H } : { w: ART_SIZE, h: ART_SIZE };
 
-export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, watermark, part, total, label, mood }) => {
+export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, part, total, label, mood }) => {
   setMood(moodOf(mood));
   const accent = coverAccent(title);
   const text = coverText(title, hook, part, total, label);
@@ -175,7 +173,6 @@ export const Cover: React.FC<CoverProps> = ({ title, hook, picto, photo, look, w
           ))}
         </div>
       ) : null}
-      <Watermark text={watermark} />
     </AbsoluteFill>
   );
 };

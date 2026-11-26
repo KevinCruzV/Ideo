@@ -231,3 +231,18 @@ def test_a_long_stall_in_a_phrase_keeps_only_the_short_pause():
     heard = words_of(("soit", 0.0, 0.4), ("les", 0.4, 0.8), ("chiffres", 2.0, 2.4))
     out, _ = pacing.tighten(pcm, heard)
     assert len(out) / RATE == pytest.approx(0.8 + pacing.MID_KEEP + 0.8, abs=0.04)
+
+
+def test_un_terme_suivi_de_deux_points_marque_une_pause():
+    pcm = np.concatenate([tone(2.0), tone(1.0)])
+    heard = words_of(("Première", 0.0, 0.4), ("technique", 0.4, 0.9), ("la", 0.9, 1.1), ("réduflation :", 1.1, 2.0), ("le", 2.0, 2.3))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    assert len(out) / RATE == pytest.approx(len(pcm) / RATE + pacing.COLON_GAP, abs=0.01)
+    assert mapping(2.0) == pytest.approx(2.0 + pacing.COLON_GAP, abs=0.01)
+
+
+def test_un_deux_points_deja_suivi_d_une_pause_ne_bouge_pas():
+    pcm = np.concatenate([tone(2.0), quiet(0.5), tone(1.0)])
+    heard = words_of(("Le", 0.0, 1.0), ("but :", 1.0, 2.0), ("échapper", 2.5, 3.5))
+    out, _ = pacing.pause_sentences(pcm, heard)
+    assert len(out) == len(pcm)

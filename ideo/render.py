@@ -117,7 +117,6 @@ def cover_props(plan: dict, part: dict, job: Path | None = None) -> dict:
         "title": part["title"],
         "hook": part.get("hook") or "",
         "picto": cover_picto(part),
-        "watermark": common.WATERMARK,
         "part": part["n"],
         "total": len(plan["parts"]),
         "label": i18n.t("part_label", lang),

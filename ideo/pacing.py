@@ -12,6 +12,7 @@ LONG_PAUSE = 0.60
 PAUSE = 0.50
 SENTENCE_GAP = 0.45
 LEAD_GAP = 0.25
+COLON_GAP = 0.35
 LEAD_WORDS = 3
 MID_MAX = 0.30
 MID_KEEP = 0.20
@@ -143,6 +144,10 @@ def _lead_comma(word: str, position: int) -> bool:
     return position <= LEAD_WORDS and word.rstrip(CLOSERS).endswith(",") and sum(c.isalpha() for c in word) >= 2
 
 
+def _colon(word: str) -> bool:
+    return word.rstrip(CLOSERS).endswith(":") and sum(c.isalpha() or c.isdigit() for c in word) >= 2
+
+
 def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
     inserts: list[tuple[int, int]] = []
     joined = _joined(words)
@@ -153,6 +158,8 @@ def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Cal
         if _ends_sentence(word["w"]):
             wanted = SENTENCE_GAP
             position = 0
+        elif _colon(word["w"]):
+            wanted = COLON_GAP
         elif _lead_comma(word["w"], position):
             wanted = LEAD_GAP
         else:
