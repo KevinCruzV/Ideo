@@ -7,7 +7,9 @@ from pathlib import Path
 
 from ideo import common, prosody, render, transcribe
 
-SEUIL_SCENE = 0.3
+SEUIL_SCENE = 0.15
+FUSION = 0.4
+PAUSE_MIN = 0.3
 PTS_TIME = re.compile(r"pts_time:([\d.]+)")
 
 
@@ -20,6 +22,9 @@ class Rythme:
     plan_sec_median: float | None
     n_mots: int
     mots_par_sec: float
+    mots_par_sec_parole: float
+    n_pauses: int
+    pauses_sec: float
     mots_par_plan_moyen: float
     mots_par_plan_median: float | None
 
@@ -50,7 +55,10 @@ def plans_from_video(video: Path, seuil: float = SEUIL_SCENE) -> list[tuple[floa
          f"select='gt(scene,{seuil})',showinfo", "-f", "null", "-"],
         capture_output=True, text=True,
     )
-    cuts = sorted({float(t) for t in PTS_TIME.findall(result.stderr) if 0.0 < float(t) < duree})
+    cuts: list[float] = []
+    for t in sorted({float(t) for t in PTS_TIME.findall(result.stderr) if FUSION <= float(t) < duree - FUSION}):
+        if not cuts or t - cuts[-1] >= FUSION:
+            cuts.append(t)
     bornes = [0.0] + cuts + [duree]
     return list(zip(bornes, bornes[1:]))
 
@@ -74,6 +82,8 @@ def mesurer(plans: list[tuple[float, float]], words: list[dict]) -> Rythme:
     duree = max(fins) if fins else 0.0
     durees_plans = [e - s for s, e in plans]
     mots_par_plan = [sum(1 for w in words if s <= w["s"] < e) for s, e in plans]
+    pauses = [b["s"] - a["e"] for a, b in zip(words, words[1:]) if b["s"] - a["e"] >= PAUSE_MIN]
+    parole = words[-1]["e"] - words[0]["s"] - sum(pauses) if words else 0.0
     return Rythme(
         duree=round(duree, 2),
         n_plans=len(plans),
@@ -82,6 +92,9 @@ def mesurer(plans: list[tuple[float, float]], words: list[dict]) -> Rythme:
         plan_sec_median=prosody.median(durees_plans),
         n_mots=len(words),
         mots_par_sec=round(len(words) / duree, 2) if duree else 0.0,
+        mots_par_sec_parole=round(len(words) / parole, 2) if parole > 0 else 0.0,
+        n_pauses=len(pauses),
+        pauses_sec=round(sum(pauses), 2),
         mots_par_plan_moyen=_moyenne(mots_par_plan),
         mots_par_plan_median=prosody.median(mots_par_plan),
     )
@@ -120,6 +133,7 @@ def rapport(rythme: Rythme, label: str = "") -> str:
         f"{titre} : {_virgule(rythme.duree)} s, {rythme.n_plans} plans "
         f"({_virgule(rythme.plans_par_min)} plans/min, {_virgule(rythme.plan_sec_moyen)} s/plan en moyenne, "
         f"médiane {_virgule(rythme.plan_sec_median or 0.0)} s), {rythme.n_mots} mots "
-        f"({_virgule(rythme.mots_par_sec)} mots/sec, {_virgule(rythme.mots_par_plan_moyen)} mots/plan en moyenne, "
+        f"({_virgule(rythme.mots_par_sec)} mots/sec, {_virgule(rythme.mots_par_sec_parole)} hors pauses, "
+        f"{rythme.n_pauses} pauses pour {_virgule(rythme.pauses_sec)} s, {_virgule(rythme.mots_par_plan_moyen)} mots/plan en moyenne, "
         f"médiane {_virgule(rythme.mots_par_plan_median or 0.0)} mots/plan)"
     )

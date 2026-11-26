@@ -55,6 +55,9 @@ def test_mesurer_computes_plan_and_word_rate():
     assert r.plan_sec_moyen == 2.0
     assert r.n_mots == 3
     assert r.mots_par_sec == 0.75
+    assert r.n_pauses == 1
+    assert r.pauses_sec == 1.4
+    assert r.mots_par_sec_parole == 3.0
     assert r.mots_par_plan_moyen == 1.5
 
 
@@ -90,9 +93,19 @@ def test_plans_from_video_detects_a_scene_cut(tmp_path):
     video = tmp_path / "scene.mp4"
     concat_videos([first, second], video, tmp_path)
     plans = rythme.plans_from_video(video, seuil=0.3)
-    assert len(plans) >= 2
-    assert plans[0][0] == 0.0
+    assert len(plans) == 2
+    assert plans[0][1] == pytest.approx(1.0, abs=0.1)
     assert plans[-1][1] == pytest.approx(2.0, abs=0.2)
+
+
+def test_plans_from_video_merges_a_flash_into_one_cut(tmp_path):
+    parts = [tmp_path / "a.mp4", tmp_path / "flash.mp4", tmp_path / "b.mp4"]
+    make_video(parts[0], 1, "black")
+    make_video(parts[1], 0.1, "white")
+    make_video(parts[2], 1, "red")
+    video = tmp_path / "flash-cut.mp4"
+    concat_videos(parts, video, tmp_path)
+    assert len(rythme.plans_from_video(video)) == 2
 
 
 def test_words_from_video_reuses_whisper(monkeypatch, tmp_path):
@@ -112,7 +125,8 @@ def test_words_from_video_reuses_whisper(monkeypatch, tmp_path):
 
 def test_rapport_formats_in_french():
     r = rythme.Rythme(duree=10.0, n_plans=5, plans_par_min=30.0, plan_sec_moyen=2.0, plan_sec_median=2.0,
-                       n_mots=30, mots_par_sec=3.0, mots_par_plan_moyen=6.0, mots_par_plan_median=6.0)
+                       n_mots=30, mots_par_sec=3.0, mots_par_sec_parole=3.5, n_pauses=4, pauses_sec=1.5,
+                       mots_par_plan_moyen=6.0, mots_par_plan_median=6.0)
     text = rythme.rapport(r, label="partie 1")
     assert "Rythme partie 1" in text
     assert "5 plans" in text
