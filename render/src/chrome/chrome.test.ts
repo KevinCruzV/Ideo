@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionTokens, captionWord, lineWidth } from "./Captions";
-import { CHAPTER_TOP, chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
+import { CHAPTER_TOP, chapterBottom, chapterBoxRight, chapterFit, chapterText } from "./ChapterLabel";
+import { watermarkLeft } from "./Watermark";
 import { content, layout, safeWindow, visibleStageTop } from "../theme";
 import { progressTicks } from "./Progress";
 
@@ -26,6 +27,17 @@ describe("chrome", () => {
     expect(layout.marginSide + 520).toBeLessThan(layout.width - layout.safeRight - 190);
   });
 
+  test("le titre ne touche jamais le nom de la chaîne : au moins 40 px d'écart, même sur le titre le plus long", () => {
+    const titles = ["L'oubli", "Le sommeil", "Un titre beaucoup trop long qui ne tiendrait jamais sur une seule ligne", "Pourquoi on oublie vite ce qu on lit", "Leclerc ou Aldi, qui vole le plus ?"];
+    for (const watermark of ["@idevideos", "Ideo"]) {
+      for (const title of titles) {
+        for (const chapter of [{ part: 8, total: 8, title, label: "Partie" }, { part: 1, total: 1, title, label: "Partie" }]) {
+          expect(watermarkLeft(watermark) - chapterBoxRight(chapter, watermark), `${watermark} / ${chapterText(chapter)}`).toBeGreaterThanOrEqual(40);
+        }
+      }
+    }
+  });
+
   test("les sous-titres et la barre de progression tiennent dans la zone sûre de TikTok", () => {
     const half = (content.width / 2) * layout.chromeScale;
     expect(layout.safeCenterX - half).toBeGreaterThanOrEqual(safeWindow.left - 10);
@@ -37,10 +49,10 @@ describe("chrome", () => {
     expect(chapterText(series)).toBe("Partie 2 · Le sommeil");
   });
 
-  test("le titre de chapitre tient sur deux lignes au-dessus de la scène", () => {
+  test("le titre de chapitre tient sur trois lignes au plus au-dessus de la scène", () => {
     const long = { part: 8, total: 8, title: "Un titre beaucoup trop long qui ne tiendrait jamais sur une seule ligne du bandeau", label: "Partie" };
     const fit = chapterFit(long);
-    expect(fit.lines.length).toBeLessThanOrEqual(2);
+    expect(fit.lines.length).toBeLessThanOrEqual(3);
     expect(fit.size).toBeLessThan(38);
     expect(chapterBottom(long)).toBeLessThan(visibleStageTop);
     expect(chapterFit(single).size).toBe(38);
