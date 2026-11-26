@@ -14,6 +14,7 @@ import { cleanItems, earlyItems, str } from "./scenes/coerce";
 import { punchCuts } from "./scenes/punch";
 import { resolveScene } from "./scenes/registry";
 import { SceneFrame } from "./scenes/SceneFrame";
+import { PaperContext } from "./paper/PaperContext";
 import { paperOf, supportsFor } from "./paper/supports";
 import { groundOf, moodOf, segmentAccent, setMood } from "./theme";
 import { Timeline } from "./types";
@@ -26,8 +27,10 @@ export const Short: React.FC<Timeline> = (timeline) => {
     accent: segmentAccent(i, segment.kind === "scene" ? segment.type : undefined),
   }));
   const count = timeline.segments.length;
-  const supports = supportsFor(timeline.segments, paperOf(timeline.paper, timeline.mood === "dark"));
+  const paper = paperOf(timeline.paper, timeline.mood === "dark");
+  const supports = supportsFor(timeline.segments, paper);
   return (
+    <PaperContext.Provider value={paper}>
     <AbsoluteFill>
       <Background />
       {timeline.audio ? <Audio src={staticFile(timeline.audio)} /> : null}
@@ -71,5 +74,6 @@ export const Short: React.FC<Timeline> = (timeline) => {
       <Progress chapter={timeline.chapter} segments={timeline.segments} />
       <Captions groups={timeline.captions} />
     </AbsoluteFill>
+    </PaperContext.Provider>
   );
 };

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Segment } from "../types";
 import { PAPER_COLORS } from "../theme";
-import { paperOf, supportsFor } from "./supports";
+import { paperOf, photoFrame, supportsFor } from "./supports";
 
 const seg = (kind: Segment["kind"], type?: string, props: Record<string, unknown> = {}): Segment => ({ kind, type, from: 0, to: 30, props });
 const scene = (type: string, props: Record<string, unknown> = {}) => seg("scene", type, props);
@@ -46,5 +46,12 @@ describe("couleurs des supports", () => {
         expect(ratio(fill, ink), `${mode} ${support}`).toBeGreaterThanOrEqual(4.5);
       }
     }
+  });
+});
+
+describe("cadre des photos", () => {
+  test("polaroïd dans un album, cadre découpé ailleurs", () => {
+    expect(photoFrame("album")).toBe("polaroid");
+    for (const paper of ["creme", "kraft", "journal", "millimetre"] as const) expect(photoFrame(paper)).toBe("plain");
   });
 });

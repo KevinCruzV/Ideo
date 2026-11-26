@@ -33,3 +33,5 @@ export const supportsFor = (segments: Segment[], paper: Paper): Support[] => {
   }
   return out;
 };
+
+export const photoFrame = (paper: Paper): "polaroid" | "plain" => (paper === "album" ? "polaroid" : "plain");
