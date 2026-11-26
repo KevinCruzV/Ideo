@@ -26,3 +26,6 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] (auto:ia-majuscules) N'écris pas de mot en majuscules dans un say, sauf un sigle courant (OTAN, BRICS, ONU).
 - [2026-11-26] (auto:liste-nue) N'écris jamais une liste de simples noms : ajoute un chiffre ou un détail à chaque entrée, ou prends un dessin.
 - [2026-11-26] (auto:premier-element-tardif) Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.
+- [2026-11-26] Ne prends une scène body que pour parler du corps (posture, organe, santé) ; pour des métiers ou des tâches, prends une liste de tâches (fact-chips, stack-list) ou des pictos.
+- [2026-11-26] Un object-state montre l’objet dont parle vraiment la scène : jamais un téléphone ou un écran pour une comparaison qui n’en parle pas ; prends alors une liste ou des pictos.
+- [2026-11-26] Quand la source donne le nom d’un phénomène (achat compensatoire, fatigue de décision), dis ce nom dans le say et explique-le en quelques mots, au lieu d’un mot vague comme « achat inutile ».
