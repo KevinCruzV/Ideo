@@ -341,26 +341,6 @@ def test_missing_key_falls_back_to_the_local_voice(eleven_job, monkeypatch, fake
     assert info["engine"] == "edge" and "ELEVENLABS_API_KEY" in info["fallback"]
 
 
-def test_failure_falls_back_to_kyutai_when_installed(eleven_job, server, monkeypatch):
-    server.fail = (402, "quota")
-    monkeypatch.setattr(config, "kyutai_installed", lambda: True)
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    made = {}
-
-    class FakeLocal:
-        local = True
-
-        def __init__(self, log=None):
-            made["used"] = True
-
-    monkeypatch.setattr(voice, "KyutaiBackend", FakeLocal)
-    monkeypatch.setattr(voice, "_settle_local", lambda backend, pending, lang, out_dir, log, key: (_ for _ in ()).throw(
-        common.IdeoError("moteur local en panne")))
-    with pytest.raises(common.IdeoError, match="moteur local en panne"):
-        voice.voice_part(eleven_job, 1)
-    assert made["used"] is True
-
-
 def test_nothing_is_redone_when_the_text_has_not_changed(eleven_job, server):
     voice.voice_part(eleven_job, 1)
     server.requests.clear()
@@ -555,3 +535,10 @@ def test_the_final_question_is_voiced_on_its_own_then_the_subscribe_call(eleven_
     full = voice.segments(common.load_json(eleven_job / "plan.json"), plan["parts"][0])[-1][1]
     assert [w["w"] for w in words] == voice.align.script_words(full)
     assert all(a["s"] <= b["s"] for a, b in zip(words, words[1:]))
+
+
+def test_the_paid_voice_gets_decimal_amounts_spelled_out_but_other_numbers_as_digits():
+    spoken, units = voice.spoken_for("Il paie 27,92 € en 1998.", "fr", False, "seg_01", plain=True)
+    assert spoken == "Il paie vingt-sept euros quatre-vingt-douze en 1998."
+    assert sum(u["said"] for u in units) == len(spoken.split())
+    assert voice.spoken_for("Il paie 5 € en 1998.", "fr", False, "seg_01", plain=True) == ("Il paie 5 € en 1998.", None)

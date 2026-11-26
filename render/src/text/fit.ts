@@ -106,8 +106,20 @@ export type KeySplit = { before: string; key: string; after: string };
 
 const bare = (w: string) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
+const DETACHED = /^[?!:;»%]+$/;
+
+const glued = (text: string): string[] =>
+  text
+    .split(" ")
+    .filter((w) => w.length > 0)
+    .reduce<string[]>((out, w) => {
+      if (DETACHED.test(w) && out.length > 0) out[out.length - 1] = `${out[out.length - 1]}\u00a0${w}`;
+      else out.push(w);
+      return out;
+    }, []);
+
 export const splitKey = (text: string, keyword?: string): KeySplit => {
-  const words = text.split(" ").filter((w) => w.length > 0);
+  const words = glued(text);
   if (words.length === 0) return { before: "", key: "", after: "" };
   const wanted = keyword ? keyword.split(" ").map(bare).filter((w) => w.length > 0) : [];
   if (wanted.length > 0) {

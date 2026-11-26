@@ -14,15 +14,16 @@ Langue : mets dans `"lang"` la valeur de la ligne `Langue :` de la transcription
 - Durée : la ligne `Durée conseillée :` en tête de la transcription donne un repère, en secondes et en mots de `say` (en général 2 à 3 minutes). Ce n'est pas une obligation : plus court est très bien si l'histoire tient, plus long (jusqu'à 300 s) si elle en a besoin. La seule règle : la vidéo ne doit jamais paraître hachée. Une vidéo courte se fait en gardant moins d'événements, jamais en les survolant tous. Durée estimée = mots de `hook`, de `question` et de tous les `say` divisés par 3,0 (3,2 en anglais), plus 0,5 s par scène, plus 3 s de fin, plus la durée des extraits audio. Entre 65 et 300 s : TikTok ne rémunère que les vidéos de plus d'une minute.
 - Juge toi-même la longueur, avant d'écrire, en comptant les idées :
   1. Liste dans ta tête les idées sans lesquelles on ne comprend pas la réponse à l'accroche. En général 3 à 6.
-  2. Chaque idée demande 3 à 4 scènes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
+  2. Chaque idée demande 6 à 8 scènes courtes : d'où on part, ce qui se passe, ce que ça change. Soit 20 à 30 s par idée.
   3. Longueur = nombre d'idées x 25 s environ. 4 idées font une vidéo d'environ 100 s, 6 idées environ 150 s.
   4. Si le total dépasse 180 s, retire l'idée la moins utile plutôt que de raccourcir chaque scène. Si une idée ne tient pas en 3 scènes, donne-lui-en une de plus.
-- Repère : une scène dure 6 à 9 s (18 à 26 mots). 45 scènes au plus.
+- Repère : une scène dure 3 à 4 s (9 à 13 mots) : l'image change au moins 15 fois par minute, comme les vidéos courtes qui retiennent. 80 scènes au plus.
 - Une idée par scène. Ne survole jamais dix événements : choisis les quatre ou cinq qui font l'histoire.
+- Suspense : sur une ou deux révélations fortes (le chiffre qui choque, le retournement), ajoute `"suspense": true` à la scène qui révèle, à côté de `"type"` : la voix se tait 2 s juste avant. Deux scènes au plus par vidéo, jamais la première, jamais sur un sujet grave (section 4).
 
 La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 - Scène 1 : le point de départ. Pour une histoire, sa date ou son lieu. Pour un sujet sans chronologie (science, santé, méthode), le problème concret que le spectateur reconnaît chez lui.
-- Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes : par époque pour une histoire, par thème ou par cas pour un sujet sans chronologie (un acte par position, par organe, par méthode). Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène. Ajoute `"break": true` à cette scène, à côté de `"type"` (sauf pour la toute première scène) : la voix marque alors une vraie pause avant de changer de sujet. Entre deux sujets, varie la transition à chaque fois : une question (« Et la Chine, alors ? »), une conséquence (« Résultat : ») ou un contraste (« Pendant ce temps, »).
+- Ensuite, des actes, toujours dans l'ordre de la source : ne remonte jamais dans le temps de la vidéo. Si la transcription a une liste `Chapitres :`, fais un acte par chapitre utile, dans leur ordre. Sinon, découpe toi-même en 2 à 4 actes : par époque pour une histoire, par thème ou par cas pour un sujet sans chronologie (un acte par position, par organe, par méthode). Ouvre chaque acte par une scène qui annonce de quoi il parle, et mets le nom de l'acte dans son `kicker`. Si cette scène a aussi une date, la date va dans le `kicker` et le nom de l'acte dans le texte de la scène. Ajoute `"break": true` à cette scène, à côté de `"type"` (sauf pour la toute première scène) : la voix marque alors une vraie pause avant de changer de sujet. Son `kicker` s'affiche alors en grand, sur un carton plein écran, pendant la première seconde de la scène : garde-le court (« Acte 2 : le client »). Entre deux sujets, varie la transition à chaque fois : une question (« Et la Chine, alors ? »), une conséquence (« Résultat : ») ou un contraste (« Pendant ce temps, »).
 - Chaque `say` part de la scène d'avant : dis ce qui relie les deux (la cause, la conséquence, l'opposition, le temps passé). Exemples de liens : "Résultat", "Mais dix ans plus tard", "C'est là que", "Face à ça", "Le problème". Si on peut mélanger deux scènes sans que ça se voie, il manque le lien.
 - Quand un événement a une date ou un lieu dans la source, mets-le dans `kicker` (section 5) et dis l'année dans `say` si elle aide à suivre.
 - Dernière scène : la réponse à la question de l'accroche, en une phrase claire. Pas une ouverture vague.
@@ -37,7 +38,7 @@ La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 ## 3. L'accroche (`hook`)
 
 Même format à chaque fois : une phrase de 6 à 10 mots, 60 caractères au plus (espaces compris), en général une question, qui donne envie de connaître la réponse. La phrase s'adapte au sujet. "Dis-moi pourquoi..." est la formule par défaut quand elle colle. Autres formules : "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". L'accroche doit être vraie et la vidéo doit y répondre. Aucun chiffre qui n'est pas dans la source. Avec plusieurs parties, ne reprends pas la même formule deux parties de suite. Histoire, fait divers, horreur ou biographie : l'accroche n'est pas une question mais « Voici l'histoire de... » ou une phrase choc complète (« Il a fait croire à tout un pays qu'il était innocent »).
-La couverture coupe l'accroche au premier « , » ou « : » : ce qui précède en gros titre, le reste sur une bande noire dessous. Pour une histoire, mets le sujet avant la coupure (« L'histoire de Marvin Gaye, partie 1 : de l'église à Motown ») ; sans coupure, l'accroche entière fait le titre.
+La couverture coupe l'accroche au premier « , » ou « : » : ce qui précède en gros titre, le reste sur une bande noire dessous. Pour une histoire, mets le sujet avant la coupure (« L'histoire de Marvin Gaye, partie 1 : de l'église à Motown ») ; sans coupure, l'accroche entière fait le titre. Le dessin de la couverture est la photo de la première person-card avec photo, sinon le buste de la première person-card, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
 
 Bonnes accroches :
 - "Dis-moi pourquoi le ciel est bleu et pas violet ?"
@@ -57,7 +58,7 @@ Question au spectateur (`question`, obligatoire) : chaque partie finit par une q
 ## 4. Écrire pour la voix
 
 Le texte de `say` est lu par une voix de synthèse. Écris comme on parle.
-- Un `say` = 2 ou 3 phrases courtes, 16 à 28 mots. Une phrase = 15 mots au plus. Une scène de moins de 5 s paraît hachée.
+- Un `say` = 1 ou 2 phrases courtes, 9 à 13 mots, 20 au plus. Une phrase = 15 mots au plus. Une idée qui demande plus de mots se coupe en deux scènes qui se suivent, avec chacune son visuel.
 - Nombres : écris-les en chiffres dans `say` comme à l'écran ("en 2001", "3 000 personnes", "8 %", "1,3 milliard", "le 51e") : le code les fait dire en toutes lettres à la voix. Seules les fractions s'écrivent en lettres ("un tiers", "la moitié").
 - Santé, argent, droit : garde les nuances de la source ("souvent", "peut", "chez certains"). N'écris jamais un conseil comme une certitude ni une promesse de guérison, et laisse de côté une affirmation forte que la source ne justifie pas. Explique le mécanisme, laisse le spectateur choisir.
 - Sujets graves (morts, attentat, guerre, maladie, fait divers, horreur, catastrophe) : ton sobre et grave du début à la fin, jamais joyeux, aucune formule légère. Pas de `counter` pour compter des victimes, pas de `mascot` en pose `content` ou `surprise`, pas de `sfx`. Prends `key-title`, `stamp` ou `timeline`.
@@ -131,11 +132,17 @@ Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `
 
 Humeur : pour un fait divers, un crime, une horreur ou une catastrophe, ajoute `"mood": "dark"` au premier niveau du plan, à côté de `"parts"` : fonds et papiers deviennent sombres. Sinon, n'écris rien. Le ton reste grave du début à la fin, jamais joyeux : pas de mascotte contente ni de formule légère, même après un moment positif de l'histoire.
 
+Matière : ajoute `"paper"` au premier niveau du plan, à côté de `"parts"` : `"kraft"` (argent, économie), `"journal"` (histoire, politique, fait divers, horreur), `"millimetre"` (science, santé), `"album"` (biographie, histoire d'une personne). Sinon n'écris rien. Les supports de chaque scène (ticket, coupure de journal, post-it) sont choisis par le code.
+
+Ton : ajoute `"ton": "pose"` au premier niveau du plan pour une biographie, une histoire, un fait divers ou un sujet grave : la version finale prend alors la voix posée. Sinon n'écris rien (voix dynamique).
+
+Collages : dès qu'une personne connue est citée, lance `ideo photo` et montre sa photo sur sa `person-card`, sauf dans un fait divers ou pour une personne privée.
+
 Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`, `lungs`, `stomach`, `spine`, `bone`, `muscle`, `tooth`, `blood`, `pill`, `syringe`, `virus`, `bed`, `pillow`, `moon`, `thermometer`, `scale-weight`, `apple`, `dumbbell`, `running-shoe`, `stethoscope`, `hospital`, `raised-bed`, `stomach-sleeper`, `knee-pillow`, `snore`, `pelvis-tilt`, `numb-arm`, `blood-stain`, `chalk-outline`, `crime-tape`, `handcuffs`, `knife`, `coffin`, `tombstone`, `mirror`, `mars`, `music-note`, `vinyl`, `microphone`. Un même picto revient au plus 2 fois par vidéo.
 
 Détails :
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres et écrit la valeur au-dessus de chacune, suivie de `unit` : donne toujours `unit` quand la valeur en a une.
-- `counter` : `from` est le nombre affiché au départ du compte (0 si tu ne le mets pas), visible dès la première image.
+- `counter` : `from` est le nombre affiché au départ du compte (0 si tu ne le mets pas), visible dès la première image. Ancre `to` sur un des premiers mots du `say` : le compte doit démarrer vite, pas à la fin de la phrase.
 - Un écran doit apprendre quelque chose seul, sans le son : pas de liste de noms nus. Chaque texte d'une liste (`chips`, `items`, `label` d'une cellule) dit un fait complet, avec un chiffre ou un verbe : "8 % dorment sur le dos", pas "Sur le dos". "Russie", "Inde", "Chine" n'apprend rien ; "BRICS, créés en 2011" avec un `picto` apprend quelque chose.
 - `mascot` : choisis `pose` selon la bulle. `question` : la question naïve du spectateur. `surprise` : un fait qui va contre l'intuition. `montre` : il désigne ce qui vient ensuite. `content` : la leçon à retenir.
 
@@ -340,7 +347,7 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
 }
 ```
 
-Avec plusieurs parties : ajoute des objets dans `parts` avec `"n": 2`, `"n": 3`, chacun avec son `title`, son `hook` et ses `scenes`.
+Avec plusieurs parties : ajoute des objets dans `parts` avec `"n": 2`, `"n": 3`, chacun avec son `title`, son `hook` et ses `scenes`. Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
 
 ## 10. Erreurs de `check`
 

@@ -45,39 +45,63 @@
     {
       "words": [
         { "w": "Et", "from": 0, "to": 20 },
-        { "w": "réviser", "from": 20, "to": 50 },
+        { "w": "réviser", "from": 20, "to": 50 }
+      ],
+      "from": 0,
+      "to": 50
+    },
+    {
+      "words": [
         { "w": "la", "from": 50, "to": 65 },
         { "w": "veille ?", "from": 65, "to": 90 }
       ],
-      "from": 0,
+      "from": 50,
       "to": 90
     },
     {
       "words": [
         { "w": "La", "from": 90, "to": 110 },
-        { "w": "moitié", "from": 110, "to": 140 },
+        { "w": "moitié", "from": 110, "to": 140 }
+      ],
+      "from": 90,
+      "to": 140
+    },
+    {
+      "words": [
         { "w": "en", "from": 140, "to": 155 },
         { "w": "vingt minutes ?", "from": 155, "to": 180 }
       ],
-      "from": 90,
+      "from": 140,
       "to": 180
     },
     {
       "words": [
         { "w": "Trois", "from": 180, "to": 210 },
-        { "w": "révisions", "from": 210, "to": 240 },
-        { "w": "suffisent.", "from": 240, "to": 270 }
+        { "w": "révisions", "from": 210, "to": 240 }
       ],
       "from": 180,
+      "to": 240
+    },
+    {
+      "words": [
+        { "w": "suffisent.", "from": 240, "to": 270 }
+      ],
+      "from": 240,
       "to": 270
     },
     {
       "words": [
         { "w": "Ton", "from": 270, "to": 295 },
-        { "w": "cerveau", "from": 295, "to": 320 },
-        { "w": "te dira merci.", "from": 320, "to": 360 }
+        { "w": "cerveau", "from": 295, "to": 320 }
       ],
       "from": 270,
+      "to": 320
+    },
+    {
+      "words": [
+        { "w": "te dira merci.", "from": 320, "to": 360 }
+      ],
+      "from": 320,
       "to": 360
     }
   ]

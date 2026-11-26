@@ -111,13 +111,13 @@ def test_boolean_on_is_refused(job_with_fixtures):
     assert plan_with(job_with_fixtures, mutate)
 
 
-def test_scene_cap_is_45_per_part(job_with_fixtures):
+def test_scene_cap_is_80_per_part(job_with_fixtures):
     def mutate(plan):
         scenes = plan["parts"][0]["scenes"]
-        plan["parts"][0]["scenes"] = [scenes[0]] * 46
+        plan["parts"][0]["scenes"] = [scenes[0]] * 81
 
     errors = plan_with(job_with_fixtures, mutate)
-    assert any("46 scènes" in e and "45" in e and e.startswith("Partie 1") for e in errors)
+    assert any("81 scènes" in e and "80" in e and e.startswith("Partie 1") for e in errors)
 
 
 def test_45_scenes_are_not_refused_for_the_count(job_with_fixtures):

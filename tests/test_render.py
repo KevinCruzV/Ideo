@@ -281,7 +281,7 @@ def test_cover_props_take_title_hook_and_first_picto(job_sources):
     assert props["title"] == plan["parts"][0]["title"]
     assert props["hook"] == plan["parts"][0]["hook"]
     assert props["picto"] == "brain"
-    assert props["watermark"] == common.WATERMARK
+    assert "watermark" not in props
     assert props["mood"] == "dark"
     assert props["part"] == 1 and props["total"] == 1
 

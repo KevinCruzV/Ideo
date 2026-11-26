@@ -30,7 +30,11 @@ UNITS = {
 FR_ORDINAL = re.compile(r"^(er|re|ère|e|ème|nd|nde|d)$")
 EN_ORDINAL = re.compile(r"^(st|nd|rd|th)$")
 TOKEN = re.compile(r"^(?P<pre>[«\u00a0\"“(\[‘']*)(?P<num>\d[\d.,]*\d|\d)(?P<suf>[%€$]?)(?P<ord>[a-zèé]{1,3})?(?P<post>[^\w%€$]*)$")
-GROUP = re.compile(r"^(?P<num>\d{3})(?P<post>[^\w%€$]*)$")
+GROUP = re.compile(r"^(?P<num>\d{3}(?:,\d+)?)(?P<suf>[%€$]?)(?P<post>[^\w%€$]*)$")
+CURRENCY_WORDS = {"euros": "€", "euro": "€", "dollars": "$", "dollar": "$"}
+TWO_DECIMALS = re.compile(r",\d{2}$")
+CENTS = {"en": ("cent", "cents")}
+AND = {"en": "and"}
 HEAD = re.compile(r"^\d{1,3}$")
 
 
@@ -106,7 +110,28 @@ def _unit_key(token: str) -> tuple[str, str] | None:
     return (match.group("unit"), match.group("post")) if match else None
 
 
-def _convert(words: list[str], i: int, lang: str) -> tuple[list[str], int] | None:
+def _amount(value: float, raw: str, suf: str, lang: str) -> list[str] | None:
+    names = CURRENCY.get(lang, {}).get(suf)
+    fraction = re.split(r"[.,]", raw)[-1]
+    if not names or not fraction.isdigit():
+        return None
+    whole = int(value)
+    cents = int((fraction + "0")[:2])
+    spoken = _spell(whole, lang)
+    if not spoken:
+        return None
+    words = spoken.split() + (names[0] if whole in (0, 1) else names[1]).split()
+    if cents:
+        said = _spell(cents, lang)
+        if not said:
+            return None
+        words += AND.get(lang, "").split() + said.split()
+        if lang in CENTS:
+            words += CENTS[lang][0 if cents == 1 else 1].split()
+    return words
+
+
+def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False, implied: str | None = None) -> tuple[list[str], int] | None:
     token = words[i]
     consumed = 1
     match = TOKEN.match(token)
@@ -121,8 +146,9 @@ def _convert(words: list[str], i: int, lang: str) -> tuple[list[str], int] | Non
             j += 1
             if groups[-1].group("post"):
                 break
-        if groups and all(not g.group("post") for g in groups[:-1]):
+        if groups and all(not g.group("post") and not g.group("suf") and "," not in g.group("num") for g in groups[:-1]):
             raw = raw + "".join(g.group("num") for g in groups)
+            suf = groups[-1].group("suf")
             post = groups[-1].group("post")
             consumed = 1 + len(groups)
     value = parse(raw, lang)
@@ -134,6 +160,22 @@ def _convert(words: list[str], i: int, lang: str) -> tuple[list[str], int] | Non
             return None
         spoken = ordinal(value, ending, lang)
         return (_decorate(spoken.split(), pre, post), 1) if spoken else None
+    nxt = words[i + consumed] if i + consumed < len(words) else None
+    key = _unit_key(nxt) if nxt else None
+    if isinstance(value, float) and not suf and not ending and not post and key and key[0].lower() in CURRENCY_WORDS:
+        spoken_amount = _amount(value, raw, CURRENCY_WORDS[key[0].lower()], lang)
+        if spoken_amount:
+            return _decorate(spoken_amount, pre, key[1]), consumed + 1
+    if suf in ("€", "$") and isinstance(value, float):
+        spoken_amount = _amount(value, raw, suf, lang)
+        if spoken_amount:
+            return _decorate(spoken_amount, pre, post), consumed
+    if implied and isinstance(value, float) and not suf and TWO_DECIMALS.search(raw) and not (key and key[0] in UNITS.get(lang, {})):
+        spoken_amount = _amount(value, raw, implied, lang)
+        if spoken_amount:
+            return _decorate(spoken_amount, pre, post), consumed
+    if amounts_only:
+        return None
     year = len(raw) == 4 and consumed == 1 and isinstance(value, int)
     spoken = cardinal(value, lang, year=year, context=previous)
     if not spoken:
@@ -150,8 +192,6 @@ def _convert(words: list[str], i: int, lang: str) -> tuple[list[str], int] | Non
             return None
         unit = names[0] if value == 1 else names[1]
         return _decorate(result + unit.split(), pre, post), consumed
-    nxt = words[i + consumed] if i + consumed < len(words) else None
-    key = _unit_key(nxt) if nxt else None
     table = UNITS.get(lang, {})
     if key and key[0] in table and not post:
         singular, plural = table[key[0]]
@@ -160,16 +200,17 @@ def _convert(words: list[str], i: int, lang: str) -> tuple[list[str], int] | Non
     return _decorate(result, pre, post), consumed
 
 
-def normalize(text: str, lang: str) -> Normalized:
+def normalize(text: str, lang: str, amounts_only: bool = False) -> Normalized:
     if lang not in COVERED or not re.search(r"\d", text):
         return Normalized(text, None)
     words = align.script_words(text)
+    implied = next((CURRENCY_WORDS[w] for w in (re.sub(r"[^\w]", "", x.lower()) for x in words) if w in CURRENCY_WORDS), None)
     units: list = []
     spoken: list[str] = []
     changed = False
     i = 0
     while i < len(words):
-        converted = _convert(words, i, lang)
+        converted = _convert(words, i, lang, amounts_only, implied)
         if converted:
             said, used = converted
             units.append({"orig": used, "said": len(said), "numeric": True})

@@ -540,3 +540,58 @@ def test_part_following_source_too_closely_is_an_error(job_with_fixtures, monkey
     hits = [e for e in errors if "reprend des suites" in e]
     assert len(hits) == 1, errors
     assert hits[0].startswith("Partie 1 : ") and "change l'ordre des idées" in hits[0]
+
+
+def test_suspense_adds_a_two_second_silence_to_the_estimate():
+    assert plan_check.pause_seconds([{}, {"suspense": True}, {}]) == pytest.approx(0.66 + 2.06 + 0.56 + 0.56)
+
+
+def test_suspense_is_limited_and_never_on_the_first_scene(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    scenes = plan["parts"][0]["scenes"]
+    for scene in scenes[:4]:
+        scene["suspense"] = True
+    write(job_with_fixtures, plan)
+    errors = plan_check.check_plan(job_with_fixtures)
+    assert any("pas de « suspense » sur la première scène" in e for e in errors)
+    assert any("4 scènes avec « suspense », 2 au plus" in e for e in errors)
+
+
+def test_suspense_must_be_a_boolean(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["scenes"][2]["suspense"] = "oui"
+    write(job_with_fixtures, plan)
+    assert any("« suspense » doit être true ou false" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+def test_soixante_dix_scenes_courtes_sont_permises():
+    assert plan_check.MAX_SCENES >= 70
+
+
+def test_paper_inconnu_est_refuse(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["paper"] = "carton"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    errors = [e for e in plan_check.check_plan(job_with_fixtures) if "« paper »" in e]
+    assert errors and "kraft" in errors[0]
+
+
+def test_paper_valide_est_accepte(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    for paper in plan_check.PAPERS:
+        plan["paper"] = paper
+        common.save_json(job_with_fixtures / "plan.json", plan)
+        assert plan_check.check_plan(job_with_fixtures) == []
+
+
+def test_ton_inconnu_est_refuse(job_with_fixtures):
+    from ideo import common
+    plan = common.load_json(job_with_fixtures / "plan.json")
+    plan["ton"] = "pose"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert plan_check.check_plan(job_with_fixtures) == []
+    plan["ton"] = "calme"
+    common.save_json(job_with_fixtures / "plan.json", plan)
+    assert any("« ton »" in e for e in plan_check.check_plan(job_with_fixtures))

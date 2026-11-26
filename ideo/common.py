@@ -1,8 +1,11 @@
+import contextlib
 import json
 import math
 import os
 import re
+import signal
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -16,6 +19,8 @@ YOUTUBE_HOSTS = frozenset({
 })
 PATH_PREFIXES = ("shorts", "live", "embed")
 WATERMARK = "@idevideos"
+STALL_SECONDS = 600
+POLL_SECONDS = 0.5
 
 
 class IdeoError(Exception):
@@ -102,14 +107,46 @@ def mark(job: Path, step: str, ok: bool, detail: str = "") -> None:
     save_json(Path(job) / "status.json", status)
 
 
+def _stop(proc: subprocess.Popen) -> None:
+    try:
+        os.killpg(proc.pid, signal.SIGTERM)
+        proc.wait(timeout=10)
+    except (ProcessLookupError, subprocess.TimeoutExpired):
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(proc.pid, signal.SIGKILL)
+        proc.wait()
+
+
 def run(cmd: list[str], log: Path) -> None:
     log = Path(log)
     log.parent.mkdir(parents=True, exist_ok=True)
+    stalled = False
     try:
         with log.open("ab") as f:
-            code = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT).returncode
+            proc = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                    start_new_session=True, env={**os.environ, "PYTHONUNBUFFERED": "1"})
+            size, quiet_since = log.stat().st_size, time.monotonic()
+            while True:
+                try:
+                    code = proc.wait(timeout=POLL_SECONDS)
+                    break
+                except subprocess.TimeoutExpired:
+                    pass
+                now_size = log.stat().st_size
+                if now_size != size:
+                    size, quiet_since = now_size, time.monotonic()
+                elif time.monotonic() - quiet_since > STALL_SECONDS:
+                    stalled = True
+                    _stop(proc)
+                    code = proc.returncode
+                    break
     except FileNotFoundError:
         raise IdeoError(f"Commande introuvable : {cmd[0]}") from None
+    if stalled:
+        minutes = max(1, round(STALL_SECONDS / 60))
+        with log.open("a", encoding="utf-8") as f:
+            f.write(f"\nideo : commande bloquée, arrêtée après {STALL_SECONDS} s sans aucune sortie\n")
+        raise IdeoError(f"aucune activité depuis {minutes} min, commande arrêtée : {' '.join(str(c) for c in cmd[:3])}. Voir {log}")
     if code != 0:
         raise IdeoError(f"La commande a échoué (code {code}) : {' '.join(cmd)}. Voir {log}")
 

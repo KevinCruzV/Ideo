@@ -133,10 +133,10 @@ def test_key_title_frequency(job):
 
 
 def test_scene_too_long_or_too_short(job):
-    plan = plan_of(scene(say=" ".join(["mot"] * 31)), scene(say="Trop court"))
-    assert only(plan, job, "plus de 30 mots") and only(plan, job, "moins de 8 mots")
-    ok = plan_of(scene(say=" ".join(["mot"] * 30)), scene(say=" ".join(["mot"] * 8)))
-    assert not only(ok, job, "plus de 30") and not only(ok, job, "moins de 8")
+    plan = plan_of(scene(say=" ".join(["mot"] * 21)), scene(say="Trop court"))
+    assert only(plan, job, "plus de 20 mots") and only(plan, job, "moins de 8 mots")
+    ok = plan_of(scene(say=" ".join(["mot"] * 20)), scene(say=" ".join(["mot"] * 8)))
+    assert not only(ok, job, "plus de 20") and not only(ok, job, "moins de 8")
 
 
 def test_last_scene_is_a_question(job):
@@ -158,9 +158,10 @@ def test_three_says_starting_with_the_same_word(job):
 
 
 def test_chopped_rhythm(job):
-    plan = plan_of(*[scene() for _ in range(10)])
+    plan = plan_of(*[scene() for _ in range(21)])
     assert only(plan, job, "par minute", seconds=60)
     assert not only(plan, job, "par minute", seconds=120)
+    assert not only(plan_of(*[scene() for _ in range(20)]), job, "par minute", seconds=60)
 
 
 def test_skimming_the_whole_source_in_little_time(job):
@@ -597,3 +598,20 @@ def test_counter_number_anchored_late(job):
     assert "compteur-tardif" not in [c for c, _ in review.coded(plan_of(no_anchor), job, 120)]
     other = scene(kind="stamp", say=LONG_SAY_TEXT, items=[{"el": "text", "on": "monde"}])
     assert "compteur-tardif" not in [c for c, _ in review.coded(plan_of(other), job, 120)]
+
+
+def test_scene_courte_de_dix_a_quinze_mots_sans_remarque(job):
+    say = "Leclerc vend le caddie le moins cher des cinq enseignes testées."
+    assert not only(plan_of(scene(say=say)), job, "mots de « say »")
+
+
+def test_say_de_plus_de_vingt_mots_a_couper(job):
+    say = " ".join(["mot"] * 21)
+    assert only(plan_of(scene(say=say)), job, f"de plus de {review.LONG_SAY} mots")
+    assert review.LONG_SAY == 20
+
+
+def test_dix_huit_scenes_par_minute_ne_sont_pas_hachees(job):
+    plan = plan_of(*[scene() for _ in range(36)])
+    assert not only(plan, job, "rythme haché", seconds=120)
+    assert only(plan_of(*[scene() for _ in range(50)]), job, "rythme haché", seconds=120)

@@ -11,6 +11,7 @@ const flag = (name) => {
   return i >= 0 ? args.splice(i, 2)[1] : undefined;
 };
 const framesArg = flag("--frames");
+const browserExecutable = flag("--browser") ?? process.env.REMOTION_BROWSER_EXECUTABLE ?? null;
 const jobs = args[0]
   ? [{ fixture: args[0], outDir: args[1] ?? "out/stills" }]
   : [
@@ -30,7 +31,7 @@ const momentsOf = (segment) => {
 };
 
 const serveUrl = await bundle({ entryPoint: path.join(root, "src/index.ts") });
-const browser = await openBrowser("chrome");
+const browser = await openBrowser("chrome", { browserExecutable });
 
 for (const job of jobs) {
   const timeline = JSON.parse(await readFile(path.resolve(root, job.fixture), "utf8"));

@@ -12,6 +12,7 @@ import { useBeat, useBeats } from "./beats";
 import type { SceneProps } from "./registry";
 import { areaTop, BOX_L, BOX_W, Stage } from "./Stage";
 import { Strips } from "./Strips";
+import { BRAND_WIDE, fonts } from "../theme";
 import { enterFor } from "./timing";
 
 const TEXT_W = BOX_W;
@@ -29,12 +30,12 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
   const text = str(props.text, "…");
   const { before, key, after } = splitKey(text, str(props.accent) || undefined);
   const head = fitText(before, { maxWidth: TEXT_W, maxLines: 4, max: 100, min: 56 });
-  const word = fitText(key, { maxWidth: TEXT_W, maxLines: 2, max: 176, min: 64 });
+  const word = fitText(key, { maxWidth: TEXT_W / BRAND_WIDE, maxLines: 2, max: 176, min: 64 });
   const tail = fitText(after, { maxWidth: TEXT_W, maxLines: 4, max: 100, min: 56 });
   const textAt = Math.min(enterFor("text", items, from, to), enterFor("accent", items, from, to));
   const accentAt = textAt + 5;
   const hasPicto = hasVisual(props.picto);
-  const underlineW = Math.max(0, ...word.lines.map((l) => textWidth(l, word.size) + word.size * 0.6)) * 0.9;
+  const underlineW = Math.max(0, ...word.lines.map((l) => textWidth(l, word.size) * BRAND_WIDE + word.size * 0.6)) * 0.9;
 
   return (
     <Stage>
@@ -50,6 +51,8 @@ export const KeyTitle: React.FC<SceneProps> = ({ props, items, from, to }) => {
                   text={line}
                   color={accent}
                   fontSize={word.size}
+                  family={fonts.brand}
+                  weight={900}
                   enterAt={accentAt + i * 3}
                   rotate={i % 2 === 0 ? -2.5 : 1.5}
                   seed={`kt-key-${i}`}

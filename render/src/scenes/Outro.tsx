@@ -1,4 +1,5 @@
 import React from "react";
+import { nextAccent } from "../theme";
 import { spring, useCurrentFrame } from "remotion";
 import { Character, CUT_Y, sizeForHead, VIEW } from "../mascot/Character";
 import { PaperStrip, stripHeight } from "../paper/PaperStrip";
@@ -40,7 +41,7 @@ export const Outro: React.FC<SceneProps> = ({ props }) => {
 
   return (
     <Stage>
-      <Backdrop color={accent} size={620} cx={BOX_R + 60} cy={y0 + textH * 0.55} seed="outro-disk" turn={10} />
+      <Backdrop color={nextAccent(accent)} size={620} cx={BOX_R + 60} cy={y0 + textH * 0.55} seed="outro-disk" turn={10} />
       <FitBox area={{ left: BOX_L, top: top + 10, width: BOX_W, height: room }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 26, width: BOX_W }}>
         <Strips lines={headFit.lines} size={headFit.size} enterAt={2} align="flex-start" seed="outro-head" motion={{ dx: -60, dy: 0 }} />

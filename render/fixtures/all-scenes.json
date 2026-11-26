@@ -685,1266 +685,790 @@
   "captions": [
     {
       "words": [
-        {
-          "w": "Dis-moi",
-          "from": 2,
-          "to": 14
-        },
-        {
-          "w": "qui",
-          "from": 14,
-          "to": 26
-        },
-        {
-          "w": "va",
-          "from": 26,
-          "to": 37
-        },
-        {
-          "w": "dominer",
-          "from": 37,
-          "to": 49
-        }
+        { "w": "Dis-moi", "from": 2, "to": 14 },
+        { "w": "qui", "from": 14, "to": 26 }
       ],
       "from": 2,
+      "to": 26
+    },
+    {
+      "words": [
+        { "w": "va", "from": 26, "to": 37 },
+        { "w": "dominer", "from": 37, "to": 49 }
+      ],
+      "from": 26,
       "to": 49
     },
     {
       "words": [
-        {
-          "w": "le",
-          "from": 49,
-          "to": 61
-        },
-        {
-          "w": "monde",
-          "from": 61,
-          "to": 72
-        },
-        {
-          "w": "demain",
-          "from": 72,
-          "to": 84
-        },
-        {
-          "w": "?",
-          "from": 84,
-          "to": 96
-        }
+        { "w": "le", "from": 49, "to": 61 },
+        { "w": "monde", "from": 61, "to": 72 }
       ],
       "from": 49,
+      "to": 72
+    },
+    {
+      "words": [
+        { "w": "demain", "from": 72, "to": 84 },
+        { "w": "?", "from": 84, "to": 96 }
+      ],
+      "from": 72,
       "to": 96
     },
     {
       "words": [
-        {
-          "w": "En",
-          "from": 102,
-          "to": 111
-        },
-        {
-          "w": "1956,",
-          "from": 111,
-          "to": 121
-        },
-        {
-          "w": "les",
-          "from": 121,
-          "to": 130
-        },
-        {
-          "w": "États-Unis",
-          "from": 130,
-          "to": 140
-        }
+        { "w": "En", "from": 102, "to": 111 },
+        { "w": "1956,", "from": 111, "to": 121 }
       ],
       "from": 102,
+      "to": 121
+    },
+    {
+      "words": [
+        { "w": "les", "from": 121, "to": 130 },
+        { "w": "États-Unis", "from": 130, "to": 140 }
+      ],
+      "from": 121,
       "to": 140
     },
     {
       "words": [
-        {
-          "w": "lâchent",
-          "from": 140,
-          "to": 149
-        },
-        {
-          "w": "leurs",
-          "from": 149,
-          "to": 158
-        },
-        {
-          "w": "alliés",
-          "from": 158,
-          "to": 168
-        },
-        {
-          "w": "face",
-          "from": 168,
-          "to": 177
-        }
+        { "w": "lâchent", "from": 140, "to": 149 },
+        { "w": "leurs", "from": 149, "to": 158 }
       ],
       "from": 140,
+      "to": 158
+    },
+    {
+      "words": [
+        { "w": "alliés", "from": 158, "to": 168 },
+        { "w": "face", "from": 168, "to": 177 }
+      ],
+      "from": 158,
       "to": 177
     },
     {
       "words": [
-        {
-          "w": "à",
-          "from": 177,
-          "to": 187
-        },
-        {
-          "w": "l'Égypte.",
-          "from": 187,
-          "to": 196
-        }
+        { "w": "à", "from": 177, "to": 187 },
+        { "w": "l'Égypte.", "from": 187, "to": 196 }
       ],
       "from": 177,
       "to": 196
     },
     {
       "words": [
-        {
-          "w": "Hermann",
-          "from": 202,
-          "to": 214
-        },
-        {
-          "w": "Ebbinghaus,",
-          "from": 214,
-          "to": 226
-        },
-        {
-          "w": "psychologue",
-          "from": 226,
-          "to": 237
-        },
-        {
-          "w": "allemand,",
-          "from": 237,
-          "to": 249
-        }
+        { "w": "Hermann", "from": 202, "to": 214 },
+        { "w": "Ebbinghaus,", "from": 214, "to": 226 }
       ],
       "from": 202,
+      "to": 226
+    },
+    {
+      "words": [
+        { "w": "psychologue", "from": 226, "to": 237 },
+        { "w": "allemand,", "from": 237, "to": 249 }
+      ],
+      "from": 226,
       "to": 249
     },
     {
       "words": [
-        {
-          "w": "teste",
-          "from": 249,
-          "to": 261
-        },
-        {
-          "w": "sa",
-          "from": 261,
-          "to": 272
-        },
-        {
-          "w": "propre",
-          "from": 272,
-          "to": 284
-        },
-        {
-          "w": "mémoire.",
-          "from": 284,
-          "to": 296
-        }
+        { "w": "teste", "from": 249, "to": 261 },
+        { "w": "sa", "from": 261, "to": 272 }
       ],
       "from": 249,
+      "to": 272
+    },
+    {
+      "words": [
+        { "w": "propre", "from": 272, "to": 284 },
+        { "w": "mémoire.", "from": 284, "to": 296 }
+      ],
+      "from": 272,
       "to": 296
     },
     {
       "words": [
-        {
-          "w": "Le",
-          "from": 302,
-          "to": 313
-        },
-        {
-          "w": "25",
-          "from": 313,
-          "to": 325
-        },
-        {
-          "w": "décembre",
-          "from": 325,
-          "to": 336
-        },
-        {
-          "w": "1991,",
-          "from": 336,
-          "to": 348
-        }
+        { "w": "Le", "from": 302, "to": 313 },
+        { "w": "25", "from": 313, "to": 325 }
       ],
       "from": 302,
+      "to": 325
+    },
+    {
+      "words": [
+        { "w": "décembre", "from": 325, "to": 336 },
+        { "w": "1991,", "from": 336, "to": 348 }
+      ],
+      "from": 325,
       "to": 348
     },
     {
       "words": [
-        {
-          "w": "l'Union",
-          "from": 348,
-          "to": 359
-        },
-        {
-          "w": "soviétique",
-          "from": 359,
-          "to": 371
-        },
-        {
-          "w": "disparaît.",
-          "from": 371,
-          "to": 382
-        },
-        {
-          "w": "Les",
-          "from": 382,
-          "to": 394
-        }
+        { "w": "l'Union", "from": 348, "to": 359 },
+        { "w": "soviétique", "from": 359, "to": 371 }
       ],
       "from": 348,
-      "to": 394
+      "to": 371
     },
     {
       "words": [
-        {
-          "w": "États-Unis",
-          "from": 394,
-          "to": 405
-        },
-        {
-          "w": "restent",
-          "from": 405,
-          "to": 417
-        },
-        {
-          "w": "seuls.",
-          "from": 417,
-          "to": 428
-        },
-        {
-          "w": "Une",
-          "from": 428,
-          "to": 440
-        }
+        { "w": "disparaît.", "from": 371, "to": 382 }
       ],
-      "from": 394,
-      "to": 440
+      "from": 371,
+      "to": 382
     },
     {
       "words": [
-        {
-          "w": "nouvelle",
-          "from": 440,
-          "to": 451
-        },
-        {
-          "w": "ère",
-          "from": 451,
-          "to": 463
-        },
-        {
-          "w": "commence.",
-          "from": 463,
-          "to": 474
-        },
-        {
-          "w": "Personne",
-          "from": 474,
-          "to": 486
-        }
+        { "w": "Les", "from": 382, "to": 394 },
+        { "w": "États-Unis", "from": 394, "to": 405 }
       ],
-      "from": 440,
-      "to": 486
+      "from": 382,
+      "to": 405
     },
     {
       "words": [
-        {
-          "w": "ne",
-          "from": 486,
-          "to": 497
-        },
-        {
-          "w": "sait",
-          "from": 497,
-          "to": 509
-        },
-        {
-          "w": "encore",
-          "from": 509,
-          "to": 520
-        },
-        {
-          "w": "ce",
-          "from": 520,
-          "to": 532
-        }
+        { "w": "restent", "from": 405, "to": 417 },
+        { "w": "seuls.", "from": 417, "to": 428 }
       ],
-      "from": 486,
-      "to": 532
+      "from": 405,
+      "to": 428
     },
     {
       "words": [
-        {
-          "w": "qu'elle",
-          "from": 532,
-          "to": 543
-        },
-        {
-          "w": "va",
-          "from": 543,
-          "to": 555
-        },
-        {
-          "w": "donner.",
-          "from": 555,
-          "to": 566
-        }
+        { "w": "Une", "from": 428, "to": 440 },
+        { "w": "nouvelle", "from": 440, "to": 451 }
       ],
-      "from": 532,
+      "from": 428,
+      "to": 451
+    },
+    {
+      "words": [
+        { "w": "ère", "from": 451, "to": 463 },
+        { "w": "commence.", "from": 463, "to": 474 }
+      ],
+      "from": 451,
+      "to": 474
+    },
+    {
+      "words": [
+        { "w": "Personne", "from": 474, "to": 486 },
+        { "w": "ne", "from": 486, "to": 497 }
+      ],
+      "from": 474,
+      "to": 497
+    },
+    {
+      "words": [
+        { "w": "sait", "from": 497, "to": 509 },
+        { "w": "encore", "from": 509, "to": 520 }
+      ],
+      "from": 497,
+      "to": 520
+    },
+    {
+      "words": [
+        { "w": "ce", "from": 520, "to": 532 },
+        { "w": "qu'elle", "from": 532, "to": 543 }
+      ],
+      "from": 520,
+      "to": 543
+    },
+    {
+      "words": [
+        { "w": "va", "from": 543, "to": 555 },
+        { "w": "donner.", "from": 555, "to": 566 }
+      ],
+      "from": 543,
       "to": 566
     },
     {
       "words": [
-        {
-          "w": "Les",
-          "from": 572,
-          "to": 584
-        },
-        {
-          "w": "exportations",
-          "from": 584,
-          "to": 596
-        },
-        {
-          "w": "passent",
-          "from": 596,
-          "to": 607
-        },
-        {
-          "w": "de",
-          "from": 607,
-          "to": 619
-        }
+        { "w": "Les", "from": 572, "to": 584 },
+        { "w": "exportations", "from": 584, "to": 596 }
       ],
       "from": 572,
+      "to": 596
+    },
+    {
+      "words": [
+        { "w": "passent", "from": 596, "to": 607 },
+        { "w": "de", "from": 607, "to": 619 }
+      ],
+      "from": 596,
       "to": 619
     },
     {
       "words": [
-        {
-          "w": "5",
-          "from": 619,
-          "to": 631
-        },
-        {
-          "w": "à",
-          "from": 631,
-          "to": 642
-        },
-        {
-          "w": "110",
-          "from": 642,
-          "to": 654
-        },
-        {
-          "w": "milliards.",
-          "from": 654,
-          "to": 666
-        }
+        { "w": "5", "from": 619, "to": 631 },
+        { "w": "à", "from": 631, "to": 642 }
       ],
       "from": 619,
+      "to": 642
+    },
+    {
+      "words": [
+        { "w": "110", "from": 642, "to": 654 },
+        { "w": "milliards.", "from": 654, "to": 666 }
+      ],
+      "from": 642,
       "to": 666
     },
     {
       "words": [
-        {
-          "w": "Ça",
-          "from": 672,
-          "to": 680
-        },
-        {
-          "w": "change",
-          "from": 680,
-          "to": 688
-        },
-        {
-          "w": "tout",
-          "from": 688,
-          "to": 696
-        },
-        {
-          "w": ":",
-          "from": 696,
-          "to": 703
-        }
+        { "w": "Ça", "from": 672, "to": 680 },
+        { "w": "change", "from": 680, "to": 688 }
       ],
       "from": 672,
+      "to": 688
+    },
+    {
+      "words": [
+        { "w": "tout", "from": 688, "to": 696 },
+        { "w": ":", "from": 696, "to": 703 }
+      ],
+      "from": 688,
       "to": 703
     },
     {
       "words": [
-        {
-          "w": "la",
-          "from": 703,
-          "to": 711
-        },
-        {
-          "w": "Chine",
-          "from": 711,
-          "to": 719
-        },
-        {
-          "w": "écrase",
-          "from": 719,
-          "to": 727
-        },
-        {
-          "w": "l'Inde,",
-          "from": 727,
-          "to": 735
-        }
+        { "w": "la", "from": 703, "to": 711 },
+        { "w": "Chine", "from": 711, "to": 719 }
       ],
       "from": 703,
+      "to": 719
+    },
+    {
+      "words": [
+        { "w": "écrase", "from": 719, "to": 727 },
+        { "w": "l'Inde,", "from": 727, "to": 735 }
+      ],
+      "from": 719,
       "to": 735
     },
     {
       "words": [
-        {
-          "w": "le",
-          "from": 735,
-          "to": 742
-        },
-        {
-          "w": "Brésil",
-          "from": 742,
-          "to": 750
-        },
-        {
-          "w": "et",
-          "from": 750,
-          "to": 758
-        },
-        {
-          "w": "l'Égypte.",
-          "from": 758,
-          "to": 766
-        }
+        { "w": "le", "from": 735, "to": 742 },
+        { "w": "Brésil", "from": 742, "to": 750 }
       ],
       "from": 735,
+      "to": 750
+    },
+    {
+      "words": [
+        { "w": "et", "from": 750, "to": 758 },
+        { "w": "l'Égypte.", "from": 758, "to": 766 }
+      ],
+      "from": 750,
       "to": 766
     },
     {
       "words": [
-        {
-          "w": "Vingt",
-          "from": 772,
-          "to": 781
-        },
-        {
-          "w": "minutes",
-          "from": 781,
-          "to": 791
-        },
-        {
-          "w": "après,",
-          "from": 791,
-          "to": 800
-        },
-        {
-          "w": "il",
-          "from": 800,
-          "to": 810
-        }
+        { "w": "Vingt", "from": 772, "to": 781 },
+        { "w": "minutes", "from": 781, "to": 791 }
       ],
       "from": 772,
+      "to": 791
+    },
+    {
+      "words": [
+        { "w": "après,", "from": 791, "to": 800 },
+        { "w": "il", "from": 800, "to": 810 }
+      ],
+      "from": 791,
       "to": 810
     },
     {
       "words": [
-        {
-          "w": "reste",
-          "from": 810,
-          "to": 819
-        },
-        {
-          "w": "la",
-          "from": 819,
-          "to": 828
-        },
-        {
-          "w": "moitié,",
-          "from": 828,
-          "to": 838
-        },
-        {
-          "w": "puis",
-          "from": 838,
-          "to": 847
-        }
+        { "w": "reste", "from": 810, "to": 819 },
+        { "w": "la", "from": 819, "to": 828 }
       ],
       "from": 810,
+      "to": 828
+    },
+    {
+      "words": [
+        { "w": "moitié,", "from": 828, "to": 838 },
+        { "w": "puis", "from": 838, "to": 847 }
+      ],
+      "from": 828,
       "to": 847
     },
     {
       "words": [
-        {
-          "w": "presque",
-          "from": 847,
-          "to": 857
-        },
-        {
-          "w": "rien.",
-          "from": 857,
-          "to": 866
-        }
+        { "w": "presque", "from": 847, "to": 857 },
+        { "w": "rien.", "from": 857, "to": 866 }
       ],
       "from": 847,
       "to": 866
     },
     {
       "words": [
-        {
-          "w": "Au",
-          "from": 872,
-          "to": 884
-        },
-        {
-          "w": "total,",
-          "from": 884,
-          "to": 896
-        },
-        {
-          "w": "trois",
-          "from": 896,
-          "to": 907
-        },
-        {
-          "w": "mille",
-          "from": 907,
-          "to": 919
-        }
+        { "w": "Au", "from": 872, "to": 884 },
+        { "w": "total,", "from": 884, "to": 896 }
       ],
       "from": 872,
+      "to": 896
+    },
+    {
+      "words": [
+        { "w": "trois", "from": 896, "to": 907 },
+        { "w": "mille", "from": 907, "to": 919 }
+      ],
+      "from": 896,
       "to": 919
     },
     {
       "words": [
-        {
-          "w": "personnes",
-          "from": 919,
-          "to": 931
-        },
-        {
-          "w": "perdent",
-          "from": 931,
-          "to": 942
-        },
-        {
-          "w": "la",
-          "from": 942,
-          "to": 954
-        },
-        {
-          "w": "vie.",
-          "from": 954,
-          "to": 966
-        }
+        { "w": "personnes", "from": 919, "to": 931 },
+        { "w": "perdent", "from": 931, "to": 942 }
       ],
       "from": 919,
+      "to": 942
+    },
+    {
+      "words": [
+        { "w": "la", "from": 942, "to": 954 },
+        { "w": "vie.", "from": 954, "to": 966 }
+      ],
+      "from": 942,
       "to": 966
     },
     {
       "words": [
-        {
-          "w": "Les",
-          "from": 972,
-          "to": 985
-        },
-        {
-          "w": "États-Unis,",
-          "from": 985,
-          "to": 999
-        },
-        {
-          "w": "l'Égypte,",
-          "from": 999,
-          "to": 1012
-        },
-        {
-          "w": "et",
-          "from": 1012,
-          "to": 1026
-        }
+        { "w": "Les", "from": 972, "to": 985 },
+        { "w": "États-Unis,", "from": 985, "to": 999 }
       ],
       "from": 972,
+      "to": 999
+    },
+    {
+      "words": [
+        { "w": "l'Égypte,", "from": 999, "to": 1012 },
+        { "w": "et", "from": 1012, "to": 1026 }
+      ],
+      "from": 999,
       "to": 1026
     },
     {
       "words": [
-        {
-          "w": "ça",
-          "from": 1026,
-          "to": 1039
-        },
-        {
-          "w": "change",
-          "from": 1039,
-          "to": 1053
-        },
-        {
-          "w": "tout.",
-          "from": 1053,
-          "to": 1066
-        }
+        { "w": "ça", "from": 1026, "to": 1039 },
+        { "w": "change", "from": 1039, "to": 1053 }
       ],
       "from": 1026,
+      "to": 1053
+    },
+    {
+      "words": [
+        { "w": "tout.", "from": 1053, "to": 1066 }
+      ],
+      "from": 1053,
       "to": 1066
     },
     {
       "words": [
-        {
-          "w": "Relis",
-          "from": 1072,
-          "to": 1085
-        },
-        {
-          "w": "juste",
-          "from": 1085,
-          "to": 1099
-        },
-        {
-          "w": "avant",
-          "from": 1099,
-          "to": 1112
-        },
-        {
-          "w": "d'oublier,",
-          "from": 1112,
-          "to": 1126
-        }
+        { "w": "Relis", "from": 1072, "to": 1085 },
+        { "w": "juste", "from": 1085, "to": 1099 }
       ],
       "from": 1072,
+      "to": 1099
+    },
+    {
+      "words": [
+        { "w": "avant", "from": 1099, "to": 1112 },
+        { "w": "d'oublier,", "from": 1112, "to": 1126 }
+      ],
+      "from": 1099,
       "to": 1126
     },
     {
       "words": [
-        {
-          "w": "espace,",
-          "from": 1126,
-          "to": 1139
-        },
-        {
-          "w": "et",
-          "from": 1139,
-          "to": 1153
-        },
-        {
-          "w": "teste-toi.",
-          "from": 1153,
-          "to": 1166
-        }
+        { "w": "espace,", "from": 1126, "to": 1139 },
+        { "w": "et", "from": 1139, "to": 1153 }
       ],
       "from": 1126,
+      "to": 1153
+    },
+    {
+      "words": [
+        { "w": "teste-toi.", "from": 1153, "to": 1166 }
+      ],
+      "from": 1153,
       "to": 1166
     },
     {
       "words": [
-        {
-          "w": "De",
-          "from": 1172,
-          "to": 1182
-        },
-        {
-          "w": "1885",
-          "from": 1182,
-          "to": 1193
-        },
-        {
-          "w": "à",
-          "from": 1193,
-          "to": 1203
-        },
-        {
-          "w": "aujourd'hui,",
-          "from": 1203,
-          "to": 1214
-        }
+        { "w": "De", "from": 1172, "to": 1182 },
+        { "w": "1885", "from": 1182, "to": 1193 }
       ],
       "from": 1172,
+      "to": 1193
+    },
+    {
+      "words": [
+        { "w": "à", "from": 1193, "to": 1203 },
+        { "w": "aujourd'hui,", "from": 1203, "to": 1214 }
+      ],
+      "from": 1193,
       "to": 1214
     },
     {
       "words": [
-        {
-          "w": "la",
-          "from": 1214,
-          "to": 1224
-        },
-        {
-          "w": "mémoire",
-          "from": 1224,
-          "to": 1235
-        },
-        {
-          "w": "change",
-          "from": 1235,
-          "to": 1245
-        }
+        { "w": "la", "from": 1214, "to": 1224 },
+        { "w": "mémoire", "from": 1224, "to": 1235 }
       ],
       "from": 1214,
-      "to": 1245
+      "to": 1235
     },
     {
       "words": [
-        {
-          "w": "de",
-          "from": 1245,
-          "to": 1256
-        },
-        {
-          "w": "visage.",
-          "from": 1256,
-          "to": 1266
-        }
+        { "w": "change", "from": 1235, "to": 1245 },
+        { "w": "de", "from": 1245, "to": 1256 }
       ],
-      "from": 1245,
+      "from": 1235,
+      "to": 1256
+    },
+    {
+      "words": [
+        { "w": "visage.", "from": 1256, "to": 1266 }
+      ],
+      "from": 1256,
       "to": 1266
     },
     {
       "words": [
-        {
-          "w": "L'industrie,",
-          "from": 1272,
-          "to": 1285
-        },
-        {
-          "w": "la",
-          "from": 1285,
-          "to": 1299
-        },
-        {
-          "w": "finance,",
-          "from": 1299,
-          "to": 1312
-        },
-        {
-          "w": "l'armée",
-          "from": 1312,
-          "to": 1326
-        }
+        { "w": "L'industrie,", "from": 1272, "to": 1285 },
+        { "w": "la", "from": 1285, "to": 1299 }
       ],
       "from": 1272,
+      "to": 1299
+    },
+    {
+      "words": [
+        { "w": "finance,", "from": 1299, "to": 1312 },
+        { "w": "l'armée", "from": 1312, "to": 1326 }
+      ],
+      "from": 1299,
       "to": 1326
     },
     {
       "words": [
-        {
-          "w": "et",
-          "from": 1326,
-          "to": 1339
-        },
-        {
-          "w": "la",
-          "from": 1339,
-          "to": 1353
-        },
-        {
-          "w": "technologie.",
-          "from": 1353,
-          "to": 1366
-        }
+        { "w": "et", "from": 1326, "to": 1339 },
+        { "w": "la", "from": 1339, "to": 1353 }
       ],
       "from": 1326,
+      "to": 1353
+    },
+    {
+      "words": [
+        { "w": "technologie.", "from": 1353, "to": 1366 }
+      ],
+      "from": 1353,
       "to": 1366
     },
     {
       "words": [
-        {
-          "w": "Le",
-          "from": 1372,
-          "to": 1381
-        },
-        {
-          "w": "Brésil,",
-          "from": 1381,
-          "to": 1389
-        },
-        {
-          "w": "la",
-          "from": 1389,
-          "to": 1398
-        },
-        {
-          "w": "Russie,",
-          "from": 1398,
-          "to": 1406
-        }
+        { "w": "Le", "from": 1372, "to": 1381 },
+        { "w": "Brésil,", "from": 1381, "to": 1389 }
       ],
       "from": 1372,
+      "to": 1389
+    },
+    {
+      "words": [
+        { "w": "la", "from": 1389, "to": 1398 },
+        { "w": "Russie,", "from": 1398, "to": 1406 }
+      ],
+      "from": 1389,
       "to": 1406
     },
     {
       "words": [
-        {
-          "w": "l'Inde,",
-          "from": 1406,
-          "to": 1415
-        },
-        {
-          "w": "la",
-          "from": 1415,
-          "to": 1423
-        },
-        {
-          "w": "Chine",
-          "from": 1423,
-          "to": 1432
-        },
-        {
-          "w": "et",
-          "from": 1432,
-          "to": 1440
-        }
+        { "w": "l'Inde,", "from": 1406, "to": 1415 },
+        { "w": "la", "from": 1415, "to": 1423 }
       ],
       "from": 1406,
+      "to": 1423
+    },
+    {
+      "words": [
+        { "w": "Chine", "from": 1423, "to": 1432 },
+        { "w": "et", "from": 1432, "to": 1440 }
+      ],
+      "from": 1423,
       "to": 1440
     },
     {
       "words": [
-        {
-          "w": "l'Afrique",
-          "from": 1440,
-          "to": 1449
-        },
-        {
-          "w": "du",
-          "from": 1449,
-          "to": 1457
-        },
-        {
-          "w": "Sud.",
-          "from": 1457,
-          "to": 1466
-        }
+        { "w": "l'Afrique", "from": 1440, "to": 1449 },
+        { "w": "du", "from": 1449, "to": 1457 }
       ],
       "from": 1440,
+      "to": 1457
+    },
+    {
+      "words": [
+        { "w": "Sud.", "from": 1457, "to": 1466 }
+      ],
+      "from": 1457,
       "to": 1466
     },
     {
       "words": [
-        {
-          "w": "Un",
-          "from": 1472,
-          "to": 1488
-        },
-        {
-          "w": "général",
-          "from": 1488,
-          "to": 1503
-        },
-        {
-          "w": "devient",
-          "from": 1503,
-          "to": 1519
-        },
-        {
-          "w": "empereur",
-          "from": 1519,
-          "to": 1535
-        }
+        { "w": "Un", "from": 1472, "to": 1488 },
+        { "w": "général", "from": 1488, "to": 1503 }
       ],
       "from": 1472,
+      "to": 1503
+    },
+    {
+      "words": [
+        { "w": "devient", "from": 1503, "to": 1519 },
+        { "w": "empereur", "from": 1519, "to": 1535 }
+      ],
+      "from": 1503,
       "to": 1535
     },
     {
       "words": [
-        {
-          "w": "des",
-          "from": 1535,
-          "to": 1550
-        },
-        {
-          "w": "Français.",
-          "from": 1550,
-          "to": 1566
-        }
+        { "w": "des", "from": 1535, "to": 1550 },
+        { "w": "Français.", "from": 1550, "to": 1566 }
       ],
       "from": 1535,
       "to": 1566
     },
     {
       "words": [
-        {
-          "w": "En",
-          "from": 1572,
-          "to": 1585
-        },
-        {
-          "w": "Irak,",
-          "from": 1585,
-          "to": 1599
-        },
-        {
-          "w": "les",
-          "from": 1599,
-          "to": 1612
-        },
-        {
-          "w": "États-Unis",
-          "from": 1612,
-          "to": 1626
-        }
+        { "w": "En", "from": 1572, "to": 1585 },
+        { "w": "Irak,", "from": 1585, "to": 1599 }
       ],
       "from": 1572,
+      "to": 1599
+    },
+    {
+      "words": [
+        { "w": "les", "from": 1599, "to": 1612 },
+        { "w": "États-Unis", "from": 1612, "to": 1626 }
+      ],
+      "from": 1599,
       "to": 1626
     },
     {
       "words": [
-        {
-          "w": "font",
-          "from": 1626,
-          "to": 1639
-        },
-        {
-          "w": "cavalier",
-          "from": 1639,
-          "to": 1653
-        },
-        {
-          "w": "seul.",
-          "from": 1653,
-          "to": 1666
-        }
+        { "w": "font", "from": 1626, "to": 1639 },
+        { "w": "cavalier", "from": 1639, "to": 1653 }
       ],
       "from": 1626,
+      "to": 1653
+    },
+    {
+      "words": [
+        { "w": "seul.", "from": 1653, "to": 1666 }
+      ],
+      "from": 1653,
       "to": 1666
     },
     {
       "words": [
-        {
-          "w": "L'histoire",
-          "from": 1672,
-          "to": 1679
-        },
-        {
-          "w": "retiendra",
-          "from": 1679,
-          "to": 1685
-        },
-        {
-          "w": "peut-être",
-          "from": 1685,
-          "to": 1692
-        },
-        {
-          "w": "que",
-          "from": 1692,
-          "to": 1699
-        }
+        { "w": "L'histoire", "from": 1672, "to": 1679 },
+        { "w": "retiendra", "from": 1679, "to": 1685 }
       ],
       "from": 1672,
+      "to": 1685
+    },
+    {
+      "words": [
+        { "w": "peut-être", "from": 1685, "to": 1692 },
+        { "w": "que", "from": 1692, "to": 1699 }
+      ],
+      "from": 1685,
       "to": 1699
     },
     {
       "words": [
-        {
-          "w": "c'est",
-          "from": 1699,
-          "to": 1706
-        },
-        {
-          "w": "le",
-          "from": 1706,
-          "to": 1712
-        },
-        {
-          "w": "jour",
-          "from": 1712,
-          "to": 1719
-        },
-        {
-          "w": "de",
-          "from": 1719,
-          "to": 1726
-        }
+        { "w": "c'est", "from": 1699, "to": 1706 },
+        { "w": "le", "from": 1706, "to": 1712 }
       ],
       "from": 1699,
+      "to": 1712
+    },
+    {
+      "words": [
+        { "w": "jour", "from": 1712, "to": 1719 },
+        { "w": "de", "from": 1719, "to": 1726 }
+      ],
+      "from": 1712,
       "to": 1726
     },
     {
       "words": [
-        {
-          "w": "Noël",
-          "from": 1726,
-          "to": 1732
-        },
-        {
-          "w": "que",
-          "from": 1732,
-          "to": 1739
-        },
-        {
-          "w": "l'Union",
-          "from": 1739,
-          "to": 1746
-        },
-        {
-          "w": "soviétique",
-          "from": 1746,
-          "to": 1753
-        }
+        { "w": "Noël", "from": 1726, "to": 1732 },
+        { "w": "que", "from": 1732, "to": 1739 }
       ],
       "from": 1726,
+      "to": 1739
+    },
+    {
+      "words": [
+        { "w": "l'Union", "from": 1739, "to": 1746 },
+        { "w": "soviétique", "from": 1746, "to": 1753 }
+      ],
+      "from": 1739,
       "to": 1753
     },
     {
       "words": [
-        {
-          "w": "a",
-          "from": 1753,
-          "to": 1759
-        },
-        {
-          "w": "disparu.",
-          "from": 1759,
-          "to": 1766
-        }
+        { "w": "a", "from": 1753, "to": 1759 },
+        { "w": "disparu.", "from": 1759, "to": 1766 }
       ],
       "from": 1753,
       "to": 1766
     },
     {
       "words": [
-        {
-          "w": "La",
-          "from": 1772,
-          "to": 1785
-        },
-        {
-          "w": "Chine,",
-          "from": 1785,
-          "to": 1799
-        },
-        {
-          "w": "fermée,",
-          "from": 1799,
-          "to": 1812
-        },
-        {
-          "w": "s'ouvre",
-          "from": 1812,
-          "to": 1826
-        }
+        { "w": "La", "from": 1772, "to": 1785 },
+        { "w": "Chine,", "from": 1785, "to": 1799 }
       ],
       "from": 1772,
+      "to": 1799
+    },
+    {
+      "words": [
+        { "w": "fermée,", "from": 1799, "to": 1812 },
+        { "w": "s'ouvre", "from": 1812, "to": 1826 }
+      ],
+      "from": 1799,
       "to": 1826
     },
     {
       "words": [
-        {
-          "w": "soudain",
-          "from": 1826,
-          "to": 1839
-        },
-        {
-          "w": "au",
-          "from": 1839,
-          "to": 1853
-        },
-        {
-          "w": "monde.",
-          "from": 1853,
-          "to": 1866
-        }
+        { "w": "soudain", "from": 1826, "to": 1839 },
+        { "w": "au", "from": 1839, "to": 1853 }
       ],
       "from": 1826,
+      "to": 1853
+    },
+    {
+      "words": [
+        { "w": "monde.", "from": 1853, "to": 1866 }
+      ],
+      "from": 1853,
       "to": 1866
     },
     {
       "words": [
-        {
-          "w": "Les",
-          "from": 1872,
-          "to": 1891
-        },
-        {
-          "w": "États-Unis",
-          "from": 1891,
-          "to": 1910
-        },
-        {
-          "w": "contre",
-          "from": 1910,
-          "to": 1928
-        }
+        { "w": "Les", "from": 1872, "to": 1891 },
+        { "w": "États-Unis", "from": 1891, "to": 1910 }
       ],
       "from": 1872,
-      "to": 1928
+      "to": 1910
     },
     {
       "words": [
-        {
-          "w": "l'Union",
-          "from": 1928,
-          "to": 1947
-        },
-        {
-          "w": "soviétique.",
-          "from": 1947,
-          "to": 1966
-        }
+        { "w": "contre", "from": 1910, "to": 1928 },
+        { "w": "l'Union", "from": 1928, "to": 1947 }
       ],
-      "from": 1928,
+      "from": 1910,
+      "to": 1947
+    },
+    {
+      "words": [
+        { "w": "soviétique.", "from": 1947, "to": 1966 }
+      ],
+      "from": 1947,
       "to": 1966
     },
     {
       "words": [
-        {
-          "w": "Les",
-          "from": 1972,
-          "to": 1988
-        },
-        {
-          "w": "États-Unis",
-          "from": 1988,
-          "to": 2003
-        },
-        {
-          "w": "face",
-          "from": 2003,
-          "to": 2019
-        },
-        {
-          "w": "à",
-          "from": 2019,
-          "to": 2035
-        }
+        { "w": "Les", "from": 1972, "to": 1988 },
+        { "w": "États-Unis", "from": 1988, "to": 2003 }
       ],
       "from": 1972,
+      "to": 2003
+    },
+    {
+      "words": [
+        { "w": "face", "from": 2003, "to": 2019 },
+        { "w": "à", "from": 2019, "to": 2035 }
+      ],
+      "from": 2003,
       "to": 2035
     },
     {
       "words": [
-        {
-          "w": "l'Union",
-          "from": 2035,
-          "to": 2050
-        },
-        {
-          "w": "soviétique.",
-          "from": 2050,
-          "to": 2066
-        }
+        { "w": "l'Union", "from": 2035, "to": 2050 },
+        { "w": "soviétique.", "from": 2050, "to": 2066 }
       ],
       "from": 2035,
       "to": 2066
     },
     {
       "words": [
-        {
-          "w": "Une",
-          "from": 2072,
-          "to": 2081
-        },
-        {
-          "w": "guerre",
-          "from": 2081,
-          "to": 2091
-        },
-        {
-          "w": "sans",
-          "from": 2091,
-          "to": 2100
-        },
-        {
-          "w": "champ",
-          "from": 2100,
-          "to": 2110
-        }
+        { "w": "Une", "from": 2072, "to": 2081 },
+        { "w": "guerre", "from": 2081, "to": 2091 }
       ],
       "from": 2072,
+      "to": 2091
+    },
+    {
+      "words": [
+        { "w": "sans", "from": 2091, "to": 2100 },
+        { "w": "champ", "from": 2100, "to": 2110 }
+      ],
+      "from": 2091,
       "to": 2110
     },
     {
       "words": [
-        {
-          "w": "de",
-          "from": 2110,
-          "to": 2119
-        },
-        {
-          "w": "bataille",
-          "from": 2119,
-          "to": 2128
-        },
-        {
-          "w": "?",
-          "from": 2128,
-          "to": 2138
-        },
-        {
-          "w": "Ça",
-          "from": 2138,
-          "to": 2147
-        }
+        { "w": "de", "from": 2110, "to": 2119 },
+        { "w": "bataille", "from": 2119, "to": 2128 }
       ],
       "from": 2110,
-      "to": 2147
+      "to": 2128
     },
     {
       "words": [
-        {
-          "w": "change",
-          "from": 2147,
-          "to": 2157
-        },
-        {
-          "w": "tout.",
-          "from": 2157,
-          "to": 2166
-        }
+        { "w": "?", "from": 2128, "to": 2138 }
       ],
-      "from": 2147,
+      "from": 2128,
+      "to": 2138
+    },
+    {
+      "words": [
+        { "w": "Ça", "from": 2138, "to": 2147 },
+        { "w": "change", "from": 2147, "to": 2157 }
+      ],
+      "from": 2138,
+      "to": 2157
+    },
+    {
+      "words": [
+        { "w": "tout.", "from": 2157, "to": 2166 }
+      ],
+      "from": 2157,
       "to": 2166
     },
     {
       "words": [
-        {
-          "w": "Abonne-toi",
-          "from": 2172,
-          "to": 2191
-        },
-        {
-          "w": "pour",
-          "from": 2191,
-          "to": 2210
-        },
-        {
-          "w": "la",
-          "from": 2210,
-          "to": 2228
-        }
+        { "w": "Abonne-toi", "from": 2172, "to": 2191 },
+        { "w": "pour", "from": 2191, "to": 2210 }
       ],
       "from": 2172,
-      "to": 2228
+      "to": 2210
     },
     {
       "words": [
-        {
-          "w": "prochaine",
-          "from": 2228,
-          "to": 2247
-        },
-        {
-          "w": "vidéo.",
-          "from": 2247,
-          "to": 2266
-        }
+        { "w": "la", "from": 2210, "to": 2228 },
+        { "w": "prochaine", "from": 2228, "to": 2247 }
       ],
-      "from": 2228,
+      "from": 2210,
+      "to": 2247
+    },
+    {
+      "words": [
+        { "w": "vidéo.", "from": 2247, "to": 2266 }
+      ],
+      "from": 2247,
       "to": 2266
     }
   ]

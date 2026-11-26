@@ -54,13 +54,13 @@ def test_anchor_occurring_twice_first_wins():
     assert timeline.anchor_frame(words, "chat", 0.0, 2.0, "chat et chat") == 6
 
 
-def test_caption_groups_2_to_4_words_and_break_on_pause():
+def test_caption_groups_1_to_2_words_and_break_on_pause():
     words = [{"w": f"m{i}", "s": i * 0.3, "e": i * 0.3 + 0.2} for i in range(5)]
     words += [{"w": "apres", "s": 3.0, "e": 3.2}, {"w": "la", "s": 3.3, "e": 3.5}, {"w": "pause", "s": 3.6, "e": 3.9}]
     groups = timeline.caption_groups(words)
     sizes = [len(g["words"]) for g in groups]
-    assert sizes == [3, 2, 3]
-    assert all(1 <= s <= 4 for s in sizes)
+    assert sizes == [2, 2, 1, 2, 1]
+    assert [g["words"][0]["w"] for g in groups][3] == "apres"
 
 
 def test_caption_groups_break_on_final_punctuation():
@@ -233,19 +233,19 @@ def test_sentence_starts_become_beats_except_the_first():
 
 
 def test_no_sentence_break_no_beat_in_a_short_scene():
-    say = "Une seule phrase assez courte pour tenir"
+    say = "Une seule phrase courte"
     seg = words_at([(w, i * 0.4) for i, w in enumerate(align.script_words(say))])
-    assert timeline.beat_frames(say, seg, 0.0, 3.0, 0, 90, []) == []
+    assert timeline.beat_frames(say, seg, 0.0, 2.0, 0, 60, []) == []
 
 
-def test_midpoint_beat_in_any_gap_over_four_seconds_on_a_word_start():
+def test_midpoint_beat_in_any_gap_over_two_and_a_half_seconds_on_a_word_start():
     say = "un deux trois quatre cinq six sept huit neuf dix onze douze treize"
     seg = words_at([(w, i * 1.0) for i, w in enumerate(align.script_words(say))])
     beats = timeline.beat_frames(say, seg, 0.0, 13.0, 0, 390, [])
     starts = {round(i * 30) for i in range(13)}
     assert beats and all(b in starts for b in beats)
     points = [0] + beats + [390]
-    assert all(b - a <= 120 for a, b in zip(points, points[1:]))
+    assert all(b - a <= timeline.BEAT_GAP for a, b in zip(points, points[1:]))
     assert beats == sorted(beats)
 
 
@@ -349,3 +349,48 @@ def test_stamps_and_counters_take_turns_between_variants(job_with_offsets):
 def test_other_scene_types_get_no_variant(job_with_offsets):
     assert all("variant" not in s.get("props", {}) for s in build(job_with_offsets)["segments"]
                if s.get("type") not in timeline.VARIED)
+
+
+def write_wav(path, chunks, rate=48000):
+    import wave
+
+    import numpy as np
+
+    pcm = np.concatenate([np.full(int(rate * s), a, dtype=np.float32) * np.sin(np.arange(int(rate * s)) / 5)
+                          for s, a in chunks])
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes((pcm * 32767).astype("<i2").tobytes())
+
+
+def test_audio_levels_suit_le_volume_image_par_image(tmp_path):
+    wav = tmp_path / "part.wav"
+    write_wav(wav, [(1.0, 0.0), (1.0, 0.8)])
+    levels = timeline.audio_levels(wav, 0.5, 1.5)
+    assert len(levels) == 30
+    assert max(levels) == 1.0 and all(0 <= v <= 1 for v in levels)
+    assert max(levels[:12]) < 0.05 and min(levels[18:]) > 0.9
+
+
+def test_les_scenes_avec_un_extrait_audio_portent_son_onde(job_with_offsets):
+    tl = build(job_with_offsets)
+    offsets = common.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
+    with_audio = [s for s in tl["segments"] if "audio" in s]
+    assert len(with_audio) == 2
+    for seg, entry in zip(with_audio, [offsets[3], offsets[5]]):
+        clip = entry["clip"]
+        audio = seg["audio"]
+        assert audio["kind"] == clip["kind"]
+        assert seg["from"] <= audio["from"] < audio["to"] <= seg["to"]
+        assert len(audio["levels"]) == audio["to"] - audio["from"]
+    assert all("audio" not in s for s in tl["segments"] if s["kind"] != "scene")
+
+
+def test_paper_passe_dans_la_timeline(job_with_offsets):
+    assert "paper" not in build(job_with_offsets)
+    plan = common.load_json(job_with_offsets / "plan.json")
+    plan["paper"] = "journal"
+    common.save_json(job_with_offsets / "plan.json", plan)
+    assert build(job_with_offsets)["paper"] == "journal"

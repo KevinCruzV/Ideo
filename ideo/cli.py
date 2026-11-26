@@ -4,12 +4,13 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, setup_voix
+from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] [--payer] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"]")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale")
+         "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"] "
+         "| rythme <job ou fichier vidéo> [--seuil 0.3] | suivi <job>")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale", "rythme", "suivi")
 
 
 class UsageError(Exception):
@@ -113,6 +114,16 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
     if cmd == "check" and "--sans-relecture" in rest:
         rest = [r for r in rest if r != "--sans-relecture"]
         opts["sans_relecture"] = True
+    if cmd == "rythme" and "--seuil" in rest:
+        i = rest.index("--seuil")
+        try:
+            seuil = float(rest[i + 1]) if i + 1 < len(rest) else None
+        except ValueError:
+            seuil = None
+        if seuil is None:
+            raise UsageError("--seuil attend un nombre, par exemple --seuil 0.3")
+        opts["seuil"] = seuil
+        rest = rest[:i] + rest[i + 2:]
     if len(rest) != 1:
         raise UsageError(USAGE)
     return cmd, rest[0], part, opts
@@ -149,6 +160,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
                 f"{info['sfx']} sons). Transcription : {job / 'transcript_compact.md'} ({cost.reading_note(job)}). "
                 f"Coût estimé : {cost.line(job)}.{cost.advice(job)}{setup_voix.install_note(info['lang'])}{_notice_tail()}"], 0
+    if cmd == "rythme":
+        return _rythme(arg, opts), 0
     job = pipeline.resolve_job(arg)
     if cmd == "photo":
         return [photo.run(job, opts["name"])], 0
@@ -198,13 +211,27 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     if cmd == "produce":
         outputs = pipeline.produce(job, part, pay=bool(opts.get("payer")))
         review.reset(job)
-        return [f"OK produce : {_paths(outputs)} ; {' ; '.join(_after_produce(job, part))}"], 0
+        version = _safely(pipeline.freshness, job, part)
+        return [f"OK produce : {_paths(outputs)} ; {' ; '.join(([version] if version else []) + _after_produce(job, part))}"], 0
     if cmd == "qc":
         alerts = qc.run(job)
         return [f"OK qc : {qc.summary(job, alerts)}"] + [f"ALERTE : {a}" for a in alerts], 0
     if cmd == "status":
         return [f"OK status : {pipeline.status(job)}"], 0
+    if cmd == "suivi":
+        return [f"OK suivi : {suivi.rapport(job)}"], 0
     return [f"OK deepen : nouveau job {pipeline.deepen(job)}"], 0
+
+
+def _rythme(arg: str, opts: dict) -> list[str]:
+    path = Path(arg).expanduser()
+    seuil = opts.get("seuil", rythme.SEUIL_SCENE)
+    if path.is_file():
+        mesure = rythme.depuis_video(path, seuil=seuil)
+        return [f"OK rythme : {rythme.rapport(mesure, label=path.name)}"]
+    job = pipeline.resolve_job(arg)
+    mesures = rythme.depuis_job(job)
+    return [f"OK rythme : {job.name}"] + [rythme.rapport(m, label=f"partie {n}") for n, m in sorted(mesures.items())]
 
 
 ENGINE_NAMES = {"elevenlabs": "ElevenLabs", "kyutai": "locale Kyutai", "edge": "en ligne"}

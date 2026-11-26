@@ -54,6 +54,12 @@ def _clip_windows(offsets: list) -> list[tuple[float, float]]:
     return [(o["clip"]["start"] - CLIP_WINDOW, o["clip"]["end"] + CLIP_WINDOW) for o in offsets if o.get("clip")]
 
 
+def _suspense_windows(part: dict, offsets: list) -> list[tuple[float, float]]:
+    held = {f"seg_{i:02d}" for i, scene in enumerate(part.get("scenes") or [], start=1)
+            if isinstance(scene, dict) and scene.get("suspense") is True}
+    return [(o["start"] - assemble.GAP_SUSPENSE - CLIP_WINDOW, o["start"] + CLIP_WINDOW) for o in offsets if o.get("seg") in held]
+
+
 def _scene_alerts(where: str, timeline: dict, offsets: list) -> list[tuple[str, str]]:
     fps = timeline["fps"]
     alerts = []
@@ -156,7 +162,8 @@ def _part_alerts(job: Path, plan: dict, n: int) -> list[tuple[str, str]]:
     timeline = common.load_json(timeline_path)
     offsets = common.load_json(offsets_path) if offsets_path.exists() else []
     alerts = []
-    windows = _clip_windows(offsets)
+    part = next((p for p in plan["parts"] if p["n"] == n), {})
+    windows = _clip_windows(offsets) + _suspense_windows(part, offsets)
     for start, end in _silences(wav):
         if not any(start < b and end > a for a, b in windows):
             alerts.append(("silence-long", f"{where}, à {_sec(start)} : silence de {_sec(end - start)} dans la voix. "

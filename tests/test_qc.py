@@ -378,3 +378,19 @@ def test_a_hook_chosen_by_hand_raises_no_alert(made):
     common.save_json(job / "parts" / "01" / "voice-hook.json",
                      {"passed": False, "failed": ["fin traînante"], "takes": 12, "chosen": "manuel : prise validée à l'oreille"})
     assert not [c for c, _ in qc.run_coded(job) if c == "accroche-imparfaite"]
+
+
+def test_suspense_silence_is_wanted_not_an_alert(job_with_voice_fixtures):
+    from ideo import assemble
+
+    job = job_with_voice_fixtures
+    plan = common.load_json(job / "plan.json")
+    plan["parts"][0]["scenes"][2]["suspense"] = True
+    common.save_json(job / "plan.json", plan)
+    assemble.assemble_part(job, 1)
+    tl = common.load_json(timeline.build_timeline(job, 1, 1))
+    make_video(render.mp4_path(job, plan, 1), tl["durationInFrames"] / tl["fps"])
+    assert not [c for c, _ in qc.run_coded(job) if c == "silence-long"]
+    del plan["parts"][0]["scenes"][2]["suspense"]
+    common.save_json(job / "plan.json", plan)
+    assert [c for c, _ in qc.run_coded(job) if c == "silence-long"]

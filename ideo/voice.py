@@ -154,8 +154,6 @@ def choose_backend(lang: str, log: Path | None = None, job: Path | None = None) 
     chosen = config.engine(job)
     if chosen == "elevenlabs":
         return eleven.ElevenLabsBackend(log, job)
-    if lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed():
-        return KyutaiBackend(log)
     return get_backend(log)
 
 
@@ -172,12 +170,23 @@ def retranscribe(wav: Path, lang: str, log: Path | None = None) -> list[dict]:
 
 def spoken_for(text: str, lang: str, local: bool, name: str = "", plain: bool = False) -> tuple[str, list | None]:
     if plain:
-        return lexicon.apply(text, lang), None
+        amounts = numbers.normalize(text, lang, amounts_only=True)
+        return lexicon.apply(amounts.text, lang), amounts.units
     if name == HOOK:
         text = hookvoice.shape(text, lang)
     normalized = numbers.normalize(text, lang)
     spoken = lexicon.apply(normalized.text, lang) if local else normalized.text
     return spoken, normalized.units
+
+
+def _with_colons(heard: list[dict], text: str, duration: float) -> list[dict]:
+    ends = [w["e"] for w in align.align_words(align.script_words(text), heard, duration)
+            if w["w"].rstrip(pacing.CLOSERS).endswith(":")]
+    if not ends:
+        return heard
+    return [{**w, "w": w["w"].rstrip(",") + "\u00a0:"}
+            if not w["w"].rstrip(pacing.CLOSERS).endswith(":") and any(abs(w["e"] - e) < 0.02 for e in ends) else w
+            for w in heard]
 
 
 def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None = None, units: list | None = None) -> list[dict]:
@@ -186,9 +195,9 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
         if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (pacing.RATE, 1, 2):
             raise common.IdeoError(f"{wav.name} doit être en 48 kHz mono 16 bits : relancez la voix.")
         pcm = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2")
-    tight, mapping = pacing.tighten(pcm)
+    tight, mapping = pacing.tighten(pcm, heard)
     heard = pacing.remap(heard, mapping)
-    tight, spread = pacing.pause_sentences(tight, heard)
+    tight, spread = pacing.pause_sentences(tight, _with_colons(heard, spoken or text, len(tight) / pacing.RATE))
     heard = pacing.remap(heard, spread)
     if len(tight) != len(pcm):
         with wave.open(str(wav), "wb") as w:
@@ -385,8 +394,6 @@ def _kind(backend) -> str:
 
 
 def _fallback_backend(lang: str, log: Path, failed: str = "local"):
-    if failed == "paid" and lang in KYUTAI_LANGS and config.kyutai_installed() and config.apple_silicon():
-        return KyutaiBackend(log)
     return get_backend(log)
 
 
@@ -529,6 +536,39 @@ def paid_guard(job: Path, n: int, pending: list[tuple[str, str]], lang: str, pay
                                f"coûterait environ {total} caractères ElevenLabs. Relance produce avec --payer pour confirmer.")
 
 
+def _segment_done(out_dir: Path, name: str, text: str, lang: str, kind: str) -> bool:
+    if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
+        return False
+    return _stored(out_dir, name, text) == spoken_for(text, lang, kind == "local", name, plain=kind == "paid")[0]
+
+
+def _kind_for(job: Path, lang: str) -> str:
+    chosen = config.engine(job)
+    if chosen == "elevenlabs":
+        return "paid"
+    return "local" if lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed() else "edge"
+
+
+def done_segments(job: Path, plan: dict, part: dict) -> list[str]:
+    lang = plan["lang"]
+    out_dir = Path(job) / "parts" / f"{part['n']:02d}"
+    kind = _kind_for(Path(job), lang)
+    return [name for name, text in segments(plan, part) if _segment_done(out_dir, name, text, lang, kind)]
+
+
+def guard_redo(job: Path, n: int, pay: bool, keep: bool) -> None:
+    job = Path(job)
+    if config.engine(job) != "elevenlabs":
+        return
+    plan = common.load_json(job / "plan.json")
+    part = next((p for p in plan["parts"] if p["n"] == n), None)
+    if part is None:
+        return
+    done = set(done_segments(job, plan, part)) if keep else set()
+    pending = [(name, text) for name, text in segments(plan, part) if name not in done]
+    paid_guard(job, n, pending, plan["lang"], pay)
+
+
 def voice_part(job: Path, n: int, backend: VoiceBackend | None = None, pay: bool = False) -> list[Path]:
     job = Path(job)
     plan = common.load_json(job / "plan.json")
@@ -545,12 +585,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None, pay: bool
     paths = [out_dir / f"{name}.wav" for name, _ in items]
     kind = _kind(backend)
 
-    def done(name: str, text: str) -> bool:
-        if not ((out_dir / f"{name}.wav").exists() and (out_dir / f"{name}.words.json").exists()):
-            return False
-        return _stored(out_dir, name, text) == spoken_for(text, lang, kind == "local", name, plain=kind == "paid")[0]
-
-    pending = [(name, text) for name, text in items if not done(name, text)]
+    pending = [(name, text) for name, text in items if not _segment_done(out_dir, name, text, lang, kind)]
     if kind == "paid":
         paid_guard(job, n, pending, lang, pay)
     try:
@@ -575,7 +610,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None, pay: bool
             info = {"engine": {"local": "kyutai", "paid": "elevenlabs", "edge": "edge"}[kind], "fallback": fallback,
                     "local_missing": config.local_voice_missing(lang)}
             if kind == "paid":
-                previous = _read_info(out_dir)
+                previous = read_info(out_dir)
                 before = previous.get("characters", 0) if previous.get("engine") == "elevenlabs" else 0
                 info["characters"] = before + backend.characters
                 config.add_paid_characters(job, backend.characters)
@@ -617,7 +652,7 @@ def _forget_local_scores(out_dir: Path, names: list[str]) -> None:
         path.unlink()
 
 
-def _read_info(out_dir: Path) -> dict:
+def read_info(out_dir: Path) -> dict:
     path = out_dir / "voice-info.json"
     try:
         data = common.load_json(path) if path.exists() else {}

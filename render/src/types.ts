@@ -11,12 +11,15 @@ export type Segment = {
   props: Record<string, unknown>;
   items?: TimelineItem[];
   beats?: number[];
+  break?: boolean;
+  audio?: { kind: string; from: number; to: number; levels: number[] };
 };
 
 export type Chapter = { part: number; total: number; title: string; label: string };
 
 export type Timeline = {
   mood?: "dark";
+  paper?: string;
   fps: number;
   width: number;
   height: number;

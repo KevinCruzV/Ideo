@@ -1,24 +1,27 @@
 import hashlib
 import math
 import re
+import wave
 from pathlib import Path
 
 import shutil
 
-from ideo import align, common, i18n, photo, textmatch, voice
+import numpy as np
+
+from ideo import align, plan_check, common, i18n, photo, textmatch, voice
 
 FPS = 30
 WIDTH = 1080
 HEIGHT = 1920
 PAUSE = 0.5
-MAX_GROUP = 4
+MAX_GROUP = 2
 FIRST_ITEM_FRAMES = 9
 UNCAPPED = frozenset({"object-state"})
 VARIED = frozenset({"stamp", "counter"})
 VARIANTS = 3
 SENTENCE_END = (".", "!", "?", "…")
 CLOSERS = "»”\"')]"
-BEAT_GAP = 4 * FPS
+BEAT_GAP = round(2.5 * FPS)
 BEAT_MARGIN = 20
 FINAL_PUNCT = (".", "!", "?", "…", ";", ":")
 APOSTROPHES = re.compile("['’‘ʼ`´]")
@@ -111,6 +114,24 @@ def _split_run(run: list[dict]) -> list[list[dict]]:
         out.append(run[pos:pos + size])
         pos += size
     return out
+
+
+def audio_levels(wav: Path, start: float, end: float, fps: int = FPS) -> list[float]:
+    with wave.open(str(wav), "rb") as w:
+        rate, channels = w.getframerate(), w.getnchannels()
+        w.setpos(min(int(start * rate), w.getnframes()))
+        raw = w.readframes(max(0, int((end - start) * rate)))
+    pcm = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768.0
+    if channels > 1:
+        pcm = pcm[: len(pcm) // channels * channels].reshape(-1, channels).mean(axis=1)
+    count = max(0, _frame(end, fps) - _frame(start, fps))
+    step = rate / fps
+    levels = []
+    for i in range(count):
+        chunk = pcm[int(i * step): int((i + 1) * step)]
+        levels.append(float(np.sqrt(np.mean(chunk ** 2))) if len(chunk) else 0.0)
+    peak = max(levels, default=0.0)
+    return [round(v / peak, 2) if peak > 0 else 0.0 for v in levels]
 
 
 def caption_groups(words: list[dict], fps: int = FPS) -> list[dict]:
@@ -281,6 +302,13 @@ def _build(job: Path, n: int, total: int) -> Path:
             beats = beat_frames(scene["say"], seg_words, entry["start"], seg_dur, begin, limit, [i["at"] for i in items])
             if beats:
                 segment["beats"] = beats
+            if scene.get("break") is True:
+                segment["break"] = True
+            if clip:
+                start, stop = max(_frame(clip["start"]), begin), min(_frame(clip["end"]), finish)
+                if stop > start and (out_dir / "part.wav").exists():
+                    segment["audio"] = {"kind": clip["kind"], "from": start, "to": stop,
+                                        "levels": audio_levels(out_dir / "part.wav", start / FPS, stop / FPS)}
             segments.append(segment)
 
     timeline = {
@@ -297,6 +325,8 @@ def _build(job: Path, n: int, total: int) -> Path:
     }
     if plan.get("mood") == "dark":
         timeline["mood"] = "dark"
+    if plan.get("paper") in plan_check.PAPERS:
+        timeline["paper"] = plan["paper"]
     path = out_dir / "timeline.json"
     common.save_json(path, timeline)
     return path

@@ -175,3 +175,9 @@ def test_skill_launches_the_entretien_right_after_a_bug_is_noted():
     bug_rule = feedback.split("learn --bug", 1)[1].split("3. Remplace", 1)[0]
     assert "lance l'entretien tout de suite, comme à l'étape 8" in bug_rule
     assert "un seul entretien" in bug_rule and "entretien_auto" in bug_rule
+
+
+def test_collages_respectent_l_interdiction_des_faits_divers():
+    guide = (Path(__file__).resolve().parent.parent / "skills" / "ideo" / "references" / "plan-guide.md").read_text(encoding="utf-8")
+    line = next(l for l in guide.splitlines() if l.startswith("Collages"))
+    assert "fait divers" in line and "personne privée" in line

@@ -15,6 +15,8 @@ RATE = 48000
 GAP_HOOK = 0.60
 GAP_SCENE = 0.50
 GAP_BREAK = 0.90
+GAP_SUSPENSE = 2.0
+GAP_QUESTION = 1.2
 CLIP_PAD = 0.25
 FADE = 0.08
 QUOTE_WINDOW = 90.0
@@ -214,8 +216,12 @@ def _inputs(out_dir: Path, names: list[str], job: Path) -> list[Path]:
 
 def _gap(names: list[str], index: int, scenes: dict, after_clip: bool) -> float:
     scene = scenes.get(names[index])
+    if scene and scene.get("suspense") is True:
+        return GAP_SUSPENSE - CLIP_PAD if after_clip else GAP_SUSPENSE
     if scene and scene.get("break") is True:
         return GAP_BREAK - CLIP_PAD if after_clip else GAP_BREAK
+    if names[index] == "seg_99_outro":
+        return GAP_QUESTION - CLIP_PAD if after_clip else GAP_QUESTION
     if after_clip:
         return 0.0
     return GAP_HOOK if names[index - 1] == "seg_00_hook" else GAP_SCENE

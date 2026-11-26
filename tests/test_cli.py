@@ -170,7 +170,9 @@ def test_prepare_writes_progress_log_and_one_line(tmp_path, monkeypatch, capsys)
     assert out[0].split(" Coût estimé : ")[1].startswith("lecture au moins ~")
     assert "bruit" not in captured.out and "bruit" not in captured.err
     progress = (job / "logs" / "progress.log").read_text(encoding="utf-8").splitlines()
-    assert [line.split(" ")[2:4] for line in progress] == [["OK", "fetch"], ["OK", "transcribe"], ["OK", "transcript"]]
+    assert [line.split(" ")[2:4] for line in progress] == [
+        ["DÉBUT", "fetch"], ["OK", "fetch"], ["DÉBUT", "transcribe"], ["OK", "transcribe"],
+        ["DÉBUT", "transcript"], ["OK", "transcript"]]
 
 
 def test_prepare_bad_url_is_an_error_line(tmp_path, monkeypatch, capsys):
@@ -221,9 +223,9 @@ def test_produce_invalidates_part_when_plan_changes(produce_job, capsys):
     edit_first_say(job, "Aujourd'hui nous allons voir pourquoi notre mémoire laisse filer presque tout ce que "
                         "nous venons de lire ou d'apprendre, en quelques jours à peine seulement.")
     assert cli.main(["produce", str(job)]) == 0
-    assert len(backend.calls) == first + 7
+    assert len(backend.calls) == first + 1
     assert renders == [1, 1]
-    assert "quelques jours à peine" in backend.calls[first + 1][0]
+    assert "quelques jours à peine" in backend.calls[first][0]
 
 
 def test_src_edit_on_a_plain_scene_keeps_the_part(produce_job, capsys):
@@ -255,12 +257,13 @@ def test_invalidation_deletes_stale_artifacts_and_marks(produce_job, monkeypatch
     edit_first_say(job, "Aujourd'hui nous allons voir pourquoi notre mémoire laisse filer presque tout ce que "
                         "nous venons de lire ou d'apprendre, en quelques jours à peine seulement.")
 
-    def stop(job_path, n, backend=None):
+    def stop(job_path, n, backend=None, pay=False):
         raise common.IdeoError("arrêt du test")
 
     monkeypatch.setattr(voice, "voice_part", stop)
     assert cli.main(["produce", str(job)]) == 1
-    assert not list(part_dir.glob("seg_*"))
+    assert not list(part_dir.glob("seg_01.*"))
+    assert (part_dir / "seg_02.wav").exists()
     for name in ("part.wav", "offsets.json", "timeline.json"):
         assert not (part_dir / name).exists()
     assert not (job / "out" / "video.mp4").exists()

@@ -3,8 +3,8 @@ import { AbsoluteFill } from "remotion";
 import grainUrl from "../../public/grain.png";
 import { colors } from "../theme";
 
-export const Background: React.FC = () => (
-  <AbsoluteFill style={{ background: colors.background }}>
+export const Background: React.FC<{ color?: string }> = ({ color }) => (
+  <AbsoluteFill style={{ background: color ?? colors.background }}>
     <AbsoluteFill
       style={{
         backgroundImage: `url(${grainUrl})`,

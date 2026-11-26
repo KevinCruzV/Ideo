@@ -169,22 +169,6 @@ def test_existing_segments_are_not_redone(kyutai, job_with_plan, monkeypatch):
     assert len(kyutai.calls) == 1
 
 
-def test_engine_failure_falls_back_to_edge_and_says_so(kyutai, job_with_plan, monkeypatch, fake_backend, fake_whisper):
-    kyutai.fail = "La commande a échoué (code 1) : moshi"
-    monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
-    paths = voice.voice_part(job_with_plan, 1)
-    assert len(paths) == 7 and len(fake_backend.calls) == 7
-    info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
-    assert info["engine"] == "edge" and "La commande a échoué" in info["fallback"] and "\n" not in info["fallback"]
-
-
-def test_missing_output_file_falls_back(kyutai, job_with_plan, monkeypatch, fake_backend, fake_whisper):
-    kyutai.skip = ("seg_02",)
-    monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
-    voice.voice_part(job_with_plan, 1)
-    assert common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")["fallback"]
-
-
 def test_other_languages_use_edge(kyutai, job_with_plan, monkeypatch, fake_backend, fake_whisper):
     plan = common.load_json(job_with_plan / "plan.json")
     plan["lang"] = "de"
@@ -195,44 +179,10 @@ def test_other_languages_use_edge(kyutai, job_with_plan, monkeypatch, fake_backe
     assert common.load_json(job_with_plan / "parts" / "01" / "voice-info.json") == {"engine": "edge", "fallback": None, "local_missing": False}
 
 
-def test_kyutai_serves_french_and_english(kyutai, job_with_plan, monkeypatch):
-    assert isinstance(voice.choose_backend("fr", job_with_plan / "l.log"), voice.KyutaiBackend)
-    assert isinstance(voice.choose_backend("en", job_with_plan / "l.log"), voice.KyutaiBackend)
-    assert isinstance(voice.choose_backend("es", job_with_plan / "l.log"), voice.EdgeTTSBackend)
-    (common._root() / "config.json").write_text('{"engine": "edge"}', encoding="utf-8")
-    assert isinstance(voice.choose_backend("fr", job_with_plan / "l.log"), voice.EdgeTTSBackend)
-
-
 def test_missing_environment_is_a_clear_error(job_with_plan, tmp_path, monkeypatch):
     monkeypatch.setattr(config, "KYUTAI_PYTHON", tmp_path / "absent")
     with pytest.raises(common.IdeoError, match="moteur de voix local"):
         voice.KyutaiBackend(job_with_plan / "logs" / "v.log").synthesize_batch([("a", "Bonjour")], "fr", tmp_path)
-
-
-def test_hash_follows_engine_voice_and_padding(kyutai, job_with_plan):
-    from ideo import pipeline
-
-    plan = common.load_json(job_with_plan / "plan.json")
-    part = plan["parts"][0]
-    base = pipeline.part_hash(plan, part)
-    cfg = common._root() / "config.json"
-    cfg.write_text('{"engine": "edge"}', encoding="utf-8")
-    assert pipeline.part_hash(plan, part) != base
-    cfg.write_text('{"kyutai_padding_bonus": 1}', encoding="utf-8")
-    assert pipeline.part_hash(plan, part) != base
-    cfg.write_text('{"kyutai_voice": "a/b.wav"}', encoding="utf-8")
-    assert pipeline.part_hash(plan, part) != base
-    cfg.write_text('{}', encoding="utf-8")
-    assert pipeline.part_hash(plan, part) == base
-
-
-def test_missing_local_voice_is_recorded_for_the_online_voice(job_with_plan, monkeypatch, fake_backend, fake_whisper):
-    monkeypatch.setattr(config, "apple_silicon", lambda: True)
-    monkeypatch.setattr(voice, "get_backend", lambda log=None: fake_backend)
-    voice.voice_part(job_with_plan, 1)
-    info = common.load_json(job_with_plan / "parts" / "01" / "voice-info.json")
-    assert info == {"engine": "edge", "fallback": None, "local_missing": True}
-    assert len(fake_backend.calls) == 7
 
 
 def test_all_segments_to_redo_share_one_call_per_pass(kyutai, job_with_plan, monkeypatch):
