@@ -17,6 +17,12 @@ def test_a_draft_job_uses_the_free_voice_even_with_elevenlabs_configured(job_wit
     assert config.engine() == "elevenlabs"
     assert config.engine(job_with_plan) == "edge"
     monkeypatch.setattr(config, "kyutai_available", lambda: True)
+    assert config.engine(job_with_plan) == "edge"
+
+
+def test_kyutai_reste_possible_pour_le_brouillon_si_on_le_demande(job_with_plan, monkeypatch):
+    write({"engine": "kyutai"})
+    monkeypatch.setattr(config, "kyutai_available", lambda: True)
     assert config.engine(job_with_plan) == "kyutai"
 
 

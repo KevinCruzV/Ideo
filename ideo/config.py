@@ -211,7 +211,7 @@ def draft_engine() -> str:
     chosen = _load().get("engine")
     if chosen in FREE_ENGINES:
         return chosen
-    return "kyutai" if kyutai_available() else "edge"
+    return "edge"
 
 
 def is_final(job: Path) -> bool:
