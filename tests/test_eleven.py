@@ -555,3 +555,10 @@ def test_the_final_question_is_voiced_on_its_own_then_the_subscribe_call(eleven_
     full = voice.segments(common.load_json(eleven_job / "plan.json"), plan["parts"][0])[-1][1]
     assert [w["w"] for w in words] == voice.align.script_words(full)
     assert all(a["s"] <= b["s"] for a, b in zip(words, words[1:]))
+
+
+def test_the_paid_voice_gets_decimal_amounts_spelled_out_but_other_numbers_as_digits():
+    spoken, units = voice.spoken_for("Il paie 27,92 € en 1998.", "fr", False, "seg_01", plain=True)
+    assert spoken == "Il paie vingt-sept euros quatre-vingt-douze en 1998."
+    assert sum(u["said"] for u in units) == len(spoken.split())
+    assert voice.spoken_for("Il paie 5 € en 1998.", "fr", False, "seg_01", plain=True) == ("Il paie 5 € en 1998.", None)

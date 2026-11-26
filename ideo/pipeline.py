@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import shutil
+import time
 from pathlib import Path
 
 from ideo import assemble, common, config, compact, fetch, plan_check, render, timeline, transcribe, voice
@@ -10,7 +11,14 @@ PREPARED_FILES = ("info.json", "words.json", "lang.txt", "sfx.json", "skip.json"
 AUDIO_FILES = ("source.wav", "source.m4a")
 PREPARE_STEPS = ("fetch", "transcribe", "transcript")
 PART_STEPS = ("voice", "assemble", "timeline", "render")
-PART_FILES = ("part.wav", "offsets.json", "timeline.json", "voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json", "music.json")
+ASSEMBLY_FILES = ("part.wav", "offsets.json", "timeline.json", "music.json")
+VOICE_FILES = ("voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json")
+PART_FILES = ASSEMBLY_FILES + VOICE_FILES
+RENDER_CODE = ("align", "assemble", "countries", "i18n", "music", "pacing", "photo", "render", "scene_schema", "sfx",
+               "timeline", "transitions")
+VOICE_CODE = ("align", "eleven", "fidelity", "hookvoice", "lexicon", "numbers", "pacing", "prosody", "textmatch", "voice")
+REPO = Path(__file__).resolve().parent.parent
+REDONE: set[int] = set()
 
 
 def resolve_job(arg: str) -> Path:
@@ -76,10 +84,40 @@ def _voice_settings(lang: str, job: Path | None = None) -> dict:
     return {"engine": "edge", "voice": config.voice_for(lang), "rate": config.rate()}
 
 
+def _fingerprint(files: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(files):
+        digest.update(path.relative_to(REPO).as_posix().encode("utf-8"))
+        try:
+            digest.update(path.read_bytes())
+        except OSError:
+            continue
+    return digest.hexdigest()[:16]
+
+
+def code_version() -> str:
+    files = [REPO / "ideo" / f"{name}.py" for name in RENDER_CODE]
+    files += [p for p in (REPO / "render" / "src").rglob("*") if p.is_file()]
+    return _fingerprint(files)
+
+
+def voice_code_version() -> str:
+    return _fingerprint([REPO / "ideo" / f"{name}.py" for name in VOICE_CODE])
+
+
+def voice_hash(plan: dict, job: Path | None = None) -> str:
+    settings = _voice_settings(plan["lang"], job)
+    content = {"lang": plan["lang"], "voice": settings}
+    if settings["engine"] != "elevenlabs":
+        content["code"] = voice_code_version()
+    return hashlib.sha256(json.dumps(content, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
 def part_hash(plan: dict, part: dict, job: Path | None = None) -> str:
     content = {
         "lang": plan["lang"],
-        "voice": _voice_settings(plan["lang"], job),
+        "voice": voice_hash(plan, job),
+        "code": code_version(),
         "total": len(plan["parts"]),
         "title": part["title"],
         "segments": voice.segments(plan, part),
@@ -105,10 +143,34 @@ def _unmark(job: Path, names: list[str]) -> None:
     common.save_json(job / "status.json", status)
 
 
-def invalidate(job: Path, n: int) -> None:
+def _stored_voice_hash(job: Path, n: int) -> str | None:
+    path = _part_dir(job, n) / "voice.hash"
+    return path.read_text(encoding="utf-8").strip() if path.exists() else None
+
+
+def keeps_voice(job: Path, plan: dict, n: int) -> bool:
+    stored = _stored_voice_hash(job, n)
+    if stored is not None:
+        return stored == voice_hash(plan, job)
+    info = voice.read_info(_part_dir(job, n))
+    return info.get("engine") == "elevenlabs" and _voice_settings(plan["lang"], job)["engine"] == "elevenlabs"
+
+
+def invalidate(job: Path, n: int, keep_voice: bool = False, wanted: list[str] | None = None) -> None:
     part_dir = _part_dir(job, n)
-    for path in list(part_dir.glob("seg_*")) + [part_dir / name for name in PART_FILES]:
+    for path in [part_dir / name for name in ASSEMBLY_FILES]:
         path.unlink(missing_ok=True)
+    if keep_voice:
+        names = set(wanted or [])
+        for path in part_dir.glob("seg_*"):
+            if path.name.split(".")[0] not in names:
+                if path.is_dir():
+                    shutil.rmtree(path)
+                else:
+                    path.unlink(missing_ok=True)
+    else:
+        for path in list(part_dir.glob("seg_*")) + [part_dir / name for name in VOICE_FILES]:
+            path.unlink(missing_ok=True)
     out = job / "out"
     for name in (f"partie-{n:02d}.mp4", f"description-{n:02d}.txt"):
         (out / name).unlink(missing_ok=True)
@@ -116,6 +178,42 @@ def invalidate(job: Path, n: int) -> None:
         (out / "video.mp4").unlink(missing_ok=True)
         (out / "description.txt").unlink(missing_ok=True)
     _unmark(job, [f"{step}-{n:02d}" for step in PART_STEPS])
+
+
+def rendered_at(job: Path, plan: dict, n: int) -> float | None:
+    path = render.mp4_path(job, plan, n)
+    return path.stat().st_mtime if path.exists() else None
+
+
+def _when(stamp: float, today: str, other: str) -> str:
+    moment = time.localtime(stamp)
+    clock = time.strftime("%H:%M", moment)
+    if time.strftime("%Y-%m-%d", moment) == time.strftime("%Y-%m-%d"):
+        return f"{today} {clock}"
+    return f"{other} {time.strftime('%d/%m', moment)} à {clock}"
+
+
+def freshness(job: Path, only: int | None = None) -> str:
+    job = Path(job)
+    plan = common.load_json(job / "plan.json")
+    numbers = [p["n"] for p in plan["parts"] if only is None or p["n"] == only]
+    single = len(plan["parts"]) == 1
+    redone = [n for n in numbers if n in REDONE]
+    kept = [n for n in numbers if n not in REDONE]
+    label = lambda n: "vidéo" if single else f"partie {n}"
+    if not redone:
+        stamps = [rendered_at(job, plan, n) for n in numbers]
+        stamps = [s for s in stamps if s is not None]
+        when = _when(min(stamps), "de", "du") if stamps else "d'une date inconnue"
+        return f"Version : AUCUNE nouvelle vidéo, celle-ci date {when} (rien n'a changé depuis)"
+    pieces = []
+    for n in redone:
+        stamp = rendered_at(job, plan, n)
+        pieces.append(f"{label(n)} refaite {_when(stamp, 'à', 'le')}" if stamp else f"{label(n)} refaite")
+    for n in kept:
+        stamp = rendered_at(job, plan, n)
+        pieces.append(f"{label(n)} inchangée" + (f" (rendue {_when(stamp, 'à', 'le')})" if stamp else ""))
+    return "Version : " + ", ".join(pieces)
 
 
 def _clean_extra_outputs(job: Path, plan: dict) -> None:
@@ -152,6 +250,7 @@ def produce(job: Path, only: int | None = None, pay: bool = False) -> list[Path]
     if only is not None and not any(p["n"] == only for p in parts):
         raise common.IdeoError(f"partie {only} introuvable dans plan.json")
     _clean_extra_outputs(job, plan)
+    REDONE.clear()
     outputs = []
     for part in parts:
         n = part["n"]
@@ -162,9 +261,12 @@ def produce(job: Path, only: int | None = None, pay: bool = False) -> list[Path]
             progress(job, f"OK partie {n:02d} : déjà rendue, inchangée")
         else:
             if _stored_hash(job, n) != digest:
-                invalidate(job, n)
+                keep = keeps_voice(job, plan, n)
+                voice.guard_redo(job, n, pay, keep)
+                invalidate(job, n, keep, voice.done_segments(job, plan, part))
                 _part_dir(job, n).mkdir(parents=True, exist_ok=True)
                 (_part_dir(job, n) / "plan.hash").write_text(digest, encoding="utf-8")
+                (_part_dir(job, n) / "voice.hash").write_text(voice_hash(plan, job), encoding="utf-8")
             voice.voice_part(job, n, pay=pay)
             progress(job, f"OK voice-{n:02d}")
             assemble.assemble_part(job, n)
@@ -173,6 +275,7 @@ def produce(job: Path, only: int | None = None, pay: bool = False) -> list[Path]
             progress(job, f"OK timeline-{n:02d}")
             render.render_part(job, n)
             progress(job, f"OK render-{n:02d}")
+            REDONE.add(n)
         render.write_description(job, n)
         cover = render.write_cover(job, n)
         progress(job, f"OK cover-{n:02d}")
