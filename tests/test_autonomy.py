@@ -196,8 +196,8 @@ def test_produce_says_when_it_fell_back_to_the_online_voice(produce_job, monkeyp
     job = produce_job[0]
     real = voice.voice_part
 
-    def with_fallback(j, n, backend=None):
-        paths = real(j, n, backend)
+    def with_fallback(j, n, backend=None, pay=False):
+        paths = real(j, n, backend, pay)
         common.save_json(j / "parts" / f"{n:02d}" / "voice-info.json",
                          {"engine": "edge", "fallback": "La commande a échoué (code 1)", "local_missing": False})
         return paths

@@ -65,8 +65,8 @@ def voiced_scene(scene: dict) -> dict:
 def _voice_settings(lang: str, job: Path | None = None) -> dict:
     chosen = config.engine(job)
     if chosen == "elevenlabs":
-        return {"engine": "elevenlabs", "voice": config.eleven_voice_id(), "model": config.eleven_model(),
-                **config.eleven_settings()}
+        return {"engine": "elevenlabs", "voice": config.eleven_voice_id(job), "model": config.eleven_model(job),
+                **config.eleven_settings(job)}
     if lang in voice.KYUTAI_LANGS and chosen == "kyutai":
         settings = {"engine": "kyutai", "voice": config.kyutai_voice(), "padding": config.kyutai_padding_bonus()}
         hook = [config.kyutai_hook_temp(), config.kyutai_hook_padding_bonus()]
@@ -141,8 +141,9 @@ def _done(job: Path, plan: dict, n: int, digest: str) -> bool:
             and render.mp4_path(job, plan, n).exists())
 
 
-def produce(job: Path, only: int | None = None) -> list[Path]:
+def produce(job: Path, only: int | None = None, pay: bool = False) -> list[Path]:
     job = Path(job)
+    config.lock_final_voice(job)
     errors = plan_check.check_plan(job)
     if errors:
         raise common.IdeoError(f"plan.json contient {len(errors)} erreur(s) : lance check et corrige-les avant produce.")
@@ -164,7 +165,7 @@ def produce(job: Path, only: int | None = None) -> list[Path]:
                 invalidate(job, n)
                 _part_dir(job, n).mkdir(parents=True, exist_ok=True)
                 (_part_dir(job, n) / "plan.hash").write_text(digest, encoding="utf-8")
-            voice.voice_part(job, n)
+            voice.voice_part(job, n, pay=pay)
             progress(job, f"OK voice-{n:02d}")
             assemble.assemble_part(job, n)
             progress(job, f"OK assemble-{n:02d}")

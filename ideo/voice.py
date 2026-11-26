@@ -153,7 +153,7 @@ def get_backend(log: Path | None = None) -> VoiceBackend:
 def choose_backend(lang: str, log: Path | None = None, job: Path | None = None) -> VoiceBackend:
     chosen = config.engine(job)
     if chosen == "elevenlabs":
-        return eleven.ElevenLabsBackend(log)
+        return eleven.ElevenLabsBackend(log, job)
     if lang in KYUTAI_LANGS and chosen == "kyutai" and config.kyutai_installed():
         return KyutaiBackend(log)
     return get_backend(log)
@@ -517,7 +517,19 @@ def _run_backend(backend, pending, items, lang, out_dir, log, key) -> dict:
     return result
 
 
-def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[Path]:
+PAID_LIMIT = 600
+
+
+def paid_guard(job: Path, n: int, pending: list[tuple[str, str]], lang: str, pay: bool) -> None:
+    if pay or not pending or config.paid_characters(job) <= 0:
+        return
+    total = sum(len(spoken_for(text, lang, False, name, plain=True)[0]) for name, text in pending)
+    if total > PAID_LIMIT:
+        raise common.IdeoError(f"la voix payante de cette vidéo est déjà faite : refaire {len(pending)} phrase(s) de la partie {n} "
+                               f"coûterait environ {total} caractères ElevenLabs. Relance produce avec --payer pour confirmer.")
+
+
+def voice_part(job: Path, n: int, backend: VoiceBackend | None = None, pay: bool = False) -> list[Path]:
     job = Path(job)
     plan = common.load_json(job / "plan.json")
     part = next((p for p in plan["parts"] if p["n"] == n), None)
@@ -539,6 +551,8 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
         return _stored(out_dir, name, text) == spoken_for(text, lang, kind == "local", name, plain=kind == "paid")[0]
 
     pending = [(name, text) for name, text in items if not done(name, text)]
+    if kind == "paid":
+        paid_guard(job, n, pending, lang, pay)
     try:
         if pending:
             fallback = None
@@ -564,6 +578,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None) -> list[P
                 previous = _read_info(out_dir)
                 before = previous.get("characters", 0) if previous.get("engine") == "elevenlabs" else 0
                 info["characters"] = before + backend.characters
+                config.add_paid_characters(job, backend.characters)
                 _log_line(log, f"voix : ElevenLabs, {backend.characters} caractères envoyés ({info['characters']} pour la partie)")
             common.save_json(out_dir / "voice-info.json", info)
             if kind != "local":
