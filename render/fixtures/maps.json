@@ -200,185 +200,119 @@
   "captions": [
     {
       "words": [
-        {
-          "w": "Des",
-          "from": 4,
-          "to": 14
-        },
-        {
-          "w": "routes",
-          "from": 14,
-          "to": 24
-        },
-        {
-          "w": "de",
-          "from": 24,
-          "to": 34
-        },
-        {
-          "w": "la",
-          "from": 34,
-          "to": 44
-        }
+        { "w": "Des", "from": 4, "to": 14 },
+        { "w": "routes", "from": 14, "to": 24 }
       ],
       "from": 4,
+      "to": 24
+    },
+    {
+      "words": [
+        { "w": "de", "from": 24, "to": 34 },
+        { "w": "la", "from": 34, "to": 44 }
+      ],
+      "from": 24,
       "to": 44
     },
     {
       "words": [
-        {
-          "w": "Chine",
-          "from": 44,
-          "to": 54
-        },
-        {
-          "w": "jusqu'à",
-          "from": 54,
-          "to": 64
-        },
-        {
-          "w": "l'Italie.",
-          "from": 64,
-          "to": 74
-        }
+        { "w": "Chine", "from": 44, "to": 54 },
+        { "w": "jusqu'à", "from": 54, "to": 64 }
       ],
       "from": 44,
+      "to": 64
+    },
+    {
+      "words": [
+        { "w": "l'Italie.", "from": 64, "to": 74 }
+      ],
+      "from": 64,
       "to": 74
     },
     {
       "words": [
-        {
-          "w": "Trump",
-          "from": 154,
-          "to": 164
-        },
-        {
-          "w": "veut",
-          "from": 164,
-          "to": 174
-        },
-        {
-          "w": "le",
-          "from": 174,
-          "to": 184
-        },
-        {
-          "w": "Groenland.",
-          "from": 184,
-          "to": 194
-        }
+        { "w": "Trump", "from": 154, "to": 164 },
+        { "w": "veut", "from": 164, "to": 174 }
       ],
       "from": 154,
+      "to": 174
+    },
+    {
+      "words": [
+        { "w": "le", "from": 174, "to": 184 },
+        { "w": "Groenland.", "from": 184, "to": 194 }
+      ],
+      "from": 174,
       "to": 194
     },
     {
       "words": [
-        {
-          "w": "Et",
-          "from": 304,
-          "to": 314
-        },
-        {
-          "w": "le",
-          "from": 314,
-          "to": 324
-        },
-        {
-          "w": "canal",
-          "from": 324,
-          "to": 334
-        },
-        {
-          "w": "de",
-          "from": 334,
-          "to": 344
-        }
+        { "w": "Et", "from": 304, "to": 314 },
+        { "w": "le", "from": 314, "to": 324 }
       ],
       "from": 304,
+      "to": 324
+    },
+    {
+      "words": [
+        { "w": "canal", "from": 324, "to": 334 },
+        { "w": "de", "from": 334, "to": 344 }
+      ],
+      "from": 324,
       "to": 344
     },
     {
       "words": [
-        {
-          "w": "Panama.",
-          "from": 344,
-          "to": 354
-        }
+        { "w": "Panama.", "from": 344, "to": 354 }
       ],
       "from": 344,
       "to": 354
     },
     {
       "words": [
-        {
-          "w": "Le",
-          "from": 454,
-          "to": 464
-        },
-        {
-          "w": "Brésil,",
-          "from": 464,
-          "to": 474
-        },
-        {
-          "w": "la",
-          "from": 474,
-          "to": 484
-        },
-        {
-          "w": "Russie,",
-          "from": 484,
-          "to": 494
-        }
+        { "w": "Le", "from": 454, "to": 464 },
+        { "w": "Brésil,", "from": 464, "to": 474 }
       ],
       "from": 454,
+      "to": 474
+    },
+    {
+      "words": [
+        { "w": "la", "from": 474, "to": 484 },
+        { "w": "Russie,", "from": 484, "to": 494 }
+      ],
+      "from": 474,
       "to": 494
     },
     {
       "words": [
-        {
-          "w": "l'Inde,",
-          "from": 494,
-          "to": 504
-        },
-        {
-          "w": "la",
-          "from": 504,
-          "to": 514
-        },
-        {
-          "w": "Chine",
-          "from": 514,
-          "to": 524
-        },
-        {
-          "w": "et",
-          "from": 524,
-          "to": 534
-        }
+        { "w": "l'Inde,", "from": 494, "to": 504 },
+        { "w": "la", "from": 504, "to": 514 }
       ],
       "from": 494,
+      "to": 514
+    },
+    {
+      "words": [
+        { "w": "Chine", "from": 514, "to": 524 },
+        { "w": "et", "from": 524, "to": 534 }
+      ],
+      "from": 514,
       "to": 534
     },
     {
       "words": [
-        {
-          "w": "l'Afrique",
-          "from": 534,
-          "to": 544
-        },
-        {
-          "w": "du",
-          "from": 544,
-          "to": 554
-        },
-        {
-          "w": "Sud.",
-          "from": 554,
-          "to": 564
-        }
+        { "w": "l'Afrique", "from": 534, "to": 544 },
+        { "w": "du", "from": 544, "to": 554 }
       ],
       "from": 534,
+      "to": 554
+    },
+    {
+      "words": [
+        { "w": "Sud.", "from": 554, "to": 564 }
+      ],
+      "from": 554,
       "to": 564
     }
   ]
