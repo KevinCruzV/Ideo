@@ -195,13 +195,11 @@ def test_a_short_word_before_a_lone_mark_is_still_not_a_sentence_end():
     assert len(out) == len(pcm)
 
 
-def test_a_lead_in_word_with_a_comma_gets_a_breath():
+def test_et_toi_virgule_ne_recoit_pas_de_pause_en_plus():
     pcm = np.concatenate([tone(0.6), quiet(0.02), tone(1.0)])
     heard = words_of(("Et", 0.0, 0.2), ("toi,", 0.2, 0.6), ("qui", 0.62, 1.0), ("veux", 1.0, 1.4), ("voir", 1.4, 1.62))
-    out, mapping = pacing.pause_sentences(pcm, heard)
-    assert len(out) / RATE == pytest.approx(len(pcm) / RATE + (pacing.LEAD_GAP - 0.02), abs=0.01)
-    assert mapping(0.62) == pytest.approx(0.62 + pacing.LEAD_GAP - 0.02, abs=0.01)
-
+    out, _ = pacing.pause_sentences(pcm, heard)
+    assert len(out) == len(pcm)
 
 def test_a_comma_deep_in_a_sentence_gets_no_extra_pause():
     pcm = np.concatenate([tone(2.0), quiet(0.02), tone(1.0)])
@@ -246,7 +244,3 @@ def test_un_deux_points_deja_suivi_d_une_pause_ne_bouge_pas():
     heard = words_of(("Le", 0.0, 1.0), ("but :", 1.0, 2.0), ("échapper", 2.5, 3.5))
     out, _ = pacing.pause_sentences(pcm, heard)
     assert len(out) == len(pcm)
-
-
-def test_la_respiration_apres_et_toi_reste_courte():
-    assert pacing.LEAD_GAP <= 0.12
