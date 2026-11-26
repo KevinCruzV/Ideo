@@ -26,6 +26,7 @@ BREATH_FADE = 0.01
 FRAGMENT_DB = -60.0
 FRAGMENT_MAX = 0.25
 FRAGMENT_GAP = 0.20
+QUIET_DB = -45.0
 
 
 def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
@@ -142,8 +143,35 @@ def _colon(word: str) -> bool:
     return word.rstrip(CLOSERS).endswith(":") and sum(c.isalpha() or c.isdigit() for c in word) >= 2
 
 
+def _frame_db(pcm: np.ndarray, at: int) -> float:
+    part = pcm[at:at + FRAME].astype(np.float64)
+    if not len(part):
+        return -120.0
+    return 20 * np.log10(max(float(np.sqrt((part ** 2).mean())), 1.0) / 32768.0)
+
+
+def _first_frame(pcm: np.ndarray, start: int, stop: int, test: Callable[[float], bool]) -> int | None:
+    for at in range(max(0, start), min(stop, len(pcm)) - FRAME + 1, FRAME):
+        if test(_frame_db(pcm, at)):
+            return at
+    return None
+
+
+def _mute(source: np.ndarray, out: np.ndarray, a: int, b: int) -> None:
+    fade = round(BREATH_FADE * RATE)
+    a, b = max(0, a), min(len(out), b)
+    if b - a <= 2 * fade:
+        return
+    out[a:b] = 0
+    if a > 0:
+        out[a:a + fade] = (source[a:a + fade] * np.linspace(1.0, 0.0, fade)).astype(out.dtype)
+    if b < len(out):
+        out[b - fade:b] = (source[b - fade:b] * np.linspace(0.0, 1.0, fade)).astype(out.dtype)
+
+
 def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
     inserts: list[tuple[int, int]] = []
+    muted = pcm.copy()
     joined = _joined(words)
     for word, after in zip(joined, joined[1:]):
         gap = after["s"] - word["e"]
@@ -155,15 +183,21 @@ def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Cal
             continue
         if not 0 <= gap < wanted:
             continue
-        at = word["e"] + (gap / 2 if gap > 0.02 else 0.0)
-        inserts.append((min(len(pcm), round(at * RATE)), round((wanted - gap) * RATE)))
+        at = round((word["e"] + (gap / 2 if gap > 0.02 else 0.0)) * RATE)
+        end, next_start = round(word["e"] * RATE), round(after["s"] * RATE)
+        quiet = _first_frame(pcm, end + 1, next_start, lambda db: db < QUIET_DB)
+        if quiet is not None:
+            onset = _first_frame(pcm, quiet, next_start, lambda db: db > THRESHOLD_DB)
+            _mute(pcm, muted, quiet, min(next_start - round(BREATH_LEAD * RATE), next_start if onset is None else onset))
+            at = quiet
+        inserts.append((min(len(pcm), at), round((wanted - gap) * RATE)))
     if not inserts:
         return pcm, lambda t: t
     parts, cursor = [], 0
     for at, length in inserts:
-        parts += [pcm[cursor:at], np.zeros(length, dtype=pcm.dtype)]
+        parts += [muted[cursor:at], np.zeros(length, dtype=pcm.dtype)]
         cursor = at
-    parts.append(pcm[cursor:])
+    parts.append(muted[cursor:])
 
     def mapping(t: float) -> float:
         x = t * RATE
@@ -199,7 +233,6 @@ def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     if not words or not len(pcm):
         return pcm
     tail, lead = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE)
-    fade = round(BREATH_FADE * RATE)
     spans = [(0, round(words[0]["s"] * RATE) - lead)]
     for word, after in zip(words, words[1:]):
         if after["s"] - word["e"] >= BREATH_MIN_GAP:
@@ -207,12 +240,5 @@ def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     spans.append((round(words[-1]["e"] * RATE) + tail, len(pcm)))
     out = pcm.copy()
     for a, b in spans:
-        a, b = max(0, a), min(len(pcm), b)
-        if b - a <= 2 * fade:
-            continue
-        out[a:b] = 0
-        if a > 0:
-            out[a:a + fade] = (pcm[a:a + fade] * np.linspace(1.0, 0.0, fade)).astype(pcm.dtype)
-        if b < len(pcm):
-            out[b - fade:b] = (pcm[b - fade:b] * np.linspace(0.0, 1.0, fade)).astype(pcm.dtype)
+        _mute(pcm, out, a, b)
     return out

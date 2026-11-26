@@ -244,3 +244,21 @@ def test_un_deux_points_deja_suivi_d_une_pause_ne_bouge_pas():
     heard = words_of(("Le", 0.0, 1.0), ("but :", 1.0, 2.0), ("échapper", 2.5, 3.5))
     out, _ = pacing.pause_sentences(pcm, heard)
     assert len(out) == len(pcm)
+
+
+def test_a_breath_before_the_next_sentence_is_muted_instead_of_split_by_the_pause():
+    pcm = np.concatenate([tone(1.0), quiet(0.04), breath(0.2), faint(0.04, 30), tone(1.0)])
+    heard = words_of(("réseaux.", 0.1, 1.0), ("Même", 1.28, 1.8))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    next_start = mapping(1.28)
+    assert next_start == pytest.approx(1.28 + pacing.SENTENCE_GAP - 0.28, abs=0.01)
+    between = out[int(1.01 * RATE):int((next_start - pacing.BREATH_LEAD - 0.01) * RATE)]
+    assert np.max(np.abs(between)) == 0
+
+
+def test_the_next_word_is_never_muted_even_when_the_transcript_places_it_late():
+    pcm = np.concatenate([tone(1.0), quiet(0.15), tone(1.0)])
+    heard = words_of(("fin.", 0.1, 1.0), ("Suite", 1.3, 1.9))
+    out, mapping = pacing.pause_sentences(pcm, heard)
+    start, real = round(mapping(1.16) * RATE), round(1.16 * RATE)
+    assert np.array_equal(out[start:start + RATE // 2], pcm[real:real + RATE // 2])
