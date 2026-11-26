@@ -471,14 +471,20 @@ def _paid_piece(backend, name: str, text: str, lang: str, wav: Path, before, aft
     return words, score
 
 
+JOIN_PAUSE = 0.35
+
+
 def _join_wavs(paths: list[Path], target: Path) -> list[float]:
     chunks, starts, cursor = [], [], 0.0
-    for path in paths:
+    for k, path in enumerate(paths):
         with wave.open(str(path), "rb") as w:
             params = w.getparams()
             data = w.readframes(w.getnframes())
+        if k:
+            chunks.append(bytes(round(JOIN_PAUSE * params.framerate) * 2 * params.nchannels))
+            cursor += JOIN_PAUSE
         starts.append(cursor)
-        cursor += len(data) / 2 / params.framerate
+        cursor += len(data) / 2 / params.nchannels / params.framerate
         chunks.append(data)
     with wave.open(str(target), "wb") as w:
         w.setparams(params)
