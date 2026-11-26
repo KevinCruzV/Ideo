@@ -103,3 +103,21 @@ def test_entretien_without_summary():
     history.entretien_done("")
     note = history.take_notice()
     assert note.startswith("Dernier entretien : 20") and note.endswith(".") and "None" not in note
+
+
+def test_drawings_of_the_last_videos_are_counted_by_video():
+    history.note_drawings("a", ["knife", "object:scale"])
+    history.note_drawings("b", ["object:scale", "globe"])
+    history.note_drawings("c", ["object:scale", "knife"])
+    history.note_drawings("new", ["coin"])
+    assert history.recent_drawings("new") == {"object:scale": 3, "knife": 2, "globe": 1}
+    assert history.recent_drawings("new", videos=1) == {"object:scale": 1, "knife": 1}
+    assert history.recent_drawings("c") == {"object:scale": 2, "coin": 1, "globe": 1, "knife": 1}
+
+
+def test_drawings_are_replaced_on_a_second_check_and_never_raise(home):
+    history.note_drawings("a", ["knife"])
+    history.note_drawings("a", ["globe", "globe", 3])
+    assert history.load()["jobs"]["a"]["drawings"] == ["globe"]
+    (home / "historique.json").write_text("[]", encoding="utf-8")
+    assert history.recent_drawings("a") == {}

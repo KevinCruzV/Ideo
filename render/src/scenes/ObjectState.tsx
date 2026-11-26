@@ -13,9 +13,9 @@ import { areaFor, FitBox } from "./FitBox";
 import { stateIndex, stateTimes } from "./timing";
 import { useBeat } from "./beats";
 
-type ObjectKind = "screen" | "board" | "jar" | "door" | "scale" | "phone";
+type ObjectKind = "screen" | "board" | "jar" | "door" | "scale" | "phone" | "battery" | "gauge" | "lights" | "plant";
 
-const KINDS: ObjectKind[] = ["screen", "board", "jar", "door", "scale", "phone"];
+const KINDS: ObjectKind[] = ["screen", "board", "jar", "door", "scale", "phone", "battery", "gauge", "lights", "plant"];
 const ALIASES: Record<string, ObjectKind> = {
   ecran: "screen",
   écran: "screen",
@@ -27,6 +27,15 @@ const ALIASES: Record<string, ObjectKind> = {
   telephone: "phone",
   téléphone: "phone",
   portable: "phone",
+  batterie: "battery",
+  pile: "battery",
+  jauge: "gauge",
+  cadran: "gauge",
+  compteur: "gauge",
+  feu: "lights",
+  "feu tricolore": "lights",
+  plante: "plant",
+  pousse: "plant",
 };
 
 export const objectKind = (value: unknown): ObjectKind => {
@@ -251,6 +260,113 @@ const Scale: React.FC<{ look: Look }> = ({ look }) => {
   );
 };
 
+const Battery: React.FC<{ look: Look }> = ({ look }) => {
+  const w = 760;
+  const h = 360;
+  const x = CX - w / 2 - 25;
+  const y = 120;
+  const ratio = (i: number) => (i + 1) / Math.max(1, look.count);
+  const fill = tween(look.frame, look.changedAt, ratio(look.prevIndex), ratio(look.index));
+  const inner = w - 60;
+  return (
+    <>
+      <PaperShape kind="square" color="ink" size={1} w={50} h={150} x={x + w - 6} y={y + h / 2 - 75} radius="0 18px 18px 0" />
+      <PaperShape kind="square" color="cream" size={1} w={w} h={h} x={x} y={y} radius="44px" seed="battery" float={1.5}>
+        <div style={{ position: "absolute", left: 30, top: 30, width: inner * fill, height: h - 60, background: colors[look.accent], borderRadius: 24, boxShadow: shadow }} />
+        {Array.from({ length: Math.max(0, look.count - 1) }, (_, i) => (
+          <div key={`cell-${i}`} style={{ position: "absolute", left: 30 + (inner * (i + 1)) / look.count - 3, top: 30, width: 6, height: h - 60, background: colors.cream }} />
+        ))}
+      </PaperShape>
+      <Caption look={look} top={y + h + 80} />
+      <Pips look={look} top={y + h + 210} />
+    </>
+  );
+};
+
+const Gauge: React.FC<{ look: Look }> = ({ look }) => {
+  const w = 800;
+  const h = 400;
+  const x = CX - w / 2;
+  const y = 130;
+  const swing = (i: number) => (look.count > 1 ? -72 + (i / (look.count - 1)) * 144 : -72);
+  const angle = tween(look.frame, look.changedAt, swing(look.prevIndex), swing(look.index));
+  const zones = `conic-gradient(from -90deg at 50% 100%, ${colors.blue} 0deg 60deg, ${colors.yellow} 60deg 120deg, ${colors.red} 120deg 180deg)`;
+  return (
+    <>
+      <PaperShape kind="square" color="ink" size={1} w={w + 60} h={h + 60} x={x - 30} y={y - 30} radius={`${(w + 60) / 2}px ${(w + 60) / 2}px 30px 30px`} seed="gauge" float={1.5}>
+        <div style={{ position: "absolute", left: 30, top: 30, width: w, height: h, borderRadius: `${w / 2}px ${w / 2}px 0 0`, background: zones, overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: 90, top: 90, width: w - 180, height: h - 90, borderRadius: `${(w - 180) / 2}px ${(w - 180) / 2}px 0 0`, background: colors.cream }} />
+          <div
+            style={{
+              position: "absolute",
+              left: w / 2 - 12,
+              bottom: 0,
+              width: 24,
+              height: h - 50,
+              background: colors.ink,
+              borderRadius: "12px 12px 0 0",
+              transformOrigin: "50% 100%",
+              transform: `rotate(${angle}deg)`,
+            }}
+          />
+          <div style={{ position: "absolute", left: w / 2 - 44, bottom: -44, width: 88, height: 88, borderRadius: "50%", background: colors.ink }} />
+        </div>
+      </PaperShape>
+      <Caption look={look} top={y + h + 110} />
+      <Pips look={look} top={y + h + 240} />
+    </>
+  );
+};
+
+const LIGHTS: AccentColor[] = ["red", "yellow", "blue"];
+
+const Lights: React.FC<{ look: Look }> = ({ look }) => {
+  const w = 280;
+  const h = 640;
+  const x = CX - w / 2;
+  const y = 40;
+  const lit = (i: number) => (look.count > 1 ? Math.round((i / (look.count - 1)) * 2) : 0);
+  const now = lit(look.index);
+  const before = lit(look.prevIndex);
+  return (
+    <>
+      <PaperShape kind="square" color="ink" size={1} w={50} h={130} x={CX - 25} y={y + h - 20} />
+      <PaperShape kind="square" color="ink" size={1} w={w} h={h} x={x} y={y} radius="60px" seed="lights" float={1.5}>
+        {LIGHTS.map((color, i) => {
+          const on = i === now ? ease(look.frame, look.changedAt, 12) : i === before && before !== now ? 1 - ease(look.frame, look.changedAt, 12) : 0;
+          return <div key={`light-${i}`} style={{ position: "absolute", left: 30, top: 30 + i * 200, width: 190, height: 190, borderRadius: "50%", background: colors[color], opacity: 0.2 + 0.8 * on, boxShadow: on > 0.5 ? shadow : undefined }} />;
+        })}
+      </PaperShape>
+      <Caption look={look} top={y + h + 150} />
+      <Pips look={look} top={y + h + 270} />
+    </>
+  );
+};
+
+const Plant: React.FC<{ look: Look }> = ({ look }) => {
+  const ratio = (i: number) => (i + 1) / Math.max(1, look.count);
+  const grow = tween(look.frame, look.changedAt, ratio(look.prevIndex), ratio(look.index));
+  const stem = 90 + 480 * grow;
+  const baseY = 700;
+  const leaves = Math.max(1, Math.round(grow * 6));
+  const last = look.index === look.count - 1 && look.count > 1;
+  return (
+    <>
+      <PaperShape kind="square" color="ink" size={1} w={14} h={stem + 20} x={CX - 7} y={baseY - stem} />
+      {Array.from({ length: leaves }, (_, i) => {
+        const side = i % 2 === 0 ? -1 : 1;
+        const at = baseY - 90 - i * ((stem - 120) / Math.max(1, leaves));
+        return <PaperShape key={`leaf-${i}`} kind="square" color={look.accent} size={1} w={170} h={90} x={side < 0 ? CX - 180 : CX + 10} y={at - 90} radius={side < 0 ? "90px 0 90px 0" : "0 90px 0 90px"} seed={`leaf-${i}`} />;
+      })}
+      {last ? <PaperShape kind="circle" color="yellow" size={130} x={CX - 65} y={baseY - stem - 100} /> : null}
+      <PaperShape kind="square" color="ink" size={1} w={340} h={46} x={CX - 170} y={baseY} radius="10px" />
+      <PaperShape kind="square" color="ink" size={1} w={270} h={140} x={CX - 135} y={baseY + 40} radius="0 0 50px 50px" />
+      <Caption look={look} top={baseY + 230} />
+      <Pips look={look} top={baseY + 340} />
+    </>
+  );
+};
+
 const PHONE_SHOWN = 4;
 
 const Phone: React.FC<{ look: Look; messages: string[] }> = ({ look, messages }) => {
@@ -314,6 +430,10 @@ const EXTENT: Record<ObjectKind, [number, number]> = {
   door: [50, 954],
   scale: [150, 984],
   phone: [40, 1000],
+  battery: [90, 840],
+  gauge: [90, 860],
+  lights: [30, 990],
+  plant: [20, 1080],
 };
 
 export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) => {
@@ -328,7 +448,7 @@ export const ObjectState: React.FC<SceneProps> = ({ props, items, from, to }) =>
   const prevIndex = index > 0 ? index - 1 : 0;
   const look: Look = { accent, index, count: shown.length, label: shown[index], changedAt: index > 0 ? times[index] : 0, frame, prevIndex };
   const body =
-    kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : kind === "phone" ? <Phone look={look} messages={shown} /> : <Screen look={look} board={kind === "board"} />;
+    kind === "jar" ? <Jar look={look} /> : kind === "door" ? <Door look={look} /> : kind === "scale" ? <Scale look={look} /> : kind === "phone" ? <Phone look={look} messages={shown} /> : kind === "battery" ? <Battery look={look} /> : kind === "gauge" ? <Gauge look={look} /> : kind === "lights" ? <Lights look={look} /> : kind === "plant" ? <Plant look={look} /> : <Screen look={look} board={kind === "board"} />;
   return (
     <Stage>
       <FitBox area={areaFor(areaTop(props) + 10, BOX_L, BOX_W)}>
