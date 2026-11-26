@@ -44,7 +44,7 @@ def test_assemble_inserts_quote_and_sfx_clips_and_writes_offsets(job_with_voice_
         assert o["end"] - o["start"] == pytest.approx(d, abs=0.05)
     starts = [o["start"] for o in offsets]
     assert starts[:4] == pytest.approx([0.0, 1.4, 2.9, 4.4], abs=0.05)
-    assert starts[4:] == pytest.approx([8.4, 9.9, 15.92], abs=0.05)
+    assert starts[4:] == pytest.approx([8.4, 9.9, 16.87], abs=0.05)
     sfx = offsets[3]["clip"]
     assert sfx["kind"] == "sfx"
     assert sfx["start"] == pytest.approx(5.65, abs=0.05) and sfx["end"] - sfx["start"] == pytest.approx(2.5, abs=0.05)
@@ -199,3 +199,10 @@ def test_suspense_scene_gets_a_two_second_silence(job_with_voice_fixtures):
     assemble.assemble_part(job, 1)
     offsets = common.load_json(job / "parts" / "01" / "offsets.json")
     assert offsets[3]["start"] - offsets[2]["end"] == pytest.approx(assemble.GAP_SUSPENSE, abs=0.01)
+
+
+def test_temps_d_arret_avant_la_question_de_fin():
+    names = ["seg_00_hook", "seg_01", "seg_02", "seg_99_outro"]
+    assert assemble._gap(names, 3, {}, False) == assemble.GAP_QUESTION
+    assert assemble.GAP_QUESTION >= 1.0
+    assert assemble._gap(names, 2, {}, False) == assemble.GAP_SCENE
