@@ -211,7 +211,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     if cmd == "produce":
         outputs = pipeline.produce(job, part, pay=bool(opts.get("payer")))
         review.reset(job)
-        return [f"OK produce : {_paths(outputs)} ; {' ; '.join(_after_produce(job, part))}"], 0
+        version = _safely(pipeline.freshness, job, part)
+        return [f"OK produce : {_paths(outputs)} ; {' ; '.join(([version] if version else []) + _after_produce(job, part))}"], 0
     if cmd == "qc":
         alerts = qc.run(job)
         return [f"OK qc : {qc.summary(job, alerts)}"] + [f"ALERTE : {a}" for a in alerts], 0

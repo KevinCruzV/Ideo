@@ -7,6 +7,8 @@ import { Kicker } from "./Kicker";
 import { framingAt, PUNCH_ORIGIN_Y } from "./punch";
 import { BOX_CX, Stage } from "./Stage";
 
+const SAFE_SHIFT = layout.safeCenterX - BOX_CX;
+
 export const EXIT_FRAMES = 6;
 export const DRIFT_SCALE = 0.03;
 
@@ -31,14 +33,14 @@ export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: nu
         inset: 0,
         opacity: 1 - exit,
         transform: `translate(${f.x}px, ${f.y}px) rotate(${f.r}deg) scale(${1 + f.s})`,
-        transformOrigin: `${BOX_CX}px ${PUNCH_ORIGIN_Y}px`,
+        transformOrigin: `${layout.safeCenterX}px ${PUNCH_ORIGIN_Y}px`,
       }}
     >
       <div
         style={{
           position: "absolute",
           inset: 0,
-          transform: `translateX(${-70 * exit * exit}px) scale(${scale})`,
+          transform: `translateX(${SAFE_SHIFT - 70 * exit * exit}px) scale(${scale})`,
           transformOrigin: `${BOX_CX}px ${(layout.stageTop + layout.stageBottom) / 2}px`,
         }}
       >

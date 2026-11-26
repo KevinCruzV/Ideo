@@ -5,7 +5,7 @@ import { Chapter } from "../types";
 
 export const CHAPTER_TOP = layout.marginTop + 6;
 export const CHAPTER_LINE_HEIGHT = 1.12;
-const CHAPTER_FIT = { maxWidth: 600, maxLines: 2, max: 38, min: 28 };
+const CHAPTER_FIT = { maxWidth: 520, maxLines: 2, max: 38, min: 28 };
 
 export const chapterText = (chapter: Chapter): string =>
   chapter.total === 1 ? chapter.title : `${chapter.label} ${chapter.part} · ${chapter.title}`;

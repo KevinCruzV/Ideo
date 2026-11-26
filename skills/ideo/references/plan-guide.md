@@ -38,7 +38,7 @@ La vidéo raconte UNE histoire, elle n'aligne pas des faits :
 ## 3. L'accroche (`hook`)
 
 Même format à chaque fois : une phrase de 6 à 10 mots, 60 caractères au plus (espaces compris), en général une question, qui donne envie de connaître la réponse. La phrase s'adapte au sujet. "Dis-moi pourquoi..." est la formule par défaut quand elle colle. Autres formules : "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". L'accroche doit être vraie et la vidéo doit y répondre. Aucun chiffre qui n'est pas dans la source. Avec plusieurs parties, ne reprends pas la même formule deux parties de suite. Histoire, fait divers, horreur ou biographie : l'accroche n'est pas une question mais « Voici l'histoire de... » ou une phrase choc complète (« Il a fait croire à tout un pays qu'il était innocent »).
-La couverture coupe l'accroche au premier « , » ou « : » : ce qui précède en gros titre, le reste sur une bande noire dessous. Pour une histoire, mets le sujet avant la coupure (« L'histoire de Marvin Gaye, partie 1 : de l'église à Motown ») ; sans coupure, l'accroche entière fait le titre.
+La couverture coupe l'accroche au premier « , » ou « : » : ce qui précède en gros titre, le reste sur une bande noire dessous. Pour une histoire, mets le sujet avant la coupure (« L'histoire de Marvin Gaye, partie 1 : de l'église à Motown ») ; sans coupure, l'accroche entière fait le titre. Le dessin de la couverture est la photo de la première person-card avec photo, sinon le buste de la première person-card, sinon le premier picto non drapeau des 3 premières scènes : mets-y un dessin du sujet global (globe, pièces).
 
 Bonnes accroches :
 - "Dis-moi pourquoi le ciel est bleu et pas violet ?"
@@ -136,7 +136,7 @@ Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `hou
 
 Détails :
 - `shape-diagram` : la taille de chaque forme suit sa valeur. `bar` dessine des barres et écrit la valeur au-dessus de chacune, suivie de `unit` : donne toujours `unit` quand la valeur en a une.
-- `counter` : `from` est le nombre affiché au départ du compte (0 si tu ne le mets pas), visible dès la première image.
+- `counter` : `from` est le nombre affiché au départ du compte (0 si tu ne le mets pas), visible dès la première image. Ancre `to` sur un des premiers mots du `say` : le compte doit démarrer vite, pas à la fin de la phrase.
 - Un écran doit apprendre quelque chose seul, sans le son : pas de liste de noms nus. Chaque texte d'une liste (`chips`, `items`, `label` d'une cellule) dit un fait complet, avec un chiffre ou un verbe : "8 % dorment sur le dos", pas "Sur le dos". "Russie", "Inde", "Chine" n'apprend rien ; "BRICS, créés en 2011" avec un `picto` apprend quelque chose.
 - `mascot` : choisis `pose` selon la bulle. `question` : la question naïve du spectateur. `surprise` : un fait qui va contre l'intuition. `montre` : il désigne ce qui vient ensuite. `content` : la leçon à retenir.
 
@@ -341,7 +341,7 @@ Source : une vidéo française de 3 min 49 sur la couleur du ciel. Une vidéo de
 }
 ```
 
-Avec plusieurs parties : ajoute des objets dans `parts` avec `"n": 2`, `"n": 3`, chacun avec son `title`, son `hook` et ses `scenes`.
+Avec plusieurs parties : ajoute des objets dans `parts` avec `"n": 2`, `"n": 3`, chacun avec son `title`, son `hook` et ses `scenes`. Quand une vidéo réunit plusieurs sujets différents mais liés, la scène 1 annonce le fil conducteur et chaque début de partie dit en une phrase le lien avec la précédente.
 
 ## 10. Erreurs de `check`
 

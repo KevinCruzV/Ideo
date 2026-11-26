@@ -73,3 +73,40 @@ def test_trailing_extra_words_are_counted_apart_from_the_words_to_keep():
     assert fidelity.keep_count("Il a gagné le prix.", timed("Il a gagné le prix.")) is None
     assert fidelity.keep_count("Il a gagné le prix.", timed("Il a tout gagné le prix.")) is None
     assert fidelity.keep_count("Il a gagné 3 prix.", timed("Il a gagné trois prix. coup")) == 5
+
+
+def test_a_proper_name_heard_differently_is_not_a_misreading():
+    text = "Hier, Leclerc et Aldi comparent le même panier de courses cette semaine."
+    assert fidelity.similarity(text, heard("Hier Le clerc et Haldi comparent le même panier de courses cette semaine")) == 1.0
+    assert fidelity.similarity(text, heard("Hier Leclerc et Audi comparent le même panier de courses cette semaine")) == 1.0
+    assert fidelity.added(text, heard("Hier Le clerc et Haldi comparent le même panier de courses cette semaine")) == []
+
+
+def test_a_name_run_together_or_split_is_matched():
+    text = "Selon Jean Dujardin, le film marche."
+    assert fidelity.similarity(text, heard("Selon Jean Du Jardin le film marche")) == 1.0
+    assert fidelity.similarity("Il a vu Jean Dujardin.", heard("Il a vu Jean Dujardin")) == 1.0
+
+
+def test_a_real_misreading_of_a_normal_word_still_counts():
+    text = "Leclerc vend le même panier de courses chaque semaine."
+    assert fidelity.similarity(text, heard("Leclerc vend le mode panier de cours chaque semaine")) < 1.0
+
+
+def test_a_missing_name_still_counts():
+    text = "Le panier de Leclerc coûte moins cher cette semaine."
+    assert fidelity.similarity(text, heard("Le panier de coûte moins cher cette semaine")) < 1.0
+
+
+def test_keep_count_follows_the_folded_names():
+    text = "Hier Leclerc et Aldi comparent."
+    words = heard("Hier Le clerc et Haldi comparent coup")
+    assert fidelity.keep_count(text, words) == 6
+
+
+def test_a_misread_first_word_of_a_sentence_still_counts():
+    text = "Pourtant le panier coûte moins cher. Selon Leclerc le prix baisse."
+    exact = fidelity.similarity(text, heard("Pourtant le panier coûte moins cher Selon Leclerc le prix baisse"))
+    assert exact == 1.0
+    assert fidelity.similarity(text, heard("Pourtan le panier coûte moins cher Selon Leclerc le prix baisse")) < exact
+    assert fidelity.similarity(text, heard("Pourtant le panier coûte moins cher Celon Leclerc le prix baisse")) < exact

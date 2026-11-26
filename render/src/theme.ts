@@ -73,19 +73,24 @@ export const BRAND_WIDE = 1.3;
 export const layout = {
   width: 1080,
   height: 1920,
-  marginTop: 150,
-  marginSide: 100,
-  safeScale: 0.86,
-  safeRight: 130,
+  marginTop: 244,
+  marginSide: 130,
+  safeScale: 0.76,
+  chromeScale: 0.82,
+  safeLeft: 130,
+  safeRight: 220,
+  safeCenterX: 490,
   contentLeft: 64,
   contentRight: 950,
-  stageTop: 196,
-  stageBottom: 1300,
+  stageTop: 244,
+  stageBottom: 1348,
   captionTop: 1336,
   captionBottom: 1480,
   progressTop: 1546,
   progressHeight: 12,
 } as const;
+
+export const safeWindow = { left: layout.safeLeft, right: layout.width - layout.safeRight } as const;
 
 export const visibleStageTop =
   (layout.stageTop + layout.stageBottom) / 2 - ((layout.stageBottom - layout.stageTop) / 2) * layout.safeScale;

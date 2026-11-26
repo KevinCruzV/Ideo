@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ideo import common, voice
+from ideo import common, pacing, voice
 
 
 def set_next_part(job):
@@ -268,8 +268,8 @@ def test_finish_segment_adds_a_pause_after_a_sentence_that_runs_into_the_next(tm
     words = voice.finish_segment(wav, "grippe. Entre", heard)
     with wave.open(str(wav), "rb") as w:
         duration = w.getnframes() / rate
-    assert duration == pytest.approx(2.18 + 0.12, abs=0.05)
-    assert words[1]["s"] - words[0]["e"] >= 0.28
+    assert duration == pytest.approx(2.18 + (pacing.SENTENCE_GAP - 0.18), abs=0.05)
+    assert words[1]["s"] - words[0]["e"] >= pacing.SENTENCE_GAP - 0.02
 
 
 def plan_with_numbers(job, say="En 1998, il y avait 3 000 personnes et 8 % de pluie."):

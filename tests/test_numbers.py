@@ -118,3 +118,33 @@ def test_requirements_list_num2words():
 
     text = (Path(__file__).resolve().parent.parent / "requirements.txt").read_text(encoding="utf-8")
     assert "num2words" in text
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Le panier coûte 27,92 € chez Aldi.", "Le panier coûte vingt-sept euros quatre-vingt-douze chez Aldi."),
+    ("Il paie 27,92€ au total.", "Il paie vingt-sept euros quatre-vingt-douze au total."),
+    ("Il paie 3,50 € ici.", "Il paie trois euros cinquante ici."),
+    ("Il paie 3,5 € ici.", "Il paie trois euros cinquante ici."),
+    ("Il paie 1,05 € ici.", "Il paie un euro cinq ici."),
+    ("Il paie 27,00 € ici.", "Il paie vingt-sept euros ici."),
+    ("Un total de 1 234,56 € demain.", "Un total de mille deux cent trente-quatre euros cinquante-six demain."),
+    ("Un prix de 0,99 € pièce.", "Un prix de zéro euro quatre-vingt-dix-neuf pièce."),
+])
+def test_french_decimal_amounts_are_said_as_euros_and_cents(text, expected):
+    assert said(text) == expected
+
+
+def test_decimals_that_are_not_money_keep_the_comma_word():
+    assert said("Environ 1,3 million.") == "Environ un virgule trois million."
+    assert said("Un taux de 8,5 %.") == "Un taux de huit virgule cinq pour cent."
+
+
+def test_english_decimal_dollars_say_cents():
+    assert said("It costs 27.92 $ today.", "en") == "It costs twenty-seven dollars and ninety-two cents today."
+
+
+def test_amounts_only_leaves_other_numbers_for_the_voice_to_read():
+    result = numbers.normalize("En 1998, 27,92 € et 3 000 morts.", "fr", amounts_only=True)
+    assert result.text == "En 1998, vingt-sept euros quatre-vingt-douze et 3 000 morts."
+    assert sum(u["orig"] for u in result.units) == len(align.script_words("En 1998, 27,92 € et 3 000 morts."))
+    assert numbers.normalize("En 1998, 3 000 morts.", "fr", amounts_only=True).units is None

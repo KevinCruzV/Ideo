@@ -31,8 +31,8 @@ export const Progress: React.FC<{ chapter: Chapter; segments?: Tick[] }> = ({ ch
     <div
       style={{
         position: "absolute",
-        left: content.center - (content.width * layout.safeScale) / 2,
-        right: layout.width - content.center - (content.width * layout.safeScale) / 2,
+        left: layout.safeCenterX - (content.width * layout.chromeScale) / 2,
+        right: layout.width - layout.safeCenterX - (content.width * layout.chromeScale) / 2,
         top: layout.progressTop,
         height: layout.progressHeight,
         display: "flex",

@@ -9,9 +9,9 @@ export type Framing = { s: number; x: number; y: number; r: number };
 
 export const FRAMINGS: readonly Framing[] = [
   { s: 0, x: 0, y: 0, r: 0 },
-  { s: 0.07, x: -18, y: 4, r: -0.6 },
-  { s: 0.035, x: 16, y: 12, r: 0.5 },
-  { s: 0.09, x: 8, y: 6, r: -0.4 },
+  { s: 0.04, x: -8, y: 3, r: -0.6 },
+  { s: 0.02, x: 8, y: 6, r: 0.5 },
+  { s: 0.05, x: 4, y: 4, r: -0.4 },
 ];
 
 export const PUNCH_ORIGIN_Y = visibleStageTop;
