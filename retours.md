@@ -90,6 +90,15 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (vtb-jGwGrd8) L'audio a une coupure chelou vers la phrase qui dit « 100 milliards sur 5 ans ».
   Entretien du 2026-11-25 (k) : même cause et même correctif que la coupure sur « résultats décevants » ci-dessus (tighten() de pacing.py, fondu de 5 ms ajouté à chaque bord de coupe).
 - [ ] [2026-11-25] (vtb-jGwGrd8) La voix choisie sonne trop « IA », pas naturelle.
+- [ ] [2026-11-26] Les montants décimaux (27,92 €) sont lus « vingt-sept virgule neuf deux » au lieu de « vingt-sept euros quatre-vingt-douze ».
+- [ ] [2026-11-26] Pas de pause entre la question de fin et « abonne-toi », ni après « Et toi, » : la voix enchaîne sans respirer.
+- [ ] [2026-11-26] Pas de vraie pause en fin de phrase avant la phrase suivante (par exemple après « jusqu’à tes propres réflexes d’achat »).
+- [ ] [2026-11-26] La voix ElevenLabs s’arrête au milieu d’une phrase (« soit les chiffres ne disent ») avant de reprendre.
+- [ ] [2026-11-26] Après un changement de code, produce saute la régénération quand plan.json n’a pas changé : les corrections n’arrivent jamais dans la vidéo.
+- [ ] [2026-11-26] Après finale, corriger une seule phrase refait toute la voix ElevenLabs au lieu de la seule phrase modifiée, contrairement à ce que dit le skill.
+- [ ] [2026-11-26] produce efface le cache audio avant de vérifier le coût ElevenLabs : si on refuse de payer, la voix déjà payée est perdue.
+- [ ] [2026-11-26] qc signale à tort un écart entre la voix et le texte sur les noms propres (Leclerc, Aldi).
+- [ ] [2026-11-26] La ligne OK produce ne permet pas de savoir si la vidéo livrée est la dernière version : une ancienne vidéo a été présentée comme corrigée.
 
 ## Défauts détectés
 

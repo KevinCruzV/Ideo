@@ -20,3 +20,8 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Sur une scène « counter », ancre « label » peu après « to », jamais sur le tout dernier mot du say : sinon le nombre reste sans légende trop longtemps à l’écran.
 - [2026-11-25] Vidéo sur un programme ou un plan : finis la « question » en demandant quel autre programme le spectateur veut voir expliqué, pas une question d’opinion générale.
 - [2026-11-25] Chaque chip ou item affiché à l’écran doit être repris, même brièvement, dans le say : jamais un fait visible que la voix ne dit jamais.
+- [2026-11-26] Sur une scène versus, mets un dessin (picto) de chaque côté : jamais deux colonnes de texte seules.
+- [2026-11-26] L’accroche dite et affichée au début reprend le titre choc de la vidéo, le même que sur la couverture, jamais une autre formule.
+- [2026-11-26] N’emploie jamais un terme (par exemple « achat impulsif ») sans l’avoir expliqué dans une scène précédente.
+- [2026-11-26] Une comparaison entre enseignes ou produits s’amène en douceur et reste nuancée : donne aussi les faits qui la relativisent, par exemple des produits équivalents au prix proche.
+- [2026-11-26] Ne finis pas une phrase du say sur un mot très court (« plus », « là ») : la voix y remonte le ton.
