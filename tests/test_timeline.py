@@ -349,3 +349,40 @@ def test_stamps_and_counters_take_turns_between_variants(job_with_offsets):
 def test_other_scene_types_get_no_variant(job_with_offsets):
     assert all("variant" not in s.get("props", {}) for s in build(job_with_offsets)["segments"]
                if s.get("type") not in timeline.VARIED)
+
+
+def write_wav(path, chunks, rate=48000):
+    import wave
+
+    import numpy as np
+
+    pcm = np.concatenate([np.full(int(rate * s), a, dtype=np.float32) * np.sin(np.arange(int(rate * s)) / 5)
+                          for s, a in chunks])
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes((pcm * 32767).astype("<i2").tobytes())
+
+
+def test_audio_levels_suit_le_volume_image_par_image(tmp_path):
+    wav = tmp_path / "part.wav"
+    write_wav(wav, [(1.0, 0.0), (1.0, 0.8)])
+    levels = timeline.audio_levels(wav, 0.5, 1.5)
+    assert len(levels) == 30
+    assert max(levels) == 1.0 and all(0 <= v <= 1 for v in levels)
+    assert max(levels[:12]) < 0.05 and min(levels[18:]) > 0.9
+
+
+def test_les_scenes_avec_un_extrait_audio_portent_son_onde(job_with_offsets):
+    tl = build(job_with_offsets)
+    offsets = common.load_json(job_with_offsets / "parts" / "01" / "offsets.json")
+    with_audio = [s for s in tl["segments"] if "audio" in s]
+    assert len(with_audio) == 2
+    for seg, entry in zip(with_audio, [offsets[3], offsets[5]]):
+        clip = entry["clip"]
+        audio = seg["audio"]
+        assert audio["kind"] == clip["kind"]
+        assert seg["from"] <= audio["from"] < audio["to"] <= seg["to"]
+        assert len(audio["levels"]) == audio["to"] - audio["from"]
+    assert all("audio" not in s for s in tl["segments"] if s["kind"] != "scene")
