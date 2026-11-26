@@ -18,6 +18,11 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Vidéo sur un programme ou un plan : finis la « question » en demandant quel autre programme le spectateur veut voir expliqué, pas une question d’opinion générale.
 - [2026-11-25] Chaque chip ou item affiché à l’écran doit être repris, même brièvement, dans le say : jamais un fait visible que la voix ne dit jamais.
 - [2026-11-26] Sur une scène versus, mets un dessin (picto) de chaque côté : jamais deux colonnes de texte seules.
-- [2026-11-26] Le hook reprend le title mot pour mot : « Leclerc ou Aldi, qui vole le plus ? » dans les deux, jamais une variante comme « Leclerc ou Aldi, qui vole le plus les Français ? ».
+- [2026-11-26] L’accroche (hook) reprend le titre choc choisi, celui de la couverture, jamais une autre formule ; le title en haut de l’écran peut en être une version raccourcie pour tenir en 40 caractères.
 - [2026-11-26] Une comparaison entre enseignes ou produits s’annonce d’abord (« Comparons le même panier ») et reste nuancée : cite aussi des produits équivalents au prix proche.
 - [2026-11-26] Ne finis pas une phrase du say sur un mot très court (« plus », « là ») : la voix y remonte le ton.
+- [2026-11-26] (auto:items-groupes-debut) Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.
+- [2026-11-26] (auto:plan-invalide) Relis le message de check et corrige exactement ce qu'il demande avant de relancer.
+- [2026-11-26] (auto:ia-majuscules) N'écris pas de mot en majuscules dans un say, sauf un sigle courant (OTAN, BRICS, ONU).
+- [2026-11-26] (auto:liste-nue) N'écris jamais une liste de simples noms : ajoute un chiffre ou un détail à chaque entrée, ou prends un dessin.
+- [2026-11-26] (auto:premier-element-tardif) Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.

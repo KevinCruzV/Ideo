@@ -147,6 +147,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] `voix-infidele` (bk6QIRZjMjA) Partie 1, segment seg_01 : la voix s'écarte du texte (ressemblance 0,79). Relance la voix de cette partie ou reformule le texte.
   Entretien du 2026-11-25 (h) : fidelity.similarity gère bien les nombres écrits en chiffres ou en lettres (0,95 à 1,0 sur ce texte avec les deux transcriptions possibles) ; le 0,79 vient donc d'un vrai écart de lecture, à entendre. Sans relancer la voix payante (interdit ici), rien à corriger dans le code. Non corrigé.
   Entretien du 2026-11-26 : le texte de seg_01 est « Jensen Huang quitte Nvidia le 12 novembre 2026… » : des noms propres, le cas corrigé par la ligne « qc signale à tort un écart sur les noms propres » ci-dessus (fidelity). Le score stocké est déjà remonté à 0,89 avec la voix actuelle de ce job ; le défaut ne se reproduit plus.
+- [ ] `voix-infidele` (tiB3XBScn90) Partie 1, segment seg_09 : la voix s'écarte du texte (ressemblance 0,74). Relance la voix de cette partie ou reformule le texte.
+- [ ] `voix-plate` (tiB3XBScn90) Partie 1 : voix plate, 9 segments sur 27 sous 2,00, score médian 2,30, les plus plats : seg_16 (1,58), seg_08 (1,59), seg_03 (1,70). Relance la voix de cette partie ou reformule ces phrases.
 
 ## Dessins manquants
 
