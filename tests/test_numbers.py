@@ -148,3 +148,16 @@ def test_amounts_only_leaves_other_numbers_for_the_voice_to_read():
     assert result.text == "En 1998, vingt-sept euros quatre-vingt-douze et 3 000 morts."
     assert sum(u["orig"] for u in result.units) == len(align.script_words("En 1998, 27,92 € et 3 000 morts."))
     assert numbers.normalize("En 1998, 3 000 morts.", "fr", amounts_only=True).units is None
+
+
+@pytest.mark.parametrize("amounts_only", [True, False])
+def test_montant_sans_le_mot_euros_dans_une_phrase_en_euros(amounts_only):
+    text = numbers.normalize("L'addition grimpe de 27,92 euros chez Leclerc à 32,72 chez Intermarché.", "fr", amounts_only).text
+    assert "trente-deux euros soixante-douze chez Intermarché" in text and "virgule" not in text
+    text = numbers.normalize("Aldi et Leclerc restent proches : 7,83 contre 7,56 euros.", "fr", amounts_only).text
+    assert text.startswith("Aldi et Leclerc restent proches : sept euros quatre-vingt-trois contre sept euros cinquante-six")
+
+
+def test_une_decimale_ou_une_phrase_sans_euros_reste_un_nombre():
+    assert "trente-deux euros" not in numbers.normalize("Le score passe à 32,72 points.", "fr").text
+    assert "euros" not in numbers.normalize("Il coûte 10 euros, soit 21,7 de plus.", "fr").text.split("soit")[1]

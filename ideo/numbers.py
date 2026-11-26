@@ -32,6 +32,7 @@ EN_ORDINAL = re.compile(r"^(st|nd|rd|th)$")
 TOKEN = re.compile(r"^(?P<pre>[«\u00a0\"“(\[‘']*)(?P<num>\d[\d.,]*\d|\d)(?P<suf>[%€$]?)(?P<ord>[a-zèé]{1,3})?(?P<post>[^\w%€$]*)$")
 GROUP = re.compile(r"^(?P<num>\d{3}(?:,\d+)?)(?P<suf>[%€$]?)(?P<post>[^\w%€$]*)$")
 CURRENCY_WORDS = {"euros": "€", "euro": "€", "dollars": "$", "dollar": "$"}
+TWO_DECIMALS = re.compile(r",\d{2}$")
 CENTS = {"en": ("cent", "cents")}
 AND = {"en": "and"}
 HEAD = re.compile(r"^\d{1,3}$")
@@ -130,7 +131,7 @@ def _amount(value: float, raw: str, suf: str, lang: str) -> list[str] | None:
     return words
 
 
-def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False) -> tuple[list[str], int] | None:
+def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False, implied: str | None = None) -> tuple[list[str], int] | None:
     token = words[i]
     consumed = 1
     match = TOKEN.match(token)
@@ -169,6 +170,10 @@ def _convert(words: list[str], i: int, lang: str, amounts_only: bool = False) ->
         spoken_amount = _amount(value, raw, suf, lang)
         if spoken_amount:
             return _decorate(spoken_amount, pre, post), consumed
+    if implied and isinstance(value, float) and not suf and TWO_DECIMALS.search(raw) and not (key and key[0] in UNITS.get(lang, {})):
+        spoken_amount = _amount(value, raw, implied, lang)
+        if spoken_amount:
+            return _decorate(spoken_amount, pre, post), consumed
     if amounts_only:
         return None
     year = len(raw) == 4 and consumed == 1 and isinstance(value, int)
@@ -199,12 +204,13 @@ def normalize(text: str, lang: str, amounts_only: bool = False) -> Normalized:
     if lang not in COVERED or not re.search(r"\d", text):
         return Normalized(text, None)
     words = align.script_words(text)
+    implied = next((CURRENCY_WORDS[w] for w in (re.sub(r"[^\w]", "", x.lower()) for x in words) if w in CURRENCY_WORDS), None)
     units: list = []
     spoken: list[str] = []
     changed = False
     i = 0
     while i < len(words):
-        converted = _convert(words, i, lang, amounts_only)
+        converted = _convert(words, i, lang, amounts_only, implied)
         if converted:
             said, used = converted
             units.append({"orig": used, "said": len(said), "numeric": True})
