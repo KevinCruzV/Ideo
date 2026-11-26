@@ -132,6 +132,10 @@ Si aucun dessin de la liste ne montre ce dont parle une scène, ne mets pas de `
 
 Humeur : pour un fait divers, un crime, une horreur ou une catastrophe, ajoute `"mood": "dark"` au premier niveau du plan, à côté de `"parts"` : fonds et papiers deviennent sombres. Sinon, n'écris rien. Le ton reste grave du début à la fin, jamais joyeux : pas de mascotte contente ni de formule légère, même après un moment positif de l'histoire.
 
+Matière : ajoute `"paper"` au premier niveau du plan, à côté de `"parts"` : `"kraft"` (argent, économie), `"journal"` (histoire, politique, fait divers, horreur), `"millimetre"` (science, santé), `"album"` (biographie, histoire d'une personne). Sinon n'écris rien. Les supports de chaque scène (ticket, coupure de journal, post-it) sont choisis par le code.
+
+Collages : dès qu'une personne connue est citée, lance `ideo photo` et montre sa photo sur sa `person-card`, sauf dans un fait divers ou pour une personne privée.
+
 Valeurs de `picto` (recopie le nom exact) : `globe`, `flag`, `pin`, `city`, `house`, `factory`, `bank`, `coin`, `chart-up`, `chart-down`, `ship`, `plane`, `train`, `rocket`, `satellite`, `tank`, `shield`, `sword`, `bomb`, `dove`, `handshake`, `justice`, `wall`, `chain`, `lock`, `key`, `crown`, `ballot`, `megaphone`, `newspaper`, `tv`, `phone`, `computer`, `chip`, `book`, `brain`, `heart`, `eye`, `clock`, `calendar`, `lightbulb`, `atom`, `flask`, `leaf`, `sun`, `drop`, `fire`, `lightning`, `mountain`, `barrel`, `gear`, `people`, `lungs`, `stomach`, `spine`, `bone`, `muscle`, `tooth`, `blood`, `pill`, `syringe`, `virus`, `bed`, `pillow`, `moon`, `thermometer`, `scale-weight`, `apple`, `dumbbell`, `running-shoe`, `stethoscope`, `hospital`, `raised-bed`, `stomach-sleeper`, `knee-pillow`, `snore`, `pelvis-tilt`, `numb-arm`, `blood-stain`, `chalk-outline`, `crime-tape`, `handcuffs`, `knife`, `coffin`, `tombstone`, `mirror`, `mars`, `music-note`, `vinyl`, `microphone`. Un même picto revient au plus 2 fois par vidéo.
 
 Détails :

@@ -47,6 +47,13 @@ Limites :
 
 Images : `scenes-avant.jpg`, `scenes-apres.jpg`, `covers.jpg`, `fonds-compares.jpg`.
 
+## Supports et matières (26/11/2026)
+
+Pour que la feuille crème ne se répète pas d'une scène à l'autre :
+- **Matière par vidéo** (`"paper"` dans le plan, choisie par le modèle) : `creme` par défaut, `kraft` (argent), `journal` (histoire, politique, fait divers ; défaut en ambiance sombre), `millimetre` (science, santé), `album` (biographie, photos en polaroïd).
+- **Support par scène**, choisi par le code (`render/src/paper/supports.ts`) : ticket de caisse pour un montant en € ou en centimes, coupure de journal pour une citation ou une frise, post-it pour une phrase-clé (sauf la première scène), rien pour un tampon, la matière ailleurs. Jamais deux fois de suite le même support spécial.
+- **Collages** : le guide demande une photo ou un logo dès qu'une personne connue ou une marque est citée.
+
 ## 3. Reste à faire
 
 1. **Faire une vraie vidéo de bout en bout sur le Mac** (`prepare` → plan → `produce`), puis la mesurer avec `python -m ideo rythme <job>`. Rien n'a encore été vérifié sur une vraie voix : sous-titres de 1 à 2 mots, recadrages, carton de chapitre, silence de suspense. Objectif : au moins 15 plans/min.

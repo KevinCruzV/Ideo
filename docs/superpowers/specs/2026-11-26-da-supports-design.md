@@ -39,7 +39,7 @@ La direction artistique « papier découpé » plaît, mais chaque scène pose l
 - Ticket de caisse (blanc, étroit, bords dentelés) : `counter` ou `shape-diagram` dont l'unité est `€` ou `cts`.
 - Coupure de journal (papier gris, fausses colonnes de texte) : `quote` et `timeline`.
 - Post-it jaune au coin corné : `key-title`, sauf la première scène. En ambiance sombre : note épinglée grise.
-- Sans feuille, posé sur la couleur : `stamp` et `mascot`.
+- Sans feuille, posé sur la couleur : `stamp` (la mascotte garde une feuille : sa bulle se fondrait dans le fond).
 - Ailleurs : la matière de la vidéo.
 - Jamais deux fois de suite le même support spécial : la seconde scène prend la matière.
 

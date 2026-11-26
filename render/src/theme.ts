@@ -1,3 +1,4 @@
+import type { Support } from "./paper/supports";
 export type Mood = "dark";
 export type Palette = {
   background: string;
@@ -47,6 +48,7 @@ export const onPaper: Record<PaperColor, string> = { ...LIGHT_ON };
 export let shade = palettes.light.shade;
 export let dimmed = 0.38;
 export let shadow = `3px 4px 0 ${shade}`;
+export let darkMode = false;
 export const SHADOW_X = 3;
 export const SHADOW_Y = 4;
 
@@ -58,6 +60,7 @@ export const setMood = (mood?: Mood): void => {
   Object.assign(onPaper, palette.onPaper);
   shade = palette.shade;
   dimmed = mood === "dark" ? 0.55 : 0.38;
+  darkMode = mood === "dark";
   ground = GROUNDS[mood ?? "light"];
   shadow = `${SHADOW_X}px ${SHADOW_Y}px 0 ${shade}`;
 };
@@ -139,3 +142,37 @@ export const accentAt = (spans: AccentSpan[], frame: number): AccentColor => {
   const span = spans.find((s) => frame >= s.from && frame < s.to);
   return span ? span.accent : accentCycle[0];
 };
+
+export type Surface = Exclude<Support, "none">;
+
+const LIGHT_FILLS: Record<Surface, string> = {
+  creme: "#fbf6ea",
+  kraft: "#c9a37a",
+  journal: "#e6e2d8",
+  millimetre: "#f7f8f2",
+  album: "#efe3c4",
+  ticket: "#fefdf9",
+  clipping: "#e6e2d8",
+  postit: "#f7d65a",
+};
+
+const DARK_FILLS: Record<Surface, string> = {
+  creme: "#d3ccba",
+  kraft: "#a88a68",
+  journal: "#c4c0b6",
+  millimetre: "#cfd1ca",
+  album: "#cbbfa2",
+  ticket: "#d9d7d0",
+  clipping: "#c4c0b6",
+  postit: "#b9b4a8",
+};
+
+const withInk = (fills: Record<Surface, string>, ink: string) =>
+  Object.fromEntries(Object.entries(fills).map(([k, fill]) => [k, { fill, ink }])) as Record<Surface, { fill: string; ink: string }>;
+
+export const PAPER_COLORS: Record<"light" | "dark", Record<Surface, { fill: string; ink: string }>> = {
+  light: withInk(LIGHT_FILLS, LIGHT_ON.cream),
+  dark: withInk(DARK_FILLS, DARK_ON.cream),
+};
+
+export const surfaceFill = (support: Surface): string => PAPER_COLORS[darkMode ? "dark" : "light"][support].fill;
