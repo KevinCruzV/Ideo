@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { CAPTION_MAX, CAPTION_ROW, captionLayout, captionSize, captionTokens, captionWord, lineWidth } from "./Captions";
-import { chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
-import { layout, visibleStageTop } from "../theme";
+import { CHAPTER_TOP, chapterBottom, chapterFit, chapterText } from "./ChapterLabel";
+import { content, layout, safeWindow, visibleStageTop } from "../theme";
 import { progressTicks } from "./Progress";
 
 const single = { part: 1, total: 1, title: "L'oubli", label: "Partie" };
@@ -16,6 +16,20 @@ describe("chrome", () => {
   test("un sous-titre n'affiche jamais de tiret cadratin", () => {
     expect(captionWord(`oui${String.fromCharCode(0x2014)}non`)).toBe("oui,non");
     expect(captionWord("mot")).toBe("mot");
+  });
+
+  test("le titre et le nom de la chaîne restent sous la barre d'état et les onglets de TikTok, hors des boutons de droite", () => {
+    expect(CHAPTER_TOP).toBeGreaterThanOrEqual(240);
+    expect(layout.marginTop).toBeGreaterThanOrEqual(240);
+    expect(layout.marginSide).toBeGreaterThanOrEqual(safeWindow.left);
+    expect(layout.width - layout.safeRight).toBeLessThanOrEqual(870);
+    expect(layout.marginSide + 520).toBeLessThan(layout.width - layout.safeRight - 190);
+  });
+
+  test("les sous-titres et la barre de progression tiennent dans la zone sûre de TikTok", () => {
+    const half = (content.width / 2) * layout.chromeScale;
+    expect(layout.safeCenterX - half).toBeGreaterThanOrEqual(safeWindow.left - 10);
+    expect(layout.safeCenterX + half).toBeLessThanOrEqual(safeWindow.right + 10);
   });
 
   test("une vidéo seule n'affiche que le titre", () => {

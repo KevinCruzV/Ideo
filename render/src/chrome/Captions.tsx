@@ -116,10 +116,10 @@ export const Captions: React.FC<{ groups: CaptionGroup[] }> = ({ groups }) => {
     <div
       style={{
         position: "absolute",
-        left: content.left,
+        left: layout.safeCenterX - content.width / 2,
         width: content.width,
         top: layout.captionTop,
-        transform: `scale(${layout.safeScale})`,
+        transform: `scale(${layout.chromeScale})`,
         transformOrigin: "50% 0",
         display: "flex",
         justifyContent: "center",
