@@ -123,3 +123,17 @@ describe("plafonds de texte à l'écran", () => {
     expect(textWidth("ａ", 100)).toBe(100);
   });
 });
+
+describe("ponctuation détachée de l'accroche", () => {
+  test("le « ? » final reste avec le mot-clé au lieu de partir seul", () => {
+    const { before, key, after } = splitKey("Leclerc ou Aldi, qui vole le plus les Français ?");
+    expect(key).toBe("Français ?");
+    expect(after).toBe("");
+    expect(before).toBe("Leclerc ou Aldi, qui vole le plus les");
+  });
+
+  test("le « ? » reste avec le dernier mot de la suite", () => {
+    const { after } = splitKey("Dis-moi pourquoi le ciel est bleu ?", "pourquoi");
+    expect(after).toBe("le ciel est bleu ?");
+  });
+});
