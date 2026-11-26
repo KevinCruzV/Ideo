@@ -1,6 +1,7 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { Sheet } from "../paper/Sheet";
+import type { Support } from "../paper/supports";
 import { layout } from "../theme";
 import { str } from "./coerce";
 import { Kicker } from "./Kicker";
@@ -12,12 +13,13 @@ const SAFE_SHIFT = layout.safeCenterX - BOX_CX;
 export const EXIT_FRAMES = 6;
 export const DRIFT_SCALE = 0.03;
 
-export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: number; last: boolean; index?: number; cuts?: number[]; children: React.ReactNode }> = ({
+export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: number; last: boolean; index?: number; cuts?: number[]; support?: Support; children: React.ReactNode }> = ({
   props,
   duration,
   last,
   index = 0,
   cuts = [],
+  support = "creme",
   children,
 }) => {
   const frame = useCurrentFrame();
@@ -44,7 +46,7 @@ export const SceneFrame: React.FC<{ props: Record<string, unknown>; duration: nu
           transformOrigin: `${BOX_CX}px ${(layout.stageTop + layout.stageBottom) / 2}px`,
         }}
       >
-        <Sheet index={index} />
+        <Sheet index={index} support={support} />
         {children}
         {kicker ? (
           <Stage>

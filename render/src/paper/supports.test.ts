@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Segment } from "../types";
+import { PAPER_COLORS } from "../theme";
 import { paperOf, supportsFor } from "./supports";
 
 const seg = (kind: Segment["kind"], type?: string, props: Record<string, unknown> = {}): Segment => ({ kind, type, from: 0, to: 30, props });
@@ -25,5 +26,25 @@ describe("support de chaque scène", () => {
     expect(paperOf(undefined, false)).toBe("creme");
     expect(paperOf(undefined, true)).toBe("journal");
     expect(paperOf("kraft", true)).toBe("kraft");
+  });
+});
+
+const channel = (hex: string, i: number) => {
+  const v = parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16) / 255;
+  return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+};
+const luminance = (hex: string) => 0.2126 * channel(hex, 0) + 0.7152 * channel(hex, 1) + 0.0722 * channel(hex, 2);
+const ratio = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+describe("couleurs des supports", () => {
+  test("le texte encre reste lisible sur chaque support, en clair et en sombre", () => {
+    for (const mode of ["light", "dark"] as const) {
+      for (const [support, { fill, ink }] of Object.entries(PAPER_COLORS[mode])) {
+        expect(ratio(fill, ink), `${mode} ${support}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
   });
 });

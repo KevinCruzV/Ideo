@@ -14,6 +14,7 @@ import { cleanItems, earlyItems, str } from "./scenes/coerce";
 import { punchCuts } from "./scenes/punch";
 import { resolveScene } from "./scenes/registry";
 import { SceneFrame } from "./scenes/SceneFrame";
+import { paperOf, supportsFor } from "./paper/supports";
 import { groundOf, moodOf, segmentAccent, setMood } from "./theme";
 import { Timeline } from "./types";
 
@@ -25,6 +26,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
     accent: segmentAccent(i, segment.kind === "scene" ? segment.type : undefined),
   }));
   const count = timeline.segments.length;
+  const supports = supportsFor(timeline.segments, paperOf(timeline.paper, timeline.mood === "dark"));
   return (
     <AbsoluteFill>
       <Background />
@@ -42,7 +44,7 @@ export const Short: React.FC<Timeline> = (timeline) => {
             <AccentContext.Provider value={accents[i].accent}>
               <SegmentAudioContext.Provider value={segment.audio && Array.isArray(segment.audio.levels) ? { kind: segment.audio.kind, start: segment.audio.from - segment.from, levels: segment.audio.levels } : null}>
               <BeatsContext.Provider value={beats}>
-              <SceneFrame props={props} duration={duration} last={i === count - 1} index={i} cuts={cuts}>
+              <SceneFrame props={props} duration={duration} last={i === count - 1} index={i} cuts={cuts} support={supports[i]}>
                 <Scene props={props} items={segment.type === "object-state" ? cleanItems(segment.items) : earlyItems(cleanItems(segment.items), segment.from)} from={segment.from} to={segment.to} />
               </SceneFrame>
               </BeatsContext.Provider>
