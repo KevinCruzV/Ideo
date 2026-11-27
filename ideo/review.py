@@ -49,7 +49,7 @@ CROWDED = {"timeline": ("marks", 5, ("marks.at", "marks.label")), "stack-list": 
            "icon-grid": ("cells", 7, ("cells.label",)), "shape-diagram": ("values", 6, ("labels",))}
 CROWDED_RATIO = 0.5
 GROUPED_MIN_WORDS = 18
-MAX_ITEM_GAP_SECONDS = 5.5
+MAX_ITEM_GAP_SECONDS = 5.2
 CLOSERS = "»\"'"
 SENTENCE_PAUSE = 0.45
 BREAK_MIN_SCENES = 10

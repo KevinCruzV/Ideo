@@ -145,7 +145,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 ## Défauts détectés
 
 - [x] `scene-figee` (ZcOLpOS-QcY) Partie 1, scène 1 (à 2,9 s) : rien n'apparaît pendant 6,3 s. Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux.
-  Entretien du 2026-11-27 : cause trouvée dans le plan, pas dans le rendu : deux items ancrés aux mots 9 et 22 du say, soit 5,8 s de voix sans rien d'affiché. review signale maintenant « items-espaces » dès le plan quand plus de 5,2 s de voix estimées séparent deux items consécutifs (test dans test_review). Mesuré sur les 357 scènes des jobs existants : 66 signalées, ce qui est large ; à resserrer si trop de RELIRE.
+  Entretien du 2026-11-27 : cause trouvée dans le plan, pas dans le rendu : deux items ancrés aux mots 9 et 22 du say, soit 5,8 s de voix sans rien d'affiché. review signale maintenant « items-espaces » dès le plan quand plus de 5,2 s de voix estimées séparent deux items consécutifs (test dans test_review). Mesuré sur les jobs existants : environ une scène sur cinq signalée, ce qui est large ; à resserrer si trop de RELIRE.
   Entretien du 2026-11-27 : qc relancé, une seule alerte (durée 176,0 s au lieu de 185,0 s), aucune alerte scene-figee. Toujours non reproduit.
   Entretien du 2026-11-26 (b) : contrôle des scènes rejoué sur la timeline actuelle du job, liste d'alertes vide. Toujours non reproduit.
   Entretien du 2026-11-24 : le contrôle relancé sur la timeline actuelle de ce job (avec les temps forts) ne lève plus aucune alerte, le constat venait d'un ancien rendu. Non reproduit.
