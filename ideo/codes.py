@@ -49,6 +49,7 @@ LESSONS = {
     "sans-kicker": "Mets un kicker (date, lieu ou acte) sur les scènes qui changent de moment ou de lieu.",
     "debuts-identiques": "Varie le premier mot de trois say qui se suivent.",
     "items-groupes-debut": "Ancre le dernier item d'une scène sur un mot de la dernière phrase du say, pas tous au début.",
+    "items-espaces": "Ne laisse pas plus de 5 secondes de voix (une douzaine de mots) entre deux items : ancre un élément vers le milieu du say.",
     "premier-element-tardif": "Ancre le premier item sur un mot du début du say, ou ajoute un kicker ou un picto.",
     "duree-hors-cible": "Reste sous 300 s par vidéo : coupe des scènes ou découpe en plusieurs parties.",
     "citation-introuvable": "Recopie une citation mot pour mot depuis la transcription, à moins de 90 s de son src.",

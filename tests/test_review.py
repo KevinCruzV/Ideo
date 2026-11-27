@@ -294,6 +294,19 @@ def test_items_grouped_in_the_first_half(job):
     assert not only(plan_of(scene(say=LONG_SAY_TEXT)), job, "groupés au début")
 
 
+SPREAD_SAY_TEXT = "Le premier pays signe un accord puis le second pays refuse de signer et ensuite les marchés réagissent très fort partout dans le monde entier"
+
+
+def test_items_too_far_apart(job):
+    far = scene(say=SPREAD_SAY_TEXT, props={"text": "T"}, items=[{"el": "text", "on": "premier"}, {"el": "text", "on": "entier"}])
+    line = only(plan_of(far), job, "séparent deux")
+    assert line and "milieu" in line[0]
+    near = scene(say=SPREAD_SAY_TEXT, props={"text": "T"},
+                 items=[{"el": "text", "on": "premier"}, {"el": "text", "on": "refuse"}, {"el": "text", "on": "monde"}])
+    assert not only(plan_of(near), job, "séparent deux")
+    assert not only(plan_of(scene(say=SPREAD_SAY_TEXT, items=[{"el": "text", "on": "premier"}])), job, "séparent deux")
+
+
 def test_grouped_items_advice_names_the_last_sentence(job):
     early = scene(say=LONG_SAY_TEXT, items=[{"el": "text", "on": "premier"}])
     line = only(plan_of(early), job, "groupés au début")[0]
