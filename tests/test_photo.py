@@ -514,3 +514,13 @@ def test_the_cover_never_shows_an_artwork_as_the_face_of_the_person(job):
     assert render.cover_photo(job, part) == "photo-hermann-ebbinghaus.jpg"
     (job / "photo-hermann-ebbinghaus.json").unlink()
     assert render.cover_photo(job, part) is None
+
+
+def test_the_cover_photo_is_the_person_named_by_the_hook(job):
+    store(job, "Hermann Ebbinghaus")
+    store(job, "Sylvain Durif")
+    part = {"hook": "Le Christ cosmique veut devenir président", "scenes": [
+        person_scene("0:10", photo=True),
+        {"type": "person-card", "say": "x", "props": {"name": "Sylvain Durif", "role": "Se dit Christ cosmique", "photo": True}},
+    ]}
+    assert render.cover_photo(job, part) == "photo-sylvain-durif.jpg"

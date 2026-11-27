@@ -433,3 +433,19 @@ def test_cover_without_output_is_an_error(job_sources, monkeypatch):
     monkeypatch.setattr(common, "run", lambda cmd, log: None)
     with pytest.raises(common.IdeoError, match="couverture"):
         render.write_cover(job_sources, 1)
+
+
+def test_cover_look_prefers_the_person_named_by_the_hook():
+    part = {"hook": "Le Christ cosmique veut devenir président", "scenes": [
+        {"type": "person-card", "props": {"name": "Nathalie Arthaud", "role": "Lutte ouvrière", "gender": "woman"}},
+        {"type": "person-card", "props": {"name": "Sylvain Durif", "role": "Se dit « Christ cosmique »", "hair": "wild"}},
+    ]}
+    assert render.cover_look(part) == {"name": "Sylvain Durif", "hair": "wild"}
+
+
+def test_cover_look_keeps_the_first_card_when_the_hook_names_nobody():
+    part = {"hook": "Pourquoi tant de candidats ?", "scenes": [
+        {"type": "person-card", "props": {"name": "Nathalie Arthaud"}},
+        {"type": "person-card", "props": {"name": "Sylvain Durif"}},
+    ]}
+    assert render.cover_look(part) == {"name": "Nathalie Arthaud"}

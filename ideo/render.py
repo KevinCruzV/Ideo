@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ideo import common, i18n, photo, plan_check
+from ideo import common, i18n, photo, plan_check, textmatch
 
 REPO = Path(__file__).resolve().parent.parent
 FPS = 30
@@ -80,12 +80,26 @@ def cover_picto(part: dict) -> str | None:
 LOOK_KEYS = ("gender", "age", "job", "hair", "hair_color", "facial", "hat", "glasses", "outfit", "skin")
 
 
+def _words(text) -> set[str]:
+    return {textmatch.normalize(t) for t in textmatch.SPLIT.split(str(text or ""))}
+
+
+def _cover_cards(part: dict) -> list[dict]:
+    cards = [s for s in part.get("scenes") or []
+             if isinstance(s, dict) and s.get("type") == "person-card" and isinstance(s.get("props"), dict)]
+    wanted = {w for w in _words(part.get("hook")) if len(w) >= 4}
+
+    def shared(card: dict) -> int:
+        props = card["props"]
+        return len(wanted & (_words(props.get("name")) | _words(props.get("role"))))
+
+    return sorted(cards, key=shared, reverse=True)
+
+
 def cover_look(part: dict) -> dict | None:
-    for scene in part.get("scenes") or []:
-        if not isinstance(scene, dict) or scene.get("type") != "person-card":
-            continue
-        props = scene.get("props")
-        name = props.get("name") if isinstance(props, dict) else None
+    for scene in _cover_cards(part):
+        props = scene["props"]
+        name = props.get("name")
         if not isinstance(name, str) or not name.strip():
             continue
         look = {"name": name.strip()}
@@ -98,11 +112,9 @@ def cover_photo(job: Path, part: dict) -> str | None:
     stored = photo.of_kind(photo.all_stored(job), photo.PERSON)
     if not stored:
         return None
-    for scene in part.get("scenes") or []:
-        if not isinstance(scene, dict):
-            continue
-        props = scene.get("props")
-        if scene.get("type") != "person-card" or not isinstance(props, dict) or props.get("photo") is not True:
+    for scene in _cover_cards(part):
+        props = scene["props"]
+        if props.get("photo") is not True:
             continue
         name = props.get("name")
         found = photo.match(stored, name) if isinstance(name, str) else None
