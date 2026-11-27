@@ -309,3 +309,32 @@ def test_a_question_inside_the_video_keeps_the_normal_sentence_pause():
 
 def test_the_question_pause_lasts_long_enough_to_think():
     assert pacing.QUESTION_GAP >= 0.8
+
+
+def test_the_soft_voiced_end_of_the_last_word_is_not_taken_for_a_breath():
+    pcm = np.concatenate([tone(1.0), tone(0.3, 300), quiet(0.5)])
+    words = words_of(("douze.", 0.0, 1.6))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[:int(1.28 * RATE)], pcm[:int(1.28 * RATE)])
+
+
+def test_loud_speech_the_transcript_places_in_a_gap_is_kept_and_only_the_breath_after_it_goes():
+    hiss = (breath(0.3) * 5).astype(np.int16)
+    pcm = np.concatenate([tone(0.5), hiss, tone(0.2), breath(0.3), tone(0.5)])
+    words = words_of(("pour", 0.0, 0.5), ("cent", 1.3, 1.8))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[:int(1.0 * RATE)], pcm[:int(1.0 * RATE)])
+    assert np.max(np.abs(out[int(1.02 * RATE):int(1.2 * RATE)])) == 0
+
+
+def test_a_soft_voiced_word_end_in_a_gap_is_kept():
+    pcm = np.concatenate([tone(0.5), tone(0.3, 300), quiet(0.2), tone(0.5)])
+    words = words_of(("douze", 0.0, 0.5), ("fois", 1.0, 1.5))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[:int(0.77 * RATE)], pcm[:int(0.77 * RATE)])
+
+
+def test_speech_after_the_end_the_transcript_gives_the_last_word_is_kept():
+    pcm = np.concatenate([tone(1.0), tone(0.6)])
+    words = words_of(("prochaine !", 0.0, 0.7))
+    assert np.array_equal(pacing.gate_breaths(pcm, words), pcm)

@@ -36,6 +36,9 @@ FRAGMENT_DB = -60.0
 FRAGMENT_MAX = 0.25
 FRAGMENT_GAP = 0.20
 QUIET_DB = -45.0
+VOICED = 0.85
+PITCH_MIN = 70
+PITCH_MAX = 400
 
 
 def _loud(pcm: np.ndarray, db: float = THRESHOLD_DB) -> np.ndarray:
@@ -277,15 +280,41 @@ def _trailing_breath(pcm: np.ndarray, start: int) -> tuple[int, int] | None:
     return start + first * FRAME, len(pcm)
 
 
+def _voiced(pcm: np.ndarray, at: int) -> bool:
+    part = pcm[at:at + 2 * FRAME].astype(np.float64)
+    if len(part) < 2 * FRAME or _frame_db(pcm, at) <= BREATH_FLOOR_DB:
+        return False
+    part -= part.mean()
+    power = np.fft.rfft(part, 4 * FRAME)
+    auto = np.fft.irfft(power * np.conj(power))
+    if auto[0] <= 0:
+        return False
+    low, high = RATE // PITCH_MAX, RATE // PITCH_MIN
+    overlap = (len(part) - np.arange(low, high)) / len(part)
+    return float((auto[low:high] / overlap).max() / auto[0]) >= VOICED
+
+
+def _after_speech(pcm: np.ndarray, a: int, b: int, loud: bool) -> int:
+    if loud:
+        for at in range(b - FRAME, a - 1, -FRAME):
+            if _frame_db(pcm, at) >= THRESHOLD_DB:
+                a = at + FRAME
+                break
+    while a + FRAME <= b and _voiced(pcm, a):
+        a += FRAME
+    return a
+
+
 def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     if not words or not len(pcm):
         return pcm
     tail, lead, keep = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE), round(BREATH_KEEP * RATE)
     first, last = round(words[0]["s"] * RATE), round(words[-1]["e"] * RATE)
-    spans = [(0, first - lead), (last + tail, len(pcm))]
+    spans = [(0, first - lead)]
+    spans.append((_after_speech(pcm, last + tail, len(pcm), True), len(pcm)))
     trailing = _trailing_breath(pcm, round(words[-1]["s"] * RATE))
     if trailing:
-        spans.append(trailing)
+        spans.append((_after_speech(pcm, *trailing, False), trailing[1]))
     quiet = _quiet_span(pcm, 0, first - keep)
     if quiet:
         spans.append(quiet)
@@ -293,11 +322,11 @@ def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     for word, after in zip(joined, joined[1:]):
         end, start = round(word["e"] * RATE), round(after["s"] * RATE)
         if start - end >= round(BREATH_MIN_GAP * RATE):
-            spans.append((end + tail, start - lead))
+            spans.append((_after_speech(pcm, end + tail, start - lead, True), start - lead))
         if _breath_gap(word, after):
             quiet = _quiet_span(pcm, end + keep, start - keep)
             if quiet:
-                spans.append(quiet)
+                spans.append((_after_speech(pcm, quiet[0], quiet[1], False), quiet[1]))
     merged: list[list[int]] = []
     for a, b in sorted(span for span in spans if span[1] > span[0]):
         if merged and a <= merged[-1][1]:
