@@ -23,6 +23,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-22] (sSm_FQ3lsg4) Fait divers, horreur, catastrophe : la direction artistique (couleurs, fonds, dessins) doit devenir sombre, pas les couleurs gaies habituelles.
 - [x] [2026-11-22] (sSm_FQ3lsg4) Biographie ou histoire : il faut voir la tête de la personne principale, en grand et ressemblante, et la revoir au fil de l’histoire.
 - [ ] [2026-11-22] (sSm_FQ3lsg4) La citation utilisée est lue par le youtuber, pas par la personne citée : vérifier que la voix de l’extrait n’est pas celle du narrateur.
+  Entretien du 2026-11-27 : words.json ne contient toujours aucun locuteur ; le guide interdit déjà la citation lue par le présentateur. Non automatisé.
   Entretien du 2026-11-26 (b) : words.json du job ne contient toujours que w, s et e par mot, aucun locuteur. Non automatisé.
   Entretien du 2026-11-25 (h) : assemble.quote_bounds cadre l'extrait sur le texte cité retrouvé dans la transcription de la source, sans savoir qui parle ; aucun repère de locuteur n'existe dans le dépôt, donc pas de test qui montre la cause. Non reproduit, à traiter avec un vrai cas de job.
   Entretien du 2026-11-24 : le choix de la voix de l'extrait se juge à l'écoute et à la source, aucun contrôle automatique fiable trouvé. Non automatisé.
@@ -91,12 +92,14 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] [2026-11-25] (vtb-jGwGrd8) L'audio se coupe bizarrement sur la phrase qui dit que les PME paieraient moins d'impôt sur les sociétés.
   Entretien du 2026-11-25 (k) : même cause et même correctif que la coupure sur « résultats décevants » ci-dessus (tighten() de pacing.py, fondu de 5 ms ajouté à chaque bord de coupe).
 - [ ] [2026-11-25] (vtb-jGwGrd8) La voix ElevenLabs choisie pour cette vidéo ne plaît pas à l'utilisateur.
+  Entretien du 2026-11-27 : goût personnel, aucun code en cause (la voix se choisit dans config.json). Non corrigé.
   Entretien du 2026-11-26 (b) : préférence de voix, pas un défaut de code. Non automatisé.
   Entretien du 2026-11-25 (k) : préférence de voix, pas un défaut de code ; aucun contrôle automatique ne peut juger qu'une voix « ne plaît pas ». Seul un changement de voix dans config.json (elevenlabs_voice_id) peut répondre à ce retour. Non automatisé.
   Entretien du 2026-11-26 : préférence de voix, pas un défaut de code. Non automatisé.
 - [x] [2026-11-25] (vtb-jGwGrd8) L'audio a une coupure chelou vers la phrase qui dit « 100 milliards sur 5 ans ».
   Entretien du 2026-11-25 (k) : même cause et même correctif que la coupure sur « résultats décevants » ci-dessus (tighten() de pacing.py, fondu de 5 ms ajouté à chaque bord de coupe).
 - [ ] [2026-11-25] (vtb-jGwGrd8) La voix choisie sonne trop « IA », pas naturelle.
+  Entretien du 2026-11-27 : même constat, la retouche des questions (PR 45) et les pauses (PR 42, 44) sont déjà faites. Non corrigé.
   Entretien du 2026-11-26 (b) : rien de nouveau, le choix de la voix se juge à l'écoute. Non corrigé.
   Entretien du 2026-11-26 : les respirations (pause entre phrases à 0,45 s, souffle après « Et toi, », arrêts au milieu d'une phrase raccourcis) étaient des indices « IA » nets ; le choix de la voix et de ses réglages (stabilité 0,45, style 0,30) ne se juge qu'à l'écoute. Non corrigé.
 - [x] [2026-11-26] Les montants décimaux (27,92 €) sont lus « vingt-sept virgule neuf deux » au lieu de « vingt-sept euros quatre-vingt-douze ».
@@ -127,7 +130,8 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [ ] [2026-11-26] (pmtWyMGtxvE) Pauses bizarres au milieu de la voix ElevenLabs finale à 2:03, 2:24, 2:28, 2:41 et 2:50.
   Entretien du 2026-11-27 : le correctif « le souffle n'est plus coupé en deux » (pause_sentences place le blanc au premier moment calme et efface le bruit jusqu'au mot suivant) date d'après la voix de ce job (voix générée à 23:48, correctif à 00:18) ; il est la cause la plus probable de ces pauses ressenties comme bizarres, mais seule l'écoute d'une nouvelle voix peut le confirmer. Non coché.
   Entretien du 2026-11-26 (b) : les cinq repères (2:03, 2:24, 2:28, 2:41, 2:50) tombent sur des débuts de scène (blanc de 0,5 s, 0,9 s en changement d'acte) ou sur des fins de phrase (0,45 s), toutes des pauses voulues par assemble et pacing ; aucun trou anormal dans les mots ni dans le son. Sans écoute, pas de cause trouvée. Non corrigé.
-- [ ] [2026-11-26] (pmtWyMGtxvE) Après la question de fin, l’appel à s’abonner enchaîne sans aucun blanc : il faut une courte pause pour laisser digérer la question.
+- [x] [2026-11-26] (pmtWyMGtxvE) Après la question de fin, l’appel à s’abonner enchaîne sans aucun blanc : il faut une courte pause pour laisser digérer la question.
+  Entretien du 2026-11-27 : traité par la PR 44 (JOIN_PAUSE = QUESTION_GAP, 0,8 s entre la question et l'appel à s'abonner, test dans test_voice). À confirmer à l'écoute.
   Entretien du 2026-11-26 (b) : cause exacte non reproduite (le contrôle pause_sentences donne bien 0,45 s sur des données simulées, y compris avec un « ? » entendu comme mot à part). Mesure sur le son du job : 0,28 s de blanc entre « règles ? » et « Si ça t'a plu ». La question et l'appel sont synthétisés séparément puis collés : _join_wavs pose maintenant un blanc fixe de 0,35 s entre les deux morceaux (JOIN_PAUSE). À vérifier à l'écoute sur la prochaine vidéo. Non coché.
 - [ ] [2026-11-26] (pmtWyMGtxvE) La voix ElevenLabs respecte moins bien la ponctuation que la voix Edge : les pauses aux virgules et aux points sont moins marquées.
   Entretien du 2026-11-26 (b) : pacing.pause_sentences ajoute un blanc aux fins de phrase (0,45 s) et aux deux-points, volontairement pas aux virgules (deux tests le fixent, après le retour « trop IA »). Ajouter un blanc aux virgules reviendrait sur cette décision sans pouvoir écouter. Non corrigé.
@@ -135,11 +139,13 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-27 : cause trouvée dans pacing.gate_breaths, qui ne coupait que les respirations des écarts de 0,25 s ou plus et gardait 80 ms avant chaque mot. Corrigé par la PR 42 : après une ponctuation (écart d'au moins 0,10 s) ou entre deux mots (au moins 0,15 s), tout ce qui est sous -32 dB est coupé jusqu'au début de la parole, 30 ms gardées autour des mots, jamais une image de parole. Sur ce job, les souffles audibles dans les blancs passent de 16 à 2 (les 2 restants sont de la parole). Les voix déjà générées sont corrigées à l'assemblage (produce).
 - [x] [2026-11-27] (pmtWyMGtxvE) Voix ElevenLabs : pause trop marquée entre « ces podcasteurs » et « lâchent Trump » (mot étiré par la voix, pas par le montage).
   Traité le 2026-11-27 : la cause est la construction de la phrase (long complément avant le verbe), pas le montage. Réglé par la leçon du 2026-11-27 dans skills/ideo/references/lecons.md (sujet et verbe en tête). Ne pas modifier pour ce retour les pauses ni les souffles (pacing, PR 42 et 44), ni la retouche des questions (intonation.py, PR 45).
-- [ ] [2026-11-27] (nBKe3uqJ3aA) La voix Edge fr-FR-RemyMultilingualNeural échoue souvent (No audio was received) et produce s’arrête sans réessayer ; le brouillon est passé en fr-FR-HenriNeural via config.json en attendant.
+- [x] [2026-11-27] (nBKe3uqJ3aA) La voix Edge fr-FR-RemyMultilingualNeural échoue souvent (No audio was received) et produce s’arrête sans réessayer ; le brouillon est passé en fr-FR-HenriNeural via config.json en attendant.
+  Entretien du 2026-11-27 : EdgeTTSBackend.synthesize abandonnait au premier échec. Elle réessaie maintenant jusqu'à trois fois (attente 1 s puis 2 s), repères de mots remis à zéro à chaque essai, et ne lève l'erreur qu'après le troisième échec. Deux tests le fixent.
 
 ## Défauts détectés
 
-- [ ] `scene-figee` (ZcOLpOS-QcY) Partie 1, scène 1 (à 2,9 s) : rien n'apparaît pendant 6,3 s. Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux.
+- [x] `scene-figee` (ZcOLpOS-QcY) Partie 1, scène 1 (à 2,9 s) : rien n'apparaît pendant 6,3 s. Ajoute des items ancrés sur des mots de « say » ou coupe la scène en deux.
+  Entretien du 2026-11-27 : cause trouvée dans le plan, pas dans le rendu : deux items ancrés aux mots 9 et 22 du say, soit 5,8 s de voix sans rien d'affiché. review signale maintenant « items-espaces » dès le plan quand plus de 5,2 s de voix estimées séparent deux items consécutifs (test dans test_review). Mesuré sur les 357 scènes des jobs existants : 66 signalées, ce qui est large ; à resserrer si trop de RELIRE.
   Entretien du 2026-11-27 : qc relancé, une seule alerte (durée 176,0 s au lieu de 185,0 s), aucune alerte scene-figee. Toujours non reproduit.
   Entretien du 2026-11-26 (b) : contrôle des scènes rejoué sur la timeline actuelle du job, liste d'alertes vide. Toujours non reproduit.
   Entretien du 2026-11-24 : le contrôle relancé sur la timeline actuelle de ce job (avec les temps forts) ne lève plus aucune alerte, le constat venait d'un ancien rendu. Non reproduit.
@@ -200,5 +206,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] hémicycle de l'Assemblée
 - [x] agence de notation
 - [x] Conseil constitutionnel
-- [ ] voiture en panne
-- [ ] sablier
+- [x] voiture en panne
+  Entretien du 2026-11-27 : dessin « broken-car » (voiture rouge, capot jaune relevé, fumée noire), reconnu sur la planche rendue.
+- [x] sablier
+  Entretien du 2026-11-27 : dessin « hourglass » (verre bleu, sable jaune, cadres rouges), reconnu sur la planche rendue.
