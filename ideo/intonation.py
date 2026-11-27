@@ -17,17 +17,16 @@ CHOICE = {"fr": "ou", "en": "or"}
 STRIP = "   .,;:!?…«»\"“”()"
 SENTENCE_END = (".", "!", "?", "…")
 
-KEEP = 0.5
-PEAK = 7.0
-AFTER_PEAK = 2.0
-RISE = 7.0
-RISE_SPAN = 0.25
+PEAK_GOAL = 7.0
+RISE_GOAL = 7.0
 PEAK_MIN = 5.0
 RISE_MIN = 5.0
-EDGE = 0.06
-TAIL_GUARD = 0.08
-SPLICE_BEFORE = 0.05
-SPLICE_AFTER = 0.1
+MAX_SHIFT = 6.0
+MIN_SHIFT = 1.5
+RISE_SPAN = 0.25
+RAMP = 0.05
+OUTLIER = 5.0
+SPLICE = 0.08
 FADE = 0.01
 TIME_STEP = 0.01
 FLOOR = 75
@@ -96,35 +95,40 @@ def _median(values: np.ndarray) -> float | None:
 
 
 def _plan(kind_: str, qi: int | None, span: list[dict], times: np.ndarray, st: np.ndarray):
-    start, last = span[0]["s"], span[-1]
+    last = span[-1]
     inside = lambda a, b: st[(times >= a) & (times <= b)]
     if kind_ == "ouverte":
-        word = span[qi]
         if qi == len(span) - 1:
             return None
+        word = span[qi]
         peak = _median(inside(word["s"], word["e"]))
         if peak is None or peak >= PEAK_MIN:
             return None
-        middle = (word["s"] + word["e"]) / 2
-        after = span[qi + 1]["s"]
-        target = [(start - 1, 0.0), (max(word["s"] - 0.05, start), 0.0), (middle, PEAK), (after, AFTER_PEAK),
-                  (last["s"], 0.0), (last["e"] + 1, 0.0)]
-        weight = [(start - 1, 0.0), (start, 0.0), (start + EDGE, 1.0), (last["s"] - TAIL_GUARD, 1.0),
-                  (last["s"] - 0.02, 0.0), (last["e"] + 1, 0.0)]
-        return target, weight, f"pic ajouté sur « {_clean(word['w'])} »"
+        shift = min(PEAK_GOAL - peak, MAX_SHIFT)
+        if shift < MIN_SHIFT:
+            return None
+        follow = span[qi + 1]
+        fade_end = min((follow["s"] + follow["e"]) / 2, last["s"])
+        bump = [(word["s"] - RAMP, 0.0), (word["s"] + 0.02, shift), (word["e"], shift), (max(fade_end, word["e"] + 0.02), 0.0)]
+        region = (word["s"] - SPLICE, max(fade_end, word["e"] + 0.02) + SPLICE)
+        return bump, region, f"pic ajouté sur « {_clean(word['w'])} » (+{shift:.1f} demi-tons)"
     tail = inside(last["s"], last["e"] + 0.1)
     final = _median(tail[-5:]) if len(tail) >= 3 else None
     if final is None or final >= RISE_MIN:
         return None
+    shift = min(RISE_GOAL - final, MAX_SHIFT)
+    if shift < MIN_SHIFT:
+        return None
     rise_from = max(last["s"] + (last["e"] - last["s"]) * 0.35, last["e"] - RISE_SPAN)
-    target = [(start - 1, 0.0), (rise_from, 0.0), (last["e"], RISE), (last["e"] + 1, RISE)]
-    weight = [(start - 1, 0.0), (start, 0.0), (start + EDGE, 1.0), (last["e"] + 1, 1.0)]
-    return target, weight, "montée ajoutée à la fin"
+    bump = [(rise_from, 0.0), (last["e"], shift), (last["e"] + 0.1, shift)]
+    region = (rise_from - SPLICE, last["e"] + 0.1 + SPLICE)
+    return bump, region, f"montée ajoutée à la fin (+{shift:.1f} demi-tons)"
 
 
-def _curve(points, t: np.ndarray) -> np.ndarray:
-    xs, ys = zip(*points)
-    return np.interp(t, xs, ys)
+def _outliers(st: np.ndarray) -> np.ndarray:
+    padded = np.pad(st, 2, mode="edge")
+    local = np.array([np.median(padded[i:i + 5]) for i in range(len(st))])
+    return np.abs(st - local) > OUTLIER
 
 
 def adjust(wav: Path, words: list[dict], lang: str) -> list[str]:
@@ -147,30 +151,28 @@ def adjust(wav: Path, words: list[dict], lang: str) -> list[str]:
     times, values = _points(tier)
     if len(times) < 3:
         return []
-    new = 12 * np.log2(values)
     changes, regions = [], []
+    shift = np.zeros(len(times))
     for span, (kind_, qi) in found:
-        start, end = span[0]["s"], span[-1]["e"] + 0.1
-        mask = (times >= start) & (times <= end)
+        mask = (times >= span[0]["s"]) & (times <= span[-1]["e"] + 0.1)
         if mask.sum() < 5:
             continue
-        reference = np.median(values[mask])
-        st = 12 * np.log2(values / reference)
+        st = 12 * np.log2(values / np.median(values[mask]))
         plan = _plan(kind_, qi, span, times, st)
         if not plan:
             continue
-        target, weight, label = plan
-        w = _curve(weight, times) * mask
-        shaped = KEEP * st + _curve(target, times)
-        new = np.where(mask, new + w * (shaped - st), new)
-        text = " ".join(x["w"] for x in span).replace(" ", " ")
+        bump, region, label = plan
+        xs, ys = zip(*bump)
+        shift += np.interp(times, xs, ys, left=0.0, right=0.0)
+        text = " ".join(x["w"] for x in span).replace("\u00a0", " ")
         changes.append(f"« {text} » : {label}")
-        regions.append((start - SPLICE_BEFORE, span[-1]["e"] + SPLICE_AFTER))
+        regions.append(region)
     if not changes:
         return []
+    keep = ~_outliers(12 * np.log2(values))
     call(tier, "Remove points between", 0, sound.duration)
-    for t, v in zip(times, 2 ** (new / 12)):
-        call(tier, "Add point", float(t), float(v))
+    for t, v, s_ in zip(times[keep], values[keep], shift[keep]):
+        call(tier, "Add point", float(t), float(v * 2 ** (s_ / 12)))
     call([tier, manipulation], "Replace pitch tier")
     result = call(manipulation, "Get resynthesis (overlap-add)")
     shaped = np.clip(result.values[0] * 32768.0, -32768, 32767)

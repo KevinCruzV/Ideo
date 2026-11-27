@@ -121,6 +121,21 @@ def test_flat_open_question_gets_a_peak_and_keeps_its_last_word(tmp_path):
     assert abs(_semitones(_pitch(wav, last["s"] + 0.05, last["e"]), 150.0)) < 0.7
 
 
+def test_open_question_only_touches_the_question_word(tmp_path):
+    pytest.importorskip("parselmouth")
+    wav = tmp_path / "seg.wav"
+    _write(wav, _voice(lambda t: 150.0 + 40.0 * (t < 0.8), 2.4))
+    words = _words("Leclerc ou Aldi, qui vole vraiment ?", start=0.1, step=0.35)
+    _, before = _read(wav)
+    changes = intonation.adjust(wav, words, "fr")
+    _, after = _read(wav)
+    assert len(changes) == 1 and "« qui »" in changes[0]
+    cut = int((words[3]["s"] - 0.1) * RATE)
+    assert np.array_equal(after[:cut], before[:cut])
+    resume = int((words[5]["s"] + 0.1) * RATE)
+    assert np.array_equal(after[resume:], before[resume:])
+
+
 def test_lively_question_is_left_alone(tmp_path):
     pytest.importorskip("parselmouth")
     wav = tmp_path / "seg.wav"
