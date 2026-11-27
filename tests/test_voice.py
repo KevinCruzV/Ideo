@@ -443,3 +443,52 @@ def test_the_question_and_the_subscribe_call_are_joined_with_a_pause(tmp_path):
         total = w.getnframes() / 48000
     assert starts[1] == pytest.approx(1.0 + voice.JOIN_PAUSE)
     assert total == pytest.approx(2.0 + voice.JOIN_PAUSE)
+
+
+class _PaidVoice:
+    local = False
+    paid = True
+
+    def __init__(self):
+        self.characters = 0
+
+    def synthesize(self, text, lang, out_wav, previous_text=None, next_text=None):
+        from conftest import write_sine_wav
+
+        write_sine_wav(out_wav, seconds=1.0)
+        self.characters += len(text)
+        tokens = text.split()
+        step = 1.0 / max(len(tokens), 1)
+        return [{"w": t, "s": i * step, "e": (i + 0.9) * step} for i, t in enumerate(tokens)]
+
+
+def test_paid_voice_retouches_questions_before_pacing(job_with_plan, fake_whisper, monkeypatch):
+    from ideo import intonation
+
+    seen = []
+
+    def fake_adjust(wav, words, lang, hook=False):
+        seen.append((wav.name, lang, hook))
+        return ["« Pourquoi ? » : pic ajouté sur « pourquoi »"] if wav.stem == "seg_00_hook" else []
+
+    monkeypatch.setattr(intonation, "adjust", fake_adjust)
+    voice.voice_part(job_with_plan, 1, backend=_PaidVoice(), pay=True)
+    hooks = {name: hook for name, _, hook in seen}
+    assert hooks["seg_00_hook.wav"] is True
+    assert not any(hook for name, hook in hooks.items() if name != "seg_00_hook.wav")
+    assert all(lang == "fr" for _, lang, _ in seen)
+    log = (job_with_plan / "logs" / "voice-01.log").read_text(encoding="utf-8")
+    assert "seg_00_hook intonation retouchée" in log
+
+
+def test_paid_voice_goes_on_without_praat(job_with_plan, fake_whisper, monkeypatch):
+    from ideo import intonation
+
+    def missing(wav, words, lang, hook=False):
+        raise ImportError("parselmouth")
+
+    monkeypatch.setattr(intonation, "adjust", missing)
+    paths = voice.voice_part(job_with_plan, 1, backend=_PaidVoice(), pay=True)
+    assert all(p.exists() for p in paths)
+    log = (job_with_plan / "logs" / "voice-01.log").read_text(encoding="utf-8")
+    assert "praat-parselmouth absent" in log

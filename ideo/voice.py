@@ -10,7 +10,8 @@ from typing import Protocol
 
 import numpy as np
 
-from ideo import align, common, config, eleven, fidelity, hookvoice, i18n, lexicon, numbers, pacing, prosody, transcribe
+from ideo import (align, common, config, eleven, fidelity, hookvoice, i18n, intonation, lexicon, numbers, pacing,
+                   prosody, transcribe)
 
 TICKS = 1e7
 LAUNCHER = Path(__file__).with_name("kyutai_launcher.py")
@@ -492,6 +493,19 @@ def _join_wavs(paths: list[Path], target: Path) -> list[float]:
     return starts
 
 
+def _retouch(wav: Path, words: list[dict], lang: str, name: str, log: Path) -> None:
+    try:
+        changes = intonation.adjust(wav, words, lang, hook=name == HOOK)
+    except ImportError:
+        _log_line(log, f"voix : {name} intonation non retouchée (praat-parselmouth absent)")
+        return
+    except (RuntimeError, ValueError) as err:
+        _log_line(log, f"voix : {name} intonation non retouchée ({err})")
+        return
+    for change in changes:
+        _log_line(log, f"voix : {name} intonation retouchée, {change}")
+
+
 def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str, str]], lang: str, out_dir: Path,
                  log: Path) -> tuple[dict, dict]:
     order = [name for name, _ in items]
@@ -518,6 +532,7 @@ def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str,
             shutil.rmtree(work)
             words = [{**w, "s": w["s"] + at, "e": w["e"] + at} for (ws, _), at in zip(results, starts) for w in ws]
             score = min(sc for _, sc in results)
+        _retouch(wav, words, lang, name, log)
         heard_by_name[name] = words
         scores[name] = score
         (out_dir / f"{name}.spoken.txt").write_text(spoken[name], encoding="utf-8")
