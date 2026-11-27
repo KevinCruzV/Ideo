@@ -30,3 +30,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] Titre de couverture choc (« X ou Y, qui … le plus ? »), jamais plat ; l’accroche le reprend tel quel, le title peut le raccourcir à 40 caractères ; en biographie, le sous-titre est choc.
 - [2026-11-26] (auto:annee-sans-kicker) Dès qu'un say donne une année, mets cette date dans le kicker de la scène.
 - [2026-11-26] Ne dis jamais « l’auteur » ou « le présentateur » dans le say : un avis de la source se dit comme un pari ou une prédiction, sans dire qui le dit.
+- [2026-11-27] Dans un say, sujet et verbe en tête, complément après (« Ces podcasteurs lâchent Trump, lassés par ses tarifs ») : un long complément avant le sujet fait marquer une pause bizarre à la voix.
