@@ -130,6 +130,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-26 (b) : cause exacte non reproduite (le contrôle pause_sentences donne bien 0,45 s sur des données simulées, y compris avec un « ? » entendu comme mot à part). Mesure sur le son du job : 0,28 s de blanc entre « règles ? » et « Si ça t'a plu ». La question et l'appel sont synthétisés séparément puis collés : _join_wavs pose maintenant un blanc fixe de 0,35 s entre les deux morceaux (JOIN_PAUSE). À vérifier à l'écoute sur la prochaine vidéo. Non coché.
 - [ ] [2026-11-26] (pmtWyMGtxvE) La voix ElevenLabs respecte moins bien la ponctuation que la voix Edge : les pauses aux virgules et aux points sont moins marquées.
   Entretien du 2026-11-26 (b) : pacing.pause_sentences ajoute un blanc aux fins de phrase (0,45 s) et aux deux-points, volontairement pas aux virgules (deux tests le fixent, après le retour « trop IA »). Ajouter un blanc aux virgules reviendrait sur cette décision sans pouvoir écouter. Non corrigé.
+- [ ] [2026-11-27] (pmtWyMGtxvE) Voix ElevenLabs (Nicolas) : on entend encore beaucoup de respirations entre les phrases et aux virgules après le correctif des souffles coupés.
 
 ## Défauts détectés
 
