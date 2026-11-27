@@ -26,7 +26,7 @@ PICTOS = (
     "blood-stain", "chalk-outline", "crime-tape", "handcuffs", "knife", "coffin", "tombstone",
     "mirror", "mars", "music-note", "vinyl", "microphone",
     "ankle-monitor", "hemicycle", "credit-rating", "constitution",
-    "broken-car", "hourglass",
+    "broken-car", "hourglass", "ghost", "camper-van", "envelope", "video-phone",
 )
 FLAGS = (
     "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb",

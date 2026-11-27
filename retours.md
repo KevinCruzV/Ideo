@@ -210,7 +210,11 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-27 : dessin « broken-car » (voiture rouge, capot jaune relevé, fumée noire), reconnu sur la planche rendue.
 - [x] sablier
   Entretien du 2026-11-27 : dessin « hourglass » (verre bleu, sable jaune, cadres rouges), reconnu sur la planche rendue.
-- [ ] fantôme
-- [ ] camion aménagé
-- [ ] enveloppe
-- [ ] vidéo sur téléphone
+- [x] fantôme
+  Entretien du 2026-11-27 : dessin « ghost » (drap blanc sur disque bleu, yeux et bouche noirs), reconnu sur la planche rendue.
+- [x] camion aménagé
+  Entretien du 2026-11-27 : dessin « camper-van » (van bleu, bande jaune, galerie rouge), reconnu sur la planche rendue.
+- [x] enveloppe
+  Entretien du 2026-11-27 : dessin « envelope » (enveloppe jaune, rabat rouge, cachet bleu), reconnu sur la planche rendue.
+- [x] vidéo sur téléphone
+  Entretien du 2026-11-27 : dessin « video-phone » (téléphone noir, écran bleu, bouton lecture rouge), reconnu sur la planche rendue.
