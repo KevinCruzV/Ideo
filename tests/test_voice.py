@@ -123,6 +123,47 @@ def test_edge_backend_network_error_is_french(tmp_path, monkeypatch):
         voice.EdgeTTSBackend().synthesize("x", "fr", tmp_path / "x.wav")
 
 
+def test_edge_backend_retries_when_no_audio_is_received(tmp_path, monkeypatch):
+    import edge_tts
+
+    calls = []
+
+    class Flaky:
+        def __init__(self, text, voice, **kw):
+            calls.append(1)
+
+        async def stream(self):
+            if len(calls) < 3:
+                raise edge_tts.exceptions.NoAudioReceived("No audio was received.")
+            yield {"type": "audio", "data": b"mp3"}
+
+    monkeypatch.setattr(edge_tts, "Communicate", Flaky)
+    monkeypatch.setattr(voice.time, "sleep", lambda s: None)
+    monkeypatch.setattr(voice, "_ffmpeg", lambda: "/usr/bin/true")
+    voice.EdgeTTSBackend().synthesize("x", "fr", tmp_path / "x.wav")
+    assert len(calls) == 3
+
+
+def test_edge_backend_gives_up_after_three_attempts(tmp_path, monkeypatch):
+    import edge_tts
+
+    calls = []
+
+    class Failing:
+        def __init__(self, text, voice, **kw):
+            calls.append(1)
+
+        async def stream(self):
+            raise OSError("down")
+            yield
+
+    monkeypatch.setattr(edge_tts, "Communicate", Failing)
+    monkeypatch.setattr(voice.time, "sleep", lambda s: None)
+    with pytest.raises(common.IdeoError, match="synthèse vocale"):
+        voice.EdgeTTSBackend().synthesize("x", "fr", tmp_path / "x.wav")
+    assert len(calls) == 3
+
+
 def test_get_backend_returns_edge():
     assert isinstance(voice.get_backend(), voice.EdgeTTSBackend)
 

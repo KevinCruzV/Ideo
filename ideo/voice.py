@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import tempfile
+import time
 import wave
 from pathlib import Path
 from typing import Protocol
@@ -58,6 +59,9 @@ def _ffmpeg() -> str:
     return path
 
 
+EDGE_ATTEMPTS = 3
+
+
 class EdgeTTSBackend:
     def __init__(self, log: Path | None = None):
         self.log = log
@@ -85,12 +89,17 @@ class EdgeTTSBackend:
 
         with tempfile.TemporaryDirectory() as tmp:
             mp3 = Path(tmp) / "voice.mp3"
-            try:
-                asyncio.run(run(mp3))
-            except Exception as err:
-                raise common.IdeoError(
-                    f"la synthèse vocale a échoué (connexion à edge-tts impossible ?) : {err}"
-                ) from err
+            for attempt in range(EDGE_ATTEMPTS):
+                words.clear()
+                try:
+                    asyncio.run(run(mp3))
+                    break
+                except Exception as err:
+                    if attempt == EDGE_ATTEMPTS - 1:
+                        raise common.IdeoError(
+                            f"la synthèse vocale a échoué (connexion à edge-tts impossible ?) : {err}"
+                        ) from err
+                    time.sleep(1.0 + attempt)
             if not mp3.exists() or mp3.stat().st_size == 0:
                 raise common.IdeoError("la synthèse vocale a échoué : aucun audio reçu")
             common.run(

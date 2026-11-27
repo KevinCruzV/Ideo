@@ -3,7 +3,7 @@ import math
 import re
 from pathlib import Path
 
-from ideo import countries, history, plan_check, scene_schema, slop, target, textmatch
+from ideo import countries, history, plan_check, scene_schema, slop, speed, target, textmatch
 from ideo.common import load_json
 
 LIMIT = 8
@@ -49,6 +49,9 @@ CROWDED = {"timeline": ("marks", 5, ("marks.at", "marks.label")), "stack-list": 
            "icon-grid": ("cells", 7, ("cells.label",)), "shape-diagram": ("values", 6, ("labels",))}
 CROWDED_RATIO = 0.5
 GROUPED_MIN_WORDS = 18
+MAX_ITEM_GAP_SECONDS = 5.2
+CLOSERS = "»\"'"
+SENTENCE_PAUSE = 0.45
 BREAK_MIN_SCENES = 10
 PERCENT = re.compile(r"%|pour cent|percent|prozent|por ciento|per cento|procent|yuzde")
 SHORT_SAY = 8
@@ -212,6 +215,26 @@ def _grouped_early(scene: dict) -> bool:
     return all(p < len(words) / 2 for p in positions)
 
 
+def _items_far_apart(scene: dict, lang: str = "fr") -> bool:
+    words = _say(scene).split()
+    items = scene.get("items")
+    if not isinstance(items, list) or len(items) < 2:
+        return False
+    positions = []
+    for item in items:
+        anchor = textmatch.anchor_text(item.get("on")) if isinstance(item, dict) else None
+        span = textmatch.find_span(words, anchor) if anchor else None
+        if span is None:
+            return False
+        positions.append(span[0])
+    for a, b in zip(positions, positions[1:]):
+        between = words[a:b]
+        pauses = sum(1 for w in between if w.rstrip(CLOSERS).endswith((".", "!", "?", ":")))
+        if len(between) / speed.rate(lang) + pauses * SENTENCE_PAUSE > MAX_ITEM_GAP_SECONDS:
+            return True
+    return False
+
+
 def _say(scene: dict) -> str:
     say = scene.get("say")
     return say if isinstance(say, str) else ""
@@ -330,6 +353,10 @@ def _part_findings(part: dict, n: int, out: list, lang: str = "fr") -> None:
             out.append((2, *_line("items-groupes-debut", _scene_where(n, i),
                                   "éléments groupés au début : tous les « items » sont ancrés dans la première moitié du « say », la fin de la scène reste figée",
                                   "Ancre le dernier élément sur un mot de la dernière phrase")))
+        if _items_far_apart(scene, lang):
+            out.append((2, *_line("items-espaces", _scene_where(n, i),
+                                  "plus de 5 secondes de voix séparent deux « items » : l'écran reste figé entre les deux",
+                                  "Ancre un élément de plus vers le milieu du « say », ou coupe la scène en deux")))
         if kind == "person-card":
             for el in ("avatar", "name"):
                 at = _anchor_index(scene, el)

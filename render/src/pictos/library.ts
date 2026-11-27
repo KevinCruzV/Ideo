@@ -95,6 +95,8 @@ export const PICTOS = [
   "hemicycle",
   "credit-rating",
   "constitution",
+  "broken-car",
+  "hourglass",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -1042,6 +1044,29 @@ const DRAW: Record<PictoName, Draw> = {
     k.rect(34, 18, 40, 11, "yellow"),
     k.rect(34, 34, 40, 4, "cream"),
     k.poly([[30, 66], [39, 57], [48, 66], [70, 42], [79, 51], [48, 84]], "red"),
+  ],
+  "broken-car": (k) => [
+    k.circle(88, 40, 7, "ink"),
+    k.circle(91, 22, 5.5, "ink"),
+    k.circle(84, 8, 4, "ink"),
+    k.rect(2, 56, 82, 22, "red"),
+    k.poly([[14, 56], [26, 34], [54, 34], [64, 56]], "red"),
+    k.poly([[22, 54], [30, 38], [41, 38], [41, 54]], "blue"),
+    k.poly([[46, 54], [46, 38], [53, 38], [59, 54]], "blue"),
+    k.bar(66, 54, 82, 32, 6, "yellow"),
+    k.circle(22, 80, 12, "ink"),
+    k.circle(22, 80, 4.5, "cream"),
+    k.circle(64, 80, 12, "ink"),
+    k.circle(64, 80, 4.5, "cream"),
+  ],
+  hourglass: (k) => [
+    k.poly([[24, 12], [76, 12], [54, 50], [46, 50]], "blue"),
+    k.poly([[46, 50], [54, 50], [76, 88], [24, 88]], "blue"),
+    k.poly([[35, 27], [65, 27], [53, 47], [47, 47]], "yellow"),
+    k.rect(48, 48, 4, 22, "yellow"),
+    k.poly([[27, 86], [73, 86], [62, 72], [50, 64], [38, 72]], "yellow"),
+    k.rect(14, 2, 72, 10, "red"),
+    k.rect(14, 88, 72, 10, "red"),
   ],
 };
 
