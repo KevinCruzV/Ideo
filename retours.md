@@ -147,6 +147,10 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Traité le 2026-11-27 : la cause est la construction de la phrase (long complément avant le verbe), pas le montage. Réglé par la leçon du 2026-11-27 dans skills/ideo/references/lecons.md (sujet et verbe en tête). Ne pas modifier pour ce retour les pauses ni les souffles (pacing, PR 42 et 44), ni la retouche des questions (intonation.py, PR 45).
 - [x] [2026-11-27] (nBKe3uqJ3aA) La voix Edge fr-FR-RemyMultilingualNeural échoue souvent (No audio was received) et produce s’arrête sans réessayer ; le brouillon est passé en fr-FR-HenriNeural via config.json en attendant.
   Entretien du 2026-11-27 : EdgeTTSBackend.synthesize abandonnait au premier échec. Elle réessaie maintenant jusqu'à trois fois (attente 1 s puis 2 s), repères de mots remis à zéro à chaque essai, et ne lève l'erreur qu'après le troisième échec. Deux tests le fixent.
+- [ ] [2026-11-27] (eEVUQ4Wn0ek) Fins de mots coupées à l’assemblage en voix ElevenLabs : « 2012 » devient « deux mille », « 2026 » « deux mille », « Mélenchon » « Mélan », « département » « départ », « parrainages » tronqué ; le segment seg_XX.wav est entier, la coupe vient de pacing.gate_breaths ou drop_tail_fragment appelés par assemble._voice_pcm (commits a1aed5a et a51d9d1 du 27/11), à vérifier en retranscrivant part.wav contre seg_XX.wav.
+- [ ] [2026-11-27] (eEVUQ4Wn0ek) La phrase Viginum (seg_23) est lue mot par mot comme un robot dans la version finale : probablement le même filtre de respirations qui coupe entre les mots.
+- [ ] [2026-11-27] (eEVUQ4Wn0ek) Prononciation ElevenLabs : l’accroche « veut devenir président » sort « devinir présidente », « élus » est étiré en « éluuue », « moins » est dit « moinsse ».
+- [ ] [2026-11-27] (eEVUQ4Wn0ek) La phrase « annonce sa candidature dans une vidéo de 20 secondes. » juste avant une citation est dite sans intonation de fin de phrase, comme si le point manquait.
 
 ## Défauts détectés
 
