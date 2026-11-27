@@ -97,6 +97,10 @@ export const PICTOS = [
   "constitution",
   "broken-car",
   "hourglass",
+  "ghost",
+  "camper-van",
+  "envelope",
+  "video-phone",
 ] as const;
 
 export type PictoName = (typeof PICTOS)[number];
@@ -1067,6 +1071,38 @@ const DRAW: Record<PictoName, Draw> = {
     k.poly([[27, 86], [73, 86], [62, 72], [50, 64], [38, 72]], "yellow"),
     k.rect(14, 2, 72, 10, "red"),
     k.rect(14, 88, 72, 10, "red"),
+  ],
+  ghost: (k) => [
+    k.circle(50, 50, 44, "blue"),
+    k.circle(50, 38, 23, "cream"),
+    k.poly([[27, 38], [73, 38], [76, 84], [67, 75], [59, 86], [50, 75], [41, 86], [33, 75], [24, 84]], "cream"),
+    k.circle(41, 40, 4.5, "ink"),
+    k.circle(59, 40, 4.5, "ink"),
+    k.oval(50, 55, 5.5, 7.5, "ink"),
+  ],
+  "camper-van": (k) => [
+    k.rect(18, 17, 38, 11, "red"),
+    k.poly([[5, 28], [72, 28], [92, 50], [95, 78], [5, 78]], "blue"),
+    k.poly([[75, 34], [75, 50], [87, 50]], "cream"),
+    k.rect(12, 36, 20, 15, "cream"),
+    k.rect(37, 36, 20, 15, "cream"),
+    k.rect(5, 60, 90, 7, "yellow"),
+    k.circle(27, 80, 12, "ink"),
+    k.circle(27, 80, 4.5, "cream"),
+    k.circle(76, 80, 12, "ink"),
+    k.circle(76, 80, 4.5, "cream"),
+  ],
+  envelope: (k) => [
+    k.rect(8, 24, 84, 56, "yellow"),
+    k.poly([[8, 24], [92, 24], [50, 56]], "red"),
+    k.circle(50, 55, 7, "blue"),
+  ],
+  "video-phone": (k) => [
+    k.rect(25, 4, 50, 92, "ink"),
+    k.rect(30, 13, 40, 70, "blue"),
+    k.circle(50, 48, 16, "red"),
+    k.poly([[44, 39], [44, 57], [60, 48]], "cream"),
+    k.bar(42, 90, 58, 90, 3, "cream"),
   ],
 };
 
