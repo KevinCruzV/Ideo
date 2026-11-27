@@ -275,3 +275,18 @@ def test_the_next_word_is_never_muted_even_when_the_transcript_places_it_late():
     out, mapping = pacing.pause_sentences(pcm, heard)
     start, real = round(mapping(1.16) * RATE), round(1.16 * RATE)
     assert np.array_equal(out[start:start + RATE // 2], pcm[real:real + RATE // 2])
+
+
+def test_a_breath_and_a_cut_sound_hidden_in_the_last_word_are_muted():
+    pcm = np.concatenate([tone(0.5), breath(0.4), quiet(0.03), tone(0.04)])
+    words = words_of(("podcasts.", 0.0, 0.97))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[:int(0.5 * RATE)], pcm[:int(0.5 * RATE)])
+    assert np.max(np.abs(out[int(0.53 * RATE):])) == 0
+
+
+def test_a_last_word_said_after_a_breath_is_kept():
+    pcm = np.concatenate([breath(0.4), quiet(0.03), tone(0.2)])
+    words = words_of(("là.", 0.0, 0.63))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[int(0.43 * RATE):], pcm[int(0.43 * RATE):])
