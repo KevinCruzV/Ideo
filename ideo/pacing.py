@@ -12,6 +12,7 @@ LONG_PAUSE = 0.60
 PAUSE = 0.50
 SENTENCE_GAP = 0.45
 COLON_GAP = 0.35
+QUESTION_GAP = 0.80
 MID_MAX = 0.30
 MID_KEEP = 0.20
 MID_SLACK = 0.10
@@ -177,13 +178,15 @@ def _mute(source: np.ndarray, out: np.ndarray, a: int, b: int) -> None:
         out[b - fade:b] = (source[b - fade:b] * np.linspace(0.0, 1.0, fade)).astype(out.dtype)
 
 
-def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
+def pause_sentences(pcm: np.ndarray, words: list[dict], question_gap: float | None = None) -> tuple[np.ndarray, Callable[[float], float]]:
     inserts: list[tuple[int, int]] = []
     muted = pcm.copy()
     joined = _joined(words)
     for word, after in zip(joined, joined[1:]):
         gap = after["s"] - word["e"]
-        if _ends_sentence(word["w"]):
+        if question_gap and word["w"].rstrip(CLOSERS).endswith("?"):
+            wanted = question_gap
+        elif _ends_sentence(word["w"]):
             wanted = SENTENCE_GAP
         elif _colon(word["w"]):
             wanted = COLON_GAP

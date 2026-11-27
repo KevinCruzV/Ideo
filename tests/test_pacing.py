@@ -290,3 +290,22 @@ def test_a_last_word_said_after_a_breath_is_kept():
     words = words_of(("là.", 0.0, 0.63))
     out = pacing.gate_breaths(pcm, words)
     assert np.array_equal(out[int(0.43 * RATE):], pcm[int(0.43 * RATE):])
+
+
+def test_the_final_question_gets_time_to_sink_in_before_the_next_sentence():
+    pcm = np.concatenate([tone(1.0), quiet(0.2), tone(1.0)])
+    words = words_of(("règles ?", 0.0, 1.0), ("Si", 1.2, 2.2))
+    out, mapping = pacing.pause_sentences(pcm, words, pacing.QUESTION_GAP)
+    assert len(out) / RATE == pytest.approx(2.2 + pacing.QUESTION_GAP - 0.2, abs=0.02)
+    assert mapping(1.2) - mapping(1.0) == pytest.approx(pacing.QUESTION_GAP, abs=0.02)
+
+
+def test_a_question_inside_the_video_keeps_the_normal_sentence_pause():
+    pcm = np.concatenate([tone(1.0), quiet(0.2), tone(1.0)])
+    words = words_of(("pourquoi ?", 0.0, 1.0), ("Parce", 1.2, 2.2))
+    out, _ = pacing.pause_sentences(pcm, words)
+    assert len(out) / RATE == pytest.approx(2.2 + pacing.SENTENCE_GAP - 0.2, abs=0.02)
+
+
+def test_the_question_pause_lasts_long_enough_to_think():
+    assert pacing.QUESTION_GAP >= 0.8
