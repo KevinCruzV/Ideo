@@ -14,7 +14,6 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-25] Ne choisis jamais un picto métaphorique qui ne montre pas l’objet exact (ex. satellite pour une galaxie de boutiques) : change de type de scène ou note-le dans wishes.
 - [2026-11-25] Quand l’accroche pose un mystère, la question au spectateur le relance au lieu de demander un simple avis : « Pour toi, qui a vraiment fait tomber X ? ».
 - [2026-11-25] Sur une scène « counter », ancre « label » peu après « to », jamais sur le tout dernier mot du say : sinon le nombre reste sans légende trop longtemps à l’écran.
-- [2026-11-25] Vidéo sur un programme ou un plan : finis la « question » en demandant quel autre programme le spectateur veut voir expliqué, pas une question d’opinion générale.
 - [2026-11-25] Chaque chip ou item affiché à l’écran doit être repris, même brièvement, dans le say : jamais un fait visible que la voix ne dit jamais.
 - [2026-11-26] Sur une scène versus, mets un dessin (picto) de chaque côté : jamais deux colonnes de texte seules.
 - [2026-11-26] Une comparaison entre enseignes ou produits s’annonce d’abord (« Comparons le même panier ») et reste nuancée : cite aussi des produits équivalents au prix proche.
@@ -32,4 +31,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] Ne dis jamais « l’auteur » ou « le présentateur » dans le say : un avis de la source se dit comme un pari ou une prédiction, sans dire qui le dit.
 - [2026-11-27] Dans un say, sujet et verbe en tête, complément après (« Ces podcasteurs lâchent Trump, lassés par ses tarifs ») : un long complément avant le sujet fait marquer une pause bizarre à la voix.
 - [2026-11-27] Une accroche-titre reste seule : n’y colle pas de question au spectateur après deux-points (« Les 7 niveaux de richesse », pas « … : où es-tu ? »).
-- [2026-11-27] La question de fin fait prendre parti au spectateur sur le cœur du sujet (« Et pour toi, quel est le meilleur candidat ? »), pas sur un point technique du système.
+- [2026-11-27] La question de fin fait prendre parti au spectateur sur le cœur du sujet (« Et pour toi, quel est le meilleur candidat ? »), même pour un programme, pas sur un point technique du système.
