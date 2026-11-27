@@ -23,6 +23,10 @@ BREATH_TAIL = 0.15
 BREATH_LEAD = 0.08
 BREATH_MIN_GAP = 0.25
 BREATH_FADE = 0.01
+BREATH_KEEP = 0.03
+BREATH_MIN_MUTE = 0.06
+BREATH_MARK_GAP = 0.10
+BREATH_WORD_GAP = 0.15
 FRAGMENT_DB = -60.0
 FRAGMENT_MAX = 0.25
 FRAGMENT_GAP = 0.20
@@ -229,16 +233,46 @@ def drop_tail_fragment(pcm: np.ndarray) -> np.ndarray:
     return out
 
 
+def _quiet_span(pcm: np.ndarray, a: int, b: int) -> tuple[int, int] | None:
+    start = _first_frame(pcm, a, b, lambda db: db < THRESHOLD_DB)
+    if start is None:
+        return None
+    onset = _first_frame(pcm, start, b, lambda db: db > THRESHOLD_DB)
+    stop = b if onset is None else onset
+    return (start, stop) if stop - start >= round(BREATH_MIN_MUTE * RATE) else None
+
+
+def _breath_gap(word: dict, after: dict) -> bool:
+    gap = after["s"] - word["e"]
+    after_mark = word["w"].rstrip(CLOSERS).endswith(PHRASE_MARKS)
+    return gap >= (BREATH_MARK_GAP if after_mark else BREATH_WORD_GAP)
+
+
 def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     if not words or not len(pcm):
         return pcm
-    tail, lead = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE)
-    spans = [(0, round(words[0]["s"] * RATE) - lead)]
-    for word, after in zip(words, words[1:]):
-        if after["s"] - word["e"] >= BREATH_MIN_GAP:
-            spans.append((round(word["e"] * RATE) + tail, round(after["s"] * RATE) - lead))
-    spans.append((round(words[-1]["e"] * RATE) + tail, len(pcm)))
+    tail, lead, keep = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE), round(BREATH_KEEP * RATE)
+    first, last = round(words[0]["s"] * RATE), round(words[-1]["e"] * RATE)
+    spans = [(0, first - lead), (last + tail, len(pcm))]
+    quiet = _quiet_span(pcm, 0, first - keep)
+    if quiet:
+        spans.append(quiet)
+    joined = _joined(words)
+    for word, after in zip(joined, joined[1:]):
+        end, start = round(word["e"] * RATE), round(after["s"] * RATE)
+        if start - end >= round(BREATH_MIN_GAP * RATE):
+            spans.append((end + tail, start - lead))
+        if _breath_gap(word, after):
+            quiet = _quiet_span(pcm, end + keep, start - keep)
+            if quiet:
+                spans.append(quiet)
+    merged: list[list[int]] = []
+    for a, b in sorted(span for span in spans if span[1] > span[0]):
+        if merged and a <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
     out = pcm.copy()
-    for a, b in spans:
+    for a, b in merged:
         _mute(pcm, out, a, b)
     return out
