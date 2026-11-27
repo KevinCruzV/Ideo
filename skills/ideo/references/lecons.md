@@ -32,3 +32,4 @@ Une règle par ligne, au format `- [AAAA-MM-JJ] règle`. Le skill relit ces leç
 - [2026-11-26] Ne dis jamais « l’auteur » ou « le présentateur » dans le say : un avis de la source se dit comme un pari ou une prédiction, sans dire qui le dit.
 - [2026-11-27] Dans un say, sujet et verbe en tête, complément après (« Ces podcasteurs lâchent Trump, lassés par ses tarifs ») : un long complément avant le sujet fait marquer une pause bizarre à la voix.
 - [2026-11-27] Une accroche-titre reste seule : n’y colle pas de question au spectateur après deux-points (« Les 7 niveaux de richesse », pas « … : où es-tu ? »).
+- [2026-11-27] La question de fin fait prendre parti au spectateur sur le cœur du sujet (« Et pour toi, quel est le meilleur candidat ? »), pas sur un point technique du système.
