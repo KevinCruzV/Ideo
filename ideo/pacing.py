@@ -258,7 +258,7 @@ def _breath_gap(word: dict, after: dict) -> bool:
     return gap >= (BREATH_MARK_GAP if after_mark else BREATH_WORD_GAP)
 
 
-def _trailing_breath(pcm: np.ndarray, start: int) -> tuple[int, int] | None:
+def _trailing_breath(pcm: np.ndarray, start: int) -> tuple[int, int, int] | None:
     start = max(0, start)
     levels = [_frame_db(pcm, at) for at in range(start, len(pcm) - FRAME + 1, FRAME)]
 
@@ -277,7 +277,7 @@ def _trailing_breath(pcm: np.ndarray, start: int) -> tuple[int, int] | None:
         return None
     if sum(db >= THRESHOLD_DB for db in levels[:first]) < round(TRAIL_SPEECH * RATE / FRAME):
         return None
-    return start + first * FRAME, len(pcm)
+    return start + first * FRAME, start + end * FRAME, len(pcm)
 
 
 def _voiced(pcm: np.ndarray, at: int) -> bool:
@@ -292,6 +292,13 @@ def _voiced(pcm: np.ndarray, at: int) -> bool:
     low, high = RATE // PITCH_MAX, RATE // PITCH_MIN
     overlap = (len(part) - np.arange(low, high)) / len(part)
     return float((auto[low:high] / overlap).max() / auto[0]) >= VOICED
+
+
+def _after_last_voiced(pcm: np.ndarray, a: int, b: int) -> int:
+    for at in range(b - FRAME, a - 1, -FRAME):
+        if _voiced(pcm, at):
+            return at + FRAME
+    return a
 
 
 def _after_speech(pcm: np.ndarray, a: int, b: int, loud: bool) -> int:
@@ -314,7 +321,8 @@ def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     spans.append((_after_speech(pcm, last + tail, len(pcm), True), len(pcm)))
     trailing = _trailing_breath(pcm, round(words[-1]["s"] * RATE))
     if trailing:
-        spans.append((_after_speech(pcm, *trailing, False), trailing[1]))
+        a, sound_end, b = trailing
+        spans.append((_after_last_voiced(pcm, a, sound_end), b))
     quiet = _quiet_span(pcm, 0, first - keep)
     if quiet:
         spans.append(quiet)
