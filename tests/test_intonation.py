@@ -121,6 +121,18 @@ def test_flat_open_question_gets_a_peak_and_keeps_its_last_word(tmp_path):
     assert abs(_semitones(_pitch(wav, last["s"] + 0.05, last["e"]), 150.0)) < 0.7
 
 
+def test_hook_open_question_also_gets_a_small_final_rise(tmp_path):
+    pytest.importorskip("parselmouth")
+    wav = tmp_path / "seg.wav"
+    _write(wav, _voice(lambda t: 150.0, 2.0))
+    words = _words("Pourquoi tu pars ?", start=0.1, step=0.4)
+    changes = intonation.adjust(wav, words, "fr", hook=True)
+    assert len(changes) == 1 and "pic" in changes[0] and "montée" in changes[0]
+    last = words[2]
+    assert _semitones(_pitch(wav, last["e"] - 0.06, last["e"]), 150.0) > 1.5
+    assert abs(_semitones(_pitch(wav, last["s"] + 0.05, last["e"] - 0.25), 150.0)) < 0.7
+
+
 def test_open_question_only_touches_the_question_word(tmp_path):
     pytest.importorskip("parselmouth")
     wav = tmp_path / "seg.wav"

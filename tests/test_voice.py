@@ -467,14 +467,15 @@ def test_paid_voice_retouches_questions_before_pacing(job_with_plan, fake_whispe
 
     seen = []
 
-    def fake_adjust(wav, words, lang):
-        seen.append((wav.name, lang, [w["w"] for w in words]))
+    def fake_adjust(wav, words, lang, hook=False):
+        seen.append((wav.name, lang, hook))
         return ["« Pourquoi ? » : pic ajouté sur « pourquoi »"] if wav.stem == "seg_00_hook" else []
 
     monkeypatch.setattr(intonation, "adjust", fake_adjust)
     voice.voice_part(job_with_plan, 1, backend=_PaidVoice(), pay=True)
-    names = [name for name, _, _ in seen]
-    assert "seg_00_hook.wav" in names
+    hooks = {name: hook for name, _, hook in seen}
+    assert hooks["seg_00_hook.wav"] is True
+    assert not any(hook for name, hook in hooks.items() if name != "seg_00_hook.wav")
     assert all(lang == "fr" for _, lang, _ in seen)
     log = (job_with_plan / "logs" / "voice-01.log").read_text(encoding="utf-8")
     assert "seg_00_hook intonation retouchée" in log
@@ -483,7 +484,7 @@ def test_paid_voice_retouches_questions_before_pacing(job_with_plan, fake_whispe
 def test_paid_voice_goes_on_without_praat(job_with_plan, fake_whisper, monkeypatch):
     from ideo import intonation
 
-    def missing(wav, words, lang):
+    def missing(wav, words, lang, hook=False):
         raise ImportError("parselmouth")
 
     monkeypatch.setattr(intonation, "adjust", missing)

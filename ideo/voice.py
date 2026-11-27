@@ -495,7 +495,7 @@ def _join_wavs(paths: list[Path], target: Path) -> list[float]:
 
 def _retouch(wav: Path, words: list[dict], lang: str, name: str, log: Path) -> None:
     try:
-        changes = intonation.adjust(wav, words, lang)
+        changes = intonation.adjust(wav, words, lang, hook=name == HOOK)
     except ImportError:
         _log_line(log, f"voix : {name} intonation non retouchée (praat-parselmouth absent)")
         return

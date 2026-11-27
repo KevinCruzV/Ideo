@@ -24,6 +24,8 @@ RISE_MIN = 5.0
 MAX_SHIFT = 6.0
 MIN_SHIFT = 1.5
 RISE_SPAN = 0.25
+HOOK_RISE = 3.0
+HOOK_RISE_SPAN = 0.2
 RAMP = 0.05
 OUTLIER = 5.0
 SPLICE = 0.08
@@ -94,35 +96,48 @@ def _median(values: np.ndarray) -> float | None:
     return float(np.median(values)) if len(values) >= 3 else None
 
 
-def _plan(kind_: str, qi: int | None, span: list[dict], times: np.ndarray, st: np.ndarray):
+def _final(span: list[dict], inside) -> float | None:
     last = span[-1]
-    inside = lambda a, b: st[(times >= a) & (times <= b)]
-    if kind_ == "ouverte":
-        if qi == len(span) - 1:
-            return None
-        word = span[qi]
-        peak = _median(inside(word["s"], word["e"]))
-        if peak is None or peak >= PEAK_MIN:
-            return None
-        shift = min(PEAK_GOAL - peak, MAX_SHIFT)
-        if shift < MIN_SHIFT:
-            return None
-        follow = span[qi + 1]
-        fade_end = min((follow["s"] + follow["e"]) / 2, last["s"])
-        bump = [(word["s"] - RAMP, 0.0), (word["s"] + 0.02, shift), (word["e"], shift), (max(fade_end, word["e"] + 0.02), 0.0)]
-        region = (word["s"] - SPLICE, max(fade_end, word["e"] + 0.02) + SPLICE)
-        return bump, region, f"pic ajouté sur « {_clean(word['w'])} » (+{shift:.1f} demi-tons)"
     tail = inside(last["s"], last["e"] + 0.1)
-    final = _median(tail[-5:]) if len(tail) >= 3 else None
-    if final is None or final >= RISE_MIN:
+    return _median(tail[-5:]) if len(tail) >= 3 else None
+
+
+def _peak(qi: int, span: list[dict], inside):
+    word, follow, last = span[qi], span[qi + 1], span[-1]
+    peak = _median(inside(word["s"], word["e"]))
+    if peak is None or peak >= PEAK_MIN:
         return None
-    shift = min(RISE_GOAL - final, MAX_SHIFT)
+    shift = min(PEAK_GOAL - peak, MAX_SHIFT)
     if shift < MIN_SHIFT:
         return None
-    rise_from = max(last["s"] + (last["e"] - last["s"]) * 0.35, last["e"] - RISE_SPAN)
-    bump = [(rise_from, 0.0), (last["e"], shift), (last["e"] + 0.1, shift)]
-    region = (rise_from - SPLICE, last["e"] + 0.1 + SPLICE)
-    return bump, region, f"montée ajoutée à la fin (+{shift:.1f} demi-tons)"
+    fade_end = max(min((follow["s"] + follow["e"]) / 2, last["s"]), word["e"] + 0.02)
+    bump = [(word["s"] - RAMP, 0.0), (word["s"] + 0.02, shift), (word["e"], shift), (fade_end, 0.0)]
+    return bump, (word["s"] - SPLICE, fade_end + SPLICE), f"pic ajouté sur « {_clean(word['w'])} » (+{shift:.1f} demi-tons)"
+
+
+def _rise(span: list[dict], shift: float, start: float):
+    last = span[-1]
+    bump = [(start, 0.0), (last["e"], shift), (last["e"] + 0.1, shift)]
+    return bump, (start - SPLICE, last["e"] + 0.1 + SPLICE), f"montée ajoutée à la fin (+{shift:.1f} demi-tons)"
+
+
+def _plan(kind_: str, qi: int | None, span: list[dict], times: np.ndarray, st: np.ndarray, hook: bool) -> list:
+    last = span[-1]
+    inside = lambda a, b: st[(times >= a) & (times <= b)]
+    final = _final(span, inside)
+    if kind_ == "ouverte":
+        if qi == len(span) - 1:
+            return []
+        pieces = [piece for piece in [_peak(qi, span, inside)] if piece]
+        if hook and final is not None and final < RISE_MIN:
+            pieces.append(_rise(span, HOOK_RISE, last["e"] - HOOK_RISE_SPAN))
+        return pieces
+    if final is None or final >= RISE_MIN:
+        return []
+    shift = min(RISE_GOAL - final, MAX_SHIFT)
+    if shift < MIN_SHIFT:
+        return []
+    return [_rise(span, shift, max(last["s"] + (last["e"] - last["s"]) * 0.35, last["e"] - RISE_SPAN))]
 
 
 def _outliers(st: np.ndarray) -> np.ndarray:
@@ -131,7 +146,7 @@ def _outliers(st: np.ndarray) -> np.ndarray:
     return np.abs(st - local) > OUTLIER
 
 
-def adjust(wav: Path, words: list[dict], lang: str) -> list[str]:
+def adjust(wav: Path, words: list[dict], lang: str, hook: bool = False) -> list[str]:
     found = []
     for a, b in questions(words):
         span = words[a:b + 1]
@@ -158,15 +173,15 @@ def adjust(wav: Path, words: list[dict], lang: str) -> list[str]:
         if mask.sum() < 5:
             continue
         st = 12 * np.log2(values / np.median(values[mask]))
-        plan = _plan(kind_, qi, span, times, st)
-        if not plan:
+        pieces = _plan(kind_, qi, span, times, st, hook)
+        if not pieces:
             continue
-        bump, region, label = plan
-        xs, ys = zip(*bump)
-        shift += np.interp(times, xs, ys, left=0.0, right=0.0)
+        for bump, region, _ in pieces:
+            xs, ys = zip(*bump)
+            shift += np.interp(times, xs, ys, left=0.0, right=0.0)
+            regions.append(region)
         text = " ".join(x["w"] for x in span).replace("\u00a0", " ")
-        changes.append(f"« {text} » : {label}")
-        regions.append(region)
+        changes.append(f"« {text} » : {', '.join(label for _, _, label in pieces)}")
     if not changes:
         return []
     keep = ~_outliers(12 * np.log2(values))
