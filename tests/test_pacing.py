@@ -122,14 +122,27 @@ def breath(seconds):
 
 
 def test_a_breath_between_two_sentences_is_muted_but_the_word_tails_stay():
-    pcm = np.concatenate([tone(1.0), breath(0.6), tone(1.0)])
+    pcm = np.concatenate([tone(1.1), breath(0.5), tone(1.0)])
     words = words_of(("fin.", 0.0, 1.0), ("Suite", 1.6, 2.6))
     out = pacing.gate_breaths(pcm, words)
     assert len(out) == len(pcm)
-    assert np.max(np.abs(out[int((1.0 + pacing.BREATH_TAIL + 0.03) * RATE):int((1.6 - pacing.BREATH_LEAD - 0.03) * RATE)])) == 0
-    assert np.array_equal(out[:int(1.0 * RATE)], pcm[:int(1.0 * RATE)])
+    assert np.max(np.abs(out[int(1.13 * RATE):int((1.6 - pacing.BREATH_KEEP - 0.01) * RATE)])) == 0
+    assert np.array_equal(out[:int(1.1 * RATE)], pcm[:int(1.1 * RATE)])
     assert np.array_equal(out[int(1.6 * RATE):], pcm[int(1.6 * RATE):])
-    assert np.any(out[int(1.0 * RATE):int((1.0 + pacing.BREATH_TAIL - 0.03) * RATE)] != 0)
+
+
+def test_a_breath_after_a_comma_is_muted_even_in_a_short_gap():
+    pcm = np.concatenate([tone(1.0), breath(0.2), tone(1.0)])
+    words = words_of(("suivi,", 0.0, 1.0), ("dénonce", 1.2, 2.2))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.max(np.abs(out[int(1.05 * RATE):int(1.16 * RATE)])) == 0
+    assert np.array_equal(out[int(1.2 * RATE):], pcm[int(1.2 * RATE):])
+
+
+def test_speech_the_transcript_puts_in_a_gap_is_never_muted():
+    pcm = tone(1.6)
+    words = words_of(("trois", 0.0, 0.5), ("heures", 0.7, 1.6))
+    assert np.array_equal(pacing.gate_breaths(pcm, words), pcm)
 
 
 def test_a_breath_before_the_first_word_and_after_the_last_is_muted():
