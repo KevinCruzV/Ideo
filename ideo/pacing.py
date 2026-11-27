@@ -12,6 +12,7 @@ LONG_PAUSE = 0.60
 PAUSE = 0.50
 SENTENCE_GAP = 0.45
 COLON_GAP = 0.35
+QUESTION_GAP = 0.80
 MID_MAX = 0.30
 MID_KEEP = 0.20
 MID_SLACK = 0.10
@@ -27,6 +28,10 @@ BREATH_KEEP = 0.03
 BREATH_MIN_MUTE = 0.06
 BREATH_MARK_GAP = 0.10
 BREATH_WORD_GAP = 0.15
+BREATH_FLOOR_DB = -52.0
+TRAIL_MIN = 0.20
+TRAIL_SPEECH = 0.10
+FRAGMENT_ONSET_DB = -40.0
 FRAGMENT_DB = -60.0
 FRAGMENT_MAX = 0.25
 FRAGMENT_GAP = 0.20
@@ -173,13 +178,15 @@ def _mute(source: np.ndarray, out: np.ndarray, a: int, b: int) -> None:
         out[b - fade:b] = (source[b - fade:b] * np.linspace(0.0, 1.0, fade)).astype(out.dtype)
 
 
-def pause_sentences(pcm: np.ndarray, words: list[dict]) -> tuple[np.ndarray, Callable[[float], float]]:
+def pause_sentences(pcm: np.ndarray, words: list[dict], question_gap: float | None = None) -> tuple[np.ndarray, Callable[[float], float]]:
     inserts: list[tuple[int, int]] = []
     muted = pcm.copy()
     joined = _joined(words)
     for word, after in zip(joined, joined[1:]):
         gap = after["s"] - word["e"]
-        if _ends_sentence(word["w"]):
+        if question_gap and word["w"].rstrip(CLOSERS).endswith("?"):
+            wanted = question_gap
+        elif _ends_sentence(word["w"]):
             wanted = SENTENCE_GAP
         elif _colon(word["w"]):
             wanted = COLON_GAP
@@ -248,12 +255,37 @@ def _breath_gap(word: dict, after: dict) -> bool:
     return gap >= (BREATH_MARK_GAP if after_mark else BREATH_WORD_GAP)
 
 
+def _trailing_breath(pcm: np.ndarray, start: int) -> tuple[int, int] | None:
+    start = max(0, start)
+    levels = [_frame_db(pcm, at) for at in range(start, len(pcm) - FRAME + 1, FRAME)]
+
+    def back(i: int, test: Callable[[float], bool]) -> int:
+        while i > 0 and test(levels[i - 1]):
+            i -= 1
+        return i
+
+    end = back(len(levels), lambda db: db <= BREATH_FLOOR_DB)
+    onset = back(end, lambda db: db >= FRAGMENT_ONSET_DB)
+    dip = back(onset, lambda db: db <= BREATH_FLOOR_DB)
+    if 0 < end - onset <= round(FRAGMENT_MAX * RATE / FRAME) and dip < onset:
+        end = dip
+    first = back(end, lambda db: BREATH_FLOOR_DB < db < THRESHOLD_DB)
+    if end - first < round(TRAIL_MIN * RATE / FRAME):
+        return None
+    if sum(db >= THRESHOLD_DB for db in levels[:first]) < round(TRAIL_SPEECH * RATE / FRAME):
+        return None
+    return start + first * FRAME, len(pcm)
+
+
 def gate_breaths(pcm: np.ndarray, words: list[dict]) -> np.ndarray:
     if not words or not len(pcm):
         return pcm
     tail, lead, keep = round(BREATH_TAIL * RATE), round(BREATH_LEAD * RATE), round(BREATH_KEEP * RATE)
     first, last = round(words[0]["s"] * RATE), round(words[-1]["e"] * RATE)
     spans = [(0, first - lead), (last + tail, len(pcm))]
+    trailing = _trailing_breath(pcm, round(words[-1]["s"] * RATE))
+    if trailing:
+        spans.append(trailing)
     quiet = _quiet_span(pcm, 0, first - keep)
     if quiet:
         spans.append(quiet)

@@ -210,7 +210,7 @@ def finish_segment(wav: Path, text: str, heard: list[dict], spoken: str | None =
     tight, mapping = pacing.tighten(pcm, marked)
     heard = pacing.remap(heard, mapping)
     marked = pacing.remap(marked, mapping)
-    tight, spread = pacing.pause_sentences(tight, marked)
+    tight, spread = pacing.pause_sentences(tight, marked, pacing.QUESTION_GAP if wav.stem == OUTRO else None)
     heard = pacing.remap(heard, spread)
     if len(tight) != len(pcm):
         with wave.open(str(wav), "wb") as w:
@@ -471,7 +471,7 @@ def _paid_piece(backend, name: str, text: str, lang: str, wav: Path, before, aft
     return words, score
 
 
-JOIN_PAUSE = 0.35
+JOIN_PAUSE = pacing.QUESTION_GAP
 
 
 def _join_wavs(paths: list[Path], target: Path) -> list[float]:
