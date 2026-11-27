@@ -135,6 +135,7 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
   Entretien du 2026-11-27 : cause trouvée dans pacing.gate_breaths, qui ne coupait que les respirations des écarts de 0,25 s ou plus et gardait 80 ms avant chaque mot. Corrigé par la PR 42 : après une ponctuation (écart d'au moins 0,10 s) ou entre deux mots (au moins 0,15 s), tout ce qui est sous -32 dB est coupé jusqu'au début de la parole, 30 ms gardées autour des mots, jamais une image de parole. Sur ce job, les souffles audibles dans les blancs passent de 16 à 2 (les 2 restants sont de la parole). Les voix déjà générées sont corrigées à l'assemblage (produce).
 - [x] [2026-11-27] (pmtWyMGtxvE) Voix ElevenLabs : pause trop marquée entre « ces podcasteurs » et « lâchent Trump » (mot étiré par la voix, pas par le montage).
   Traité le 2026-11-27 : la cause est la construction de la phrase (long complément avant le verbe), pas le montage. Réglé par la leçon du 2026-11-27 dans skills/ideo/references/lecons.md (sujet et verbe en tête). Ne pas modifier pour ce retour les pauses ni les souffles (pacing, PR 42 et 44), ni la retouche des questions (intonation.py, PR 45).
+- [ ] [2026-11-27] (nBKe3uqJ3aA) La voix Edge fr-FR-RemyMultilingualNeural échoue souvent (No audio was received) et produce s’arrête sans réessayer ; le brouillon est passé en fr-FR-HenriNeural via config.json en attendant.
 
 ## Défauts détectés
 
@@ -199,3 +200,5 @@ Une entrée par ligne : `- [ ]` à traiter, `- [x]` traitée. Les défauts signa
 - [x] hémicycle de l'Assemblée
 - [x] agence de notation
 - [x] Conseil constitutionnel
+- [ ] voiture en panne
+- [ ] sablier
