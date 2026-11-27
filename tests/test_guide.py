@@ -152,29 +152,27 @@ def test_guide_and_skill_document_mood_and_photo():
     assert "par acte" in guide and "par acte" in skill
 
 
-def test_skill_writing_guard_names_only_signs_that_check_really_prints():
-    from ideo import slop
-
+def test_skill_runs_on_opus_without_sub_agents():
     skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
-    guard = skill.split("Garde d'écriture", 1)[1].split("Relecture :", 1)[0]
-    labels = [label for label, _ in slop.MESSAGES.values()]
-    assert all(label in guard for label in labels)
-    plan_check_source = (REPO / "ideo" / "plan_check.py").read_text(encoding="utf-8")
-    slop_source = (REPO / "ideo" / "slop.py").read_text(encoding="utf-8")
-    for sign in ("recopie la vidéo d'origine mot pour mot", "reprend des suites de {COPY_GRAM} mots", "tiret cadratin"):
-        assert sign in plan_check_source
-    assert "reprend des suites de 5 mots" in guard and "recopie la vidéo d'origine mot pour mot" in guard
-    assert "formule « ce n'est pas X" in guard and "formule « ce n'est pas X, c'est Y »" in slop_source
-    assert "trois phrases de trois mots" in guard and "trois phrases de trois mots ou moins" in slop_source
-    assert "modèle `opus`" in guard and "Un seul sous-agent Opus par plan" in guard
+    assert "\nmodel: opus\n" in skill
+    assert "sans sous-agent" in skill
+    assert "Sonnet" not in skill and "modèle `opus`" not in skill
 
 
-def test_skill_launches_the_entretien_right_after_a_bug_is_noted():
+def test_skill_never_launches_the_entretien_by_itself():
     skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
+    step = skill.split("8. Entretien", 1)[1].split("## Retours de l'utilisateur", 1)[0]
+    assert "ne se lance jamais tout seul" in step and "Ne lance rien" in step
     feedback = skill.split("## Retours de l'utilisateur", 1)[1].split("## \"Version finale\"", 1)[0]
-    bug_rule = feedback.split("learn --bug", 1)[1].split("3. Remplace", 1)[0]
-    assert "lance l'entretien tout de suite, comme à l'étape 8" in bug_rule
-    assert "un seul entretien" in bug_rule and "entretien_auto" in bug_rule
+    assert "Ne lance pas l'entretien toi-même" in feedback
+
+
+def test_skill_names_the_copy_signs_that_check_really_prints():
+    skill = (common.REPO_ROOT / "skills" / "ideo" / "SKILL.md").read_text(encoding="utf-8")
+    plan_check_source = (REPO / "ideo" / "plan_check.py").read_text(encoding="utf-8")
+    for sign in ("recopie la vidéo d'origine mot pour mot", "reprend des suites de {COPY_GRAM} mots"):
+        assert sign in plan_check_source
+    assert "recopie la vidéo d'origine mot pour mot" in skill and "reprend des suites de 5 mots" in skill
 
 
 def test_collages_respectent_l_interdiction_des_faits_divers():
