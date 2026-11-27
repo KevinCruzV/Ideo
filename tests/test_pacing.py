@@ -338,3 +338,10 @@ def test_speech_after_the_end_the_transcript_gives_the_last_word_is_kept():
     pcm = np.concatenate([tone(1.0), tone(0.6)])
     words = words_of(("prochaine !", 0.0, 0.7))
     assert np.array_equal(pacing.gate_breaths(pcm, words), pcm)
+
+
+def test_a_soft_syllable_after_an_unvoiced_consonant_in_the_last_word_is_kept():
+    pcm = np.concatenate([tone(1.0), breath(0.08), tone(0.25, 300), quiet(0.5)])
+    words = words_of(("Mélenchon.", 0.0, 1.33))
+    out = pacing.gate_breaths(pcm, words)
+    assert np.array_equal(out[:int(1.31 * RATE)], pcm[:int(1.31 * RATE)])
