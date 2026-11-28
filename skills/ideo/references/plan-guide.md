@@ -69,7 +69,7 @@ Dans `hook`, `say` et les textes à l'écran :
 - Pas de majuscules pour crier dans `say`, pas de guillemets pour souligner.
 - Un sujet qui agit : « les chercheurs ont mesuré », pas « il a été montré ».
 
-## 5. Les 16 types de scène
+## 5. Les 17 types de scène
 
 Recopie exactement les noms de props et de `el`. * = obligatoire ; omets une prop facultative si la source ne donne rien, n'invente pas. `counter.to`, `counter.from` et `shape-diagram.values` : nombres sans guillemets. Textes à l'écran : chiffres permis, plafond espaces compris entre crochets ([28 caractères] = 28 au plus). Dans `el`, N devient un numéro : `chips.0`, jamais `chips.N`.
 
@@ -91,6 +91,7 @@ Recopie exactement les noms de props et de `el`. * = obligatoire ; omets une pro
 | `map` | où ça se passe : pays, région, route | `focus`* = `world`, `europe`, `africa`, `asia`, `north-america`, `south-america`, `middle-east`, `oceania` ou `arctic` ; `places`* : `{code, label}` (6 max), `code` = code pays à deux lettres, `label` [24 caractères] ; `route` : 2 à 6 codes reliés dans l'ordre ; `kicker` | `places.0` à `places.5`, `route` |
 | `body` | le corps : posture, geste, organe | `pose`* = `standing`, `sitting`, `walking`, `running`, `lying-back`, `lying-starfish`, `lying-side-left`, `lying-side-right`, `lying-fetal` ou `lying-stomach` ; `setting` = `none`, `bed`, `chair`, `desk` ou `outdoor` ; `marks` : `{part, label}` (4 max), `part` = `head`, `brain`, `neck`, `throat`, `shoulders`, `chest`, `heart`, `lungs`, `stomach`, `back`, `spine`, `hips`, `arms`, `hands`, `knees`, `legs` ou `feet`, `label` [28 caractères] ; `tone` = `good` (bleu), `bad` (rouge) ou `neutral` ; `kicker` | `marks.0` à `marks.3` |
 | `artwork` | œuvre d'art citée (tableau, dessin, sculpture) ou logo d'une marque citée | `title`* [48 caractères] : titre ou marque ; `artist` [40 caractères] (vide pour un logo) ; `kicker` | `title`, `artist` |
+| `image` | une vraie photo en grand : lieu, objet, animal, machine, événement | `query`* : la recherche en anglais lancée avec `ideo image`, recopiée exactement ; `caption` [40 caractères] : légende courte ; `kicker` | `caption` |
 
 - `kicker` [28 caractères], tous types : étiquette visible dès la première image : date, lieu ou nom de l'acte ("1991", "Irak, 2003", "Acte 2 : les BRICS").
 - `picto` (`key-title`, `fact-chips`, `stack-list`, `counter`, `timeline`, `stamp`, `quote`, cellules d'`icon-grid`) : dessin visible dès la première image, qui montre la chose dont parle la scène, pas un symbole vague. Aucun ne convient : pas de `picto` approximatif, note le manque dans `"wishes"` (premier niveau, à côté de `"parts"`, 0 à 5 textes [40 caractères], par exemple `"wishes": ["carte du monde"]`).
@@ -105,6 +106,8 @@ Recopie exactement les noms de props et de `el`. * = obligatoire ; omets une pro
 Exemple, un savant aux cheveux blancs en bataille : `"hair": "wild", "hair_color": "white", "facial": "moustache", "outfit": "lab-coat"`. Biographie ou histoire : la personne principale a une seule `person-card` (pas une par acte) ; ne répète ni son nom ni sa photo, garde la même apparence si une autre carte la montre.
 
 Collages : personne historique connue (savant, chef d'État, artiste), jamais dans un fait divers ni pour une personne privée : `ideo photo JOB "<nom>"` une fois par personne avant d'écrire. Si la réponse n'est pas « aucune photo libre », `"photo": true` sur ses cartes (`name` = son nom), sinon portrait en papier. Œuvre citée : `ideo photo JOB "<titre>"`, scène `artwork` seulement si l'image est trouvée, ce titre dans `title`. Marque citée : `ideo photo JOB "<marque>"`, scène `artwork` avec son nom dans `title`, sans `artist`.
+
+Photos : un lieu, un objet, un animal, une machine ou un événement que le spectateur gagne à voir en vrai, ou une chose qu'aucun `picto` ne montre (au lieu de `"wishes"`). Avant d'écrire, une seule commande pour toutes les recherches : `ideo image JOB "eiffel tower" "oil rig"` (2 à 4 mots anglais concrets par recherche). Chaque ligne `OK image : « <recherche> » : aucune image` : pas de scène `image` pour elle. Sinon, scène `image` avec cette recherche dans `query`. Au plus 1 scène sur 4, jamais deux de suite, jamais pour montrer une personne (c'est `person-card`).
 
 Drapeaux : partout où `picto` est accepté, `flag:` + code pays à deux lettres en minuscules, pour tous les pays (`flag:fr`, `flag:us`, `flag:iq`). Aussi `flag:eu` (Union européenne), `flag:un` (ONU), `flag:su` (Union soviétique), et pour une région `flag:gb-sct` (Écosse), `flag:gb-eng` (Angleterre), `flag:gb-wls` (pays de Galles), `flag:gb-nir` (Irlande du Nord), `flag:es-ct` (Catalogne), jamais le drapeau du voisin. Jamais de drapeau dans `wishes`. Pays nommé à l'écran : son drapeau. `say` qui cite trois pays ou plus : `icon-grid`, un drapeau et un nom par cellule. `versus` entre deux pays : un drapeau de chaque côté.
 
@@ -140,6 +143,7 @@ Un exemple par type :
 {"type": "body", "say": "Quand tu dors, ton cerveau trie ce que tu as appris. Allongé sur le dos, ta respiration ralentit et ton cœur aussi.", "props": {"kicker": "Pendant la nuit", "pose": "lying-back", "setting": "bed", "tone": "good", "marks": [{"part": "brain", "label": "Il trie les souvenirs"}, {"part": "heart", "label": "Il ralentit"}]}, "items": [{"el": "marks.0", "on": "cerveau"}, {"el": "marks.1", "on": "cœur"}], "src": "5:20"}
 {"type": "versus", "say": "D'un côté, relire dix fois la même page. De l'autre, fermer le livre et se poser des questions.", "props": {"kicker": "Deux méthodes", "left": "Relire", "left_picto": "book", "right": "Se tester", "right_picto": "brain"}, "items": [{"el": "left", "on": "relire"}, {"el": "right", "on": "questions"}], "src": "5:58"}
 {"type": "artwork", "say": "En 1889, il peint La nuit étoilée depuis la fenêtre de l'asile où il vit.", "props": {"kicker": "1889", "title": "La nuit étoilée", "artist": "Vincent van Gogh"}, "items": [{"el": "title", "on": "peint"}, {"el": "artist", "on": "fenêtre"}], "src": "4:20"}
+{"type": "image", "say": "La plateforme pompe le pétrole à trois cents mètres sous la mer du Nord.", "props": {"kicker": "Mer du Nord", "query": "oil rig", "caption": "Une plateforme pétrolière"}, "items": [{"el": "caption", "on": "pompe"}], "src": "4:40"}
 ```
 
 ## 6. `items[].on` : quand un élément apparaît

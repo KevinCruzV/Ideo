@@ -29,6 +29,7 @@ const CAPS: Record<string, Cap> = {
   "person-card.role": { cap: 100, fit: { maxWidth: BOX_W - 40, maxLines: 4, max: 62, min: 44 } },
   "artwork.title": { cap: 48, fit: { maxWidth: BOX_W, maxLines: 2, max: 96, min: 56 } },
   "artwork.artist": { cap: 40, fit: { maxWidth: BOX_W - 40, maxLines: 2, max: 60, min: 44 } },
+  "image.caption": { cap: 40, fit: { maxWidth: BOX_W, maxLines: 2, max: 80, min: 48 } },
   "counter.label": { cap: 60, fit: { maxWidth: BOX_W, maxLines: 3, max: 82, min: 56 } },
   "timeline.marks.at": { cap: 12, fit: { maxWidth: LABEL_W, maxLines: 1, max: 56, min: 44 } },
   "timeline.marks.label": { cap: 48, fit: { maxWidth: LABEL_W, maxLines: 2, max: 72, min: 48 } },

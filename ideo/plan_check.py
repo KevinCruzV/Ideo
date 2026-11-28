@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from ideo import config, photo, scene_schema, speed, voice
+from ideo import config, openverse, photo, scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, anchor_text, closest_passage, copied_tokens, find_span, normalize, source_grams
 
 SCENE_TYPES = frozenset({
     "key-title", "person-card", "fact-chips", "stack-list", "counter", "timeline",
-    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body", "artwork",
+    "icon-grid", "stamp", "quote", "object-state", "shape-diagram", "mascot", "versus", "map", "body", "artwork", "image",
 })
 MAX_PARTS = 8
 MAX_SCENES = 80
@@ -213,6 +213,15 @@ def _artwork_errors(props: dict, where: str, ctx: dict) -> list[str]:
     return []
 
 
+def _image_errors(props: dict, where: str, ctx: dict) -> list[str]:
+    query = props.get("query")
+    if not isinstance(query, str) or openverse.stored(ctx.get("photos") or [], query) is None:
+        return [f"{where} : une scène « image » demande une image trouvée pour « {query} » : lance « ideo image <job> \"{query}\" » "
+                "et garde la scène seulement si la réponse n'est pas « aucune image », avec cette recherche exacte dans « query ». "
+                "Sinon remplace-la par une autre scène."]
+    return []
+
+
 def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: dict) -> None:
     if not isinstance(scene, dict):
         errors.append(f"{where} : la scène doit être un objet JSON avec « type », « say » et « props ».")
@@ -239,6 +248,8 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
         errors.extend(_photo_errors(props, where, ctx))
     if kind == "artwork" and known:
         errors.extend(_artwork_errors(props, where, ctx))
+    if kind == "image" and known:
+        errors.extend(_image_errors(props, where, ctx))
     quoted = ("props.text",) if kind == "quote" else ()
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
     _check_copy(say, where, "say", ctx, errors, part_state)

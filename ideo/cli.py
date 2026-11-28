@@ -4,13 +4,13 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
+from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, openverse, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] [--payer] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
-         "| photo <job> \"<nom de la personne>\" | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"] "
+         "| photo <job> \"<nom de la personne>\" | image <job> \"<recherche en anglais>\" [\"<autre recherche>\" ...] | photo-manuel <job> \"<nom>\" <fichier> \"<source>\" | musique <job> <choix> | musique <job> --dernier | musique --liste | musique-lien \"<type>\" | voix-liste | voix-test [\"phrase\"] | setup-voix | finale <job> | entretien [--fait \"<résumé>\" | --echec \"<raison>\"] "
          "| rythme <job ou fichier vidéo> [--seuil 0.3] | suivi <job>")
-COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale", "rythme", "suivi")
+COMMANDS = ("prepare", "cost", "check", "produce", "qc", "status", "deepen", "learn", "entretien", "photo", "image", "photo-manuel", "setup-voix", "musique", "voix-liste", "voix-test", "musique-lien", "finale", "rythme", "suivi")
 
 
 class UsageError(Exception):
@@ -90,6 +90,10 @@ def parse(argv: list[str]) -> tuple[str, str, int | None, dict]:
         if len(rest) < 2 or rest[0].startswith("--"):
             raise UsageError(USAGE)
         return cmd, rest[0], None, {"name": " ".join(rest[1:])}
+    if cmd == "image":
+        if len(rest) < 2 or rest[0].startswith("--"):
+            raise UsageError(USAGE)
+        return cmd, rest[0], None, {"queries": rest[1:]}
     if cmd == "photo-manuel":
         if len(rest) != 4:
             raise UsageError(USAGE)
@@ -165,6 +169,8 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
     job = pipeline.resolve_job(arg)
     if cmd == "photo":
         return [photo.run(job, opts["name"])], 0
+    if cmd == "image":
+        return openverse.run(job, opts["queries"]), 0
     if cmd == "photo-manuel":
         return [photo.add_manual(job, opts["name"], Path(opts["file"]), opts["source"])], 0
     if cmd == "finale":

@@ -2,7 +2,7 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "durationInFrames": 2370,
+  "durationInFrames": 2470,
   "lang": "fr",
   "audio": null,
   "watermark": "Ideo",
@@ -673,9 +673,29 @@
       "type": "artwork"
     },
     {
-      "kind": "outro",
+      "kind": "scene",
       "from": 2270,
       "to": 2370,
+      "props": {
+        "query": "eiffel tower",
+        "caption": "La tour Eiffel en 1889",
+        "kicker": "Paris"
+      },
+      "items": [
+        {
+          "el": "caption",
+          "at": 2276
+        }
+      ],
+      "beats": [
+        2320
+      ],
+      "type": "image"
+    },
+    {
+      "kind": "outro",
+      "from": 2370,
+      "to": 2470,
       "props": {
         "text": "Abonne-toi pour la prochaine vidéo"
       },

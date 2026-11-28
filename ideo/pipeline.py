@@ -15,7 +15,7 @@ ASSEMBLY_FILES = ("part.wav", "offsets.json", "timeline.json", "music.json")
 VOICE_FILES = ("voice-info.json", "voice-quality.json", "voice-prosody.json", "voice-hook.json")
 PART_FILES = ASSEMBLY_FILES + VOICE_FILES
 SCORE_FILES = ("voice-quality.json", "voice-prosody.json")
-RENDER_CODE = ("align", "assemble", "countries", "i18n", "music", "pacing", "photo", "render", "scene_schema", "sfx",
+RENDER_CODE = ("align", "assemble", "countries", "i18n", "music", "openverse", "pacing", "photo", "render", "scene_schema", "sfx",
                "timeline", "transitions")
 VOICE_CODE = ("align", "eleven", "fidelity", "hookvoice", "lexicon", "numbers", "pacing", "prosody", "textmatch", "voice")
 REPO = Path(__file__).resolve().parent.parent

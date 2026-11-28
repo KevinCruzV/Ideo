@@ -8,7 +8,7 @@ import shutil
 
 import numpy as np
 
-from ideo import align, plan_check, common, i18n, photo, textmatch, voice
+from ideo import align, plan_check, common, i18n, openverse, photo, textmatch, voice
 
 FPS = 30
 WIDTH = 1080
@@ -201,6 +201,9 @@ def _stage_photo(job: Path, out_dir: Path) -> list[dict]:
 
 def _with_photo(scene: dict, staged: list[dict]) -> dict:
     props = scene.get("props", {})
+    if scene.get("type") == "image":
+        found = openverse.stored(staged, props.get("query", "")) if isinstance(props.get("query"), str) else None
+        return {**scene, "props": {**props, "image": found["image"]}} if found else scene
     if scene.get("type") == "artwork":
         title = props.get("title")
         found = photo.match(photo.of_kind(staged, (photo.ARTWORK, photo.LOGO)), title) if isinstance(title, str) else None

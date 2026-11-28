@@ -25,6 +25,7 @@ BRANDS = frozenset({"Q4830453", "Q783794", "Q431289", "Q891723", "Q6881511", "Q4
 PERSON = "person"
 ARTWORK = "artwork"
 LOGO = "logo"
+IMAGE = "image"
 NONE = "OK photo : aucune photo libre"
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 FREE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by([ -]sa)?[ -]\d(\.\d)?\b)", re.IGNORECASE)
@@ -224,7 +225,7 @@ def _dark(job: Path) -> bool:
 
 def _forget(job: Path, slug: str) -> None:
     for old in all_stored(job):
-        if _slug(old.get("person", "")) == slug:
+        if old.get("kind") != IMAGE and _slug(old.get("person", "")) == slug:
             (job / old["image"]).unlink(missing_ok=True)
             (job / old["image"]).with_suffix(".json").unlink(missing_ok=True)
 

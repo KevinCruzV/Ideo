@@ -19,6 +19,7 @@ import { Versus } from "./Versus";
 import { MapScene } from "./MapScene";
 import { BodyScene } from "./BodyScene";
 import { Artwork } from "./Artwork";
+import { ImageScene } from "./ImageScene";
 
 export type SceneType =
   | "hook"
@@ -38,7 +39,8 @@ export type SceneType =
   | "versus"
   | "map"
   | "body"
-  | "artwork";
+  | "artwork"
+  | "image";
 
 export type SceneProps = {
   props: Record<string, unknown>;
@@ -66,6 +68,7 @@ export const SCENES: Record<SceneType, React.FC<SceneProps>> = {
   map: MapScene,
   body: BodyScene,
   artwork: Artwork,
+  image: ImageScene,
 };
 
 export const sceneKey = (segment: Segment): string =>
