@@ -17,6 +17,7 @@ def isolated_home(tmp_path_factory, monkeypatch):
     from ideo import config
 
     monkeypatch.setenv("IDEO_HOME", str(tmp_path_factory.mktemp("ideo-home")))
+    monkeypatch.setenv("IDEO_LOOPS", str(tmp_path_factory.mktemp("no-loops")))
     monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
     monkeypatch.setattr(config, "kyutai_available", lambda: False)
     monkeypatch.setattr(config, "kyutai_installed", lambda: False)

@@ -4,7 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from ideo import codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, openverse, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
+from ideo import boucles, codes, common, cost, countries, eleven, entretien, history, learn, lexicon, music, openverse, photo, pipeline, plan_check, qc, retours, review, rythme, setup_voix, suivi
 
 USAGE = ("usage : python -m ideo prepare <url> | cost <job> | check <job> [--sans-relecture] | produce <job> [--part N] [--payer] "
          "| qc <job> | status <job> | deepen <job> | learn \"<leçon>\" | learn --bug \"<constat>\" [job] | learn --prononciation \"mot=graphie\" [--lang fr] "
@@ -158,7 +158,9 @@ def run(cmd: str, arg: str, part: int | None, opts: dict | None = None) -> tuple
         return [f"OK voix-test : {characters} caractères consommés, durée {seconds:.1f} s, fichier {target}"], 0
     if cmd == "musique" and opts.get("liste"):
         lines = music.listing()
-        return [f"OK musique : {len(lines)} morceau{'x' if len(lines) > 1 else ''}"] + lines, 0
+        styles = boucles.styles()
+        tail = [f"boucles <style>, composée sur place sans téléchargement : {', '.join(styles)}"] if styles else []
+        return [f"OK musique : {len(lines)} morceau{'x' if len(lines) > 1 else ''}"] + lines + tail, 0
     if cmd == "prepare":
         job, info = pipeline.prepare(arg)
         return [f"OK prepare : {job} ({info['words']} mots, langue {info['lang']}, {info['paragraphs']} paragraphes, "
