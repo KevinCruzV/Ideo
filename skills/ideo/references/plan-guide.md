@@ -18,10 +18,16 @@ Langue : `"lang"` = la valeur de la ligne `Langue :`. TOUS les textes (`title`, 
 
 UNE histoire, pas des faits alignés :
 - Scène 1 : le point de départ (date ou lieu ; sans chronologie, le problème concret que le spectateur reconnaît chez lui). Puis des actes dans l'ordre de la source, sans remonter le temps : un par chapitre utile de `Chapitres :`, sinon 2 à 4 (par époque, ou par thème, cas, organe, méthode).
+- Ouverture par la fin, permise une fois : quand l'issue surprend (retournement, verdict, chiffre final), les scènes 1 et 2 la donnent sans l'expliquer (« Le soir même, c'est sa rivale qui part en exil »), puis le premier acte remonte au début (« Pour comprendre, revenons 15 ans plus tôt ») et la suite reste dans l'ordre.
+- Juste après l'ouverture, une scène peut promettre 2 ou 3 réponses précises tirées de la source, sans les donner (« une taxe que personne ne connaît, et une usine fermée que tu paies encore ») : chacune doit être donnée plus loin.
+- Pose tôt le détail qui fera le dénouement (qui a aidé qui, un objet, une habitude), puis rappelle-le quand il sert : « Elle qui l'avait fait entrer au palais, c'est elle qui en sort. »
+- Sujet d'argent ou de cause cachée : raconte-le comme une enquête. Chaque piste a sa scène (« Premier suspect : la guerre »), reçoit sa part chiffrée, puis un bilan additionne (« La guerre 10 euros, l'État 9 euros, il reste 21 euros ») avant de révéler la dernière piste.
+- Au moment clé, place le spectateur dans la scène : un détail concret du lieu ou de l'heure, puis « Mets-toi à sa place » ou « Imagine : tu es le guetteur ». Un compte à rebours tiré de la source tient bien (« Il lui reste 14 minutes »).
+- Tu peux annoncer une conséquence avant de la montrer (« Cette bagarre va lui coûter la vie ») et souligner un fait par une ironie sèche (« Et tout ça est parfaitement légal »). Pas d'ironie sur un sujet grave.
 - La scène qui ouvre un acte annonce son sujet, a le nom de l'acte dans `kicker` (avec une date : date dans `kicker`, nom dans le texte) et `"break": true` à côté de `"type"` (sauf la première scène) : vraie pause de voix, `kicker` en grand sur un carton plein écran la première seconde, donc court (« Acte 2 : le client »). Varie les transitions : question (« Et la Chine, alors ? »), conséquence (« Résultat : »), contraste (« Pendant ce temps, »).
 - Chaque `say` dit son lien avec la scène d'avant (cause, conséquence, opposition, temps passé : "Résultat", "Mais dix ans plus tard", "C'est là que", "Face à ça", "Le problème"). Deux scènes qu'on peut échanger sans que ça se voie : il manque le lien.
 - Date ou lieu dans la source : dans `kicker`, et l'année dans `say` si elle aide.
-- Dernière scène : la réponse à l'accroche en une phrase claire, pas une ouverture vague.
+- Dernière scène : la réponse à l'accroche en une phrase claire, pas une ouverture vague. Quand elle s'y prête, dis-la en deux moitiés qui s'opposent, pour qu'on la retienne : « Pour le tribunal, l'affaire est close. Pour les habitants, elle dure encore. »
 - `title` : affiché en haut toute la vidéo, 40 caractères au plus (espaces compris).
 - `src` de chaque scène : le `[mm:ss]` du paragraphe qui la justifie. Rien que la source : aucun fait, chiffre, nom ou date ajouté.
 - Transcription automatique : un nom propre seulement si tu le reconnais avec certitude, bien orthographié, sinon le rôle ("le président de l'époque").
@@ -64,7 +70,8 @@ Dans `hook`, `say` et les textes à l'écran :
 - Pas d'annonce (« Plongeons », « Voyons ensemble », « Dans cette vidéo », « Tu vas voir que ») ni de fausse confidence (« Honnêtement », « Soyons clairs », « Spoiler », « Le truc, c'est que »).
 - « Ce n'est pas X, c'est Y » ou « Non seulement X, mais aussi Y » : une fois par vidéo au plus.
 - Pas trois phrases de trois mots de suite (une phrase courte pour appuyer, oui).
-- Pas de liste forcée à trois : autant d'éléments que la source.
+- Pas de liste forcée à trois : autant d'éléments que la source. Une reprise du même début de phrase sur des scènes qui se suivent (« Elle qui l'a repéré. Elle qui l'a fait nommer. ») : une fois par vidéo au plus, sur des faits de la source.
+- « Spoiler » reste interdit, mais annoncer une conséquence précise avant de la montrer est permis (section 2).
 - Pas de conclusion vague (« L'avenir nous le dira », « Une chose est sûre », « À méditer ») : finis sur la réponse concrète.
 - Pas de majuscules pour crier dans `say`, pas de guillemets pour souligner.
 - Un sujet qui agit : « les chercheurs ont mesuré », pas « il a été montré ».
