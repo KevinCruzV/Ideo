@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ideo import photo, scene_schema, speed, voice
+from ideo import config, photo, scene_schema, speed, voice
 from ideo.common import fmt_ts, load_json, parse_ts
 from ideo.textmatch import SPLIT, anchor_text, closest_passage, copied_tokens, find_span, normalize, source_grams
 
@@ -84,6 +84,11 @@ def _text_field(obj: dict, key: str, where: str, errors: list[str]) -> str | Non
         errors.append(f"{where} : « {key} » est manquant ou vide. Écris le texte de « {key} » en une chaîne non vide.")
         return None
     return value
+
+
+def _check_tag(obj: dict, key: str, where: str, errors: list[str]) -> None:
+    if key in obj and obj[key] not in config.TAGS:
+        errors.append(f"{where} : « {key} » vaut {obj[key]!r}. Mets une seule balise parmi : {', '.join(config.TAGS)}, ou retire-la.")
 
 
 def _check_dash(texts, where: str, errors: list[str]) -> None:
@@ -238,6 +243,7 @@ def _check_scene(scene, where: str, ctx: dict, errors: list[str], part_state: di
     _check_channel([("say", say)] + list(_prop_strings(kind, props)), where, ctx, errors, quoted)
     _check_copy(say, where, "say", ctx, errors, part_state)
 
+    _check_tag(scene, "jeu", where, errors)
     if "break" in scene and not isinstance(scene["break"], bool):
         errors.append(f"{where} : « break » doit être true ou false (nouvel acte, pause avant la scène). Retire-le ou corrige-le.")
     if "suspense" in scene and not isinstance(scene["suspense"], bool):
@@ -393,6 +399,8 @@ def _check_part(part, index: int, ctx: dict, errors: list[str]) -> tuple[list, f
             errors.append(f"{where} : la « question » doit finir par un point d'interrogation, c'est une question posée au spectateur.")
     if isinstance(part.get("title"), str):
         _check_dash([part["title"]], where, errors)
+    _check_tag(part, "jeu_hook", where, errors)
+    _check_tag(part, "jeu_question", where, errors)
     for field in ("title", "hook", "question"):
         if isinstance(part.get(field), str):
             error = scene_schema.cap_error(where, field, part[field], scene_schema.PART_CAPS[field])

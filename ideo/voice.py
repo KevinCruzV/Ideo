@@ -272,6 +272,12 @@ def segments(plan: dict, part: dict) -> list[tuple[str, str]]:
     return segments
 
 
+def segment_tags(part: dict) -> dict:
+    tags = {"seg_00_hook": part.get("jeu_hook"), OUTRO: part.get("jeu_question")}
+    tags.update({f"seg_{i:02d}": scene.get("jeu") for i, scene in enumerate(part["scenes"], start=1)})
+    return {name: tag for name, tag in tags.items() if isinstance(tag, str) and tag in config.TAGS}
+
+
 def _stored(out_dir: Path, name: str, text: str) -> str:
     sidecar = out_dir / f"{name}.spoken.txt"
     return sidecar.read_text(encoding="utf-8") if sidecar.exists() else text
@@ -453,9 +459,12 @@ def _pieces(name: str, text: str) -> list[str]:
     return [match.group(1), match.group(2)] if match else [text]
 
 
-def _paid_piece(backend, name: str, text: str, lang: str, wav: Path, before, after, log: Path) -> tuple[list[dict], float]:
+def _paid_piece(backend, name: str, text: str, lang: str, wav: Path, before, after, log: Path,
+                tag: str | None = None) -> tuple[list[dict], float]:
+    said = f"[{tag}] {text}" if tag and getattr(backend, "tags", False) else text
+
     def take():
-        words = backend.synthesize(text, lang, wav, previous_text=before, next_text=after)
+        words = backend.synthesize(said, lang, wav, previous_text=before, next_text=after)
         listened = retranscribe(wav, lang, log)
         return (words or listened, fidelity.similarity(text, listened), wav.read_bytes(),
                 fidelity.added(text, listened), listened)
@@ -516,7 +525,8 @@ def _retouch(wav: Path, words: list[dict], lang: str, name: str, log: Path) -> N
 
 
 def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str, str]], lang: str, out_dir: Path,
-                 log: Path) -> tuple[dict, dict]:
+                 log: Path, tags: dict | None = None) -> tuple[dict, dict]:
+    tags = tags or {}
     order = [name for name, _ in items]
     spoken = {name: spoken_for(text, lang, False, name, plain=True)[0] for name, text in items}
     heard_by_name: dict = {}
@@ -528,14 +538,14 @@ def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str,
         wav = out_dir / f"{name}.wav"
         pieces = _pieces(name, spoken[name])
         if len(pieces) == 1:
-            words, score = _paid_piece(backend, name, pieces[0], lang, wav, before, after, log)
+            words, score = _paid_piece(backend, name, pieces[0], lang, wav, before, after, log, tags.get(name))
         else:
             work = out_dir / f"{name}.pieces"
             parts = [work / str(k) / f"{name}.wav" for k in range(len(pieces))]
             for path in parts:
                 path.parent.mkdir(parents=True, exist_ok=True)
             results = [_paid_piece(backend, name, piece, lang, path, before if k == 0 else None,
-                                   pieces[1] if k == 0 else after, log)
+                                   pieces[1] if k == 0 else after, log, tags.get(name) if k == 0 else None)
                        for k, (piece, path) in enumerate(zip(pieces, parts))]
             starts = _join_wavs(parts, wav)
             shutil.rmtree(work)
@@ -548,14 +558,14 @@ def _settle_paid(backend, pending: list[tuple[str, str]], items: list[tuple[str,
     return heard_by_name, scores
 
 
-def _run_backend(backend, pending, items, lang, out_dir, log, key) -> dict:
+def _run_backend(backend, pending, items, lang, out_dir, log, key, tags=None) -> dict:
     kind = _kind(backend)
     result = {"heard": {}, "scores": {}, "pitch": {}, "hook": None}
     if kind == "local":
         heard, scores, pitch, _, hook_info = _settle_local(backend, pending, lang, out_dir, log, key)
         result.update(heard=heard, scores=scores, pitch=pitch, hook=hook_info)
     elif kind == "paid":
-        heard, scores = _settle_paid(backend, pending, items, lang, out_dir, log)
+        heard, scores = _settle_paid(backend, pending, items, lang, out_dir, log, tags)
         result.update(heard=heard, scores=scores)
     else:
         for name, text in pending:
@@ -636,7 +646,7 @@ def voice_part(job: Path, n: int, backend: VoiceBackend | None = None, pay: bool
             fallback = None
             key = f"{job.name}:{n}"
             try:
-                result = _run_backend(backend, pending, items, lang, out_dir, log, key)
+                result = _run_backend(backend, pending, items, lang, out_dir, log, key, segment_tags(part))
             except common.IdeoError as err:
                 if kind == "edge":
                     raise

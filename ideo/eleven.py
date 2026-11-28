@@ -14,6 +14,7 @@ TIMEOUT = 180
 RETRY_BELOW = 0.80
 ADDED_WORD_SCORE = 0.79
 MASK = "***"
+TAG_WORD = re.compile(r"^\[[^\]]*\][,.!?…]*$")
 DEFAULT_TEST = "Bonjour, ceci est un essai de la voix choisie."
 SETUP_HELP = ("Mets ta clé dans la variable d'environnement ELEVENLABS_API_KEY ou dans config.json (« elevenlabs_api_key »), "
               "puis lance « python -m ideo voix-liste » pour choisir une voix.")
@@ -86,7 +87,7 @@ def words_from_alignment(alignment: dict | None) -> list[dict] | None:
             current["e"] = float(end)
     if current:
         words.append(current)
-    return [{"w": w["w"], "s": round(w["s"], 4), "e": round(w["e"], 4)} for w in words] or None
+    return [{"w": w["w"], "s": round(w["s"], 4), "e": round(w["e"], 4)} for w in words if not TAG_WORD.match(w["w"])] or None
 
 
 class ElevenLabsBackend:
@@ -102,15 +103,19 @@ class ElevenLabsBackend:
                                    "puis mets son identifiant dans config.json sous « elevenlabs_voice_id ».")
         self.characters = 0
         self.request_ids: list[str] = []
+        self.tags = config.tagged_model(config.eleven_model(job))
 
     def _body(self, text: str, previous_text: str | None, next_text: str | None) -> dict:
         settings = config.eleven_settings(self.job)
+        model = config.eleven_model(self.job)
         body = {
             "text": text,
-            "model_id": config.eleven_model(self.job),
+            "model_id": model,
             "voice_settings": {"stability": settings["stability"], "similarity_boost": settings["similarity"],
                                "style": settings["style"], "speed": settings["speed"], "use_speaker_boost": True},
         }
+        if self.tags:
+            return body
         if self.request_ids:
             body["previous_request_ids"] = self.request_ids[-3:]
         elif previous_text:

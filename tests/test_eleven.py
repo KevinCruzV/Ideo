@@ -552,3 +552,43 @@ def test_the_subscribe_call_follows_the_final_question_after_a_pause(eleven_job,
     words = common.load_json(eleven_job / "parts" / "01" / "seg_99_outro.words.json")
     at = next(i for i, w in enumerate(words) if w["w"].endswith("?"))
     assert words[at + 1]["s"] - words[at]["e"] >= 0.4
+
+
+def test_v3_sends_no_context_and_drops_tags_from_the_timings(server, tmp_path):
+    configure({"elevenlabs_model": "eleven_v3"})
+    backend = eleven.ElevenLabsBackend()
+    backend.synthesize("Un.", "fr", tmp_path / "a.wav", previous_text="Avant", next_text="Suite")
+    words = backend.synthesize("[curious] Tu dors ?", "fr", tmp_path / "b.wav", previous_text="Avant", next_text="Suite")
+    bodies = [r["body"] for r in server.requests]
+    assert all(not {"previous_text", "next_text", "previous_request_ids"} & set(b) for b in bodies)
+    assert [w["w"] for w in words] == ["Tu", "dors", "?"]
+
+
+def test_v3_puts_each_segment_tag_before_its_text_and_keeps_it_out_of_the_subtitles(eleven_job, server):
+    configure({"elevenlabs_model": "eleven_v3"})
+    config.mark_final(eleven_job)
+    plan = common.load_json(eleven_job / "plan.json")
+    part = plan["parts"][0]
+    part["jeu_hook"] = "curious"
+    part["scenes"][0]["jeu"] = "whispers"
+    part["question"] = "Pour toi, qui a gagné ?"
+    part["jeu_question"] = "excited"
+    common.save_json(eleven_job / "plan.json", plan)
+    voice.voice_part(eleven_job, 1)
+    sent = [r["body"]["text"] for r in server.requests]
+    texts = dict(voice.segments(plan, part))
+    assert sent[0] == f"[curious] {texts['seg_00_hook']}"
+    assert sent[1] == f"[whispers] {texts['seg_01']}"
+    assert "[excited] Pour toi, qui a gagné ?" in sent
+    assert sum(t.startswith("[") for t in sent) == 3
+    for name in ("seg_00_hook", "seg_01"):
+        words = common.load_json(eleven_job / "parts" / "01" / f"{name}.words.json")
+        assert not any("[" in w["w"] for w in words)
+
+
+def test_tags_are_ignored_by_v2(eleven_job, server):
+    plan = common.load_json(eleven_job / "plan.json")
+    plan["parts"][0]["scenes"][0]["jeu"] = "whispers"
+    common.save_json(eleven_job / "plan.json", plan)
+    voice.voice_part(eleven_job, 1)
+    assert not any("[" in r["body"]["text"] for r in server.requests)

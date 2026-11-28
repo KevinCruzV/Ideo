@@ -11,6 +11,8 @@ DEFAULT_MUSIC_LEVEL = -23
 KYUTAI_LANGS = ("fr", "en")
 ENGINES = ("kyutai", "edge", "elevenlabs")
 DEFAULT_ELEVEN_MODEL = "eleven_multilingual_v2"
+TAGGED_MODEL = "eleven_v3"
+TAGS = ("curious", "excited", "whispers", "sighs", "laughs", "sarcastic", "surprised", "serious", "mischievously", "sad")
 DEFAULT_ELEVEN_VOICE = "cgSgspJ2msm6clMCkdW9"
 ELEVEN_DEFAULTS = {"stability": 0.45, "similarity": 0.8, "style": 0.3, "speed": 1.0}
 DEFAULT_TRANSITION_DB = -12
@@ -124,6 +126,10 @@ def eleven_voice_id(job: Path | None = None) -> str | None:
 
 def eleven_model(job: Path | None = None) -> str:
     return _locked(job).get("model") or _load().get("elevenlabs_model", DEFAULT_ELEVEN_MODEL)
+
+
+def tagged_model(model: str | None) -> bool:
+    return model == TAGGED_MODEL
 
 
 def eleven_settings(job: Path | None = None) -> dict:

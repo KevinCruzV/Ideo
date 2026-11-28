@@ -595,3 +595,16 @@ def test_ton_inconnu_est_refuse(job_with_fixtures):
     plan["ton"] = "calme"
     common.save_json(job_with_fixtures / "plan.json", plan)
     assert any("« ton »" in e for e in plan_check.check_plan(job_with_fixtures))
+
+
+def test_jeu_accepte_une_balise_connue_et_refuse_le_reste(job_with_fixtures):
+    plan = load(job_with_fixtures)
+    plan["parts"][0]["jeu_hook"] = "curious"
+    plan["parts"][0]["scenes"][1]["jeu"] = "whispers"
+    write(job_with_fixtures, plan)
+    assert not any("jeu" in e for e in plan_check.check_plan(job_with_fixtures))
+    plan["parts"][0]["scenes"][1]["jeu"] = "[whispers]"
+    plan["parts"][0]["jeu_question"] = "crie"
+    write(job_with_fixtures, plan)
+    errors = [e for e in plan_check.check_plan(job_with_fixtures) if "jeu" in e]
+    assert len(errors) == 2
