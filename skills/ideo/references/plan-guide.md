@@ -28,6 +28,15 @@ UNE histoire, pas des faits alignés :
 - Jamais de sponsor, promotion, appel à s'abonner ou vie de la chaîne : aucun minutage (`src`, citation, `sfx`) entre a et b d'une ligne `[passage sponsorisé a à b, ignoré]` ou `[passage probablement sponsorisé a à b, ignoré]`. Ne nomme jamais une marque ou un produit que la vidéo est payée pour promouvoir.
 - Jamais le nom de la ligne `Chaîne :` ni de la personne qui anime la chaîne, nulle part (`title`, `hook`, `say`, `props`, citation) : si l'extrait le prononce, prends-en un autre. Le sujet et les mots de la ligne `Titre :` sont libres : tu peux les reprendre.
 
+Récit d'histoire, de complot ou d'horreur seulement (jamais pour une explication de science, de santé, d'argent ou un guide pratique), ajoute :
+- Ouverture par la fin, permise une fois : quand l'issue surprend (retournement, verdict, mort), les scènes 1 et 2 la donnent sans l'expliquer (« Le soir même, c'est sa rivale qui part en exil »), puis le premier acte remonte au début (« Pour comprendre, revenons 15 ans plus tôt ») et la suite reste dans l'ordre.
+- Juste après l'ouverture, une scène peut promettre 2 ou 3 réponses précises tirées de la source, sans les donner (« une lettre jamais envoyée, et un témoin que personne n'a interrogé ») : chacune doit être donnée plus loin.
+- Pose tôt le détail qui fera le dénouement (qui a aidé qui, un objet, une habitude), puis rappelle-le quand il sert : « Elle qui l'avait fait entrer au palais, c'est elle qui en sort. »
+- Complot ou mystère (« qui a fait ça ? ») : raconte-le comme une enquête. Chaque piste a sa scène (« Premier suspect : le garde du corps »), ce qui l'accuse et ce qui la disculpe, puis un bilan des pistes écartées avant la dernière.
+- Au moment clé, place le spectateur dans la scène : un détail concret du lieu ou de l'heure, puis « Mets-toi à sa place » ou « Imagine : tu es le guetteur ». Un compte à rebours tiré de la source tient bien (« Il lui reste 14 minutes »).
+- Annonce une conséquence avant de la montrer (« Cette bagarre va lui coûter la vie »). En histoire ou en complot, une ironie sèche peut souligner un fait (« Et tout ça était parfaitement légal ») ; jamais en horreur ni sur des morts.
+- Dernière phrase en deux moitiés qui s'opposent, pour qu'on la retienne : « Pour le tribunal, l'affaire est close. Pour les habitants, elle dure encore. »
+
 ## 3. L'accroche (`hook`)
 
 - 6 à 10 mots, 60 caractères au plus (espaces compris), en général une question qui donne envie de connaître la réponse. Vraie, la vidéo y répond, aucun chiffre hors source. "Dis-moi pourquoi..." par défaut quand elle colle, sinon "Pourquoi... ?", "Tu sais ce qui se passe quand... ?", "Et si... ?", "Personne ne t'explique que...". En anglais : "Tell me why...?", "Why...?". Plusieurs parties : pas la même formule deux parties de suite. Exemples : "Pourquoi les avions ne volent pas en ligne droite ?", "Personne ne t'explique pourquoi la mer est salée." À éviter : chiffre inventé ("97 % des gens se trompent"), promesse vide sans sujet ("Le secret incroyable...").
@@ -64,7 +73,8 @@ Dans `hook`, `say` et les textes à l'écran :
 - Pas d'annonce (« Plongeons », « Voyons ensemble », « Dans cette vidéo », « Tu vas voir que ») ni de fausse confidence (« Honnêtement », « Soyons clairs », « Spoiler », « Le truc, c'est que »).
 - « Ce n'est pas X, c'est Y » ou « Non seulement X, mais aussi Y » : une fois par vidéo au plus.
 - Pas trois phrases de trois mots de suite (une phrase courte pour appuyer, oui).
-- Pas de liste forcée à trois : autant d'éléments que la source.
+- Pas de liste forcée à trois : autant d'éléments que la source. Une reprise du même début de phrase sur des scènes qui se suivent (« Elle qui l'a repéré. Elle qui l'a fait nommer. ») : une fois par vidéo au plus, sur des faits de la source.
+- « Spoiler » reste interdit, mais dans un récit d'histoire, de complot ou d'horreur, annoncer une conséquence précise avant de la montrer est permis (section 2).
 - Pas de conclusion vague (« L'avenir nous le dira », « Une chose est sûre », « À méditer ») : finis sur la réponse concrète.
 - Pas de majuscules pour crier dans `say`, pas de guillemets pour souligner.
 - Un sujet qui agit : « les chercheurs ont mesuré », pas « il a été montré ».
