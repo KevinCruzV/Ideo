@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ideo import common, config, history
+from ideo import boucles, common, config, history
 
 RATE = 48000
 EXTENSIONS = (".mp3", ".wav", ".m4a", ".ogg", ".flac", ".aac")
@@ -215,6 +215,13 @@ def choose_for(job: Path, text: str) -> str:
     if text.lower() == NONE:
         write_choice(job, NONE)
         return text
+    words = text.split()
+    if words[0].lower() == boucles.PREFIX:
+        if len(words) != 2:
+            raise common.IdeoError(f"dis un style après « boucles », par exemple « boucles funk ». Styles possibles : {', '.join(boucles.styles()) or 'aucun'}.")
+        target, choice = boucles.make(job, words[1])
+        write_choice(job, f"{boucles.PREFIX} {words[1].lower()}", str(target.resolve()))
+        return f"{text} ({boucles.describe(choice)})"
     target = resolve(text, config.music_dir())
     if target is None:
         names = ", ".join(t.stem for t in tracks(config.music_dir())) or "aucun morceau dans " + str(config.music_dir())
@@ -307,7 +314,7 @@ def _credit(folder: Path, track_name: str) -> str | None:
     entry = data.get(Path(track_name).stem) if isinstance(data, dict) else None
     if not isinstance(entry, dict) or not entry.get("title"):
         return None
-    parts = [entry["title"]] + [f"par {entry['artist']}"] * bool(entry.get("artist")) + [entry["source"]] * bool(entry.get("source"))
+    parts = [entry["title"]] + [f"par {entry.get('artist')}"] * bool(entry.get("artist")) + [str(entry.get("source"))] * bool(entry.get("source"))
     return "Musique : " + ", ".join(parts)
 
 
